@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ using Microsoft.Office;
 using System.Runtime.InteropServices;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using Excel=Microsoft.Office.Interop.Excel;
-// using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace ArbWeb
 {
@@ -3201,13 +3202,14 @@ namespace ArbWeb
 	    private void GenSiteRosterReport(object sender, EventArgs e)
 	    {
 	        CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-	        string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"),
+	        string sTempFile = String.Format("{0}\\temp{1}.doc", Environment.GetEnvironmentVariable("Temp"),
 	                                         System.Guid.NewGuid().ToString());
 	        RST rst = RstEnsure(m_ebRosterCopy.Text);
 
-	        gc.GenSiteRosterResport(sTempFile, RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
-
-	        System.IO.File.Delete(sTempFile);
+	        gc.GenSiteRosterResport(sTempFile, rst, RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
+            // launch word with the file
+	        Process.Start(sTempFile);
+	        // System.IO.File.Delete(sTempFile);
 	    }
 
 	    private void GenOpenSlotsMail(object sender, EventArgs e)
@@ -3226,7 +3228,8 @@ namespace ArbWeb
 				return;
 				}
 
-			Outlook.MailItem oNote = (Outlook.MailItem)appOlk.CreateItem(Outlook.OlItemType.olMailItem);
+	        Outlook.MailItem oNote = appOlk.CreateItem(Outlook.OlItemType.olMailItem);
+			// Outlook.MailItem oNote = (Outlook.MailItem)appOlk.CreateItem(Outlook.OlItemType.olMailItem);
 
 			oNote.To = "rlittle@thetasoft.com";
 			oNote.BCC = sBcc;
@@ -3298,17 +3301,12 @@ namespace ArbWeb
 		}
 
 	    private SlotAggr m_saOpenSlots;
-        private void CalcOpenSlots(object sender, EventArgs e)
+        private async void CalcOpenSlots(object sender, EventArgs e)
         {
-            
-            m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
+            Task<CountsData> taskCalc = new Task<CountsData>(CalcOpenSlotsWork);
+            taskCalc.Start();
 
-			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-			RST rst = RstEnsure(m_ebRosterCopy.Text);
-
-            m_srpt.PopLevel();
-            m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
-            m_saOpenSlots = gc.CalcOpenSlots(m_dtpStart.Value, m_dtpEnd.Value);
+            CountsData cd = await taskCalc;
 
             m_srpt.PopLevel();
             m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
@@ -3325,15 +3323,28 @@ namespace ArbWeb
 			if (rgsSports.Length == 0 && m_chlbxSportLevels.Items.Count == 0)
 				fCheckAllSportLevels = true;
 
-            UpdateChlbxFromRgs(m_chlbxSports, gc.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
-            UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
+            UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
+            UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
             string[] rgsRosterSites = RgsFromChlbx(true, m_chlbxRoster);
 
-            UpdateChlbxFromRgs(m_chlbxRoster, gc.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
+            UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
             m_srpt.PopLevel();
         }
 
-        private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
+	    private CountsData CalcOpenSlotsWork()
+	    {
+	        m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
+
+	        CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+	        RST rst = RstEnsure(m_ebRosterCopy.Text);
+
+	        m_srpt.PopLevel();
+	        m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
+	        m_saOpenSlots = gc.CalcOpenSlots(m_dtpStart.Value, m_dtpEnd.Value);
+	        return gc;
+	    }
+
+	    private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
             CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
             string[] rgsSports = RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);

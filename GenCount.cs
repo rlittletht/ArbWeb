@@ -16,6 +16,7 @@ using AxSHDocVw;
 using mshtml;
 using Microsoft.Office;
 using System.Runtime.InteropServices;
+using StatusBox;
 using Outlook = Microsoft.Office.Interop.Outlook;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -883,9 +884,42 @@ namespace ArbWeb
 
 		public bool m_fMarked;
 
+        public string Phone1 { get { return m_sPhone1; } }
+        public string CellPhone
+        {
+            get
+            {
+                if (m_sPhone1 != null && m_sPhone1.Contains("C:"))
+                    return m_sPhone1;
+                else if (m_sPhone2 != null && m_sPhone2.Contains("C:"))
+                    return m_sPhone2;
+                else if (m_sPhone3 != null && m_sPhone3.Contains("C:"))
+                    return m_sPhone3;
+                else
+                    return m_sPhone1;
+            }
+        }
 		public RST.RSTT m_rstt;
 
-		/* R  S  T  E */
+	    public string OtherRanks(string sSport, string sPos, int nBase)
+	    {
+	        string sOther = "";
+	        foreach (string sKey in m_mpRanking.Keys)
+	            {
+	            if (sKey.StartsWith(sSport) && !sKey.EndsWith(sPos))
+	                {
+	                if (m_mpRanking[sKey] == nBase)
+	                    continue;
+
+	                if (sOther.Length > 0)
+	                    sOther += ", ";
+	                sOther = String.Format("{0}{1} ({2})", sOther, sKey.Substring(sSport.Length + 2), m_mpRanking[sKey]);
+	                }
+	            }
+	        return sOther;
+	    }
+
+	    /* R  S  T  E */
 		/*----------------------------------------------------------------------------
 			%%Function: RSTE
 			%%Qualified: ArbWeb.RSTE.RSTE
@@ -1653,7 +1687,10 @@ namespace ArbWeb
 				StatusBox.StatusRpt m_srpt;
 
 				public List<string> PlsMiscHeadings { get { return m_rst.PlsMisc; } }
-
+                public RSTE RsteLookupEmail(string sEmail)
+                {
+                    return m_rst.RsteLookupEmail(sEmail);
+                }
 				public string SMiscHeader(int i)
 				{
 					if (m_rst.PlsMisc != null)
@@ -1701,6 +1738,7 @@ namespace ArbWeb
 				string m_sAway;
 				string m_sSport;
 				string m_sPos;
+			    string m_sStatus;
 				string m_sTeam;
 				string m_sEmail;
 				string m_sGameNum;
@@ -1708,7 +1746,7 @@ namespace ArbWeb
 				bool m_fCancelled;
 				List<string> m_plsMisc;
 
-				public Game(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, bool fCancelled, List<string> plsMisc)
+				public Game(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, string sStatus, bool fCancelled, List<string> plsMisc)
 				{
 					m_dttm = dttm;
 					m_sSite = sSite;
@@ -1717,6 +1755,7 @@ namespace ArbWeb
 					m_sAway = sAway;
 					m_sSport = sSport;
 					m_sPos = sPos;
+				    m_sStatus = sStatus;
 					m_sTeam = sTeam;
 					m_sEmail = sEmail;
 					m_sGameNum = sGameNum;
@@ -1725,7 +1764,10 @@ namespace ArbWeb
 					m_plsMisc = plsMisc;
 				}
 
-				public List<string> PlsMisc { get { return m_plsMisc; } set { m_plsMisc = value; } } 
+                public string Status { get { return m_sStatus; } }
+			    public string Email { get { return m_sEmail; } }
+                public string Name { get { return m_sName;  } }
+			    public List<string> PlsMisc { get { return m_plsMisc; } set { m_plsMisc = value; } } 
 				public string Team { get { return m_sTeam; } set { m_sTeam = value; } }
 				public bool Open { get { return m_sName == null; } } 
 				public string Home { get { return m_sHome; } } 
@@ -1854,6 +1896,8 @@ namespace ArbWeb
 			    private const int icolGameSite = 10;
 			    private const int icolGameGame = 0;
                 private const int icolOfficial = 4;
+			    private const int icolSlotStatus = 16;
+
 
 			    // ================================================================================
 			    //  S P O R T 
@@ -1908,6 +1952,7 @@ namespace ArbWeb
 
 				List<string> m_plsMiscHeadings;
 				SortedList<string, Game> m_plgmSorted;
+				SortedList<string, Game> m_plgmSortedGameNum;
 				StatusBox.StatusRpt m_srpt;
 				Dictionary<string, Dictionary<string, int>> m_mpNameSportLevelCount;
 				Dictionary<string, Sport> m_mpSportSport;
@@ -1938,7 +1983,8 @@ namespace ArbWeb
                 public Games(StatusBox.StatusRpt srpt)
 				{
 					m_plgmSorted = new SortedList<string, Game>();
-					m_srpt = srpt;
+					m_plgmSortedGameNum = new SortedList<string, Game>();
+                    m_srpt = srpt;
 					m_mpSportSport = new Dictionary<string, Sport>();
 					m_plsLegend = new List<string>();
 					m_mpTeamCount = new Dictionary<string, int>();
@@ -1998,13 +2044,13 @@ namespace ArbWeb
 					This handles ensuring the the sport/level/pos information has been added
 					to the legend, so we can build the detail lines later
 				----------------------------------------------------------------------------*/
-				void AddGame(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, bool fCancelled, List<string> plsMisc)
+				void AddGame(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, string sStatus, bool fCancelled, List<string> plsMisc)
 				{
-					Game gm = new Game(dttm, sSite, sName, sTeam, sEmail, sGameNum, sHome, sAway, sLevel, sSport, sPos, fCancelled, plsMisc);
+					Game gm = new Game(dttm, sSite, sName, sTeam, sEmail, sGameNum, sHome, sAway, sLevel, sSport, sPos, sStatus, fCancelled, plsMisc);
 					string sTeamSport = sTeam + "#-#" + sSport;
 
 					m_plgmSorted.Add(String.Format("{0}_{1}_{2}", sName, dttm.ToString("yyyyMMdd:HH:mm"), m_plgmSorted.Count), gm);
-
+				    m_plgmSortedGameNum.Add(String.Format("{0}_{1}_{2}_{3}_{4}_{5}", dttm.ToString("yyyyMMdd:HH:mm"), sSite, sSport, sLevel, sGameNum, m_plgmSortedGameNum.Count), gm);
 					if (sTeam != null && sTeam.Length > 0)
 						{
 						if (m_mpTeamCount.ContainsKey(sTeam))
@@ -2759,9 +2805,80 @@ namespace ArbWeb
 			    private int icolGameLevel;
 			    private int icolGameDateTime;
 
-                public void GenSiteRosterReport(string sReportFile, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+                void WriteGameRoster(StreamWriter sw, List<Game> plgm, RST rst)
                 {
+                    sw.WriteLine("<tr>");
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].GameNum));
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("ddd M/dd")));
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("h:mm tt")));
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].SportLevel));
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Site));
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Home));
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Away));
+                    sw.WriteLine("<tr><td colspan='7' class='rosterOuter'>");
+                    sw.WriteLine("<table class='rosterInner'>");
+                    foreach (Game gm in plgm)
+                        {
+                        sw.WriteLine("<tr>");
+                        if (gm.Open)
+                            {
+                            sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Pos));
+                            sw.WriteLine("<td colspan='4'>&nbsp;");
+                            }
+                        else
+                            {
+                            RSTE rste = rst.RsteLookupEmail(gm.Email);
+                            int nBaseRank;
 
+                            sw.WriteLine(String.Format("<td class='rosterInner'>{0} ({1})", gm.Pos, nBaseRank = rste.Rank(String.Format("{0}, {1}", gm.Sport, gm.Pos))));
+                            sw.WriteLine(String.Format("<td class='rosterInnerName'>{0}", rste.Name));
+                            sw.WriteLine(String.Format("<td class='rosterInner'>{0}", rste.CellPhone));
+                            sw.WriteLine(String.Format("<td class='rosterInner'>{0}", rste.OtherRanks(gm.Sport, gm.Pos, nBaseRank)));
+                            sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Status));
+                            }
+                        }
+                    sw.WriteLine("</table>");
+                }
+
+                public void GenSiteRosterReport(string sReportFile, RST rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+                {
+                    StreamWriter sw = new StreamWriter(sReportFile, false, System.Text.Encoding.Default);
+					SortedList<string, int> plsSiteShort = Utils.PlsUniqueFromRgs(rgsRosterFilter);
+                    List<Game> plgm = new List<Game>();
+
+                    sw.WriteLine("<html>");
+                    sw.WriteLine("<head><style>");
+                    sw.WriteLine(".rosterOuter, .rosterInner, td.rosterInnerName { margin-left: 5pt; font-family: 'Calibri'; font-size: 11pt; border-collapse: collapse; border-spacing: 0pt; }");
+                    sw.WriteLine("td.rosterOuter { border-top: .5pt solid black; border-bottom: .5pt solid black; }");
+                    sw.WriteLine("table.rosterInner { width: 100%;}");
+                    sw.WriteLine("table.rosterOuter { width: 100%; max-width: 7.5in;}");
+                    sw.WriteLine("td.rosterInner, td.rosterInnerName { padding-left: 5pt; padding-right: 5pt;} td.rosterInnerName { }");
+                    sw.WriteLine("@page sec1 { margin: .25in; } div.sec1 { page:sec1} ");
+                    sw.WriteLine("</style></head>");
+
+                    sw.WriteLine("<div class='sec1'><table class='rosterOuter'>");
+                    // at this point we are ready to generate the report
+                    foreach (Game gm in m_plgmSortedGameNum.Values)
+                        {
+                        if (gm.Dttm < dttmStart || gm.Dttm > dttmEnd)
+                            continue;
+
+                        if (rgsRosterFilter != null)
+                            if (!plsSiteShort.ContainsKey(gm.SiteShort))
+                                continue;
+
+                        if (plgm.Count > 0 && plgm[0].GameNum != gm.GameNum)
+                            {
+                            WriteGameRoster(sw, plgm, rst);
+                            plgm.Clear();
+                            }
+                        plgm.Add(gm);
+                        }
+                    if (plgm.Count > 0)
+                        WriteGameRoster(sw, plgm, rst);
+
+                    sw.WriteLine("</table></div></html>");
+                    sw.Close();
                 }
 
 				/* G E N  O P E N  S L O T S  R E P O R T */
@@ -2873,8 +2990,8 @@ namespace ArbWeb
                         if (!plsSports.Contains(gm.SportLevel))
                             plsSports.Add(gm.SportLevel);
 
-                        if (!plsSites.Contains(gm.Site))
-                            plsSites.Add(gm.Site);
+                        if (!plsSites.Contains(gm.SiteShort))
+                            plsSites.Add(gm.SiteShort);
                         }
                     return plsSites.ToArray();
                 }
@@ -2919,7 +3036,9 @@ namespace ArbWeb
 					string sAway = "";
 					string sPosLast = "";
 					string sNameLast = "";
+				    string sStatusLast = "";
 
+				    Dictionary<string, string> mpNameStatus = new Dictionary<string, string>();
 					Dictionary<string, string> mpNamePos = new Dictionary<string, string>();
 					m_mpNameSportLevelCount = new Dictionary<string, Dictionary<string, int>>();
 					Umpire ump = null;
@@ -2987,11 +3106,11 @@ namespace ArbWeb
 						    rs = RsHandleReadingGame2(rgsFields, ref sGame, ref sDateTime, ref sLevel, ref sSite, ref sHome, ref sAway, rs);
 
 						if (rs == ReadState.ReadingOfficials2)
-						    rs = RsHandleReadingGame2(rgsFields, mpNamePos, sNameLast, sPosLast, rs);
+						    rs = RsHandleReadingOfficials2(rgsFields, mpNamePos, mpNameStatus, sNameLast, sPosLast, sStatusLast, rs);
 
 						if (rs == ReadState.ReadingOfficials1)
-						    rs = RsHandleReadingOfficials1(rst, fIncludeCanceled, sLine, rgsFields, mpNamePos, fCanceled, sSite, sGame,
-						                                   sHome, sAway, sLevel, sSport, rs, ref sPosLast, ref sNameLast, ref sDateTime, ref fOpenSlot, ref ump);
+						    rs = RsHandleReadingOfficials1(rst, fIncludeCanceled, sLine, rgsFields, mpNamePos, mpNameStatus, fCanceled, sSite, sGame,
+						                                   sHome, sAway, sLevel, sSport, rs, ref sPosLast, ref sNameLast, ref sStatusLast, ref sDateTime, ref fOpenSlot, ref ump);
 
 						if (FMatchGameArbiterFooter(sLine))
 							{
@@ -3001,7 +3120,7 @@ namespace ArbWeb
 							}
 
 						if (rs == ReadState.ScanForGame)
-						    rs = RsHandleScanForGame(ref sGame, mpNamePos, sLine, ref sDateTime, ref sSport, ref sLevel, ref sSite,
+						    rs = RsHandleScanForGame(ref sGame, mpNamePos, mpNameStatus, sLine, ref sDateTime, ref sSport, ref sLevel, ref sSite,
 						                             ref sHome, ref sAway, ref fCanceled, ref fIgnore, rs);
 
 						if (rs == ReadState.ReadingGame1)
@@ -3072,7 +3191,7 @@ namespace ArbWeb
 			    	%%Contact: rlittle
 			    	
 			    ----------------------------------------------------------------------------*/
-			    private static ReadState RsHandleScanForGame(ref string sGame, Dictionary<string, string> mpNamePos, string sLine, ref string sDateTime,
+			    private static ReadState RsHandleScanForGame(ref string sGame, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sLine, ref string sDateTime,
 			                                                 ref string sSport, ref string sLevel, ref string sSite, ref string sHome,
 			                                                 ref string sAway, ref bool fCanceled, ref bool fIgnore, ReadState rs)
 			    {
@@ -3086,6 +3205,7 @@ namespace ArbWeb
 			        fCanceled = false;
 			        fIgnore = false;
 			        mpNamePos.Clear();
+			        mpNameStatus.Clear();
 
 			        if (!(Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Baseball").Success
 			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
@@ -3125,9 +3245,9 @@ namespace ArbWeb
 			    	
 			    ----------------------------------------------------------------------------*/
 			    private ReadState RsHandleReadingOfficials1(Roster rst, bool fIncludeCanceled, string sLine, string[] rgsFields,
-			                                                Dictionary<string, string> mpNamePos, bool fCanceled, string sSite, string sGame,
+			                                                Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, bool fCanceled, string sSite, string sGame,
 			                                                string sHome, string sAway, string sLevel, string sSport, ReadState rs,
-			                                                ref string sPosLast, ref string sNameLast, ref string sDateTime, ref bool fOpenSlot, ref Umpire ump)
+			                                                ref string sPosLast, ref string sStatusLast, ref string sNameLast, ref string sDateTime, ref bool fOpenSlot, ref Umpire ump)
 			    {
 // Games may have multiple officials, so we have to collect up the officials.
 			        // we do this in mpNamePos
@@ -3145,17 +3265,20 @@ namespace ArbWeb
 			            rs = ReadState.ReadingOfficials2;
 			            sPosLast = rgsFields[1];
 			            sNameLast = rgsFields[icolOfficial];
+			            sStatusLast = rgsFields[icolSlotStatus];
 
 			            if (Regex.Match(rgsFields[icolOfficial], "_____").Success)
 			                {
 			                fOpenSlot = true;
 			                mpNamePos.Add(String.Format("!!OPEN{0}", mpNamePos.Count), rgsFields[1]);
+			                mpNameStatus.Add(String.Format("!!OPEN{0}", mpNameStatus.Count), rgsFields[icolSlotStatus]);
 			                return rs;
 			                }
 			            else
 			                {
 			                string sName = ReverseName(rgsFields[icolOfficial]);
 			                mpNamePos.Add(sName, rgsFields[1]);
+			                mpNameStatus.Add(sName, rgsFields[icolSlotStatus]);
 			                return rs;
 			                }
 			            }
@@ -3172,6 +3295,7 @@ namespace ArbWeb
 			            foreach (string sName in mpNamePos.Keys)
 			                {
 			                string sPos = mpNamePos[sName];
+			                string sStatus = mpNameStatus[sName];
 			                string sEmail;
 			                string sTeam;
 			                string sNameUse = sName;
@@ -3182,6 +3306,7 @@ namespace ArbWeb
 			                    sNameUse = null;
 			                    sEmail = "";
 			                    sTeam = "";
+			                    sStatus = "";
 			                    }
 			                else
 			                    {
@@ -3206,7 +3331,7 @@ namespace ArbWeb
 			                    if (sDateTime.EndsWith("TBA"))
 			                        sDateTime = sDateTime.Substring(0, sDateTime.Length - icolOfficial) + "00:00";
 			                    AddGame(DateTime.Parse(sDateTime), sSite, sNameUse, sTeam, sEmail, sGame, sHome, sAway, sLevel, sSport,
-			                            sPos, fCanceled, plsMisc);
+			                            sPos, sStatus, fCanceled, plsMisc);
 			                    }
 			                }
 			            }
@@ -3216,13 +3341,13 @@ namespace ArbWeb
 
 			    /* R S  H A N D L E  R E A D I N G  G A M E  2 */
 			    /*----------------------------------------------------------------------------
-			    	%%Function: RsHandleReadingGame2
-			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingGame2
+			    	%%Function: RsHandleReadingOfficials2
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingOfficials2
 			    	%%Contact: rlittle
 			    	
 			    ----------------------------------------------------------------------------*/
-			    private static ReadState RsHandleReadingGame2(string[] rgsFields, Dictionary<string, string> mpNamePos, string sNameLast,
-			                                                  string sPosLast, ReadState rs)
+			    private static ReadState RsHandleReadingOfficials2(string[] rgsFields, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sNameLast,
+			                                                  string sPosLast, string sStatusLast, ReadState rs)
 			    {
 // we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
 			        // overflows
@@ -3230,9 +3355,11 @@ namespace ArbWeb
 			            {
 			            // nothing in that column means we have a continuation.  now lets concatenate all our stuff
 			            mpNamePos.Remove(ReverseName(sNameLast));
+			            mpNameStatus.Remove(ReverseName(sNameLast));
 			            string sName = String.Format("{0} {1}", sNameLast, rgsFields[3]);
 			            sName = ReverseName(sName);
 			            mpNamePos.Add(sName, sPosLast);
+			            mpNameStatus.Add(sName, sStatusLast);
 			            return rs;
 			            }
 			        rs = ReadState.ReadingOfficials1;
@@ -3242,8 +3369,8 @@ namespace ArbWeb
 
 			    /* R S  H A N D L E  R E A D I N G  G A M E  2 */
 			    /*----------------------------------------------------------------------------
-			    	%%Function: RsHandleReadingGame2
-			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingGame2
+			    	%%Function: RsHandleReadingOfficials2
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingOfficials2
 			    	%%Contact: rlittle
 			    	
 			    ----------------------------------------------------------------------------*/
@@ -3405,9 +3532,9 @@ namespace ArbWeb
 				return m_gms.GenOpenSlots(dttmStart, dttmEnd);
 			}
 
-            public void GenSiteRosterReport(string sReportFile, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+            public void GenSiteRosterReport(string sReportFile, RST rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
             {
-                m_gms.GenSiteRosterReport(sReportFile, rgsRosterFilter, dttmStart, dttmEnd);
+                m_gms.GenSiteRosterReport(sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd);
             }
 			/* G E N  O P E N  S L O T S */
 			/*----------------------------------------------------------------------------
@@ -3493,15 +3620,21 @@ namespace ArbWeb
 		{
 //            srpt.UnitTest();
 			m_gmd = new GameData(m_srpt);
+		    m_srpt.AddMessage("Loading roster...", StatusRpt.MSGT.Header, false);
+
 			m_gmd.FLoadRoster(sRoster, iMiscAffiliation);
-            m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
+            // m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
+
+		    m_srpt.PopLevel();
+		    m_srpt.AddMessage("Loading games...", StatusRpt.MSGT.Header, false);
 			m_gmd.FLoadGames(sSource, fIncludeCanceled);
+		    m_srpt.PopLevel();
 			// read in the roster of umpires...
 		}
 
-        public void GenSiteRosterResport(string sReportFile, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+        public void GenSiteRosterResport(string sReportFile, RST rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
         {
-            m_gmd.GenSiteRosterReport(sReportFile, rgsRosterFilter, dttmStart, dttmEnd);
+            m_gmd.GenSiteRosterReport(sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd);
         }
 		/* G E N  O P E N  S L O T S  R E P O R T */
 		/*----------------------------------------------------------------------------
