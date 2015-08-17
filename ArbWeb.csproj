@@ -163,6 +163,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Utils.cs" />
     <Content Include="App.ico" />
     <Compile Include="..\shared\statusbox.cs">
       <Link>statusbox.cs</Link>
