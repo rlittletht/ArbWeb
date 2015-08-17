@@ -16,6 +16,7 @@ using Microsoft.Office;
 using System.Runtime.InteropServices;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using Excel=Microsoft.Office.Interop.Excel;
+// using System.Threading.Tasks;
 
 namespace ArbWeb
 {
@@ -198,6 +199,7 @@ namespace ArbWeb
         private CheckBox m_cbLogToFile;
         private Label label18;
         private CheckedListBox m_chlbxRoster;
+        private Button m_pbCreateRosterReport;
 
 		private StatusBox.StatusRpt m_srpt;
 
@@ -391,6 +393,7 @@ namespace ArbWeb
             this.m_cbLogToFile = new System.Windows.Forms.CheckBox();
             this.label18 = new System.Windows.Forms.Label();
             this.m_chlbxRoster = new System.Windows.Forms.CheckedListBox();
+            this.m_pbCreateRosterReport = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -504,7 +507,7 @@ namespace ArbWeb
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.m_recStatus);
-            this.groupBox2.Location = new System.Drawing.Point(8, 524);
+            this.groupBox2.Location = new System.Drawing.Point(8, 566);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(719, 157);
             this.groupBox2.TabIndex = 27;
@@ -561,7 +564,7 @@ namespace ArbWeb
             // m_pbUploadRoster
             // 
             this.m_pbUploadRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbUploadRoster.Location = new System.Drawing.Point(617, 499);
+            this.m_pbUploadRoster.Location = new System.Drawing.Point(504, 529);
             this.m_pbUploadRoster.Name = "m_pbUploadRoster";
             this.m_pbUploadRoster.Size = new System.Drawing.Size(110, 24);
             this.m_pbUploadRoster.TabIndex = 32;
@@ -571,7 +574,7 @@ namespace ArbWeb
             // m_pbOpenSlots
             // 
             this.m_pbOpenSlots.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbOpenSlots.Location = new System.Drawing.Point(617, 260);
+            this.m_pbOpenSlots.Location = new System.Drawing.Point(617, 264);
             this.m_pbOpenSlots.Name = "m_pbOpenSlots";
             this.m_pbOpenSlots.Size = new System.Drawing.Size(110, 27);
             this.m_pbOpenSlots.TabIndex = 33;
@@ -625,7 +628,7 @@ namespace ArbWeb
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 264);
+            this.label8.Location = new System.Drawing.Point(12, 268);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(55, 13);
             this.label8.TabIndex = 40;
@@ -634,7 +637,7 @@ namespace ArbWeb
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(298, 264);
+            this.label9.Location = new System.Drawing.Point(298, 268);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(52, 13);
             this.label9.TabIndex = 41;
@@ -644,7 +647,7 @@ namespace ArbWeb
             // 
             this.m_dtpStart.CustomFormat = "ddd MMM dd, yyyy";
             this.m_dtpStart.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.m_dtpStart.Location = new System.Drawing.Point(76, 260);
+            this.m_dtpStart.Location = new System.Drawing.Point(76, 264);
             this.m_dtpStart.Name = "m_dtpStart";
             this.m_dtpStart.Size = new System.Drawing.Size(154, 20);
             this.m_dtpStart.TabIndex = 42;
@@ -654,7 +657,7 @@ namespace ArbWeb
             // 
             this.m_dtpEnd.CustomFormat = "ddd MMM dd, yyyy";
             this.m_dtpEnd.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.m_dtpEnd.Location = new System.Drawing.Point(356, 260);
+            this.m_dtpEnd.Location = new System.Drawing.Point(356, 264);
             this.m_dtpEnd.Name = "m_dtpEnd";
             this.m_dtpEnd.Size = new System.Drawing.Size(154, 20);
             this.m_dtpEnd.TabIndex = 43;
@@ -662,7 +665,7 @@ namespace ArbWeb
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(418, 410);
+            this.label10.Location = new System.Drawing.Point(418, 414);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(79, 13);
             this.label10.TabIndex = 45;
@@ -670,7 +673,7 @@ namespace ArbWeb
             // 
             // m_ebFilter
             // 
-            this.m_ebFilter.Location = new System.Drawing.Point(503, 407);
+            this.m_ebFilter.Location = new System.Drawing.Point(503, 411);
             this.m_ebFilter.Name = "m_ebFilter";
             this.m_ebFilter.Size = new System.Drawing.Size(129, 20);
             this.m_ebFilter.TabIndex = 44;
@@ -678,7 +681,7 @@ namespace ArbWeb
             // m_cbOpenSlotDetail
             // 
             this.m_cbOpenSlotDetail.AutoSize = true;
-            this.m_cbOpenSlotDetail.Location = new System.Drawing.Point(421, 309);
+            this.m_cbOpenSlotDetail.Location = new System.Drawing.Point(421, 313);
             this.m_cbOpenSlotDetail.Name = "m_cbOpenSlotDetail";
             this.m_cbOpenSlotDetail.Size = new System.Drawing.Size(139, 17);
             this.m_cbOpenSlotDetail.TabIndex = 46;
@@ -708,7 +711,7 @@ namespace ArbWeb
             // button2
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(617, 324);
+            this.button2.Location = new System.Drawing.Point(617, 328);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(110, 27);
             this.button2.TabIndex = 49;
@@ -719,17 +722,17 @@ namespace ArbWeb
             // 
             this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label12.Location = new System.Drawing.Point(31, 290);
+            this.label12.Location = new System.Drawing.Point(31, 294);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(690, 19);
             this.label12.TabIndex = 50;
-            this.label12.Tag = "Open slot email generation";
+            this.label12.Tag = "Slot reporting";
             this.label12.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // m_cbFilterSport
             // 
             this.m_cbFilterSport.AutoSize = true;
-            this.m_cbFilterSport.Location = new System.Drawing.Point(34, 309);
+            this.m_cbFilterSport.Location = new System.Drawing.Point(34, 313);
             this.m_cbFilterSport.Name = "m_cbFilterSport";
             this.m_cbFilterSport.Size = new System.Drawing.Size(141, 17);
             this.m_cbFilterSport.TabIndex = 51;
@@ -741,7 +744,7 @@ namespace ArbWeb
             // 
             this.m_chlbxSports.CheckOnClick = true;
             this.m_chlbxSports.FormattingEnabled = true;
-            this.m_chlbxSports.Location = new System.Drawing.Point(44, 329);
+            this.m_chlbxSports.Location = new System.Drawing.Point(44, 333);
             this.m_chlbxSports.Name = "m_chlbxSports";
             this.m_chlbxSports.Size = new System.Drawing.Size(164, 94);
             this.m_chlbxSports.TabIndex = 52;
@@ -751,7 +754,7 @@ namespace ArbWeb
             // 
             this.m_chlbxSportLevels.CheckOnClick = true;
             this.m_chlbxSportLevels.FormattingEnabled = true;
-            this.m_chlbxSportLevels.Location = new System.Drawing.Point(243, 329);
+            this.m_chlbxSportLevels.Location = new System.Drawing.Point(243, 333);
             this.m_chlbxSportLevels.Name = "m_chlbxSportLevels";
             this.m_chlbxSportLevels.Size = new System.Drawing.Size(164, 94);
             this.m_chlbxSportLevels.TabIndex = 54;
@@ -759,7 +762,7 @@ namespace ArbWeb
             // m_cbFilterLevel
             // 
             this.m_cbFilterLevel.AutoSize = true;
-            this.m_cbFilterLevel.Location = new System.Drawing.Point(233, 309);
+            this.m_cbFilterLevel.Location = new System.Drawing.Point(233, 313);
             this.m_cbFilterLevel.Name = "m_cbFilterLevel";
             this.m_cbFilterLevel.Size = new System.Drawing.Size(166, 17);
             this.m_cbFilterLevel.TabIndex = 53;
@@ -770,7 +773,7 @@ namespace ArbWeb
             // m_cbTestEmail
             // 
             this.m_cbTestEmail.AutoSize = true;
-            this.m_cbTestEmail.Location = new System.Drawing.Point(594, 357);
+            this.m_cbTestEmail.Location = new System.Drawing.Point(594, 361);
             this.m_cbTestEmail.Name = "m_cbTestEmail";
             this.m_cbTestEmail.Size = new System.Drawing.Size(117, 17);
             this.m_cbTestEmail.TabIndex = 55;
@@ -822,7 +825,7 @@ namespace ArbWeb
             // m_pbReload
             // 
             this.m_pbReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbReload.Location = new System.Drawing.Point(617, 525);
+            this.m_pbReload.Location = new System.Drawing.Point(617, 529);
             this.m_pbReload.Name = "m_pbReload";
             this.m_pbReload.Size = new System.Drawing.Size(110, 24);
             this.m_pbReload.TabIndex = 61;
@@ -890,7 +893,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseGameFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseGameFile.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile.Location = new System.Drawing.Point(293, 61);
+            this.m_pbBrowseGameFile.Location = new System.Drawing.Point(285, 61);
             this.m_pbBrowseGameFile.Name = "m_pbBrowseGameFile";
             this.m_pbBrowseGameFile.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGameFile.TabIndex = 68;
@@ -902,7 +905,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseGameFile2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseGameFile2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(294, 83);
+            this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(286, 83);
             this.m_pbBrowseGameFile2.Name = "m_pbBrowseGameFile2";
             this.m_pbBrowseGameFile2.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGameFile2.TabIndex = 69;
@@ -914,7 +917,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseRoster.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster.Location = new System.Drawing.Point(563, 64);
+            this.m_pbBrowseRoster.Location = new System.Drawing.Point(555, 64);
             this.m_pbBrowseRoster.Name = "m_pbBrowseRoster";
             this.m_pbBrowseRoster.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseRoster.TabIndex = 70;
@@ -926,7 +929,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseRoster2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseRoster2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster2.Location = new System.Drawing.Point(563, 87);
+            this.m_pbBrowseRoster2.Location = new System.Drawing.Point(555, 87);
             this.m_pbBrowseRoster2.Name = "m_pbBrowseRoster2";
             this.m_pbBrowseRoster2.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseRoster2.TabIndex = 71;
@@ -938,7 +941,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseGamesReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseGamesReport.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGamesReport.Location = new System.Drawing.Point(294, 169);
+            this.m_pbBrowseGamesReport.Location = new System.Drawing.Point(286, 169);
             this.m_pbBrowseGamesReport.Name = "m_pbBrowseGamesReport";
             this.m_pbBrowseGamesReport.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGamesReport.TabIndex = 72;
@@ -950,7 +953,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseAnalysis.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseAnalysis.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseAnalysis.Location = new System.Drawing.Point(294, 215);
+            this.m_pbBrowseAnalysis.Location = new System.Drawing.Point(286, 215);
             this.m_pbBrowseAnalysis.Name = "m_pbBrowseAnalysis";
             this.m_pbBrowseAnalysis.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseAnalysis.TabIndex = 73;
@@ -980,7 +983,7 @@ namespace ArbWeb
             // m_cbFuzzyTimes
             // 
             this.m_cbFuzzyTimes.AutoSize = true;
-            this.m_cbFuzzyTimes.Location = new System.Drawing.Point(421, 327);
+            this.m_cbFuzzyTimes.Location = new System.Drawing.Point(421, 331);
             this.m_cbFuzzyTimes.Name = "m_cbFuzzyTimes";
             this.m_cbFuzzyTimes.Size = new System.Drawing.Size(107, 17);
             this.m_cbFuzzyTimes.TabIndex = 78;
@@ -990,7 +993,7 @@ namespace ArbWeb
             // m_cbDatePivot
             // 
             this.m_cbDatePivot.AutoSize = true;
-            this.m_cbDatePivot.Location = new System.Drawing.Point(421, 345);
+            this.m_cbDatePivot.Location = new System.Drawing.Point(421, 349);
             this.m_cbDatePivot.Name = "m_cbDatePivot";
             this.m_cbDatePivot.Size = new System.Drawing.Size(91, 17);
             this.m_cbDatePivot.TabIndex = 79;
@@ -1000,7 +1003,7 @@ namespace ArbWeb
             // m_cbSplitSports
             // 
             this.m_cbSplitSports.AutoSize = true;
-            this.m_cbSplitSports.Location = new System.Drawing.Point(421, 363);
+            this.m_cbSplitSports.Location = new System.Drawing.Point(421, 367);
             this.m_cbSplitSports.Name = "m_cbSplitSports";
             this.m_cbSplitSports.Size = new System.Drawing.Size(156, 17);
             this.m_cbSplitSports.TabIndex = 80;
@@ -1026,21 +1029,33 @@ namespace ArbWeb
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(690, 19);
             this.label18.TabIndex = 82;
-            this.label18.Tag = "Open slot email generation";
+            this.label18.Tag = "Site roster report";
+            this.label18.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // m_chlbxRoster
             // 
             this.m_chlbxRoster.CheckOnClick = true;
             this.m_chlbxRoster.FormattingEnabled = true;
-            this.m_chlbxRoster.Location = new System.Drawing.Point(44, 441);
+            this.m_chlbxRoster.Location = new System.Drawing.Point(44, 448);
             this.m_chlbxRoster.Name = "m_chlbxRoster";
-            this.m_chlbxRoster.Size = new System.Drawing.Size(164, 64);
+            this.m_chlbxRoster.Size = new System.Drawing.Size(363, 64);
             this.m_chlbxRoster.TabIndex = 83;
+            // 
+            // m_pbCreateRosterReport
+            // 
+            this.m_pbCreateRosterReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbCreateRosterReport.Location = new System.Drawing.Point(617, 482);
+            this.m_pbCreateRosterReport.Name = "m_pbCreateRosterReport";
+            this.m_pbCreateRosterReport.Size = new System.Drawing.Size(110, 27);
+            this.m_pbCreateRosterReport.TabIndex = 84;
+            this.m_pbCreateRosterReport.Text = "Create Roster";
+            this.m_pbCreateRosterReport.Click += new System.EventHandler(this.GenSiteRosterReport);
             // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(735, 693);
+            this.ClientSize = new System.Drawing.Size(735, 735);
+            this.Controls.Add(this.m_pbCreateRosterReport);
             this.Controls.Add(this.m_chlbxRoster);
             this.Controls.Add(this.label18);
             this.Controls.Add(this.m_cbLogToFile);
@@ -1204,7 +1219,7 @@ namespace ArbWeb
         bool m_fLoggedIn;
 
 		RST m_rst;
-		GenCounts m_gc;
+		CountsData m_gc;
 
 		private bool FSetCheckboxControlVal(IHTMLDocument2 oDoc2, bool fChecked, string sName)
 		{
@@ -2706,7 +2721,7 @@ namespace ArbWeb
 				string[] rgs;
 				if (m_ebGameFile.Text.Length > 5 && sOutFile.Length > 0)
 					{
-					rgs = GenCounts.RexHelper.RgsMatch(m_ebGameFile.Text.Substring(sOutFile.Length + 1), "([.*])games");
+					rgs = CountsData.RexHelper.RgsMatch(m_ebGameFile.Text.Substring(sOutFile.Length + 1), "([.*])games");
 					if (rgs != null && rgs.Length > 0 && rgs[0] != null)
 						sPrefix = rgs[0];
 					}
@@ -2814,7 +2829,7 @@ namespace ArbWeb
 				string[] rgs;
 				if (m_ebRoster.Text.Length > 5 && sOutFile.Length > 0)
 					{
-					rgs = GenCounts.RexHelper.RgsMatch(m_ebRoster.Text.Substring(sOutFile.Length + 1), "([.*])roster");
+					rgs = CountsData.RexHelper.RgsMatch(m_ebRoster.Text.Substring(sOutFile.Length + 1), "([.*])roster");
 					if (rgs != null && rgs.Length > 0 && rgs[0] != null)
 						sPrefix = rgs[0];
 					}
@@ -2990,14 +3005,14 @@ namespace ArbWeb
 			m_gc = null;
 		}
 
-		private GenCounts GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled)
+		private CountsData GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled)
 		{
 			if (m_gc != null)
 				return m_gc;
 
-			GenCounts gc = new GenCounts(m_srpt);
+			CountsData gc = new CountsData(m_srpt);
 
-			gc.DoGenCounts(sRoster, sGameFile, fIncludeCanceled, Int32.Parse(m_ebAffiliationIndex.Text));
+			gc.LoadData(sRoster, sGameFile, fIncludeCanceled, Int32.Parse(m_ebAffiliationIndex.Text));
 			m_gc = gc;
 			return gc;
 		}
@@ -3007,7 +3022,7 @@ namespace ArbWeb
 			m_srpt.AddMessage(String.Format("Generating analysis ({0})...", m_ebOutputFile.Text));
 			m_srpt.PushLevel();
 
-			GenCounts gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
 
 			gc.GenReport(m_ebOutputFile.Text);
 			m_srpt.PopLevel();
@@ -3097,90 +3112,107 @@ namespace ArbWeb
 		{
 			return RgsFromChlbx(fUse, chlbx, -1, false, sSport, fMatch);
 		}
-		        
-		string[] RgsFromChlbx(bool fUse, CheckedListBox chlbx, int iForceToggle, bool fForceOn, string sSport, bool fMatch)
+
+	    private string[] RgsFromChlbx(
+	        bool fUse,
+	        CheckedListBox chlbx,
+	        int iForceToggle,
+	        bool fForceOn,
+	        string sSport,
+	        bool fMatch)
+	    {
+	        string sSport2 = sSport == "Softball" ? "SB" : sSport;
+
+	        if (!fUse && sSport == null)
+	            return null;
+
+	        int c = chlbx.CheckedItems.Count;
+
+	        if (!fUse)
+	            c = chlbx.Items.Count;
+
+	        if (iForceToggle != -1)
+	            {
+	            if (fForceOn)
+	                c++;
+	            else
+	                c--;
+	            }
+
+	        string[] rgs = new string[c];
+	        int i = 0;
+
+	        if (!fUse)
+	            {
+	            int iT = 0;
+
+	            for (i = 0; i < c; i++)
+	                {
+	                rgs[iT] = (string) chlbx.Items[i];
+	                if (sSport != null)
+	                    {
+	                    if ((rgs[iT].IndexOf(sSport) >= 0 && fMatch)
+	                        || (rgs[iT].IndexOf(sSport) == -1 && !fMatch)
+	                        || (rgs[iT].IndexOf(sSport2) >= 0 && fMatch)
+	                        || (rgs[iT].IndexOf(sSport2) == -1 && !fMatch))
+	                        {
+	                        iT++;
+	                        }
+	                    }
+	                else
+	                    {
+	                    iT++;
+	                    }
+	                }
+	            if (iT < c)
+	                Array.Resize(ref rgs, iT);
+
+	            return rgs;
+	            }
+
+	        i = 0;
+	        foreach (int iChecked in chlbx.CheckedIndices)
+	            {
+	            if (iChecked == iForceToggle)
+	                continue;
+	            rgs[i] = (string) chlbx.Items[iChecked];
+	            if (sSport != null)
+	                {
+	                if ((rgs[i].IndexOf(sSport) >= 0 && fMatch)
+	                    || (rgs[i].IndexOf(sSport) == -1 && !fMatch))
+	                    {
+	                    i++;
+	                    }
+	                }
+	            else
+	                {
+	                i++;
+	                }
+	            }
+	        if (fForceOn && iForceToggle != -1)
+	            rgs[i++] = (string) chlbx.Items[iForceToggle];
+
+	        if (i < c)
+	            Array.Resize(ref rgs, i);
+
+	        return rgs;
+	    }
+
+	    private void GenSiteRosterReport(object sender, EventArgs e)
+	    {
+	        CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+	        string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"),
+	                                         System.Guid.NewGuid().ToString());
+	        RST rst = RstEnsure(m_ebRosterCopy.Text);
+
+	        gc.GenSiteRosterResport(sTempFile, RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
+
+	        System.IO.File.Delete(sTempFile);
+	    }
+
+	    private void GenOpenSlotsMail(object sender, EventArgs e)
 		{
-		    string sSport2 = sSport == "Softball" ? "SB" : sSport;
-
-			if (!fUse && sSport == null)
-				return null;
-
-            int c = chlbx.CheckedItems.Count;
-            
-			if (!fUse)
-				c = chlbx.Items.Count;
-			            
-            if (iForceToggle != -1)
-                {
-                if (fForceOn)
-                    c++;
-                else
-                    c--;
-                }
-                
-			string[] rgs = new string[c];
-			int i = 0;
-
-			if (!fUse)
-				{
-				int iT = 0;
-
-				for (i = 0; i < c; i++)
-					{
-					rgs[iT] = (string)chlbx.Items[i];
-					if (sSport != null)
-						{
-						if ((rgs[iT].IndexOf(sSport) >= 0 && fMatch)
-						    || (rgs[iT].IndexOf(sSport) == -1 && !fMatch)
-						    || (rgs[iT].IndexOf(sSport2) >= 0 && fMatch)
-						    || (rgs[iT].IndexOf(sSport2) == -1 && !fMatch))
-						    {
-						    iT++;
-						    }
-						}
-					else
-						{
-						iT++;
-						}
-					}
-				if (iT < c)
-					Array.Resize(ref rgs, iT);
-
-				return rgs;
-				}
-
-			i = 0;
-            foreach (int iChecked in chlbx.CheckedIndices)
-                {
-                if (iChecked == iForceToggle)
-                    continue;
-                rgs[i] = (string)chlbx.Items[iChecked];
-				if (sSport != null)
-					{
-					if ((rgs[i].IndexOf(sSport) >= 0 && fMatch)
-						|| (rgs[i].IndexOf(sSport) == -1 && !fMatch))
-						{
-						i++;
-						}
-					}
-				else
-					{
-					i++;
-					}
-                }
-            if (fForceOn && iForceToggle != -1)
-                rgs[i++] = (string)chlbx.Items[iForceToggle];
-
-			if (i < c)
-				Array.Resize(ref rgs, i);
-
-			return rgs;
-
-		}
-
-		private void GenOpenSlotsMail(object sender, EventArgs e)
-		{
-			GenCounts gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
 			string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
             RST rst = RstEnsure(m_ebRosterCopy.Text);
             
@@ -3268,11 +3300,18 @@ namespace ArbWeb
 	    private SlotAggr m_saOpenSlots;
         private void CalcOpenSlots(object sender, EventArgs e)
         {
-			GenCounts gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+            
+            m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
+
+			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
 			RST rst = RstEnsure(m_ebRosterCopy.Text);
 
+            m_srpt.PopLevel();
+            m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
             m_saOpenSlots = gc.CalcOpenSlots(m_dtpStart.Value, m_dtpEnd.Value);
 
+            m_srpt.PopLevel();
+            m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
 			// update regenerate the listboxes...
 			string[] rgsSports = RgsFromChlbx(true, m_chlbxSports);
 			string[] rgsSportLevels = RgsFromChlbx(true, m_chlbxSportLevels);
@@ -3288,11 +3327,15 @@ namespace ArbWeb
 
             UpdateChlbxFromRgs(m_chlbxSports, gc.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
             UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
+            string[] rgsRosterSites = RgsFromChlbx(true, m_chlbxRoster);
+
+            UpdateChlbxFromRgs(m_chlbxRoster, gc.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
+            m_srpt.PopLevel();
         }
 
         private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
-            GenCounts gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+            CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
             string[] rgsSports = RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);
             string[] rgsSportLevels = RgsFromChlbx(true, m_chlbxSportLevels);
             UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
@@ -3308,7 +3351,7 @@ namespace ArbWeb
 		{
 			m_srpt.AddMessage(String.Format("Generating games report ({0})...", m_ebGameOutput.Text));
 			m_srpt.PushLevel();
-			GenCounts gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
 			RST rst = RstEnsure(m_ebRosterCopy.Text);
 
             gc.GenGamesReport(m_ebGameOutput.Text);

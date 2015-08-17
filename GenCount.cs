@@ -21,6 +21,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ArbWeb
 	{
+    // ================================================================================
+    // S L O T  C O U N T 
+    // ================================================================================
     class SlotCount // SC
     {
         DateTime m_dttmSlot;
@@ -28,7 +31,14 @@ namespace ArbWeb
         Dictionary<string, int> m_mpSportLevelCount;
         Dictionary<string, int> m_mpSiteCount;
 
-        public SlotCount(GenCounts.GenGameStats.Game gm)
+        /* S L O T  C O U N T */
+        /*----------------------------------------------------------------------------
+        	%%Function: SlotCount
+        	%%Qualified: ArbWeb.SlotCount.SlotCount
+        	%%Contact: rlittle
+
+        ----------------------------------------------------------------------------*/
+        public SlotCount(CountsData.GameData.Game gm)
         {
             m_dttmSlot = gm.Dttm;
             m_mpSportCount = new Dictionary<string, int>();
@@ -43,7 +53,14 @@ namespace ArbWeb
         {
         }
 
-        public void AddSlot(GenCounts.GenGameStats.Game gm)
+        /* A D D  S L O T */
+        /*----------------------------------------------------------------------------
+        	%%Function: AddSlot
+        	%%Qualified: ArbWeb.SlotCount.AddSlot
+        	%%Contact: rlittle
+
+        ----------------------------------------------------------------------------*/
+        public void AddSlot(CountsData.GameData.Game gm)
         {
             if (m_mpSportCount.ContainsKey(gm.Sport))
                 m_mpSportCount[gm.Sport]++;
@@ -95,6 +112,13 @@ namespace ArbWeb
 
         public DateTime Dttm { get { return m_dttmSlot; } }
 
+        /* M E R G E */
+        /*----------------------------------------------------------------------------
+        	%%Function: Merge
+        	%%Qualified: ArbWeb.SlotCount.Merge
+        	%%Contact: rlittle
+
+        ----------------------------------------------------------------------------*/
         public SlotCount Merge(SlotCount sc)
         {
             SlotCount scNew = new SlotCount();
@@ -196,10 +220,13 @@ namespace ArbWeb
 
     }
 
+    // ================================================================================
+    // S L O T  A G G R 
+    // ================================================================================
     public class SlotAggr
     {
         SortedList<DateTime, SlotCount> m_mpSlotSc;
-        SortedList<string, GenCounts.GenGameStats.Game> m_plgm;
+        SortedList<string, CountsData.GameData.Game> m_plgm;
         List<string> m_plsSportLevels;
         List<string> m_plsSports;
         List<string> m_plsSites;
@@ -211,11 +238,11 @@ namespace ArbWeb
         public DateTime DttmStart { get { return m_dttmStart; } }
         public DateTime DttmEnd { get { return m_dttmEnd; } }
 
-        /* O P E N  S L O T S */
+        /* S L O T  A G G R */
         /*----------------------------------------------------------------------------
-            %%Function: SlotAggr
-            %%Qualified: ArbWeb.GenCounts:GenGameStats:Games:SlotAggr.SlotAggr
-            %%Contact: rlittle
+        	%%Function: SlotAggr
+        	%%Qualified: ArbWeb.SlotAggr.SlotAggr
+        	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
         public SlotAggr()
@@ -254,12 +281,12 @@ namespace ArbWeb
 
         /* G E N */
         /*----------------------------------------------------------------------------
-            %%Function: Gen
-            %%Qualified: ArbWeb.GenCounts:GenGameStats:Games:SlotAggr.Gen
-            %%Contact: rlittle
+        	%%Function: Gen
+        	%%Qualified: ArbWeb.SlotAggr.Gen
+        	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
-        public static SlotAggr Gen(SortedList<string, GenCounts.GenGameStats.Game> plgm, DateTime dttmStart, DateTime dttmEnd, string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOnlyOpen)
+        public static SlotAggr Gen(SortedList<string, CountsData.GameData.Game> plgm, DateTime dttmStart, DateTime dttmEnd, string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOnlyOpen)
         {
             SlotAggr os = new SlotAggr();
 
@@ -271,7 +298,7 @@ namespace ArbWeb
             os.m_plsSportLevels = new List<string>();
             os.m_plsSites = new List<string>();
 
-            foreach (GenCounts.GenGameStats.Game gm in plgm.Values)
+            foreach (CountsData.GameData.Game gm in plgm.Values)
             {
                 if (!gm.Open && fOnlyOpen)
                     continue;
@@ -337,9 +364,9 @@ namespace ArbWeb
 
         /* G E N  R E P O R T */
         /*----------------------------------------------------------------------------
-            %%Function: GenReport
-            %%Qualified: ArbWeb.GenCounts:GenGameStats:Games:SlotAggr.GenReport
-            %%Contact: rlittle
+        	%%Function: GenReport
+        	%%Qualified: ArbWeb.SlotAggr.GenReport
+        	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
         public void GenReport(string sReport, string[] rgsSportFilter, string[] rgsSportLevelFilter)
@@ -373,7 +400,6 @@ namespace ArbWeb
             }
 
             string sFormat = "<tr><td>{0}<td>{1}"; //<td>{2}</tr>
-
 
             Dictionary<string, int> mpSportCount = new Dictionary<string, int>();
 
@@ -485,6 +511,9 @@ namespace ArbWeb
             sw.Close();
         }
 
+        // ================================================================================
+        // H T M L  T A B L E  R E P O R T 
+        // ================================================================================
         public class HtmlTableReport
         {
             List<string> m_rgsCols = new List<string>();
@@ -499,6 +528,13 @@ namespace ArbWeb
             public string Axis1Title { get { return m_sAxis1Title; } set { m_sAxis1Title = value; } }
             public string Axis2Title { get { return m_sAxis2Title; } set { m_sAxis2Title = value; } }
 
+            /* A D D  V A L U E */
+            /*----------------------------------------------------------------------------
+            	%%Function: AddValue
+            	%%Qualified: ArbWeb.SlotAggr:HtmlTableReport.AddValue
+            	%%Contact: rlittle
+            	
+            ----------------------------------------------------------------------------*/
             public void AddValue(string sAxis1, string sAxis1Key, string sAxis2, string sAxis2Key, string sValue)
             {
                 if (!m_rgsAxis1.ContainsKey(sAxis1Key))
@@ -515,6 +551,13 @@ namespace ArbWeb
                 m_mpAxisValues.Add(sKey, sValue);
             }
 
+            /* G E N  R E P O R T */
+            /*----------------------------------------------------------------------------
+            	%%Function: GenReport
+            	%%Qualified: ArbWeb.SlotAggr:HtmlTableReport.GenReport
+            	%%Contact: rlittle
+            	
+            ----------------------------------------------------------------------------*/
             public void GenReport(StreamWriter sw, bool fAxis1Pivot)
             {
                 string sFirstRowStyle = "";
@@ -629,9 +672,9 @@ namespace ArbWeb
 
         /* G E N  R E P O R T  B Y  S I T E */
         /*----------------------------------------------------------------------------
-            %%Function: GenReportBySite
-            %%Qualified: ArbWeb.GenCounts:GenGameStats:Games:SlotAggr.GenReportBySite
-            %%Contact: rlittle
+        	%%Function: GenReportBySite
+        	%%Qualified: ArbWeb.SlotAggr.GenReportBySite
+        	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
         public void GenReportBySite(string sReport, bool fFuzzyTimes, bool fDatePivot, string[] rgsSportFilter, string[] rgsSportLevelFilter)
@@ -748,10 +791,9 @@ namespace ArbWeb
         }
     }
 
-//          _  _ _  _ ___  _ ____ ____ 
-//          |  | |\/| |__] | |__/ |___ 
-//          |__| |  | |    | |  \ |___ 
-//
+	// ================================================================================
+	//  U M P I R E 
+	// ================================================================================
 	public class Umpire	// UMP
 		{
 		string m_sFirst;
@@ -763,7 +805,7 @@ namespace ArbWeb
 		/* U M P I R E */
 		/*----------------------------------------------------------------------------
 			%%Function: Umpire
-			%%Qualified: GenCount.GenCounts:GenGameStats:Umpire.Umpire
+			%%Qualified: ArbWeb.Umpire.Umpire
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
@@ -785,6 +827,9 @@ namespace ArbWeb
 
 		} // END UMPIRE
 
+	// ================================================================================
+	//  C S V 
+	// ================================================================================
 	class Csv
 	{
 		public static string[] LineToArray(string line)
@@ -803,10 +848,9 @@ namespace ArbWeb
 	   }
 	};
 
-//          ____ ____ ____ ___ ____ ____ 
-//          |__/ |  | [__   |  |___ |__/ 
-//          |  \ |__| ___]  |  |___ |  \ 
-// 
+	// ================================================================================
+	//  R O S T E R     E N T R Y 
+	// ================================================================================
 	public class RSTE // Roster Entry
 	{
 		public string m_sEmail;
@@ -841,6 +885,13 @@ namespace ArbWeb
 
 		public RST.RSTT m_rstt;
 
+		/* R  S  T  E */
+		/*----------------------------------------------------------------------------
+			%%Function: RSTE
+			%%Qualified: ArbWeb.RSTE.RSTE
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public RSTE()
 		{
 			m_plsMisc = new List<string>();
@@ -848,6 +899,13 @@ namespace ArbWeb
 			m_rstt = RST.RSTT.Full;
 		}
 
+		/* R  S  T  E */
+		/*----------------------------------------------------------------------------
+			%%Function: RSTE
+			%%Qualified: ArbWeb.RSTE.RSTE
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public RSTE(string[] rgs, List<string> plsMiscHeadings, List<string> plsRankings, RST.RSTT rstt)
 		{
 			m_rstt = rstt;
@@ -991,6 +1049,13 @@ namespace ArbWeb
 			return m_mpRanking[s];
 		}
 
+		/* F  R A N K E D */
+		/*----------------------------------------------------------------------------
+			%%Function: FRanked
+			%%Qualified: ArbWeb.RSTE.FRanked
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public bool FRanked(string s)
 		{
 			if (m_mpRanking == null || !m_mpRanking.ContainsKey(s))
@@ -999,11 +1064,25 @@ namespace ArbWeb
 			return true;
 		}
 
+		/* S E T  E M A I L */
+		/*----------------------------------------------------------------------------
+			%%Function: SetEmail
+			%%Qualified: ArbWeb.RSTE.SetEmail
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public void SetEmail(string s)
 		{
 			m_sEmail = s.Substring(s.IndexOf(":") + 1);
 		}
 
+		/* P L S  M I S C  F R O M  H E A D I N G  L I N E */
+		/*----------------------------------------------------------------------------
+			%%Function: PlsMiscFromHeadingLine
+			%%Qualified: ArbWeb.RSTE.PlsMiscFromHeadingLine
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public static List<string> PlsMiscFromHeadingLine(string[] rgs)
 		{
 			List<string> pls = new List<string>();
@@ -1052,6 +1131,13 @@ namespace ArbWeb
 			return pls;
 		}
 
+		/* P L S  R A N K I N G S  F R O M  H E A D I N G  L I N E */
+		/*----------------------------------------------------------------------------
+			%%Function: PlsRankingsFromHeadingLine
+			%%Qualified: ArbWeb.RSTE.PlsRankingsFromHeadingLine
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public static List<string> PlsRankingsFromHeadingLine(string[] rgs, out RST.RSTT rstt)
 		{
 			// first, check to see if this is a quick roster
@@ -1120,6 +1206,13 @@ namespace ArbWeb
 			return pls;
 		}
 
+		/* W R I T E  H E A D E R  T O  F I L E */
+		/*----------------------------------------------------------------------------
+			%%Function: WriteHeaderToFile
+			%%Qualified: ArbWeb.RSTE.WriteHeaderToFile
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public static void WriteHeaderToFile(string sFile, List<string> plsMiscHeadings, List<string> plsRankings, RST.RSTT rstt)
 		{
 			StreamWriter sw = new StreamWriter(sFile, false, System.Text.Encoding.Default);
@@ -1164,6 +1257,13 @@ namespace ArbWeb
 			sw.Close();
 		}
 
+		/* A P P E N D  T O  F I L E */
+		/*----------------------------------------------------------------------------
+			%%Function: AppendToFile
+			%%Qualified: ArbWeb.RSTE.AppendToFile
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public void AppendToFile(string sFile, List<string> plsRankings)
 		{
 			StreamWriter sw = new StreamWriter(sFile, true, System.Text.Encoding.Default);
@@ -1221,6 +1321,9 @@ namespace ArbWeb
 
 	}
 
+	// ================================================================================
+	//  R O S T E R 
+	// ================================================================================
 	public class RST 
 	{
 		List<RSTE> m_plrste;
@@ -1309,6 +1412,13 @@ namespace ArbWeb
 				}
 		}
 
+		/* W R I T E  R O S T E R */
+		/*----------------------------------------------------------------------------
+			%%Function: WriteRoster
+			%%Qualified: ArbWeb.RST.WriteRoster
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public void WriteRoster(string sFile)
 		{
 			RSTE.WriteHeaderToFile(sFile, m_plsMisc, m_plsRankings, m_rstt);
@@ -1317,6 +1427,13 @@ namespace ArbWeb
 				rste.AppendToFile(sFile, m_plsRankings);
 		}
 
+		/* P L R S T E  U N M A R K E D */
+		/*----------------------------------------------------------------------------
+			%%Function: PlrsteUnmarked
+			%%Qualified: ArbWeb.RST.PlrsteUnmarked
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public List<RSTE> PlrsteUnmarked()
 		{
 			List<RSTE> plrste = new List<RSTE>();
@@ -1344,8 +1461,8 @@ namespace ArbWeb
 			string[] rgs;
             sFirst = sLast = null;
 
-            // rgs = GenCounts.RexHelper.RgsMatch(sReversed, "^[ \t]*([^\t]*)[ \t]*,[ \t]*([^ \t]*) *$");
-            rgs = GenCounts.RexHelper.RgsMatch(sReversed, "^[ \t]*([^\t]*)[ \t]*,[ \t]*([^\t,]*) *$");
+            // rgs = CountsData.RexHelper.RgsMatch(sReversed, "^[ \t]*([^\t]*)[ \t]*,[ \t]*([^ \t]*) *$");
+            rgs = CountsData.RexHelper.RgsMatch(sReversed, "^[ \t]*([^\t]*)[ \t]*,[ \t]*([^\t,]*) *$");
 
 			if (rgs[0] == null || rgs[1] == null)
 				return false;
@@ -1356,6 +1473,13 @@ namespace ArbWeb
 			return true;
 		}
 
+		/* R S T E  L O O K U P  R E V E R S E D  N A M E */
+		/*----------------------------------------------------------------------------
+			%%Function: RsteLookupReversedName
+			%%Qualified: ArbWeb.RST.RsteLookupReversedName
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public RSTE RsteLookupReversedName(string sReversed)
 		{
 			string sFirst;
@@ -1376,11 +1500,25 @@ namespace ArbWeb
 			return null;
 		}
 
+		/* A D D */
+		/*----------------------------------------------------------------------------
+			%%Function: Add
+			%%Qualified: ArbWeb.RST.Add
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public void Add(RSTE rste)
 		{
 			m_plrste.Add(rste);
 		}
 
+		/* F  A D D  R A N K I N G */
+		/*----------------------------------------------------------------------------
+			%%Function: FAddRanking
+			%%Qualified: ArbWeb.RST.FAddRanking
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public bool FAddRanking(string sName, string sPosition, int nRank)
 		{
 			RSTE rste = RsteLookupReversedName(sName);
@@ -1401,6 +1539,13 @@ namespace ArbWeb
 		}
 
 
+		/* R S T E  L O O K U P  E M A I L */
+		/*----------------------------------------------------------------------------
+			%%Function: RsteLookupEmail
+			%%Qualified: ArbWeb.RST.RsteLookupEmail
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public RSTE RsteLookupEmail(string sEmail)
 		{
     		if (sEmail == null)
@@ -1420,6 +1565,13 @@ namespace ArbWeb
 			return null;
 		}
 
+		/* P L S  L O O K U P  E M A I L */
+		/*----------------------------------------------------------------------------
+			%%Function: PlsLookupEmail
+			%%Qualified: ArbWeb.RST.PlsLookupEmail
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public List<string> PlsLookupEmail(string sEmail)
 		{
 			RSTE rste = RsteLookupEmail(sEmail);
@@ -1429,6 +1581,13 @@ namespace ArbWeb
 			return rste.m_plsMisc;
 		}
 
+		/* S  B U I L D  A D D R E S S  L I N E */
+		/*----------------------------------------------------------------------------
+			%%Function: SBuildAddressLine
+			%%Qualified: ArbWeb.RST.SBuildAddressLine
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public string SBuildAddressLine(string sRegexFilter)
 		{
 			string s = "";
@@ -1460,7 +1619,10 @@ namespace ArbWeb
 		}
 	}
 
-	public partial class GenCounts
+	// ================================================================================
+	//  C O U N T S  D A T A 
+	// ================================================================================
+	public partial class CountsData
 		{
 		public static class RexHelper
 			{
@@ -1479,11 +1641,10 @@ namespace ArbWeb
 			}
 			}
 
-//      ____ ____ _  _    ____ ____ _  _ ____    ____ ___ ____ ___ ____ 
-//      | __ |___ |\ |    | __ |__| |\/| |___    [__   |  |__|  |  [__  
-//      |__] |___ | \|    |__] |  | |  | |___    ___]  |  |  |  |  ___] 
-// 
-		public class GenGameStats
+		// ================================================================================
+		//  G A M E  D A T A 
+		// ================================================================================
+		public class GameData
 			{
 			public class Roster	// RST
 				{
@@ -1528,10 +1689,9 @@ namespace ArbWeb
 				}
 				} // END ROSTER
 
-//          ____ ____ _  _ ____ 
-//          | __ |__| |\/| |___ 
-//          |__] |  | |  | |___ 
-
+			// ================================================================================
+			//  G A M E 
+			// ================================================================================
 			public class Game // GM
 			{
 				DateTime m_dttm;
@@ -1565,72 +1725,19 @@ namespace ArbWeb
 					m_plsMisc = plsMisc;
 				}
 
-				public List<string> PlsMisc
-				{
-					get { return m_plsMisc; }
-					set { m_plsMisc = value; }
-				}
-
-				public string Team
-				{
-					get { return m_sTeam; }
-					set { m_sTeam = value; }
-				}
-
-				public bool Open
-				{
-					get { return m_sName == null; }
-				}
-
-				public string Home
-				{
-					get { return m_sHome; }
-				}
-
-				public string Away
-				{
-					get { return m_sAway; }
-				}
-
-				public string GameNum
-				{
-					get { return m_sGameNum; }
-				}
-
-				public bool Cancelled
-				{
-					get { return m_fCancelled; } 
-				}
-
-				public string Level
-				{
-					get { return m_sLevel; }
-				}
-
-				public string Sport
-				{
-					get { return m_sSport; }
-				}
-
-				public string Pos
-				{
-					get { return m_sPos; } 
-				}
-
-				public DateTime Dttm
-				{
-					get { return m_dttm; }
-				}
-
-				public string Site
-				{
-					get { return m_sSite; }
-				}
-
-				public string SportLevel
-				{
-					get { return String.Format("{0} {1}", m_sSport, m_sLevel); }
-				}
+				public List<string> PlsMisc { get { return m_plsMisc; } set { m_plsMisc = value; } } 
+				public string Team { get { return m_sTeam; } set { m_sTeam = value; } }
+				public bool Open { get { return m_sName == null; } } 
+				public string Home { get { return m_sHome; } } 
+				public string Away { get { return m_sAway; } } 
+				public string GameNum { get { return m_sGameNum; } } 
+				public bool Cancelled { get { return m_fCancelled; } }
+				public string Level { get { return m_sLevel; } } 
+				public string Sport { get { return m_sSport; } }  
+				public string Pos { get { return m_sPos; }  }  
+				public DateTime Dttm { get { return m_dttm; } } 
+				public string Site { get { return m_sSite; } } 
+				public string SportLevel { get { return String.Format("{0} {1}", m_sSport, m_sLevel); } }
 
 				public string SiteShort
 				{
@@ -1655,11 +1762,10 @@ namespace ArbWeb
 					}
 				}
 
-
-				/* S  R E P O R T */
+                /* S  R E P O R T */
 				/*----------------------------------------------------------------------------
 					%%Function: SReport
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Game.SReport
+					%%Qualified: ArbWeb.CountsData:GameData:Game.SReport
 					%%Contact: rlittle
 
 					Return a detail string suitable for saving in CSV format.
@@ -1738,10 +1844,9 @@ namespace ArbWeb
 
 			}
 
-//          ____ ____ _  _ ____ ____ 
-//          | __ |__| |\/| |___ [__  
-//          |__] |  | |  | |___ ___] 
-
+			// ================================================================================
+			//  G A M E S 
+			// ================================================================================
 			public class Games // GMC
 		    {
 			    private const int icolGameAway = 18;
@@ -1750,6 +1855,9 @@ namespace ArbWeb
 			    private const int icolGameGame = 0;
                 private const int icolOfficial = 4;
 
+			    // ================================================================================
+			    //  S P O R T 
+			    // ================================================================================
 			    public class Sport
 				{
 					SortedList<string, string> m_plLevelPos;
@@ -1763,10 +1871,10 @@ namespace ArbWeb
 						m_plPos = new SortedList<string, string>();
 					}
 
-					/* F  E N S U R E  P O S */
+					/* E N S U R E  P O S */
 					/*----------------------------------------------------------------------------
-						%%Function: FEnsurePos
-						%%Qualified: ArbWeb.GenCounts:GenGameStats:Games:Sport.FEnsurePos
+						%%Function: EnsurePos
+						%%Qualified: ArbWeb.CountsData:GameData:Games:Sport.EnsurePos
 						%%Contact: rlittle
 
 						Returns true if we needed to add the position
@@ -1799,7 +1907,7 @@ namespace ArbWeb
 				}
 
 				List<string> m_plsMiscHeadings;
-				SortedList<string, Game> m_plgm;
+				SortedList<string, Game> m_plgmSorted;
 				StatusBox.StatusRpt m_srpt;
 				Dictionary<string, Dictionary<string, int>> m_mpNameSportLevelCount;
 				Dictionary<string, Sport> m_mpSportSport;
@@ -1808,14 +1916,28 @@ namespace ArbWeb
 				// NOTE:  This isn't just Team -> Count.  This is also Team-Sport -> Count.
 				Dictionary<string, int> m_mpTeamCount;
 
+				/* S E T  M I S C  H E A D I N G S */
+				/*----------------------------------------------------------------------------
+					%%Function: SetMiscHeadings
+					%%Qualified: ArbWeb.CountsData:GameData:Games.SetMiscHeadings
+					%%Contact: rlittle
+					
+				----------------------------------------------------------------------------*/
 				public void SetMiscHeadings(List<string> plsMisc)
 				{
 					m_plsMiscHeadings = plsMisc;
 				}
 
+                /* G A M E S */
+                /*----------------------------------------------------------------------------
+                	%%Function: Games
+                	%%Qualified: ArbWeb.CountsData:GameData:Games.Games
+                	%%Contact: rlittle
+                	
+                ----------------------------------------------------------------------------*/
                 public Games(StatusBox.StatusRpt srpt)
 				{
-					m_plgm = new SortedList<string, Game>();
+					m_plgmSorted = new SortedList<string, Game>();
 					m_srpt = srpt;
 					m_mpSportSport = new Dictionary<string, Sport>();
 					m_plsLegend = new List<string>();
@@ -1827,7 +1949,7 @@ namespace ArbWeb
 				/* E N S U R E  S P O R T  L E V E L  P O S */
 				/*----------------------------------------------------------------------------
 					%%Function: EnsureSportLevelPos
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.EnsureSportLevelPos
+					%%Qualified: ArbWeb.CountsData:GameData:Games.EnsureSportLevelPos
 					%%Contact: rlittle
 
 					Make sure that the sport / level / pos is in the legend (including all
@@ -1868,7 +1990,7 @@ namespace ArbWeb
 				/* A D D  G A M E */
 				/*----------------------------------------------------------------------------
 					%%Function: AddGame
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.AddGame
+					%%Qualified: ArbWeb.CountsData:GameData:Games.AddGame
 					%%Contact: rlittle
 
 					Add a game
@@ -1881,7 +2003,7 @@ namespace ArbWeb
 					Game gm = new Game(dttm, sSite, sName, sTeam, sEmail, sGameNum, sHome, sAway, sLevel, sSport, sPos, fCancelled, plsMisc);
 					string sTeamSport = sTeam + "#-#" + sSport;
 
-					m_plgm.Add(String.Format("{0}_{1}_{2}", sName, dttm.ToString("yyyyMMdd:HH:mm"), m_plgm.Count), gm);
+					m_plgmSorted.Add(String.Format("{0}_{1}_{2}", sName, dttm.ToString("yyyyMMdd:HH:mm"), m_plgmSorted.Count), gm);
 
 					if (sTeam != null && sTeam.Length > 0)
 						{
@@ -2027,7 +2149,7 @@ namespace ArbWeb
 					/* D I S T R I B U T E */
 					/*----------------------------------------------------------------------------
 						%%Function: Distribute
-						%%Qualified: ArbWeb.GenCounts:GenGameStats:Games:DTC.Distribute
+						%%Qualified: ArbWeb.CountsData:GameData:Games:DTC.Distribute
 						%%Contact: rlittle
 
 					----------------------------------------------------------------------------*/
@@ -2124,6 +2246,13 @@ namespace ArbWeb
 #endif // DIST_USE_SPORT
 					}
 
+					/* U P D A T E  T E A M  T O T A L S */
+					/*----------------------------------------------------------------------------
+						%%Function: UpdateTeamTotals
+						%%Qualified: ArbWeb.CountsData:GameData:Games:DTC.UpdateTeamTotals
+						%%Contact: rlittle
+						
+					----------------------------------------------------------------------------*/
 					public void UpdateTeamTotals(Dictionary<string, int> mpTeamCount, string sSport)
 					{
 						foreach (DND dnd in m_pldnd)
@@ -2134,7 +2263,7 @@ namespace ArbWeb
 				/* F  T E A M  M A T C H E S  S P O R T */
 				/*----------------------------------------------------------------------------
 					%%Function: FTeamMatchesSport
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games:DTC.FTeamMatchesSport
+					%%Qualified: ArbWeb.CountsData:GameData:Games.FTeamMatchesSport
 					%%Contact: rlittle
 
 					Determine if the given team name belongs to a given sport (i.e. look
@@ -2161,6 +2290,13 @@ namespace ArbWeb
 					return false;
 				}
 
+				/* U P D A T E  T E A M  C O U N T */
+				/*----------------------------------------------------------------------------
+					%%Function: UpdateTeamCount
+					%%Qualified: ArbWeb.CountsData:GameData:Games.UpdateTeamCount
+					%%Contact: rlittle
+					
+				----------------------------------------------------------------------------*/
 				static public void UpdateTeamCount(Dictionary<string, int> mpTeamCount, string sTeam, string sSport, int dCount)
 				{
 					string sTeamSport = String.Format("{0}#-#{1}", sTeam, sSport);
@@ -2179,7 +2315,7 @@ namespace ArbWeb
 				/* R E D U C E  T E A M S */
 				/*----------------------------------------------------------------------------
 					%%Function: ReduceTeams
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.ReduceTeams
+					%%Qualified: ArbWeb.CountsData:GameData:Games.ReduceTeams
 					%%Contact: rlittle
 
 					Take "multiple" team allocations and redistribute them to "needier" teams
@@ -2251,7 +2387,7 @@ namespace ArbWeb
 						}
 					// now, adjust the raw team counts
 
-					foreach(Game gm in m_plgm.Values)
+					foreach(Game gm in m_plgmSorted.Values)
 						{
 						if (gm.Open)
 							continue;
@@ -2282,7 +2418,7 @@ namespace ArbWeb
 				/* A P P E N D  C H E C K */
 				/*----------------------------------------------------------------------------
 					%%Function: AppendCheck
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.AppendCheck
+					%%Qualified: ArbWeb.CountsData:GameData:Games.AppendCheck
 					%%Contact: rlittle
 
 					Append s to sAppend -- deals with leading and trailing spaces as well
@@ -2306,7 +2442,7 @@ namespace ArbWeb
 				{
 					string s = "", s2 = "", s3 = "";
 
-					s = GenCounts.GenGameStats.Games.ReverseName("Mary Van Whatsa Hoozit");
+					s = CountsData.GameData.Games.ReverseName("Mary Van Whatsa Hoozit");
 					Debug.Assert(String.Compare(s, "Van Whatsa Hoozit,Mary") == 0);
 					Debug.Assert(RST.FSplitName(s, out s2, out s3));
 					Debug.Assert(s2 == "Mary");
@@ -2483,7 +2619,7 @@ namespace ArbWeb
 				/* R E V E R S E  N A M E */
 				/*----------------------------------------------------------------------------
 					%%Function: ReverseName
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.ReverseName
+					%%Qualified: ArbWeb.CountsData:GameData:Games.ReverseName
 					%%Contact: rlittle
 
 					Reverse the given "First Last" into "Last,First"
@@ -2507,7 +2643,7 @@ namespace ArbWeb
 				/* G E N  G A M E S  R E P O R T */
 				/*----------------------------------------------------------------------------
 					%%Function: GenGamesReport
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.GenGamesReport
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GenGamesReport
 					%%Contact: rlittle
 
 					Take the accumulated game data and generate a report of the games
@@ -2542,7 +2678,7 @@ namespace ArbWeb
 
 					Dictionary<string, bool> mpGame = new Dictionary<string, bool>();
 
-					foreach(Game gm in m_plgm.Values)
+					foreach(Game gm in m_plgmSorted.Values)
 						{
 						// only report each game once...
 						if (mpGame.ContainsKey(gm.GameNum))
@@ -2559,7 +2695,7 @@ namespace ArbWeb
 				/* G E N  R E P O R T */
 				/*----------------------------------------------------------------------------
 					%%Function: GenReport
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.GenReport
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GenReport
 					%%Contact: rlittle
 
 					Take the accumulated game data and generate an analysis report
@@ -2607,7 +2743,7 @@ namespace ArbWeb
 						}
 					sw.WriteLine();
 
-					foreach(Game gm in m_plgm.Values)
+					foreach(Game gm in m_plgmSorted.Values)
 						{
 //						if (gm.Open)
 //							continue;
@@ -2623,11 +2759,15 @@ namespace ArbWeb
 			    private int icolGameLevel;
 			    private int icolGameDateTime;
 
+                public void GenSiteRosterReport(string sReportFile, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+                {
+
+                }
 
 				/* G E N  O P E N  S L O T S  R E P O R T */
 				/*----------------------------------------------------------------------------
 					%%Function: GenOpenSlotsReport
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.GenOpenSlotsReport
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GenOpenSlotsReport
 					%%Contact: rlittle
 
 				----------------------------------------------------------------------------*/
@@ -2642,7 +2782,7 @@ namespace ArbWeb
 				/* G E N  O P E N  S L O T S  R E P O R T  D E T A I L */
 				/*----------------------------------------------------------------------------
 					%%Function: GenOpenSlotsReportDetail
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.GenOpenSlotsReportDetail
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GenOpenSlotsReportDetail
 					%%Contact: rlittle
 
 					Generate a report of open slots
@@ -2662,7 +2802,7 @@ namespace ArbWeb
 					SortedList<string, int> plsSports = Utils.PlsUniqueFromRgs(rgsSportFilter);
 					SortedList<string, int> plsLevels = Utils.PlsUniqueFromRgs(rgsSportLevelFilter);
 
-					foreach(Game gm in m_plgm.Values)
+					foreach(Game gm in m_plgmSorted.Values)
 						{
 						if (!gm.Open)
 							continue;
@@ -2684,19 +2824,19 @@ namespace ArbWeb
 				/* G E N  O P E N  S L O T S */
 				/*----------------------------------------------------------------------------
 					%%Function: GenOpenSlots
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.GenOpenSlots
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GenOpenSlots
 					%%Contact: rlittle
 
 				----------------------------------------------------------------------------*/
 				public SlotAggr GenOpenSlots(DateTime dttmStart, DateTime dttmEnd)
 				{
-					return SlotAggr.Gen(m_plgm, dttmStart, dttmEnd, null, null, true);
+					return SlotAggr.Gen(m_plgmSorted, dttmStart, dttmEnd, null, null, true);
 				}
 
 				/* G E N  O P E N  S L O T S  R E P O R T */
 				/*----------------------------------------------------------------------------
 					%%Function: GenOpenSlotsReport
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.GenOpenSlotsReport
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GenOpenSlotsReport
 					%%Contact: rlittle
 
 				----------------------------------------------------------------------------*/
@@ -2706,6 +2846,13 @@ namespace ArbWeb
 					sa.GenReportBySite(sReport, fFuzzyTimes, fDatePivot, rgsSportsFilter, rgsSportLevelsFilter);
 				}
 
+				/* G E T  O P E N  S L O T  S P O R T S */
+				/*----------------------------------------------------------------------------
+					%%Function: GetOpenSlotSports
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GetOpenSlotSports
+					%%Contact: rlittle
+					
+				----------------------------------------------------------------------------*/
 				public string[] GetOpenSlotSports(SlotAggr sa)
 				{
 					string[] rgs = new string[sa.Sports.Length];
@@ -2713,6 +2860,32 @@ namespace ArbWeb
 					return rgs;
 				}
 
+                public string[] GetSiteRosterSites(SlotAggr sa)
+                {
+                    List<string> plsSports = new List<string>();
+                    List<string> plsSites = new List<string>();
+
+                    foreach (Game gm in m_plgmSorted.Values)
+                        {
+                        if (gm.Dttm < sa.DttmStart || gm.Dttm > sa.DttmEnd)
+                            continue;
+
+                        if (!plsSports.Contains(gm.SportLevel))
+                            plsSports.Add(gm.SportLevel);
+
+                        if (!plsSites.Contains(gm.Site))
+                            plsSites.Add(gm.Site);
+                        }
+                    return plsSites.ToArray();
+                }
+
+				/* G E T  O P E N  S L O T  S P O R T  L E V E L S */
+				/*----------------------------------------------------------------------------
+					%%Function: GetOpenSlotSportLevels
+					%%Qualified: ArbWeb.CountsData:GameData:Games.GetOpenSlotSportLevels
+					%%Contact: rlittle
+					
+				----------------------------------------------------------------------------*/
 				public string[] GetOpenSlotSportLevels(SlotAggr sa)
 				{
 					string[] rgs = new string[sa.SportLevels.Length];
@@ -2723,7 +2896,7 @@ namespace ArbWeb
 				/* F  L O A D  G A M E S */
 				/*----------------------------------------------------------------------------
 					%%Function: FLoadGames
-					%%Qualified: GenCount.GenCounts:GenGameStats:Games.FLoadGames
+					%%Qualified: ArbWeb.CountsData:GameData:Games.FLoadGames
 					%%Contact: rlittle
 
 					Loading the games needs a state machine -- this is a multi line report
@@ -2838,6 +3011,13 @@ namespace ArbWeb
 					return true;
 				}
 
+			    /* R S  H A N D L E  S C A N  F O R  H E A D E R */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: RsHandleScanForHeader
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleScanForHeader
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private ReadState RsHandleScanForHeader(string sLine, string[] rgsFields, ReadState rs)
 			    {
 			        if (Regex.Match(sLine, "Game.*Date.*Sport.*Level").Success == false)
@@ -2848,14 +3028,28 @@ namespace ArbWeb
 			        return rs;
 			    }
 
+			    /* R S  H A N D L E  G A M E  C O M M E N T */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: RsHandleGameComment
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleGameComment
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private ReadState RsHandleGameComment(ReadState rs, string sLine)
 			    {
 			        rs = ReadState.ReadingComments;
-			        m_srpt.AddMessage("Reading comment: " + sLine);
+//			        m_srpt.AddMessage("Reading comment: " + sLine);
 			        // skip comments from officials
 			        return rs;
 			    }
 
+			    /* R S  H A N D L E  R E A D I N G  G A M E  1 */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: RsHandleReadingGame1
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingGame1
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private ReadState RsHandleReadingGame1(ref string sGame, string[] rgsFields, ref string sDateTime, ref string sSport,
 			                                           ref string sSite, ref string sHome, ref string sAway, ReadState rs)
 			    {
@@ -2871,6 +3065,13 @@ namespace ArbWeb
 			        return rs;
 			    }
 
+			    /* R S  H A N D L E  S C A N  F O R  G A M E */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: RsHandleScanForGame
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleScanForGame
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static ReadState RsHandleScanForGame(ref string sGame, Dictionary<string, string> mpNamePos, string sLine, ref string sDateTime,
 			                                                 ref string sSport, ref string sLevel, ref string sSite, ref string sHome,
 			                                                 ref string sAway, ref bool fCanceled, ref bool fIgnore, ReadState rs)
@@ -2904,11 +3105,25 @@ namespace ArbWeb
 			        return rs;
 			    }
 
+			    /* F  M A T C H  G A M E  A R B I T E R  F O O T E R */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: FMatchGameArbiterFooter
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.FMatchGameArbiterFooter
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static bool FMatchGameArbiterFooter(string sLine)
 			    {
 			        return Regex.Match(sLine, ".*Created by ArbiterSports").Success;
 			    }
 
+			    /* R S  H A N D L E  R E A D I N G  O F F I C I A L S  1 */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: RsHandleReadingOfficials1
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingOfficials1
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private ReadState RsHandleReadingOfficials1(Roster rst, bool fIncludeCanceled, string sLine, string[] rgsFields,
 			                                                Dictionary<string, string> mpNamePos, bool fCanceled, string sSite, string sGame,
 			                                                string sHome, string sAway, string sLevel, string sSport, ReadState rs,
@@ -2999,6 +3214,13 @@ namespace ArbWeb
 			        return rs;
 			    }
 
+			    /* R S  H A N D L E  R E A D I N G  G A M E  2 */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: RsHandleReadingGame2
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingGame2
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static ReadState RsHandleReadingGame2(string[] rgsFields, Dictionary<string, string> mpNamePos, string sNameLast,
 			                                                  string sPosLast, ReadState rs)
 			    {
@@ -3018,6 +3240,13 @@ namespace ArbWeb
 			        return rs;
 			    }
 
+			    /* R S  H A N D L E  R E A D I N G  G A M E  2 */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: RsHandleReadingGame2
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingGame2
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private ReadState RsHandleReadingGame2(string[] rgsFields, ref string sGame, ref string sDateTime, ref string sLevel,
 			                                           ref string sSite, ref string sHome, ref string sAway, ReadState rs)
 			    {
@@ -3039,29 +3268,64 @@ namespace ArbWeb
 			        return rs;
 			    }
 
+			    /* F  M A T C H  G A M E  C O M M E N T  C O N T I N U A T I O N */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: FMatchGameCommentContinuation
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.FMatchGameCommentContinuation
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static bool FMatchGameCommentContinuation(string sLine)
 			    {
 			        return Regex.Match(sLine, ",,,,,,,,,,,,,,,,,$").Success
 			               && !Regex.Match(sLine, "^\\*\\*\\*").Success;
 			    }
 
+			    /* F  M A T C H  G A M E  T O T A L  L I N E */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: FMatchGameTotalLine
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.FMatchGameTotalLine
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static bool FMatchGameTotalLine(string[] rgsFields)
 			    {
 			        return Regex.Match(rgsFields[13], "Total:").Success;
 			    }
 
+			    /* F  M A T C H  G A M E  E M P T Y */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: FMatchGameEmpty
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.FMatchGameEmpty
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static bool FMatchGameEmpty(string sLine)
 			    {
 			        return Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,,").Success
 			               || Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,").Success;
 			    }
 
+			    /* F  M A T C H  G A M E  C O M M E N T */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: FMatchGameComment
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.FMatchGameComment
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static bool FMatchGameComment(string sLine)
 			    {
 			        return Regex.Match(sLine, "^\"*\\[.*by.*\\]").Success
 			               || Regex.Match(sLine, "^[ \t]*\\[.*/.*/.*by.*\\]").Success;
 			    }
 
+			    /* F  M A T C H  G A M E  C A N C E L L E D */
+			    /*----------------------------------------------------------------------------
+			    	%%Function: FMatchGameCancelled
+			    	%%Qualified: ArbWeb.CountsData:GameData:Games.FMatchGameCancelled
+			    	%%Contact: rlittle
+			    	
+			    ----------------------------------------------------------------------------*/
 			    private static bool FMatchGameCancelled(string sLine)
 			    {
 			        return Regex.Match(sLine, ".*\\*\\*\\*.*CANCEL*ED").Success
@@ -3083,7 +3347,7 @@ namespace ArbWeb
 			/* L O A D  R O S T E R */
 			/*----------------------------------------------------------------------------
 				%%Function: LoadRoster
-				%%Qualified: GenCount.GenCounts:GenGameStats.LoadRoster
+				%%Qualified: GenCount.CountsData:GameData.LoadRoster
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
@@ -3102,7 +3366,7 @@ namespace ArbWeb
 			/* F  L O A D  G A M E S */
 			/*----------------------------------------------------------------------------
 				%%Function: FLoadGames
-				%%Qualified: ArbWeb.GenCounts:GenGameStats.FLoadGames
+				%%Qualified: ArbWeb.CountsData:GameData.FLoadGames
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
@@ -3114,7 +3378,7 @@ namespace ArbWeb
 			/* G E N  R E P O R T */
 			/*----------------------------------------------------------------------------
 				%%Function: GenReport
-				%%Qualified: ArbWeb.GenCounts:GenGameStats.GenReport
+				%%Qualified: ArbWeb.CountsData:GameData.GenReport
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
@@ -3132,7 +3396,7 @@ namespace ArbWeb
 			/* G E N  O P E N  S L O T S */
 			/*----------------------------------------------------------------------------
 				%%Function: GenOpenSlots
-				%%Qualified: ArbWeb.GenCounts:GenGameStats.GenOpenSlots
+				%%Qualified: ArbWeb.CountsData:GameData.GenOpenSlots
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
@@ -3141,10 +3405,14 @@ namespace ArbWeb
 				return m_gms.GenOpenSlots(dttmStart, dttmEnd);
 			}
 
+            public void GenSiteRosterReport(string sReportFile, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+            {
+                m_gms.GenSiteRosterReport(sReportFile, rgsRosterFilter, dttmStart, dttmEnd);
+            }
 			/* G E N  O P E N  S L O T S */
 			/*----------------------------------------------------------------------------
 				%%Function: GenOpenSlots
-				%%Qualified: ArbWeb.GenCounts:GenGameStats.GenOpenSlots
+				%%Qualified: ArbWeb.CountsData:GameData.GenOpenSlots
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
@@ -3156,7 +3424,7 @@ namespace ArbWeb
 			/* G E T  O P E N  S L O T  S P O R T S */
 			/*----------------------------------------------------------------------------
 				%%Function: GetOpenSlotSports
-				%%Qualified: ArbWeb.GenCounts:GenGameStats.GetOpenSlotSports
+				%%Qualified: ArbWeb.CountsData:GameData.GetOpenSlotSports
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
@@ -3165,10 +3433,15 @@ namespace ArbWeb
 				return m_gms.GetOpenSlotSports(sa);
 			}
 
+		    public string[] GetSiteRosterSites(SlotAggr sa)
+		    {
+		        return m_gms.GetSiteRosterSites(sa);
+		    }
+
 			/* G E T  O P E N  S L O T  S P O R T  L E V E L S */
 			/*----------------------------------------------------------------------------
 				%%Function: GetOpenSlotSportLevels
-				%%Qualified: ArbWeb.GenCounts:GenGameStats.GetOpenSlotSportLevels
+				%%Qualified: ArbWeb.CountsData:GameData.GetOpenSlotSportLevels
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
@@ -3179,81 +3452,131 @@ namespace ArbWeb
 
 			/* G E N  G A M E  S T A T S */
 			/*----------------------------------------------------------------------------
-				%%Function: GenGameStats
-				%%Qualified: GenCount.GenCounts:GenGameStats.GenGameStats
+				%%Function: GameData
+				%%Qualified: GenCount.CountsData:GameData.GameData
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
-            public GenGameStats(StatusBox.StatusRpt srpt)
+            public GameData(StatusBox.StatusRpt srpt)
 			{
 				//  m_sRoster = null;
 				m_srpt = srpt;
 				m_rst = new Roster(srpt);
 				m_gms = new Games(srpt);
 			}
-			} // END  GenGameStats
+			} // END  GameData
 
         StatusBox.StatusRpt m_srpt;
 
 		/* G E N  C O U N T S */
 		/*----------------------------------------------------------------------------
-			%%Function: GenCounts
-			%%Qualified: GenCount.GenCounts.GenCounts
+			%%Function: CountsData
+			%%Qualified: GenCount.CountsData.CountsData
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
-        public GenCounts(StatusBox.StatusRpt srpt)
+        public CountsData(StatusBox.StatusRpt srpt)
 		{
 			m_srpt = srpt;
 		}
 
-		GenGameStats m_ggs;
+		GameData m_gmd;
 
-		/* D O  G E N  C O U N T S */
+		/* L O A D  D A T A */
 		/*----------------------------------------------------------------------------
-			%%Function: DoGenCounts
-			%%Qualified: GenCount.GenCounts.DoGenCounts
+			%%Function: LoadData
+			%%Qualified: ArbWeb.CountsData.LoadData
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
-		public void DoGenCounts(string sRoster, string sSource, bool fIncludeCanceled, int iMiscAffiliation)
+		public void LoadData(string sRoster, string sSource, bool fIncludeCanceled, int iMiscAffiliation)
 		{
 //            srpt.UnitTest();
-			m_ggs = new GenGameStats(m_srpt);
-			m_ggs.FLoadRoster(sRoster, iMiscAffiliation);
-            m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_ggs.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
-			m_ggs.FLoadGames(sSource, fIncludeCanceled);
+			m_gmd = new GameData(m_srpt);
+			m_gmd.FLoadRoster(sRoster, iMiscAffiliation);
+            m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
+			m_gmd.FLoadGames(sSource, fIncludeCanceled);
 			// read in the roster of umpires...
 		}
 
+        public void GenSiteRosterResport(string sReportFile, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+        {
+            m_gmd.GenSiteRosterReport(sReportFile, rgsRosterFilter, dttmStart, dttmEnd);
+        }
+		/* G E N  O P E N  S L O T S  R E P O R T */
+		/*----------------------------------------------------------------------------
+			%%Function: GenOpenSlotsReport
+			%%Qualified: ArbWeb.CountsData.GenOpenSlotsReport
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public void GenOpenSlotsReport(string sReport, bool fDetail, bool fFuzzyTimes, bool fDatePivot, string[] rgsSportFilter, string[] rgsSportLevelFilter, SlotAggr sa)
 		{
-			m_ggs.GenOpenSlotsReport(sReport, fDetail, fFuzzyTimes, fDatePivot, rgsSportFilter, rgsSportLevelFilter, sa);
+			m_gmd.GenOpenSlotsReport(sReport, fDetail, fFuzzyTimes, fDatePivot, rgsSportFilter, rgsSportLevelFilter, sa);
 		}
 
+		/* C A L C  O P E N  S L O T S */
+		/*----------------------------------------------------------------------------
+			%%Function: CalcOpenSlots
+			%%Qualified: ArbWeb.CountsData.CalcOpenSlots
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public SlotAggr CalcOpenSlots(DateTime dttmStart, DateTime dttmEnd)
 		{
-			return m_ggs.GenOpenSlots(dttmStart, dttmEnd);
+			return m_gmd.GenOpenSlots(dttmStart, dttmEnd);
 		}
 
+		/* G E T  O P E N  S L O T  S P O R T S */
+		/*----------------------------------------------------------------------------
+			%%Function: GetOpenSlotSports
+			%%Qualified: ArbWeb.CountsData.GetOpenSlotSports
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public string[] GetOpenSlotSports(SlotAggr sa)
 		{
-			return m_ggs.GetOpenSlotSports(sa);
+			return m_gmd.GetOpenSlotSports(sa);
 		}
 
+        public string[] GetSiteRosterSites(SlotAggr sa)
+        {
+            return m_gmd.GetSiteRosterSites(sa);
+        }
+		/* G E T  O P E N  S L O T  S P O R T  L E V E L S */
+		/*----------------------------------------------------------------------------
+			%%Function: GetOpenSlotSportLevels
+			%%Qualified: ArbWeb.CountsData.GetOpenSlotSportLevels
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public string[] GetOpenSlotSportLevels(SlotAggr sa)
 		{
-			return m_ggs.GetOpenSlotSportLevels(sa);
+			return m_gmd.GetOpenSlotSportLevels(sa);
 		}
 
+		/* G E N  R E P O R T */
+		/*----------------------------------------------------------------------------
+			%%Function: GenReport
+			%%Qualified: ArbWeb.CountsData.GenReport
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public void GenReport(string sReport)
 		{
-			m_ggs.GenReport(sReport);
+			m_gmd.GenReport(sReport);
 		}
 
+		/* G E N  G A M E S  R E P O R T */
+		/*----------------------------------------------------------------------------
+			%%Function: GenGamesReport
+			%%Qualified: ArbWeb.CountsData.GenGamesReport
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		public void GenGamesReport(string sReport)
 		{
-			m_ggs.GenGamesReport(sReport);
+			m_gmd.GenGamesReport(sReport);
 		}
 		}
 	}

@@ -9,7 +9,7 @@ namespace ArbWeb
         /* P L S  U N I Q U E  F R O M  R G S */
         /*----------------------------------------------------------------------------
 					%%Function: PlsUniqueFromRgs
-					%%Qualified: ArbWeb.GenCounts:GenGameStats:Games.PlsUniqueFromRgs
+					%%Qualified: ArbWeb.CountsData:GameData:Games.PlsUniqueFromRgs
 					%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
