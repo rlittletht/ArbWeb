@@ -18,20 +18,25 @@ using System.Runtime.InteropServices;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using Excel=Microsoft.Office.Interop.Excel;
 using System.Threading.Tasks;
+using TCore.Settings;
 
 namespace ArbWeb
 {
 	/// <summary>
 	/// Summary description for AwMainForm.
 	/// </summary>
-	public class AwMainForm : System.Windows.Forms.Form
-	{
-		// Top level web pages
-		private const string _s_Home = "http://www.arbitersports.com"; // ok2010
+	public partial class AwMainForm : System.Windows.Forms.Form
+    {
+        #region ArbiterStrings
+
+        // Top level web pages
+		private const string _s_Home = "https://www.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
 		private const string _s_Assigning = "https://www.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
 		private const string _s_RanksEdit = "https://www.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
 		private const string _s_AddUser = "https://www.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u
 		private const string _s_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010u
+	    private const string _s_Announcements = "https://www.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
+
 		// Direct access web pages
 		private const string _s_Assigning_PrintAddress = "https://www.arbitersports.com/Assigner/Games/Print.aspx?filterID="; // ok2010
 		private const string _s_EditUser_MiscFields = "https://www.arbitersports.com/Official/MiscFieldsEdit.aspx?userID="; // ok2010
@@ -43,11 +48,11 @@ namespace ArbWeb
 		//private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2010
 		//private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
 		private const string _s_Home_Anchor_Login = "SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
-		private const string _s_Home_Input_Email = "UserName"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2010
-		private const string _s_Home_Input_Password = "Password"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2010
-		private const string _s_Home_Button_SignIn = "SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
+		private const string _s_Home_Input_Email = "ctl00$EmailTextbox"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2015
+		private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2015
+		private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2015
 
-		private const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
+        private const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
 		private const string _sid_Home_Anchor_ActingLink = "ctl00_ActingLink"; // ok2010
 
 		// Assigning (games view) links
@@ -125,8 +130,31 @@ namespace ArbWeb
 		private const string _s_RanksEdit_Button_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnRank"; // ok2010
 		private const string _s_RanksEdit_Input_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$txtRank"; // ok2010
 
+        // Announcements page
+	    private const string _s_Announcements_Button_Edit_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";   // the control will be "ctl##"
+	    private const string _s_Announcements_Button_Edit_Suffix = "$btnEdit";
+	    private const string _s_Announcements_Checkbox_Assigners_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+        private const string _s_Announcements_Checkbox_Assigners_Suffix = "$chkToAssigners_Edit";
+	    private const string _s_Announcements_Checkbox_Contacts_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+        private const string _s_Announcements_Checkbox_Contacts_Suffix = "$chkToContacts_Edit";
+	    private const string _s_Announcements_Select_Filters_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+        private const string _s_Announcements_Select_Filters_Suffix = "$ddlFilters";
+	    private const string _s_Announcements_Button_Save_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+        private const string _s_Announcements_Button_Save_Suffix = "$btnSave";
 
-	    private System.Windows.Forms.Button m_pbDownloadGames;
+	    private const string _s_Announcements_Textarea_Text_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
+	    private const string _s_Announcements_Textarea_Text_Suffix = "$txtAnnouncement";
+
+        private const string _sid_Announcements_Button_Edit_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
+	    private const string _sid_Announcements_Button_Edit_Suffix = "_btnEdit";
+
+	    private const string _sid_Announcements_Button_Save_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
+	    private const string _sid_Announcements_Button_Save_Suffix = "_btnSave";
+
+#endregion
+
+        #region Controls
+        private System.Windows.Forms.Button m_pbDownloadGames;
 
 	    private System.Windows.Forms.ContextMenu contextMenu1;
         private System.Windows.Forms.MenuItem menuItem1;
@@ -175,7 +203,7 @@ namespace ArbWeb
         private CheckBox m_cbFilterLevel;
         private CheckBox m_cbTestEmail;
         private TextBox m_ebGameCopy;
-        private TextBox m_ebRosterCopy;
+        private TextBox m_ebRosterWorking;
         private Label label13;
         private Label label14;
         private CheckBox m_cbTestOnly;
@@ -201,10 +229,17 @@ namespace ArbWeb
         private Label label18;
         private CheckedListBox m_chlbxRoster;
         private Button m_pbCreateRosterReport;
+        private CheckBox m_cbFilterRank;
+        private Button m_pbMailMerge;
+        private CheckBox m_cbFutureOnly;
+        private Label label19;
+        private CheckBox m_cbLaunch;
+        private CheckBox m_cbSetArbiterAnnounce;
 
 		private StatusBox.StatusRpt m_srpt;
+        #endregion
 
-		private void ThrowIfNot(bool f, string s)
+        private void ThrowIfNot(bool f, string s)
 		{
 			if (!f)
 				throw new Exception(s);
@@ -224,11 +259,16 @@ namespace ArbWeb
 
 		}
 
-		ReHistory.ReHistElt[] m_rgreheProfile;
-		ReHistory.ReHistElt[] m_rgrehe;
-		ReHistory m_rehProfile;
-		ReHistory m_reh;
-		ArbWebCore m_awc;
+	    private Settings.SettingsElt[] m_rgreheProfile;
+        private Settings.SettingsElt[] m_rgrehe;
+		// ReHistory.ReHistElt[] m_rgreheProfile;
+		// ReHistory.ReHistElt[] m_rgrehe;
+	    private Settings m_rehProfile;
+	    private Settings m_reh;
+
+//		ReHistory m_rehProfile;
+//		ReHistory m_reh;
+		ArbWebControl2 m_awc;
 		bool m_fDontUpdateProfile;
 
         public void EnableAdminFunctions()
@@ -246,7 +286,7 @@ namespace ArbWeb
 			InitializeComponent();
 
 			m_srpt = new StatusBox.StatusRpt(m_recStatus);
-			m_awc = new ArbWebCore(m_srpt);
+			m_awc = new ArbWebControl2(m_srpt);
 			m_fDontUpdateProfile = true;
 			RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
 
@@ -259,42 +299,46 @@ namespace ArbWeb
 				{
 				m_cbxProfile.Items.Add(s);
 				}
-			m_rgreheProfile = new ReHistory.ReHistElt[] 
+			m_rgreheProfile = new[] 
 				{ 
-					new ReHistory.ReHistElt("Login", ReHistory.Type.Str, m_ebUserID, ""), 
-					new ReHistory.ReHistElt("Password", ReHistory.Type.Str, m_ebPassword, ""), 
-					new ReHistory.ReHistElt("GameFile", ReHistory.Type.Str, m_ebGameFile, ""), 
-					new ReHistory.ReHistElt("Roster", ReHistory.Type.Str, m_ebRoster, ""),
-					new ReHistory.ReHistElt("GameFileCopy", ReHistory.Type.Str, m_ebGameCopy, ""), 
-					new ReHistory.ReHistElt("RosterCopy", ReHistory.Type.Str, m_ebRosterCopy, ""),
-					new ReHistory.ReHistElt("GameOutput", ReHistory.Type.Str, m_ebGameOutput, ""),
-					new ReHistory.ReHistElt("OutputFile", ReHistory.Type.Str, m_ebOutputFile, ""),
-					new ReHistory.ReHistElt("IncludeCanceled", ReHistory.Type.Bool, m_cbIncludeCanceled, 0),
-					new ReHistory.ReHistElt("ShowBrowser", ReHistory.Type.Bool, m_cbShowBrowser, 0), 
-					new ReHistory.ReHistElt("LastSlotStartDate", ReHistory.Type.Dttm, m_dtpStart, ""),
-					new ReHistory.ReHistElt("LastSlotEndDate", ReHistory.Type.Dttm, m_dtpEnd, ""),
-					new ReHistory.ReHistElt("LastOpenSlotDetail", ReHistory.Type.Bool, m_cbOpenSlotDetail, 0),
-					new ReHistory.ReHistElt("LastGroupTimeSlots", ReHistory.Type.Bool, m_cbFuzzyTimes, 0),
-					new ReHistory.ReHistElt("LastTestEmail", ReHistory.Type.Bool, m_cbTestEmail, 0),
-					new ReHistory.ReHistElt("AddOfficialsOnly", ReHistory.Type.Bool, m_cbAddOfficialsOnly, 0),
-					new ReHistory.ReHistElt("AfiliationIndex", ReHistory.Type.Int, m_ebAffiliationIndex, 0),
-					new ReHistory.ReHistElt("LastSplitSports", ReHistory.Type.Bool, m_cbSplitSports, 0),
-					new ReHistory.ReHistElt("LastPivotDate", ReHistory.Type.Bool, m_cbDatePivot, 0),
-					new ReHistory.ReHistElt("LastLogToFile", ReHistory.Type.Bool, m_cbLogToFile, 0),
+					new Settings.SettingsElt("Login", Settings.Type.Str, m_ebUserID, ""), 
+					new Settings.SettingsElt("Password", Settings.Type.Str, m_ebPassword, ""), 
+					new Settings.SettingsElt("GameFile", Settings.Type.Str, m_ebGameFile, ""), 
+					new Settings.SettingsElt("Roster", Settings.Type.Str, m_ebRoster, ""),
+					new Settings.SettingsElt("GameFileCopy", Settings.Type.Str, m_ebGameCopy, ""), 
+					new Settings.SettingsElt("RosterCopy", Settings.Type.Str, m_ebRosterWorking, ""),
+					new Settings.SettingsElt("GameOutput", Settings.Type.Str, m_ebGameOutput, ""),
+					new Settings.SettingsElt("OutputFile", Settings.Type.Str, m_ebOutputFile, ""),
+					new Settings.SettingsElt("IncludeCanceled", Settings.Type.Bool, m_cbIncludeCanceled, 0),
+					new Settings.SettingsElt("ShowBrowser", Settings.Type.Bool, m_cbShowBrowser, 0), 
+					new Settings.SettingsElt("LastSlotStartDate", Settings.Type.Dttm, m_dtpStart, ""),
+					new Settings.SettingsElt("LastSlotEndDate", Settings.Type.Dttm, m_dtpEnd, ""),
+					new Settings.SettingsElt("LastOpenSlotDetail", Settings.Type.Bool, m_cbOpenSlotDetail, 0),
+					new Settings.SettingsElt("LastGroupTimeSlots", Settings.Type.Bool, m_cbFuzzyTimes, 0),
+					new Settings.SettingsElt("LastTestEmail", Settings.Type.Bool, m_cbTestEmail, 0),
+					new Settings.SettingsElt("AddOfficialsOnly", Settings.Type.Bool, m_cbAddOfficialsOnly, 0),
+					new Settings.SettingsElt("AfiliationIndex", Settings.Type.Int, m_ebAffiliationIndex, 0),
+					new Settings.SettingsElt("LastSplitSports", Settings.Type.Bool, m_cbSplitSports, 0),
+					new Settings.SettingsElt("LastPivotDate", Settings.Type.Bool, m_cbDatePivot, 0),
+					new Settings.SettingsElt("LastLogToFile", Settings.Type.Bool, m_cbLogToFile, 0),
+					new Settings.SettingsElt("FilterMailMergeByRank", Settings.Type.Bool, m_cbFilterRank, 0),
+					new Settings.SettingsElt("DownloadOnlyFutureGames", Settings.Type.Bool, m_cbFutureOnly, 0),
+                    new Settings.SettingsElt("LaunchMailMergeDoc", Settings.Type.Bool, m_cbLaunch, 0),
+                    new Settings.SettingsElt("SetArbiterAnnouncement", Settings.Type.Bool, m_cbSetArbiterAnnounce, 0),
 				};
 
-			m_rgrehe = new ReHistory.ReHistElt[]
+			m_rgrehe = new []
 				{
-					new ReHistory.ReHistElt("LastProfile", ReHistory.Type.Str, m_cbxProfile, "")
+					new Settings.SettingsElt("LastProfile", Settings.Type.Str, m_cbxProfile, "")
 				};
 
             SetupLogToFile();
 
-			m_reh = new ReHistory(m_rgrehe, "Software\\Thetasoft\\ArbWeb", "root");
+			m_reh = new Settings(m_rgrehe, "Software\\Thetasoft\\ArbWeb", "root");
 			m_reh.Load();
 
 
-			m_rehProfile = new ReHistory(m_rgreheProfile, String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_cbxProfile.Text), m_cbxProfile.Text);
+			m_rehProfile = new Settings(m_rgreheProfile, String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_cbxProfile.Text), m_cbxProfile.Text);
 
 			// load MRU from registry
 			m_rehProfile.Load();
@@ -369,7 +413,7 @@ namespace ArbWeb
             this.m_cbFilterLevel = new System.Windows.Forms.CheckBox();
             this.m_cbTestEmail = new System.Windows.Forms.CheckBox();
             this.m_ebGameCopy = new System.Windows.Forms.TextBox();
-            this.m_ebRosterCopy = new System.Windows.Forms.TextBox();
+            this.m_ebRosterWorking = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.m_cbTestOnly = new System.Windows.Forms.CheckBox();
@@ -395,6 +439,12 @@ namespace ArbWeb
             this.label18 = new System.Windows.Forms.Label();
             this.m_chlbxRoster = new System.Windows.Forms.CheckedListBox();
             this.m_pbCreateRosterReport = new System.Windows.Forms.Button();
+            this.m_cbFilterRank = new System.Windows.Forms.CheckBox();
+            this.m_pbMailMerge = new System.Windows.Forms.Button();
+            this.m_cbFutureOnly = new System.Windows.Forms.CheckBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.m_cbLaunch = new System.Windows.Forms.CheckBox();
+            this.m_cbSetArbiterAnnounce = new System.Windows.Forms.CheckBox();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -411,7 +461,7 @@ namespace ArbWeb
             // m_pbDownloadGames
             // 
             this.m_pbDownloadGames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbDownloadGames.Location = new System.Drawing.Point(617, 28);
+            this.m_pbDownloadGames.Location = new System.Drawing.Point(589, 28);
             this.m_pbDownloadGames.Name = "m_pbDownloadGames";
             this.m_pbDownloadGames.Size = new System.Drawing.Size(110, 24);
             this.m_pbDownloadGames.TabIndex = 14;
@@ -496,7 +546,7 @@ namespace ArbWeb
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(617, 52);
+            this.button1.Location = new System.Drawing.Point(589, 52);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(110, 24);
             this.button1.TabIndex = 26;
@@ -508,9 +558,9 @@ namespace ArbWeb
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.m_recStatus);
-            this.groupBox2.Location = new System.Drawing.Point(8, 566);
+            this.groupBox2.Location = new System.Drawing.Point(8, 637);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(719, 157);
+            this.groupBox2.Size = new System.Drawing.Size(691, 157);
             this.groupBox2.TabIndex = 27;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Status";
@@ -521,14 +571,14 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Right)));
             this.m_recStatus.Location = new System.Drawing.Point(6, 19);
             this.m_recStatus.Name = "m_recStatus";
-            this.m_recStatus.Size = new System.Drawing.Size(707, 132);
+            this.m_recStatus.Size = new System.Drawing.Size(679, 132);
             this.m_recStatus.TabIndex = 0;
             this.m_recStatus.Text = "";
             // 
             // m_pbGenCounts
             // 
             this.m_pbGenCounts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbGenCounts.Location = new System.Drawing.Point(617, 215);
+            this.m_pbGenCounts.Location = new System.Drawing.Point(589, 215);
             this.m_pbGenCounts.Name = "m_pbGenCounts";
             this.m_pbGenCounts.Size = new System.Drawing.Size(110, 27);
             this.m_pbGenCounts.TabIndex = 28;
@@ -565,7 +615,7 @@ namespace ArbWeb
             // m_pbUploadRoster
             // 
             this.m_pbUploadRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbUploadRoster.Location = new System.Drawing.Point(504, 529);
+            this.m_pbUploadRoster.Location = new System.Drawing.Point(476, 607);
             this.m_pbUploadRoster.Name = "m_pbUploadRoster";
             this.m_pbUploadRoster.Size = new System.Drawing.Size(110, 24);
             this.m_pbUploadRoster.TabIndex = 32;
@@ -575,7 +625,7 @@ namespace ArbWeb
             // m_pbOpenSlots
             // 
             this.m_pbOpenSlots.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbOpenSlots.Location = new System.Drawing.Point(617, 264);
+            this.m_pbOpenSlots.Location = new System.Drawing.Point(589, 264);
             this.m_pbOpenSlots.Name = "m_pbOpenSlots";
             this.m_pbOpenSlots.Size = new System.Drawing.Size(110, 27);
             this.m_pbOpenSlots.TabIndex = 33;
@@ -588,7 +638,7 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Right)));
             this.m_lblSearchCriteria.Location = new System.Drawing.Point(5, 9);
             this.m_lblSearchCriteria.Name = "m_lblSearchCriteria";
-            this.m_lblSearchCriteria.Size = new System.Drawing.Size(716, 16);
+            this.m_lblSearchCriteria.Size = new System.Drawing.Size(688, 16);
             this.m_lblSearchCriteria.TabIndex = 34;
             this.m_lblSearchCriteria.Tag = "Shared Configuration";
             this.m_lblSearchCriteria.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
@@ -610,7 +660,7 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.Location = new System.Drawing.Point(5, 190);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(716, 19);
+            this.label6.Size = new System.Drawing.Size(688, 19);
             this.label6.TabIndex = 36;
             this.label6.Tag = "Games Worked Analysis";
             this.label6.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
@@ -621,7 +671,7 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label7.Location = new System.Drawing.Point(5, 242);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(716, 19);
+            this.label7.Size = new System.Drawing.Size(688, 19);
             this.label7.TabIndex = 37;
             this.label7.Tag = "Open Slot Reporting";
             this.label7.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
@@ -666,7 +716,7 @@ namespace ArbWeb
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(418, 414);
+            this.label10.Location = new System.Drawing.Point(41, 434);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(79, 13);
             this.label10.TabIndex = 45;
@@ -674,7 +724,7 @@ namespace ArbWeb
             // 
             // m_ebFilter
             // 
-            this.m_ebFilter.Location = new System.Drawing.Point(503, 411);
+            this.m_ebFilter.Location = new System.Drawing.Point(126, 431);
             this.m_ebFilter.Name = "m_ebFilter";
             this.m_ebFilter.Size = new System.Drawing.Size(129, 20);
             this.m_ebFilter.TabIndex = 44;
@@ -712,7 +762,7 @@ namespace ArbWeb
             // button2
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(617, 328);
+            this.button2.Location = new System.Drawing.Point(576, 354);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(110, 27);
             this.button2.TabIndex = 49;
@@ -725,7 +775,7 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label12.Location = new System.Drawing.Point(31, 294);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(690, 19);
+            this.label12.Size = new System.Drawing.Size(662, 19);
             this.label12.TabIndex = 50;
             this.label12.Tag = "Slot reporting";
             this.label12.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
@@ -774,7 +824,7 @@ namespace ArbWeb
             // m_cbTestEmail
             // 
             this.m_cbTestEmail.AutoSize = true;
-            this.m_cbTestEmail.Location = new System.Drawing.Point(594, 361);
+            this.m_cbTestEmail.Location = new System.Drawing.Point(576, 313);
             this.m_cbTestEmail.Name = "m_cbTestEmail";
             this.m_cbTestEmail.Size = new System.Drawing.Size(117, 17);
             this.m_cbTestEmail.TabIndex = 55;
@@ -788,12 +838,12 @@ namespace ArbWeb
             this.m_ebGameCopy.Size = new System.Drawing.Size(208, 20);
             this.m_ebGameCopy.TabIndex = 56;
             // 
-            // m_ebRosterCopy
+            // m_ebRosterWorking
             // 
-            this.m_ebRosterCopy.Location = new System.Drawing.Point(379, 82);
-            this.m_ebRosterCopy.Name = "m_ebRosterCopy";
-            this.m_ebRosterCopy.Size = new System.Drawing.Size(175, 20);
-            this.m_ebRosterCopy.TabIndex = 57;
+            this.m_ebRosterWorking.Location = new System.Drawing.Point(379, 82);
+            this.m_ebRosterWorking.Name = "m_ebRosterWorking";
+            this.m_ebRosterWorking.Size = new System.Drawing.Size(175, 20);
+            this.m_ebRosterWorking.TabIndex = 57;
             // 
             // label13
             // 
@@ -816,17 +866,17 @@ namespace ArbWeb
             // m_cbTestOnly
             // 
             this.m_cbTestOnly.AutoSize = true;
-            this.m_cbTestOnly.Location = new System.Drawing.Point(132, 106);
+            this.m_cbTestOnly.Location = new System.Drawing.Point(227, 106);
             this.m_cbTestOnly.Name = "m_cbTestOnly";
-            this.m_cbTestOnly.Size = new System.Drawing.Size(178, 17);
+            this.m_cbTestOnly.Size = new System.Drawing.Size(130, 17);
             this.m_cbTestOnly.TabIndex = 60;
-            this.m_cbTestOnly.Text = "TEST Only (perform 1 operation)";
+            this.m_cbTestOnly.Text = "TEST Only (1 op only)";
             this.m_cbTestOnly.UseVisualStyleBackColor = true;
             // 
             // m_pbReload
             // 
             this.m_pbReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbReload.Location = new System.Drawing.Point(617, 529);
+            this.m_pbReload.Location = new System.Drawing.Point(589, 607);
             this.m_pbReload.Name = "m_pbReload";
             this.m_pbReload.Size = new System.Drawing.Size(110, 24);
             this.m_pbReload.TabIndex = 61;
@@ -836,7 +886,7 @@ namespace ArbWeb
             // m_cbRankOnly
             // 
             this.m_cbRankOnly.AutoSize = true;
-            this.m_cbRankOnly.Location = new System.Drawing.Point(313, 106);
+            this.m_cbRankOnly.Location = new System.Drawing.Point(363, 106);
             this.m_cbRankOnly.Name = "m_cbRankOnly";
             this.m_cbRankOnly.Size = new System.Drawing.Size(132, 17);
             this.m_cbRankOnly.TabIndex = 62;
@@ -849,7 +899,7 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label15.Location = new System.Drawing.Point(5, 141);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(716, 19);
+            this.label15.Size = new System.Drawing.Size(688, 19);
             this.label15.TabIndex = 63;
             this.label15.Tag = "Game Reporting";
             this.label15.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
@@ -873,7 +923,7 @@ namespace ArbWeb
             // m_pbGenGames
             // 
             this.m_pbGenGames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbGenGames.Location = new System.Drawing.Point(617, 163);
+            this.m_pbGenGames.Location = new System.Drawing.Point(589, 163);
             this.m_pbGenGames.Name = "m_pbGenGames";
             this.m_pbGenGames.Size = new System.Drawing.Size(110, 27);
             this.m_pbGenGames.TabIndex = 66;
@@ -883,7 +933,7 @@ namespace ArbWeb
             // m_cbAddOfficialsOnly
             // 
             this.m_cbAddOfficialsOnly.AutoSize = true;
-            this.m_cbAddOfficialsOnly.Location = new System.Drawing.Point(452, 106);
+            this.m_cbAddOfficialsOnly.Location = new System.Drawing.Point(502, 106);
             this.m_cbAddOfficialsOnly.Name = "m_cbAddOfficialsOnly";
             this.m_cbAddOfficialsOnly.Size = new System.Drawing.Size(149, 17);
             this.m_cbAddOfficialsOnly.TabIndex = 67;
@@ -894,7 +944,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseGameFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseGameFile.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile.Location = new System.Drawing.Point(285, 61);
+            this.m_pbBrowseGameFile.Location = new System.Drawing.Point(257, 61);
             this.m_pbBrowseGameFile.Name = "m_pbBrowseGameFile";
             this.m_pbBrowseGameFile.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGameFile.TabIndex = 68;
@@ -906,7 +956,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseGameFile2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseGameFile2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(286, 83);
+            this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(258, 83);
             this.m_pbBrowseGameFile2.Name = "m_pbBrowseGameFile2";
             this.m_pbBrowseGameFile2.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGameFile2.TabIndex = 69;
@@ -918,7 +968,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseRoster.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster.Location = new System.Drawing.Point(555, 64);
+            this.m_pbBrowseRoster.Location = new System.Drawing.Point(527, 64);
             this.m_pbBrowseRoster.Name = "m_pbBrowseRoster";
             this.m_pbBrowseRoster.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseRoster.TabIndex = 70;
@@ -930,7 +980,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseRoster2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseRoster2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster2.Location = new System.Drawing.Point(555, 87);
+            this.m_pbBrowseRoster2.Location = new System.Drawing.Point(527, 87);
             this.m_pbBrowseRoster2.Name = "m_pbBrowseRoster2";
             this.m_pbBrowseRoster2.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseRoster2.TabIndex = 71;
@@ -942,7 +992,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseGamesReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseGamesReport.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGamesReport.Location = new System.Drawing.Point(286, 169);
+            this.m_pbBrowseGamesReport.Location = new System.Drawing.Point(258, 169);
             this.m_pbBrowseGamesReport.Name = "m_pbBrowseGamesReport";
             this.m_pbBrowseGamesReport.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGamesReport.TabIndex = 72;
@@ -954,7 +1004,7 @@ namespace ArbWeb
             // 
             this.m_pbBrowseAnalysis.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbBrowseAnalysis.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseAnalysis.Location = new System.Drawing.Point(286, 215);
+            this.m_pbBrowseAnalysis.Location = new System.Drawing.Point(258, 215);
             this.m_pbBrowseAnalysis.Name = "m_pbBrowseAnalysis";
             this.m_pbBrowseAnalysis.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseAnalysis.TabIndex = 73;
@@ -965,7 +1015,7 @@ namespace ArbWeb
             // button3
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(617, 76);
+            this.button3.Location = new System.Drawing.Point(589, 76);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(110, 24);
             this.button3.TabIndex = 74;
@@ -994,7 +1044,7 @@ namespace ArbWeb
             // m_cbDatePivot
             // 
             this.m_cbDatePivot.AutoSize = true;
-            this.m_cbDatePivot.Location = new System.Drawing.Point(421, 349);
+            this.m_cbDatePivot.Location = new System.Drawing.Point(576, 331);
             this.m_cbDatePivot.Name = "m_cbDatePivot";
             this.m_cbDatePivot.Size = new System.Drawing.Size(91, 17);
             this.m_cbDatePivot.TabIndex = 79;
@@ -1004,7 +1054,7 @@ namespace ArbWeb
             // m_cbSplitSports
             // 
             this.m_cbSplitSports.AutoSize = true;
-            this.m_cbSplitSports.Location = new System.Drawing.Point(421, 367);
+            this.m_cbSplitSports.Location = new System.Drawing.Point(421, 351);
             this.m_cbSplitSports.Name = "m_cbSplitSports";
             this.m_cbSplitSports.Size = new System.Drawing.Size(156, 17);
             this.m_cbSplitSports.TabIndex = 80;
@@ -1014,7 +1064,7 @@ namespace ArbWeb
             // m_cbLogToFile
             // 
             this.m_cbLogToFile.AutoSize = true;
-            this.m_cbLogToFile.Location = new System.Drawing.Point(604, 106);
+            this.m_cbLogToFile.Location = new System.Drawing.Point(654, 106);
             this.m_cbLogToFile.Name = "m_cbLogToFile";
             this.m_cbLogToFile.Size = new System.Drawing.Size(72, 17);
             this.m_cbLogToFile.TabIndex = 81;
@@ -1026,9 +1076,9 @@ namespace ArbWeb
             // 
             this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label18.Location = new System.Drawing.Point(31, 430);
+            this.label18.Location = new System.Drawing.Point(31, 490);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(690, 19);
+            this.label18.Size = new System.Drawing.Size(662, 19);
             this.label18.TabIndex = 82;
             this.label18.Tag = "Site roster report";
             this.label18.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
@@ -1037,7 +1087,7 @@ namespace ArbWeb
             // 
             this.m_chlbxRoster.CheckOnClick = true;
             this.m_chlbxRoster.FormattingEnabled = true;
-            this.m_chlbxRoster.Location = new System.Drawing.Point(44, 448);
+            this.m_chlbxRoster.Location = new System.Drawing.Point(44, 508);
             this.m_chlbxRoster.Name = "m_chlbxRoster";
             this.m_chlbxRoster.Size = new System.Drawing.Size(363, 64);
             this.m_chlbxRoster.TabIndex = 83;
@@ -1045,17 +1095,83 @@ namespace ArbWeb
             // m_pbCreateRosterReport
             // 
             this.m_pbCreateRosterReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbCreateRosterReport.Location = new System.Drawing.Point(617, 482);
+            this.m_pbCreateRosterReport.Location = new System.Drawing.Point(589, 542);
             this.m_pbCreateRosterReport.Name = "m_pbCreateRosterReport";
             this.m_pbCreateRosterReport.Size = new System.Drawing.Size(110, 27);
             this.m_pbCreateRosterReport.TabIndex = 84;
             this.m_pbCreateRosterReport.Text = "Create Roster";
             this.m_pbCreateRosterReport.Click += new System.EventHandler(this.GenSiteRosterReport);
             // 
+            // m_cbFilterRank
+            // 
+            this.m_cbFilterRank.AutoSize = true;
+            this.m_cbFilterRank.Location = new System.Drawing.Point(424, 430);
+            this.m_cbFilterRank.Name = "m_cbFilterRank";
+            this.m_cbFilterRank.Size = new System.Drawing.Size(86, 17);
+            this.m_cbFilterRank.TabIndex = 85;
+            this.m_cbFilterRank.Text = "Filter by rank";
+            this.m_cbFilterRank.UseVisualStyleBackColor = true;
+            // 
+            // m_pbMailMerge
+            // 
+            this.m_pbMailMerge.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbMailMerge.Location = new System.Drawing.Point(583, 464);
+            this.m_pbMailMerge.Name = "m_pbMailMerge";
+            this.m_pbMailMerge.Size = new System.Drawing.Size(110, 27);
+            this.m_pbMailMerge.TabIndex = 86;
+            this.m_pbMailMerge.Text = "Gen Help";
+            this.m_pbMailMerge.Click += new System.EventHandler(this.GenMailMergeMail);
+            // 
+            // m_cbFutureOnly
+            // 
+            this.m_cbFutureOnly.AutoSize = true;
+            this.m_cbFutureOnly.Location = new System.Drawing.Point(129, 106);
+            this.m_cbFutureOnly.Name = "m_cbFutureOnly";
+            this.m_cbFutureOnly.Size = new System.Drawing.Size(92, 17);
+            this.m_cbFutureOnly.TabIndex = 87;
+            this.m_cbFutureOnly.Text = "Future Games";
+            this.m_cbFutureOnly.UseVisualStyleBackColor = true;
+            // 
+            // label19
+            // 
+            this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label19.Location = new System.Drawing.Point(31, 585);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(662, 19);
+            this.label19.TabIndex = 88;
+            this.label19.Tag = "Data/Upload Operations";
+            // 
+            // m_cbLaunch
+            // 
+            this.m_cbLaunch.AutoSize = true;
+            this.m_cbLaunch.Location = new System.Drawing.Point(424, 451);
+            this.m_cbLaunch.Name = "m_cbLaunch";
+            this.m_cbLaunch.Size = new System.Drawing.Size(103, 17);
+            this.m_cbLaunch.TabIndex = 89;
+            this.m_cbLaunch.Text = "Launch MMDoc";
+            this.m_cbLaunch.UseVisualStyleBackColor = true;
+            // 
+            // m_cbSetArbiterAnnounce
+            // 
+            this.m_cbSetArbiterAnnounce.AutoSize = true;
+            this.m_cbSetArbiterAnnounce.Location = new System.Drawing.Point(527, 430);
+            this.m_cbSetArbiterAnnounce.Name = "m_cbSetArbiterAnnounce";
+            this.m_cbSetArbiterAnnounce.Size = new System.Drawing.Size(127, 17);
+            this.m_cbSetArbiterAnnounce.TabIndex = 90;
+            this.m_cbSetArbiterAnnounce.Text = "Set Arbiter Announce";
+            this.m_cbSetArbiterAnnounce.UseVisualStyleBackColor = true;
+            // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(735, 735);
+            this.ClientSize = new System.Drawing.Size(707, 806);
+            this.Controls.Add(this.m_cbSetArbiterAnnounce);
+            this.Controls.Add(this.m_cbLaunch);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.m_cbFutureOnly);
+            this.Controls.Add(this.m_pbMailMerge);
+            this.Controls.Add(this.m_cbFilterRank);
             this.Controls.Add(this.m_pbCreateRosterReport);
             this.Controls.Add(this.m_chlbxRoster);
             this.Controls.Add(this.label18);
@@ -1082,7 +1198,7 @@ namespace ArbWeb
             this.Controls.Add(this.m_cbTestOnly);
             this.Controls.Add(this.label14);
             this.Controls.Add(this.label13);
-            this.Controls.Add(this.m_ebRosterCopy);
+            this.Controls.Add(this.m_ebRosterWorking);
             this.Controls.Add(this.m_ebGameCopy);
             this.Controls.Add(this.m_cbTestEmail);
             this.Controls.Add(this.m_chlbxSportLevels);
@@ -1140,313 +1256,18 @@ namespace ArbWeb
 			Application.Run(new AwMainForm());
 		}
 		
-		void AdjustRectForAspect(Rectangle rectOrig, ref Rectangle rectTarget)
-		{
-			double dfH = 1.0;
-			double dfV = 1.0;
-
-			dfH = ((double)rectTarget.Width) / ((double)rectOrig.Width);
-			dfV = ((double)rectTarget.Height) / ((double)rectOrig.Height);
-
-			double df = Math.Min(dfH, dfV);
-
-			Rectangle rectNew = new Rectangle(rectTarget.X, rectTarget.Y, (int)((double)rectOrig.Width * df), (int)((double)rectOrig.Height * df));
-
-			// now adjust rectTarget to have rectNew centered in it
-			rectTarget.X += (rectTarget.Width - rectNew.Width) / 2;
-			rectTarget.Y += (rectTarget.Height - rectNew.Height) / 2;
-			rectTarget.Width = rectNew.Width;
-			rectTarget.Height = rectNew.Height;
-		}
-
-		void CenterForRect(Rectangle rectFrame, ref Rectangle rectImage)
-		{
-			rectImage.X = rectFrame.X + (rectFrame.Width - rectImage.Width) / 2;
-		}
-
-		public void Draw(Graphics gr, Rectangle rectItem, Image img)
-		{
-			int ypDraw = rectItem.Y;
-
-			// draw the item frame
-			Pen penDark = new Pen(new SolidBrush(SystemColors.ControlDarkDark), 1);
-			Pen penLight = new Pen(new SolidBrush(SystemColors.ControlLightLight), 1);
-
-			gr.FillRectangle(new SolidBrush(SystemColors.Control), rectItem);
-
-			gr.DrawLine(penDark, rectItem.X, rectItem.Y, rectItem.X + rectItem.Width, rectItem.Y);
-			gr.DrawLine(penLight, rectItem.X + rectItem.Width, rectItem.Y, rectItem.X + rectItem.Width, rectItem.Y + rectItem.Height);
-			gr.DrawLine(penDark, rectItem.X, rectItem.Y, rectItem.X, rectItem.Y + rectItem.Height);
-			gr.DrawLine(penLight, rectItem.X, rectItem.Y + rectItem.Height, rectItem.X + rectItem.Width, rectItem.Y + rectItem.Height);
-
-			// ypDraw += ypThumbnailMargin;
-
-//			Rectangle rectImage = m_pbx.ClientRectangle; // m_rectThumbnail;
-//			CenterForRect(rectImage, ref rectItem);
-
-			gr.DrawImage(img, rectItem);
-
-			// ypDraw += pexo.ypThumbnail + ypThumbnailMargin;
-		}
-
-		private void m_pbLoadValues_Click(object sender, System.EventArgs e)
-		{
-		}
-
-	    private class PGL
-	    {
-	        public class OFI
-	        {
-	            public string sOfficialID;
-	            public string sEmail;
-
-	            public OFI()
-	            {
-	                sOfficialID = null;
-	                sEmail = null;
-	            }
-	        };
-
-	        public PGL()
-	        {
-	            plofi = new List<OFI>();
-	        }
-	        public List<OFI> plofi;
-//	        public List<string> rgsLinks;
-//	        public List<string> rgsData;
-	        public int iCur;
-	    };
-			
         bool m_fLoggedIn;
 
-		RST m_rst;
+		Roster m_rst;
 		CountsData m_gc;
 
-		private bool FSetCheckboxControlVal(IHTMLDocument2 oDoc2, bool fChecked, string sName)
-		{
-			IHTMLElementCollection hec;
-
-            hec = (IHTMLElementCollection)oDoc2.all.tags("input");
-            
-			foreach (IHTMLInputElement ihie in hec)
-				{
-				if (String.Compare(ihie.name, sName, true) == 0)
-					{
-					if (ihie.@checked == fChecked)
-						return false;
-
-					ihie.@checked = fChecked;
-					return true;
-					}
-				}
-			return false;
-		}
-
-        private static bool FSetInputControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
-        {
-            IHTMLElementCollection hec;
-
-            hec = (IHTMLElementCollection)oDoc2.all.tags("input");
-            string sT = null;
-            bool fNeedSave = false;
-            foreach (IHTMLInputElement ihie in hec)
-            {
-                if (String.Compare(ihie.name, sName, true) == 0)
-                {
-                    if (fCheck)
-                    {
-                        sT = ihie.value;
-                        if (sT == null)
-                            sT = "";
-                        if (String.Compare(sValue, sT) != 0)
-                            fNeedSave = true;
-                    }
-                    else
-                    {
-                        fNeedSave = true;
-                    }
-                    ihie.value = sValue;
-                }
-            }
-            return fNeedSave;
-        }
-
-		/* M P  G E T  S E L E C T  V A L U E S */
-		/*----------------------------------------------------------------------------
-			%%Function: MpGetSelectValues
-			%%Qualified: ArbWeb.AwMainForm.MpGetSelectValues
-			%%Contact: rlittle
-
-            for a given <select name=$sName><option value=$sValue>$sText</option>...
-         
-            Find the given sName select object. Then add a mapping of
-            $sText -> $sValue to a dictionary and return it.
-		----------------------------------------------------------------------------*/
-		Dictionary<string, string> MpGetSelectValues(IHTMLDocument2 oDoc2, string sName)
-        
-        {
-            IHTMLElementCollection hec;
-			
-            Dictionary<string, string> mp = new Dictionary<string, string>();
-
-            hec = (IHTMLElementCollection)oDoc2.all.tags("select");
-            foreach (HTMLSelectElementClass ihie in hec)
-                {
-                if (String.Compare(ihie.name, sName, true) == 0)
-                    {
-                    foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
-                        {
-                        if (mp.ContainsKey(ihoe.text))
-                            m_srpt.AddMessage(String.Format("How strange!  '{0}' shows up more than once as a position", ihoe.text), StatusBox.StatusRpt.MSGT.Warning);
-                        else
-                            mp.Add(ihoe.text, ihoe.value);
-						}
-                    }
-                }
-            return mp;
-        }
-
-        // if fValueIsValue == false, then sValue is the "text" of the option control
-	    static bool FSelectMultiSelectOption(IHTMLDocument2 oDoc2, string sName, string sValue, bool fValueIsValue)
-		{
-			IHTMLElementCollection hec;
-
-			hec = (IHTMLElementCollection)oDoc2.all.tags("select");
-
-			foreach (HTMLSelectElementClass ihie in hec)
-				{
-				if (String.Compare(ihie.name, sName, true) == 0)
-					{
-					foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
-						{
-                        if ((fValueIsValue && ihoe.value == sValue) ||
-                            (!fValueIsValue && ihoe.text == sValue))
-							{
-							ihoe.selected = true;
-							return true;
-							}
-						}
-					}
-				}
-			return false;
-		}
-
-		static bool FResetMultiSelectOptions(IHTMLDocument2 oDoc2, string sName)
-		{
-			IHTMLElementCollection hec;
-
-			hec = (IHTMLElementCollection)oDoc2.all.tags("select");
-
-			foreach (HTMLSelectElementClass ihie in hec)
-				{
-				if (String.Compare(ihie.name, sName, true) == 0)
-					{
-					foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
-						{
-						ihoe.selected = false;
-						}
-					}
-				}
-			return true;
-		}
-
-        string SGetFilterID(IHTMLDocument2 oDoc2, string sName, string sValue)
-        {
-            IHTMLElementCollection hec;
-
-            hec = (IHTMLElementCollection)oDoc2.all.tags("select");
-            foreach (HTMLSelectElementClass ihie in hec)
-                {
-                if (String.Compare(ihie.name, sName, true) == 0)
-                    {
-                    foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
-                        {
-                        if (ihoe.text == sValue)
-                            {
-                            return ihoe.value;
-                            }
-                        }
-                    }
-                }
-            return null;
-        }
-
-        private bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
-        {
-            IHTMLElementCollection hec;
-
-            hec = (IHTMLElementCollection)oDoc2.all.tags("select");
-            bool fNeedSave = false;
-            foreach (IHTMLSelectElement ihie in hec)
-                {
-                if (String.Compare(ihie.name, sName, true) == 0)
-                    {
-                    foreach(IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
-                        {
-                        if (ihoe.text == sValue)
-                            {
-							// value is already set...
-							if (ihie.value == ihoe.value)
-								return false;
-                            ihoe.selected = true;
-                            object dummy = null;
-                            IHTMLDocument4 oDoc4 = (IHTMLDocument4)oDoc2;
-                            object eventObj = oDoc4.CreateEventObject(ref dummy);
-                            HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
-                            hsec.FireEvent("onchange", ref eventObj);
-                            return true;
-                            }
-                        }
-                    }
-                }
-            return fNeedSave;
-        }
-
-#if no
-		private bool FClickControlName(IHTMLDocument2 oDoc2, string sTag, string sName)
-		{
-			// find an sTag with name sName
-			IHTMLElementCollection hec;
-			hec = (IHTMLElementCollection)oDoc2.all.tags(sTag);
-
-			if (sTag.ToUpper() == "a")
-				{
-				foreach (IHTMLAnchorElement 
-				}
-		}
-
-#endif // no
-
-        private static bool FClickControl(ArbWebCore awc, IHTMLDocument2 oDoc2, string sId)
-        {
-//			m_srpt.AddMessage("Before clickcontrol: "+sId);
-            ((IHTMLElement)(oDoc2.all.item(sId, 0))).click();
-//			m_srpt.AddMessage("After clickcontrol");
-            return awc.FWaitForNavFinish();
-        }
-
-		private bool FClickControlNoWait(IHTMLDocument2 oDoc2, string sId)
-		{
-//			m_srpt.AddMessage("Before clickcontrol: "+sId);
-			((IHTMLElement)(oDoc2.all.item(sId, 0))).click();
-//			m_srpt.AddMessage("After clickcontrol");
-			return true;
-		}
-        bool FCheckForControl(IHTMLDocument2 oDoc2, string sId)
-        {
-            if (oDoc2.all.item(sId, 0) != null)
-                return true;
-                
-            return false;
-        }
-
-		string SGetControlValue(IHTMLDocument2 oDoc2, string sId)
-		{
-			if (FCheckForControl(oDoc2, sId))
-				return (string)((IHTMLInputElement)oDoc2.all.item(sId, 0)).value;
-			return null;
-		}
-
+        /* E N S U R E  L O G G E D  I N */
+        /*----------------------------------------------------------------------------
+        	%%Function: EnsureLoggedIn
+        	%%Qualified: ArbWeb.AwMainForm.EnsureLoggedIn
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void EnsureLoggedIn()
         {
             IHTMLDocument2 oDoc2;
@@ -1462,16 +1283,16 @@ namespace ArbWeb
 
                 // if this control is already there, then we were auto-logged in...
                 oDoc2 = m_awc.Document2;
-                if (!FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink))
+                if (!ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink))
                     {
                     IHTMLDocument oDoc = m_awc.Document;
                     IHTMLDocument3 oDoc3 = m_awc.Document3;
 
-					FSetInputControlText(oDoc2, _s_Home_Input_Email, m_ebUserID.Text, false);
-                    FSetInputControlText(oDoc2, _s_Home_Input_Password, m_ebPassword.Text, false);
+					ArbWebControl.FSetInputControlText(oDoc2, _s_Home_Input_Email, m_ebUserID.Text, false);
+                    ArbWebControl.FSetInputControlText(oDoc2, _s_Home_Input_Password, m_ebPassword.Text, false);
 
                     m_awc.ResetNav();
-                    FClickControl(m_awc, oDoc2, _s_Home_Button_SignIn);
+                    m_awc.FClickControl(oDoc2, _s_Home_Button_SignIn);
                     m_awc.FWaitForNavFinish();
                     }
                 oDoc2 = m_awc.Document2;
@@ -1481,7 +1302,7 @@ namespace ArbWeb
                 oDoc2 = m_awc.Document2;
                 bool fToggledBrowser = false;
                 
-                while (count < 100 && (FCheckForControl(oDoc2, _sid_Home_Div_PnlAccounts) || !FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink)))
+                while (count < 100 && (ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Div_PnlAccounts) || !ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink)))
                     {
                     if (m_cbShowBrowser.Checked == false)
                         {
@@ -1502,7 +1323,7 @@ namespace ArbWeb
                     }                    
                     
                 oDoc2 = m_awc.Document2;
-                if (!FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink))
+                if (!ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink))
                     MessageBox.Show("Login failed for arbiter.net!");
                 else
                     m_fLoggedIn = true;
@@ -1511,1288 +1332,54 @@ namespace ArbWeb
                 }
         }
         
-        private string SBuildTempFilename(string sBaseName)
+        /* S  B U I L D  T E M P  F I L E N A M E */
+        /*----------------------------------------------------------------------------
+        	%%Function: SBuildTempFilename
+        	%%Qualified: ArbWeb.AwMainForm.SBuildTempFilename
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private string SBuildTempFilename(string sBaseName, string sExt)
         {
-            return String.Format("{0}\\{1}{2}.xls", Environment.GetEnvironmentVariable("Temp"),
+            return String.Format("{0}\\{1}{2}.{3}", Environment.GetEnvironmentVariable("Temp"),
                                  sBaseName,
-                                 System.Guid.NewGuid().ToString());
+                                 System.Guid.NewGuid().ToString(),
+                                 sExt);
         }
 
 
-		private void DownloadGames()
-		{
-			m_srpt.AddMessage("Starting games download...");
-			m_srpt.PushLevel();
-            string sTempFile = SBuildTempFilename("temp");
-
-		    sTempFile = DownloadGamesToFile(sTempFile);
-		    HandleDownloadGames(sTempFile);
-
-			System.IO.File.Delete(sTempFile);
-
-//          m_awc.PopNewWindow3Delegate();
-
-            // set the view to "all games"
-//            fNavDone = false;
-//            FSetSelectControlText(oDoc2, "pgeGamesView$conGamesView$ddlSavedFilters", "All Games", false);
-//            FWaitForNavFinish();
-            
-            // ok, now we have all games selected...
-            // time to try to download a report
-            
-            m_srpt.PopLevel();
-			m_srpt.AddMessage("Completed downloading games.");
-		    return;
-		}
-
-	    private string DownloadGamesToFile(string sTempFile)
-	    {
-	        IHTMLDocument2 oDoc2 = null;
-
-	        EnsureLoggedIn();
-
-	        int count = 0;
-	        string sFilter = null;
-
-	        while (count < 2)
-	            {
-	            // ok, now we're at the main assigner page...
-	            if (!m_awc.FNavToPage(_s_Assigning))
-	                throw (new Exception("could not navigate to games view"));
-
-	            oDoc2 = m_awc.Document2;
-	            sFilter = SGetFilterID(oDoc2, _s_Assigning_Select_Filters, "All Games");
-	            if (sFilter != null)
-	                break;
-
-	            count++;
-	            }
-
-	        if (sFilter == null)
-	            throw (new Exception("there is no 'all games' filter"));
-
-	        // now set that filter
-
-	        m_awc.ResetNav();
-	        FSetSelectControlText(oDoc2, _s_Assigning_Select_Filters, "All Games", false);
-	        m_awc.FWaitForNavFinish();
-
-	        if (!m_awc.FNavToPage(_s_Assigning_PrintAddress + sFilter))
-	            throw (new Exception("could not navigate to the reports page!"));
-
-	        // setup the file formats and go!
-
-	        oDoc2 = m_awc.Document2;
-	        FSetSelectControlText(oDoc2, _s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
-
-
-	        System.Windows.Forms.Clipboard.SetText(sTempFile);
-
-	        m_awc.ResetNav();
-	        //          m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadGamesNewWindowDelegate));
-
-	        FClickControlNoWait(oDoc2, _s_Assigning_Reports_Submit_Print);
-
-	        MessageBox.Show(
-	            String.Format(
-	                "Please download the games file to {0}. This path is on the clipboard, so you can just paste it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
-	                sTempFile), "ArbWeb", MessageBoxButtons.OK);
-	        return sTempFile;
-	    }
-
-    	void NavigateOfficialsPageAllOfficials()
-		{
-			EnsureLoggedIn();
-
-			ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
-			m_awc.FWaitForNavFinish();
-    		
-			// from the officials view, make sure we are looking at active officials
-			m_awc.ResetNav();
-			IHTMLDocument2 oDoc2 = m_awc.Document2;
-
-			FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
-			m_awc.FWaitForNavFinish();
-		}
-
-		/* P O P U L A T E  P G L  F R O M  P A G E  C O R E */
-		/*----------------------------------------------------------------------------
-			%%Function: PopulatePglFromPageCore
-			%%Qualified: ArbWeb.AwMainForm.PopulatePglFromPageCore
-			%%Contact: rlittle
-
-			Return a PGL (page of links) from the give sUrl.  
-
-				rx3 is a match for either the link name or the link text
-				rx4 is a match for the link name always (will supercede rx3)
-				rxData, if set, is the match that will be used to populat the rgsData
-
-			on exit, rgsLinkNames, rgsLinks, and (optionally) rgsData will be
-			populated in the pglLinks
-
-            we need to collect information from two separate places in the DOM --
-            the Official Name (Last, First) will be in an anchor linking to the
-            offical page (which we can get the official ID from).  Then we have the
-            email address from which we can get the actual email address.
-         
-            because of this, we collect the email first, then note that we
-            are looking for the official ID.  essentially, a state machine.. (albeit 2 
-            states)
-		----------------------------------------------------------------------------*/
-		void PopulatePglFromPageCore(PGL pgl, IHTMLDocument2 oDoc)
-		{
-			IHTMLElementCollection links = oDoc.links;
-            Regex rx3 = new Regex("OfficialEdit.aspx\\?userID=.*");
-            Regex rxData = new Regex("mailto:.*");
-
-			bool fLookingForEmail = false;
-
-			// build up a list of probable index links
-			foreach (HTMLAnchorElementClass link in links)
-			    {
-				string sLinkName = link.nameProp;
-				string sLinkText = link.innerText;
-				string sLinkTarget = link.href;
-
-				if (sLinkText == null)
-					sLinkText = "";
-
-				if (sLinkName == null)
-					sLinkName = link.innerText.Substring(1, link.innerText.Length - 1);
-
-				if (rxData != null && sLinkTarget != null && rxData.IsMatch(sLinkTarget))
-					{
-					if (fLookingForEmail)
-					    {
-					    // adjust the top item in plofi...
-					    pgl.plofi[pgl.plofi.Count - 1].sEmail = sLinkTarget;
-					    fLookingForEmail = false;
-					    }
-					else
-					    {
-					    m_srpt.AddMessage("Found (" + sLinkTarget + ") when not looking for email!", StatusRpt.MSGT.Error);
-					    }
-					}
-
-				if (rx3.IsMatch(sLinkName))
-					{
-                    PGL.OFI ofi = new PGL.OFI();
-                    
-                    ofi.sEmail = "";
-                    ofi.sOfficialID = link.href;
-                    pgl.plofi.Add(ofi);
-
-                    fLookingForEmail = true;
-					}
-
-			    }	
-			pgl.iCur = 0;
-			}
-
-        private bool FAppendToFile(string sFile, string sName, string sEmail, List<string> plsMisc)
-		{
-            StreamWriter sw = new StreamWriter(sFile, true, System.Text.Encoding.Default);
-
-            sEmail = sEmail.Substring(sEmail.IndexOf(":") + 1);
-
-            if (sw == null)
-                return false;
-
-            string sFirst, sLast;
-
-            if (sName.IndexOf(" ") == -1)
-                {
-                sFirst = sName;
-                sLast = "";
-                }
-            else
-                {
-                sFirst = sName.Substring(0, sName.IndexOf(" "));
-                sLast = sName.Substring(sName.IndexOf(" ") + 1);
-                }
-
-            sw.Write("\"{0}\",\"{1}\",\"{2}\"", sFirst, sLast, sEmail);
-            foreach(string s in plsMisc)
-                sw.Write(",\"{0}\"", s);
-                
-            sw.WriteLine();
-            sw.Close();
-            return true;
-		}
-
-		/* U P D A T E  M I S C */
-		/*----------------------------------------------------------------------------
-			%%Function: UpdateMisc
-			%%Qualified: ArbWeb.AwMainForm.UpdateMisc
-			%%Contact: rlittle
-
-		----------------------------------------------------------------------------*/
-		void UpdateMisc(PGL pgl, RST rst, ref RSTE rste)
-		{
-			// ok, nav to the page and scrape
-//			m_awc.ResetNav();
-//			ThrowIfNot(FClickControl(m_awc.Document2, "pgeOfficialEdit_cmnRelatedData_tskEditMiscFields"), "couldn't find misc fields link");
-//          m_awc.FWaitForNavFinish();
-			
-			if (!m_awc.FNavToPage(_s_EditUser_MiscFields + pgl.plofi[pgl.iCur].sOfficialID))
-				{
-				throw(new Exception("could not navigate to the officials page"));
-				}
-
-            IHTMLDocument oDoc = m_awc.Document;
-			IHTMLDocument2 oDoc2 = m_awc.Document2;
-			IHTMLDocument3 oDoc3 = m_awc.Document3;
-
-			IHTMLElementCollection hec;
-
-			// misc field info.  every text input field is a misc field we want to save
-			hec = (IHTMLElementCollection)oDoc2.all.tags("input");
-			List<string> plsValue = new List<string>(); 
-			string sValue = null;
-			bool fNeedSave = false;
-			
-			foreach (IHTMLInputElement ihie in hec)
-				{
-				if (String.Compare(ihie.type, "text", true) == 0)
-					{
-					// cool, extract the value
-					sValue = ihie.value;
-					if (sValue == null)
-						sValue = "";
-					if (rst != null)
-						{
-						// check to see if it matches what we have
-						// find a match on email address first
-						List<string> plsMisc = rst.PlsLookupEmail(pgl.plofi[pgl.iCur].sEmail);
-
-						if (plsMisc != null)
-						    {
-						    if (plsMisc.Count <= plsValue.Count 
-						        && ihie.value != null
-						        && ihie.value.Length > 0)
-						        {
-						        // null means empty which replaces non-empty
-						        ihie.value = "";
-						        fNeedSave = true;
-						        }
-						    else if (plsMisc.Count > plsValue.Count 
-							         && String.Compare(plsMisc[plsValue.Count], sValue, true/*ignoreCase*/) != 0)
-							    {
-							    ihie.value = plsMisc[plsValue.Count];
-							    fNeedSave = true;
-							    }
-							}
-						}
-					plsValue.Add(sValue);
-					// don't break here -- just get the next misc value...
-					}
-				}
-
-			if (fNeedSave)
-				{
-				m_srpt.AddMessage(String.Format("Updating misc info...", pgl.plofi[pgl.iCur].sEmail));
-				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_MiscFields_Button_Save), "Couldn't find save button");
-									
-				m_awc.FWaitForNavFinish();
-				}
-            else
-                {
-				m_awc.ResetNav();
-                ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
-//				((IHTMLElement)(oDoc2.all.item("pgeMiscFieldsEdit_navMiscFieldsEdit_btnSave", 0))).click();
-				m_awc.FWaitForNavFinish();
-				}
-                
-			if (sValue == null || plsValue.Count == 0)
-				throw new Exception("couldn't extract misc field for official");
-
-			rste.m_plsMisc = plsValue;
-		}
-
-		void MatchAssignText(IHTMLInputElement ihie, RST rst, string sMatch, string sRsteMatched, ref string sAssign, ref bool fNeedSave, ref bool fFailAssign)
-		{
-			if (ihie.name.Contains(sMatch))
-				{
-				sAssign = ihie.value;
-
-				if (sAssign == null)
-					sAssign = "";
-
-				if (rst != null)
-					{
-					// check to see if it matches what we have
-					// find a match on email address first
-					if (sRsteMatched != null 
-						&& String.Compare(sRsteMatched, sAssign, true/*ignoreCase*/) != 0)
-						{
-						if (ihie.disabled)
-						    {
-						    fFailAssign = true;
-						    }
-						else
-						    {
-						    ihie.value = sRsteMatched;
-						    fNeedSave = true;
-						    }
-						}
-					}
-				}
-		}
-
-		/* U P D A T E  I N F O */
-		/*----------------------------------------------------------------------------
-			%%Function: UpdateInfo
-			%%Qualified: ArbWeb.AwMainForm.UpdateInfo
-			%%Contact: rlittle
-
-			when we leave, if rst was null, then rste will have the values as we
-			fetched from arbiter
-		----------------------------------------------------------------------------*/
-		void UpdateInfo(PGL pgl, RST rst, ref RSTE rste, bool fMarkOnly)
-        {
-            bool fNeedSave = false;
-            bool fFailUpdate = false;
-
-            RSTE rsteMatch = null;
-
-			if (rst != null)
-                rsteMatch = rst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
-
-			if (rsteMatch == null)
-				rsteMatch = new RSTE();	// just to get nulls filled in to the member variables
-			else
-				rsteMatch.Marked = true;
-
-			if (fMarkOnly)
-				return;
-
-			// ok, nav to the page and scrape
-            if (!m_awc.FNavToPage(_s_EditUser + pgl.plofi[pgl.iCur].sOfficialID))
-				{
-				throw(new Exception("could not navigate to the officials page"));
-				}
-
-			IHTMLDocument oDoc = m_awc.Document;
-			IHTMLDocument2 oDoc2 = m_awc.Document2;
-			IHTMLDocument3 oDoc3 = m_awc.Document3;
-
-			IHTMLElementCollection hec;
-
-			hec = (IHTMLElementCollection)oDoc2.all.tags("input");
-
-			foreach (IHTMLInputElement ihie in hec)
-				{
-				if (String.Compare(ihie.type, "checkbox", true) == 0)
-					{
-					// checkboxes are either ready or active
-					if (ihie.name.Contains("Active"))
-					    rste.m_fActive = String.Compare(ihie.value, "on", true) == 0;
-					else if (ihie.name.Contains("Ready"))
-						rste.m_fReady = String.Compare(ihie.value, "on", true) == 0;
-					}
-
-				if (String.Compare(ihie.type, "text", true) == 0)
-					{
-					if (ihie.name.Contains("Email"))
-						{
-//						if (ihie.value == null && rste.m_sEmail != null && rste.m_sEmail != "")
-						    // continue;
-
-						if (ihie.value != null && rste.m_sEmail != null)
-							{
-							if (String.Compare(ihie.value, rste.m_sEmail, true) !=  0)
-								throw new Exception("email addresses don't match!");
-							}
-						else
-							{
-							m_srpt.AddMessage(String.Format("NULL Email address for {0},{1}", rste.m_sFirst, rste.m_sLast), StatusBox.StatusRpt.MSGT.Error);
-							}
-						}
-					MatchAssignText(ihie, rst, "FirstName", rsteMatch.m_sFirst, ref rste.m_sFirst, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "LastName", rsteMatch.m_sLast, ref rste.m_sLast, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "Address1", rsteMatch.m_sAddress1, ref rste.m_sAddress1, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "Address2", rsteMatch.m_sAddress2, ref rste.m_sAddress2, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "City", rsteMatch.m_sCity, ref rste.m_sCity, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "State", rsteMatch.m_sState, ref rste.m_sState, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "PostalCode", rsteMatch.m_sZip, ref rste.m_sZip, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "OfficialNumber", rsteMatch.m_sOfficialNumber, ref rste.m_sOfficialNumber, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "DateOfBirth", rsteMatch.m_sDateOfBirth, ref rste.m_sDateOfBirth, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "DateJoined", rsteMatch.m_sDateJoined, ref rste.m_sDateJoined, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "GamesPerDay", rsteMatch.m_sGamesPerDay, ref rste.m_sGamesPerDay, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "GamesPerWeek", rsteMatch.m_sGamesPerWeek, ref rste.m_sGamesPerWeek, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "GamesTotal", rsteMatch.m_sTotalGames, ref rste.m_sTotalGames, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "WaitMinutes", rsteMatch.m_sWaitMinutes, ref rste.m_sWaitMinutes, ref fNeedSave, ref fFailUpdate);
-					}
-				}
-
-            if (fFailUpdate)
-                {
-                m_srpt.AddMessage(String.Format("FAILED to update some general info!  '{0}' was read only", pgl.plofi[pgl.iCur].sEmail), StatusBox.StatusRpt.MSGT.Error);
-                }      
-			if (fNeedSave)
-				{
-				m_srpt.AddMessage(String.Format("Updating general info...", pgl.plofi[pgl.iCur].sEmail));
-                m_awc.ResetNav();
-                ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_OfficialsEdit_Button_Save), "couldn't find save button");
-				m_awc.FWaitForNavFinish();
-				}
-			else
-				{
-				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
-				m_awc.FWaitForNavFinish();
-				}
-            if (rste.m_sAddress1 == null || rste.m_sAddress2 == null || rste.m_sCity == null || rste.m_sDateJoined == null
-                || rste.m_sDateOfBirth == null || rste.m_sEmail == null || rste.m_sFirst == null || rste.m_sGamesPerDay == null 
-                || rste.m_sGamesPerWeek == null || rste.m_sLast == null || rste.m_sOfficialNumber == null
-                || rste.m_sState == null || rste.m_sTotalGames == null || rste.m_sWaitMinutes == null
-                || rste.m_sZip == null)
-                {
-				throw new Exception("couldn't extract one more more fields from official info");
-				}
-		}
-
-        static void VisitRankCallbackUpload(RST rst, string sRankPosition, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebCore awc, StatusBox.StatusRpt srpt)
-		{
-			IHTMLDocument2 oDoc2;
-			oDoc2 = awc.Document2;
-
-            List<string> plsUnrank;
-            Dictionary<int, List<string>> mpRank;
-            Dictionary<int, List<string>> mpRerank;
-
-            BuildRankingJobs(rst, sRankPosition, mpRanked, out plsUnrank, out mpRank, out mpRerank);
-
-            // at this point, we have a list of jobs to do.
-
-			// first, unrank everyone that needs unranked
-			if (plsUnrank.Count > 0)
-				{
-				FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
-				foreach (string s in plsUnrank)
-					{
-					if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
-						throw new Exception("couldn't select an official for unranking!");
-					}
-
-				// now, do the unrank
-				awc.ResetNav();
-				FClickControl(awc, oDoc2, _s_RanksEdit_Button_Unrank);
-				awc.FWaitForNavFinish();
-				oDoc2 = awc.Document2;
-				}
-
-			// now, let's rerank the folks that need to be re-ranked
-			// we will do this once for every new rank we are setting
-			foreach (int nRank in mpRerank.Keys)
-				{
-				FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
-				foreach (string s in mpRerank[nRank])
-					{
-					if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
-						throw new Exception("couldn't select an official for reranking!");
-					}
-				FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
-
-				// now, rank'em
-				awc.ResetNav();
-				FClickControl(awc, oDoc2, _s_RanksEdit_Button_ReRank);
-				awc.FWaitForNavFinish();
-				oDoc2 = awc.Document2;
-				}
-
-			// finally, let's rank the folks that weren't ranked before
-
-			foreach (int nRank in mpRank.Keys)
-				{
-				FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_NotRanked);
-				foreach (string s in mpRank[nRank])
-					{
-					if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_NotRanked, s, false))
-						srpt.AddMessage(String.Format("Could not select an official for ranking: {0}", s),
-										  StatusRpt.MSGT.Error);
-					// throw new Exception("couldn't select an official for ranking!");
-					}
-
-				FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
-
-				// now, rank'em
-				awc.ResetNav();
-				FClickControl(awc, oDoc2, _s_RanksEdit_Button_Rank);
-				awc.FWaitForNavFinish();
-				oDoc2 = awc.Document2;
-				}
-		}
-
-        // make the rankings on the page match the rankings in our roster
-	    private static void BuildRankingJobs(
-            RST rst, 
-            string sRankPosition, 
-            Dictionary<string, int> mpRanked, 
-            out List<string> plsUnrank, // officials that need to be unranked
-            out Dictionary<int, List<string>> mpRank, // officials that need to be ranked
-            out Dictionary<int, List<string>> mpRerank) // officials that need to be re-ranked
-	    {
-	        List<RSTE> plrste = rst.Plrste;
-
-	        // there are 3 things we can potentially do-
-	        //  1) unrank
-	        //  2) rank
-	        //  3) re-rank
-
-	        // all of these are most optimally done by multi-selecting and 
-	        // doing like-item things together
-	        // 
-	        // so, we will collect all the stuff together
-
-	        // just keep a list of officials to unrank.
-	        // for rank and re-rank, we want a mapping of (rank -> list of officials)
-
-	        plsUnrank = new List<string>();
-	        mpRank = new Dictionary<int, List<string>>();
-	        mpRerank = new Dictionary<int, List<string>>();
-
-	        // first, unrank any officials that should now become unranked
-	        foreach (RSTE rste in plrste)
-	            {
-	            string sReversed = String.Format("{0}, {1}", rste.m_sLast, rste.m_sFirst);
-
-	            if (!rste.FRanked(sRankPosition))
-	                {
-	                if (mpRanked.ContainsKey(sReversed))
-	                    {
-	                    // need to unrank
-	                    plsUnrank.Add(sReversed);
-	                    }
-	                // else, we're cool..we're both unranked
-	                }
-	            else
-	                {
-	                int nRank = rste.Rank(sRankPosition);
-
-	                // see if we need to rank or rerank
-	                if (mpRanked.ContainsKey(sReversed))
-	                    {
-	                    // may need to rerank
-	                    if (mpRanked[sReversed] != nRank)
-	                        {
-	                        // need to rerank
-	                        if (!mpRerank.ContainsKey(nRank))
-	                            mpRerank.Add(nRank, new List<string>());
-
-	                        mpRerank[nRank].Add(sReversed);
-	                        }
-	                    }
-	                else
-	                    {
-	                    // need to rank
-	                    if (!mpRank.ContainsKey(nRank))
-	                        mpRank.Add(nRank, new List<string>());
-
-	                    mpRank[nRank].Add(sReversed);
-	                    }
-	                }
-	            }
-	    }
-
-	    static void VisitRankCallbackDownload(RST rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebCore awc, StatusBox.StatusRpt srpt)
-		{
-			// don't do anything with unranked
-			// just add the rankings
-			foreach (string s in mpRanked.Keys)
-				rst.FAddRanking(s, sRank, mpRanked[s]);
-		}
-
-    	delegate void VisitRankCallback(RST rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebCore awc, StatusBox.StatusRpt srpt);
-
-		void HandleRankings(RST rst, ref RST rstBuilding)
-		{
-		    if (rst != null && rst.PlsRankings == null)
-		        return;
-		        
-			NavigateArbiterRankings();
-
-		    IHTMLDocument2 oDoc2;
-
-			oDoc2 = m_awc.Document2;
-
-			Dictionary<string, string> mpRankFilter = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_PosNames);
-			List<string> plsRankings = PlsRankingsBuildFromRst(rst, rstBuilding, mpRankFilter);
-
-		    if (rst == null)
-		        VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackDownload, rstBuilding, false/*fVerbose*/);
-    		else
-		        VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackUpload, rst, true/*fVerbose*/);
-		}
-
-	    /* V I S I T  R A N K I N G S */
+	    /* D O  S A V E  S T A T E  C O R E */
 	    /*----------------------------------------------------------------------------
-	    	%%Function: VisitRankings
-	    	%%Qualified: ArbWeb.AwMainForm.VisitRankings
+	    	%%Function: DoSaveStateCore
+	    	%%Qualified: ArbWeb.AwMainForm.DoSaveStateCore
 	    	%%Contact: rlittle
-         
-            Visit a rankings page. Used for both upload and download, with the
-            callback interface used to differentiate up/down.
+	    	
 	    ----------------------------------------------------------------------------*/
-	    private void VisitRankings(List<string> plsRankedPositions, IDictionary<string, string> mpRankFilter, VisitRankCallback pfnVrc, RST rstParam, bool fVerboseLog)
-	    {
-            // now, navigate to every ranked positions' page and either fetch or sync every
-	        // official
-	        m_srpt.LogData("Visit Rankings", 1, StatusRpt.MSGT.Header);
-	        m_srpt.LogData("plsRankedPositions:", 2, StatusRpt.MSGT.Body, plsRankedPositions);
-
-	        foreach (string sRankPosition in plsRankedPositions)
-	            {
-	            m_srpt.AddMessage(String.Format("Processing ranks for {0}...", sRankPosition));
-
-	            if (!FNavigateToRankPosition(mpRankFilter, sRankPosition))
-	                {
-	                m_srpt.AddMessage("Ranks for position '{0}' do not exist on Arbiter!  Skipping...",
-	                    StatusBox.StatusRpt.MSGT.Error);
-	                continue;
-                    }
-
-	            IHTMLDocument2 oDoc2 = m_awc.Document2;
-	            // m_awc.RefreshPage();
-
-	            Dictionary<string, int> mpRanked;
-	            Dictionary<string, string> mpRankedId;
-
-	            BuildRankingMapFromPage(oDoc2, sRankPosition, out mpRanked, out mpRankedId);
-
-                m_srpt.LogData("Rankings built: mpRanked:", 4, StatusRpt.MSGT.Body, mpRanked);
-                m_srpt.LogData("Rankings built: mpRankedId:", 4, StatusRpt.MSGT.Body, mpRankedId);
-
-	            pfnVrc(rstParam, sRankPosition, mpRanked, mpRankedId, m_awc, m_srpt);
-
-	            if (fVerboseLog)
-	                {
-                    m_awc.RefreshPage();
-
-	                Dictionary<string, int> mpRankedCheck;
-	                Dictionary<string, string> mpRankedIdCheck;
-
-	                BuildRankingMapFromPage(oDoc2, sRankPosition, out mpRankedCheck, out mpRankedIdCheck);
-
-                    List<string> plsUnrank;
-                    Dictionary<int, List<string>> mpRank;
-                    Dictionary<int, List<string>> mpRerank;
-	                BuildRankingJobs(rstParam, sRankPosition, mpRankedCheck, out plsUnrank, out mpRank, out mpRerank);
-
-	                if (plsUnrank.Count != 0)
-	                    m_srpt.LogData("plsUnrank not empty: ", 1, StatusRpt.MSGT.Error, plsUnrank);
-	                else
-	                    m_srpt.LogData("plsUnrank empty after upload", 4, StatusRpt.MSGT.Header);
-
-                    if (mpRank.Count != 0)
-                        m_srpt.LogData("mpRank not empty: ", 1, StatusRpt.MSGT.Error, mpRank);
-                    else
-                        m_srpt.LogData("mpRank empty after upload", 4, StatusRpt.MSGT.Header);
-                    if (mpRerank.Count != 0)
-                        m_srpt.LogData("mpRerank not empty: ", 1, StatusRpt.MSGT.Error, mpRerank);
-                    else
-                        m_srpt.LogData("mpRerank empty after upload", 4, StatusRpt.MSGT.Header);
-                
-                
-                }
-	            }
-	    }
-
-	    private bool FNavigateToRankPosition(IDictionary<string, string> mpRankFilter, string sRankPosition)
-	    {
-// try to navigate to the page
-	        if (!mpRankFilter.ContainsKey(sRankPosition))
-	            return false;
-
-	        // make sure we have the right checkbox states 
-	        // (Show unranked only = false, Show Active only = false)
-	        FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Active);
-	        FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Rank);
-
-	        m_awc.ResetNav();
-	        FSetSelectControlText(m_awc.Document2, _s_RanksEdit_Select_PosNames, sRankPosition, false);
-	        m_awc.FWaitForNavFinish();
-	        return true;
-	    }
-
-	    private void BuildRankingMapFromPage(IHTMLDocument2 oDoc2, string sRankPosition, out Dictionary<string, int> mpRanked, out Dictionary<string, string> mpRankedId)
-	    {
-	        List<string> plsUnranked = new List<string>();
-	        mpRanked = new Dictionary<string, int>();
-	        mpRankedId = new Dictionary<string, string>();
-
-	        Dictionary<string, string> mpT;
-
-	        // unranked officials
-	        mpT = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_NotRanked);
-
-	        foreach (string s in mpT.Keys)
-	            plsUnranked.Add(s);
-
-	        // ranked officials
-	        mpT = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_Ranked);
-
-	        foreach (string s in mpT.Keys)
-	            {
-	            int iColon = s.IndexOf(":");
-	            if (iColon == -1)
-	                throw new Exception("bad format for ranked official on arbiter!");
-
-	            int nRank = Int32.Parse(s.Substring(0, iColon));
-
-	            int iStart = iColon + 1;
-	            while (Char.IsWhiteSpace(s.Substring(iStart, 1)[0]))
-	                iStart++;
-
-	            string sRankKey = s.Substring(iStart);
-	            if (!mpRanked.ContainsKey(sRankKey))
-	                mpRanked.Add(sRankKey, nRank);
-	            else
-	                {
-	                m_srpt.AddMessage(
-	                    String.Format("Duplicate key {0} adding rank {1} to rank {2}", sRankKey, nRank, sRankPosition),
-	                    StatusRpt.MSGT.Error);
-	                }
-
-	            if (!mpRankedId.ContainsKey(sRankKey))
-	                mpRankedId.Add(sRankKey, mpT[s]);
-	            else
-	                {
-	                m_srpt.AddMessage(
-	                    String.Format("Duplicate key {0} adding rankid {1} to rank {2}", sRankKey, mpT[s], sRankPosition),
-	                    StatusRpt.MSGT.Error);
-	                }
-	            }
-	    }
-
-	    private void VisitRosterRankUploaded(RST rst, string sRank, Dictionary<string, int> mpRanked, IHTMLDocument2 oDoc2,
-	                                         Dictionary<string, string> mpRankedId)
-	    {
-	    }
-
-	    private static void VisitRosterRankDownload(RST rstBuilding, Dictionary<string, int> mpRanked, string sRank)
-	    {
-	    }
-
-	    private static List<string> PlsRankingsBuildFromRst(RST rst, RST rstBuilding, Dictionary<string, string> mpRankFilter)
-	    {
-	        List<string> plsRankings;
-	        if (rst == null)
-	            {
-	            // now, build up our plsRankedPositions
-	            plsRankings = new List<string>();
-
-	            foreach (string s in mpRankFilter.Keys)
-	                plsRankings.Add(s);
-
-	            rstBuilding.PlsRankings = plsRankings;
-	            }
-	        else
-	            plsRankings = rst.PlsRankings;
-	        return plsRankings;
-	    }
-
-	    private void NavigateArbiterRankings()
-	    {
-	        m_awc.ResetNav();
-	        if (!m_awc.FNavToPage(_s_RanksEdit))
-	            throw (new Exception("could not navigate to the bulk rankings page"));
-	        m_awc.FWaitForNavFinish();
-	    }
-
-	    void AddOfficials(List<RSTE> plrsteNew)
-		{
-			foreach (RSTE rste in plrsteNew)
-				{
-				// add the official rste
-                m_srpt.AddMessage(String.Format("Adding official '{0}', {1}", rste.Name, rste.m_sEmail), StatusBox.StatusRpt.MSGT.Body);
-				m_srpt.PushLevel();
-
-				// go to the add user page
-				m_awc.ResetNav();
-				if (!m_awc.FNavToPage(_s_AddUser))
-					{
-					throw(new Exception("could not navigate to the add user page"));
-					}
-				m_awc.FWaitForNavFinish(); 
-
-				IHTMLDocument2 oDoc2;
-
-				oDoc2 = m_awc.Document2;
-
-				ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_FirstName, rste.m_sFirst, false/*fCheck*/), "Failed to find first name control");
-				ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_LastName, rste.m_sLast, false/*fCheck*/), "Failed to find last name control");
-				ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_Email, rste.m_sEmail, false/*fCheck*/), "Failed to find email control");
-
-				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
-				m_awc.FWaitForNavFinish(); 
-
-				// we are either adding a new user, or a user that arbiter already knows
-				// about...
-				// 
-				if (!FCheckForControl(oDoc2, _sid_AddUser_Input_Address1))
-					{
-                    m_srpt.AddMessage(String.Format("Email {0} already in use", rste.m_sEmail), StatusBox.StatusRpt.MSGT.Warning);
-
-					// this email is member of another group.  we can't change their personal info
-					// do a quick sanity match to make sure this is the same user
-					string sText = oDoc2.body.innerText;
-					string sPrefix = "is already being used in the system by ";
-					int iFirst = sText.IndexOf(sPrefix);
-
-					ThrowIfNot(iFirst > 0, "Failed hierarchy on assumed 'in use' email name");
-					iFirst += sPrefix.Length;
-
-					int iLast = sText.IndexOf(". Click", iFirst);
-					ThrowIfNot(iLast > iFirst, "couldn't find the end of the users name on 'in use' email page");
-
-					string sName = sText.Substring(iFirst, iLast - iFirst);
-					if (String.Compare(sName, rste.Name, true/*ignoreCase*/) != 0)
-						{
-						if (MessageBox.Show(String.Format("Trying to add office {0} and found a mismatch with existing official {1}, with email {2}", rste.Name, sName, rste.m_sEmail), "ArbWeb", MessageBoxButtons.YesNo) != DialogResult.Yes)
-							{
-							// ok, then just cancel...
-							m_awc.ResetNav();
-							ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
-							m_awc.FWaitForNavFinish(); 
-							continue;
-							}
-						}
-					// cool, just go on...
-					m_awc.ResetNav();
-					ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
-					m_awc.FWaitForNavFinish(); 
-
-					// sigh, now we're being asked whether we want to add local personal info.  of course
-					// we don't since it will be thrown away when they choose to join our group!
-
-					// but make sure that we're really on that page...
-					sText = oDoc2.body.innerText;
-					ThrowIfNot(sText.IndexOf("as a fully integrated user") > 0, "Didn't find the confirmation text on 'personal info' portion of existing user sequence");
-
-					// cool, let's just move on again...
-					m_awc.ResetNav();
-					ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
-					m_awc.FWaitForNavFinish(); 
-
-					// now fallthrough to the "Official's info" page handling, which is common
-					}
-				else
-					{
-					// if there's an address control, then this is a brand new official
-					ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_Address1, rste.m_sAddress1, false/*fCheck*/), "Failed to find address1 control");
-					ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_Address1, rste.m_sAddress2, false/*fCheck*/), "Failed to find address2 control");
-					ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_City, rste.m_sCity, false/*fCheck*/), "Failed to find city control");
-					ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_State, rste.m_sState, false/*fCheck*/), "Failed to find state control");
-					ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_Zip, rste.m_sZip, false/*fCheck*/), "Failed to find zip control");
-
-					m_awc.ResetNav();
-					ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
-					m_awc.FWaitForNavFinish(); 
-
-					// fallthrough to the common handling below
-					}
-
-				// now we are on the last add official page
-				// the only thing that *might* be interesting on this page is the active button which is
-				// not checked by default...
-				ThrowIfNot(FCheckForControl(oDoc2, _sid_AddUser_Input_IsActive), "bad hierarchy in add user.  expected screen with 'active' checkbox, didn't find it.");
-
-				// don't worry about Active for now...Just click next again
-				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
-				m_awc.FWaitForNavFinish(); 
-
-				// and now we're on the finish page.  oddly enough, the finish button has the "Cancel" ID
-				ThrowIfNot(String.Compare("Finish", SGetControlValue(oDoc2, _sid_AddUser_Button_Cancel)) == 0, "Finish screen didn't have a finish button");
-
-				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
-				m_awc.FWaitForNavFinish(); 
-				m_srpt.PopLevel();
-				// and now we're back somewhere (probably officials edit page)
-				// continue to the next one...
-				}
-			// and that's it...simple n'est pas?
-		}
-
-        // Update the "last login" value.  since we are scraping the screen for this, we have to deal with pagination
-        static void VOPC_UpdateLastAccess(AwMainForm awf, IHTMLDocument2 oDoc2, Object o)
-        {
-            RST rstBuilding = (RST)o;
-
-            awf.UpdateLastAccessFromDoc(rstBuilding, oDoc2);
-        }
-
-        // object could be RST or PGL
-        delegate void VisitOfficialsPageCallback(AwMainForm awf, IHTMLDocument2 oDoc2, Object o);
-    	
-        void ProcessAllOfficialPages(VisitOfficialsPageCallback vopc, Object o)
-		{
-			NavigateOfficialsPageAllOfficials();
-
-            IHTMLDocument2 oDoc2 = m_awc.Document2;
-
-            // first, get the first pages and callback
-
-            vopc(this, oDoc2, o);
-
-            // figure out how many pages we have
-            // find all of the <a> tags with an href that targets a pagination postback
-            IHTMLElementCollection ihec = (IHTMLElementCollection)oDoc2.all.tags("a");
-            List<string> plsHrefs = new List<string>();
-
-            foreach (IHTMLAnchorElement iha in ihec)
-                {
-                if (iha.href != null && iha.href.Contains(_s_OfficialsView_PaginationHrefPostbackSubstr))
-                    {
-                    // we can't just remember this element because we will be navigating around.  instead we will
-                    // just remember the entire target so we can find it again
-                    plsHrefs.Add(iha.href);
-                    }
-                }
-
-            // now, we are going to navigate to each page by finding and clicking each pagination link in turn
-            foreach (string sHref in plsHrefs)
-                {
-                ihec = (IHTMLElementCollection) oDoc2.all.tags("a");
-                foreach (IHTMLAnchorElement iha in ihec)
-                    {
-                    if (String.Compare(iha.href, sHref, true /*ignoreCase*/) == 0)
-                        {
-                        // now we need to click on the navigation
-                        ((IHTMLElement)iha).click();
-                        m_awc.FWaitForNavFinish();
-                        oDoc2 = m_awc.Document2;
-
-                        vopc(this, oDoc2, o);
-                        break; // done processing the element collection -- have to process the next one for the next doc
-                        }
-                    }
-
-                }
-		}
-
-        
-        // Assuming we are on the core officials page...
-        private void UpdateLastAccessFromDoc(RST rstBuilding, IHTMLDocument2 oDoc2)
-	    {
-	        IHTMLTable ihtbl;
-
-	        // misc field info.  every text input field is a misc field we want to save
-	        ihtbl = (IHTMLTable) oDoc2.all.item(_sid_OfficialsView_ContentTable, 0);
-
-	        foreach (IHTMLTableRow ihtr in ihtbl.rows)
-	            {
-	            IHTMLElement iheEmail = (IHTMLElement) ihtr.cells.item(3);
-	            IHTMLElement iheSignedIn = (IHTMLElement) ihtr.cells.item(4);
-
-	            if (iheEmail == null || iheSignedIn == null)
-	                continue;
-
-	            string sEmail = iheEmail.innerText;
-	            string sSignedIn = iheSignedIn.innerText;
-
-	            RSTE rste = rstBuilding.RsteLookupEmail(sEmail);
-	            if (rste == null)
-	                {
-	                m_srpt.AddMessage(
-	                    String.Format("Lookup failed during ProcessAllOfficialPages for official '{0}'({1})",
-	                        ((IHTMLElement) ihtr.cells.item(2)).innerText, sEmail), StatusBox.StatusRpt.MSGT.Error);
-	                continue;
-	                }
-
-	            m_srpt.AddMessage(String.Format("Updating last access for official '{0}', {1}", rste.Name, sSignedIn),
-	                StatusBox.StatusRpt.MSGT.Body);
-	            rste.m_sLastSignin = sSignedIn;
-	            }
-	    }
-
-
-	    /* D O  C O R E  R O S T E R  U P D A T E */
-		/*----------------------------------------------------------------------------
-			%%Function: DoCoreRosterUpdate
-			%%Qualified: ArbWeb.AwMainForm.DoCoreRosterUpdate
-			%%Contact: rlittle
-
-			Do the core roster updating.  We are being given the list of links on
-			the official's edit page, the roster that we are uploading (if any),
-			and a list of officials to limit our handling to (this is used when 
-			we just added new officials and we just want to update their info/misc
-			fields...)
-			
-		----------------------------------------------------------------------------*/
-		void DoCoreRosterUpdate(PGL pgl, RST rst, RST rstBuilding, List<RSTE> plrsteLimit)
-		{
-			pgl.iCur = 0;
-            Dictionary<string, bool> mpOfficials = new Dictionary<string, bool>();
-            
-            if (plrsteLimit != null)
-                {
-				foreach (RSTE rsteCheck in plrsteLimit)
-				    mpOfficials.Add("MAILTO:" + rsteCheck.m_sEmail.ToUpper(), true);
-				}
-
-            while (pgl.iCur < pgl.plofi.Count && (rst == null || m_cbRankOnly.Checked == false) && pgl.iCur < pgl.plofi.Count)
-				{
-				if (rst == null
-                    || (rst.PlsLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
-                        && pgl.plofi[pgl.iCur].sEmail.Length != 0))
-					{
-					RSTE rste = new RSTE();
-					bool fMarkOnly = false;
-
-                    rste.SetEmail((string)pgl.plofi[pgl.iCur].sEmail);
-                    m_srpt.AddMessage(String.Format("Processing roster info for {0}...", pgl.plofi[pgl.iCur].sEmail));
-
-                    if (m_cbAddOfficialsOnly.Checked && plrsteLimit == null)
-                        fMarkOnly = true;
-                    
-                    if (plrsteLimit != null)
-                        {
-                        if (!mpOfficials.ContainsKey(((string) pgl.plofi[pgl.iCur].sEmail.ToUpper())))
-                            {
-                            pgl.iCur++;
-                            continue; // it doesn't match an official in the "limit-to" list.
-                            }
-                        fMarkOnly = false;  // we want to process this one.
-                        }                            
-
-                    if (!fMarkOnly)
-                        UpdateMisc(pgl, rst, ref rste);
-
-                    // don't call UpdateInfo on a newly added official
-                    if (plrsteLimit == null && (rst == null || !rst.IsQuick))
-                        UpdateInfo(pgl, rst, ref rste, fMarkOnly);
-
-					if (rst == null)
-						{
-						rstBuilding.Add(rste);
-//                        rste.AppendToFile(sOutFile, m_rgsRankings);
-						// at this point, we have the name and the affiliation
-						//						if (!FAppendToFile(sOutFile, sName, (string)pgl.rgsData[pgl.iCur], plsValue))
-						//							throw new Exception("couldn't append to the file!");
-						}
-					else
-						{
-						RSTE rsteT = rst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
-
-						if (rsteT != null)
-							rsteT.Marked = true;
-						}
-
-					if (m_cbTestOnly.Checked)
-						{
-						break;
-						}
-					}
-
-				pgl.iCur++;
-				}
-		}
-
-        static void VOPC_PopulatePgl(AwMainForm awf, IHTMLDocument2 oDoc2, Object o)
-        {
-            awf.PopulatePglFromPageCore((PGL)o, oDoc2);
-        }
-
-		PGL PglGetOfficialsFromWeb()
-		{
-			EnsureLoggedIn();
-			int i;
-
-		    PGL pgl = new PGL();
-
-            ProcessAllOfficialPages(VOPC_PopulatePgl, pgl);
-
-//            NavigateOfficialsPageAllOfficials();
-
-//            IHTMLDocument2 oDoc = m_awc.Document2;
-
-//			PopulatePglFromPageCore(pgl, oDoc);
-			// for now, assume that all the officials fit on the same screen!!
-
-			// if there are no links, then we aren't logged in yet
-            if (pgl.plofi.Count == 0)
-				{
-				throw(new Exception("Not logged in after EnsureLoggedIn()!!"));
-				}
-
-			// ok, now grab the userIDs and put those in the pgl
-			i = 0;
-            while (i < pgl.plofi.Count)
-                {
-                string s = (string) pgl.plofi[i].sOfficialID;
-
-				string sID = s.Substring(s.IndexOf("=") + 1);
-                pgl.plofi[i].sOfficialID = sID;
-				i++;
-				}
-
-			return pgl;
-		}
-
-		/* H A N D L E  R O S T E R */
-		/*----------------------------------------------------------------------------
-			%%Function: HandleRoster
-			%%Qualified: ArbWeb.AwMainForm.HandleRoster
-			%%Contact: rlittle
-
-			If rst == null, then we're downloading the roster.  Otherwise, we are
-			uploading
-		----------------------------------------------------------------------------*/
-		void HandleRoster(RST rst, string sOutFile)
-        {
-            RST rstBuilding = null;
-		    PGL pgl;
-
-			// we're not going to write the roster out until the end now...
-
-			if (rst == null)
-				rstBuilding = new RST();
-
-			pgl = PglGetOfficialsFromWeb();
-			DoCoreRosterUpdate(pgl, rst, rstBuilding, null/*plrsteLimit*/);
-
-    		if (rstBuilding != null)
-				{
-				// get the last login date from the officials main page
-				NavigateOfficialsPageAllOfficials();
-				ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
-				}
-
-			if (rst != null)
-				{
-				List<RSTE> plrsteUnmarked = rst.PlrsteUnmarked();
-
-				// we might have some officials left "unmarked".  These need to be added
-				
-				// at this point, all the officials have either been marked or need to 
-				// be added
-
-				if (plrsteUnmarked.Count > 0)
-				    {
-					if (MessageBox.Show(String.Format("There are {0} new officials.  Add these officials?", plrsteUnmarked.Count), "ArbWeb", MessageBoxButtons.YesNo) == DialogResult.Yes)
-					    {
-					    AddOfficials(plrsteUnmarked);
-						// now we have to reload the page of links and do the whole thing again (updating info, etc)
-						// so we get the misc fields updated.  Then fall through to the rankings and do everyone at
-						// once
-						pgl = PglGetOfficialsFromWeb(); 	// refresh to get new officials
-						DoCoreRosterUpdate(pgl, rst, null/*rstBuilding*/, plrsteUnmarked);
-						// now we can fall through to our core ranking handling...
-					    }
-					}
-				}
-
-			// now, do the rankings.  this is easiest done in the bulk rankings tool...
-			HandleRankings(rst, ref rstBuilding);
-			// lastly, if we're downloading, then output the roster
-
-			if (rst == null)
-				rstBuilding.WriteRoster(sOutFile);
-
-			if (m_cbTestOnly.Checked)
-				{
-				MessageBox.Show("Stopping after 1 roster item");
-				}
-			}
-
-		void HandleDownloadGames(string sFile)
-		{
-			object missing = System.Type.Missing;
-			Microsoft.Office.Interop.Excel.Application app = new Microsoft.Office.Interop.Excel.Application();
-
-			Microsoft.Office.Interop.Excel.Workbook wkb;
-
-			wkb = app.Workbooks.Open(sFile, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing);
-
-			string sOutFile = "";
-			string sPrefix = "";
-
-			if (m_ebGameFile.Text.Length < 1)
-				{
-				sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
-				}
-			else
-				{
-				sOutFile = System.IO.Path.GetDirectoryName(m_ebGameFile.Text);
-				string[] rgs;
-				if (m_ebGameFile.Text.Length > 5 && sOutFile.Length > 0)
-					{
-					rgs = CountsData.RexHelper.RgsMatch(m_ebGameFile.Text.Substring(sOutFile.Length + 1), "([.*])games");
-					if (rgs != null && rgs.Length > 0 && rgs[0] != null)
-						sPrefix = rgs[0];
-					}
-				}
-
-
-			sOutFile = String.Format("{0}\\{2}games_{1:MM}{1:dd}{1:yy}_{1:HH}{1:mm}.csv", sOutFile, DateTime.Now, sPrefix);
-
-			if (wkb != null)
-				{
-				wkb.SaveAs(sOutFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlCSV, missing, missing, missing, missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, missing, missing, missing, missing, missing);
-				wkb.Close(0, missing, missing);
-				}
-			app.Quit();
-			app = null;                
-			m_ebGameFile.Text = sOutFile;
-			System.IO.File.Delete(m_ebGameCopy.Text);
-			System.IO.File.Copy(sOutFile, m_ebGameCopy.Text);
-		}
-
-        void DownloadGamesNewWindowDelegate(object sender, DWebBrowserEvents2_NewWindow3Event e)
-		{
-            // at this point, e.bstrUrlContext has the URL to the XLS schedule file!!!
-            WebClient wc = new WebClient();
-
-            string sFile = String.Format("{0}\\{1}", Environment.GetEnvironmentVariable("temp"), System.Guid.NewGuid().ToString());
-            wc.DownloadFile(e.bstrUrl, sFile);
-			HandleDownloadGames(sFile);
-            System.IO.File.Delete(sFile);
-		}
-
-		void DownloadQuickRosterNewWindowDelegate(object sender, DWebBrowserEvents2_NewWindow3Event e)
-		{
-			// at this point, e.bstrUrlContext has the URL to the CSV schedule file!!!
-			WebClient wc = new WebClient();
-			object missing = System.Type.Missing;
-
-			// copy the file directly to the output filenames
-			string sFile = m_ebRoster.Text;
-			wc.DownloadFile(e.bstrUrl, sFile);
-		}
-#if no
-		private void TriggerDocumentDone(object sender, AxSHDocVw.DWebBrowserEvents2_DocumentCompleteEvent e)
-		{
-			fNavDone = true;
-		}
-		bool m_fInternalBrowserChange = false;
-
-		private void ShowBrowserStateChange(object sender, System.EventArgs e) {
-			if (!m_fInternalBrowserChange)
-				m_axWebBrowser1.Visible = true;
-			
-		}
-#endif // no
-		private void contextMenu1_Popup(object sender, System.EventArgs e) {
-		
-		}
-
-
 	    private void DoSaveStateCore()
 		{
 			m_rehProfile.Save();
 			m_reh.Save();
 		}
 
+		/* D O  S A V E  S T A T E */
+		/*----------------------------------------------------------------------------
+			%%Function: DoSaveState
+			%%Qualified: ArbWeb.AwMainForm.DoSaveState
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		private void DoSaveState(object sender, FormClosingEventArgs e)
         {
 			DoSaveStateCore();
         }
 
+        /* D O  D O W N L O A D  G A M E S */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoDownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.DoDownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void DoDownloadGames(object sender, EventArgs e)
         {
             DownloadGames();
@@ -2800,12 +1387,26 @@ namespace ArbWeb
 
         List<Cursor> m_plCursor;
         
+        /* P U S H  C U R S O R */
+        /*----------------------------------------------------------------------------
+        	%%Function: PushCursor
+        	%%Qualified: ArbWeb.AwMainForm.PushCursor
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         void PushCursor(Cursor crs)
         {
             m_plCursor.Add(this.Cursor);
             this.Cursor = crs;
         }
         
+        /* P O P  C U R S O R */
+        /*----------------------------------------------------------------------------
+        	%%Function: PopCursor
+        	%%Qualified: ArbWeb.AwMainForm.PopCursor
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         void PopCursor()
         {
             if (m_plCursor.Count > 0)
@@ -2815,137 +1416,14 @@ namespace ArbWeb
                 }
         }
 
-		string SBuildRosterFilename()
-		{
-			string sOutFile;
-            string sPrefix = "";
-            
-			if (m_ebRoster.Text.Length < 1)
-				{
-				sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
-				}
-			else
-				{
-				sOutFile = System.IO.Path.GetDirectoryName(m_ebRoster.Text);
-				string[] rgs;
-				if (m_ebRoster.Text.Length > 5 && sOutFile.Length > 0)
-					{
-					rgs = CountsData.RexHelper.RgsMatch(m_ebRoster.Text.Substring(sOutFile.Length + 1), "([.*])roster");
-					if (rgs != null && rgs.Length > 0 && rgs[0] != null)
-						sPrefix = rgs[0];
-					}
-				}
 
-			sOutFile = String.Format("{0}{2}\\roster_{1:MM}{1:dd}{1:yy}_{1:HH}{1:mm}.csv", sOutFile, DateTime.Now, sPrefix);
-			return sOutFile;
-		}
-
-		private void DoDownloadQuickRoster(object sender, EventArgs e)
-		{
-			m_srpt.AddMessage("Starting Quick Roster download...");
-			m_srpt.PushLevel();
-			PushCursor(Cursors.WaitCursor);
-
-		    string sOutFile = SBuildRosterFilename();
-
-			m_ebRoster.Text = sOutFile;
-
-			//string sTempFile = "C:\\Users\\rlittle\\AppData\\Local\\Temp\\temp3c92cb56-0b95-41c0-8eb5-37387bacf4f6.csv";
-			string sTempFile = SRosterFileDownload();
-
-//			m_awc.PopSaveToFile();
-//			m_awc.PopNewWindow3Delegate();
-
-			// now, get the rankings and update the last access date
-
-			RST rstBuilding = new RST();
-
-			rstBuilding.ReadRoster(sTempFile);
-
-    		ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
-			HandleRankings(null, ref rstBuilding);
-			rstBuilding.WriteRoster(m_ebRoster.Text);
-//			System.IO.File.Copy(sTempFile, m_ebRoster.Text);
-			System.IO.File.Delete(m_ebRosterCopy.Text);
-			System.IO.File.Copy(sOutFile, m_ebRosterCopy.Text);
-
-			PopCursor();
-			m_srpt.PopLevel();
-
-			m_srpt.AddMessage("Completed Quick Roster download.");
-		}
-
-	    private string SRosterFileDownload()
-	    {
-	        IHTMLDocument2 oDoc2;
-// navigate to the officials page...
-	        EnsureLoggedIn();
-
-	        ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
-	        m_awc.FWaitForNavFinish();
-
-	        oDoc2 = m_awc.Document2;
-
-	        // from the officials view, make sure we are looking at active officials
-	        m_awc.ResetNav();
-	        FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
-	        m_awc.FWaitForNavFinish();
-
-	        oDoc2 = m_awc.Document2;
-	        // now we have all officials showing.  download the report
-
-	        // sometimes running the javascript takes a while, but the page isn't busy
-	        int cTry = 3;
-	        while (cTry > 0)
-	            {
-	            m_awc.ResetNav();
-	            m_awc.ReportNavState("Before click on PrintRoster: ");
-	            ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_OfficialsView_PrintRoster), "Can't click on roster control");
-	            m_awc.FWaitForNavFinish();
-
-	            oDoc2 = m_awc.Document2;
-	            if (FCheckForControl(oDoc2, _sid_RosterPrint_MergeStyle))
-	                break;
-
-	            cTry--;
-	            }
-
-	        // now we are on the PrintRoster screen
-
-	        // clicking on the Merge Style control will cause a page refresh
-	        m_awc.ResetNav();
-	        ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_RosterPrint_MergeStyle), "Can't click on roster control");
-	        m_awc.FWaitForNavFinish();
-
-	        oDoc2 = m_awc.Document2;
-
-	        ThrowIfNot(FCheckForControl(oDoc2, _sid_RosterPrint_DateJoined),
-	                   "Couldn't find expected control on roster print config!");
-
-	        // check a whole bunch of config checkboxes
-	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_DateJoined);
-	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_OfficialNumber);
-	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_MiscFields);
-	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicPhone);
-	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicAddress);
-
-	        m_awc.ResetNav();
-//    		m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadQuickRosterNewWindowDelegate));
-//          m_awc.PushSaveToFile(sOutFile);
-
-
-	        ((IHTMLElement) (oDoc2.all.item(_sid_RosterPrint_BeginPrint, 0))).click();
-
-	        string sTempFile = String.Format("{0}\\temp{1}.csv", Environment.GetEnvironmentVariable("Temp"),
-	                                         System.Guid.NewGuid().ToString());
-	        System.Windows.Forms.Clipboard.SetText(sTempFile);
-	        MessageBox.Show(
-	            String.Format(
-	                "Please download the roster to {0}. This path is on the clipboard, so you can just past it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
-	                sTempFile), "ArbWeb", MessageBoxButtons.OK);
-	        return sTempFile;
-	    }
-
+	    /* D O  D O W N L O A D  R O S T E R */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: DoDownloadRoster
+	    	%%Qualified: ArbWeb.AwMainForm.DoDownloadRoster
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
 	    private void DoDownloadRoster(object sender, EventArgs e)
         {
 			m_srpt.AddMessage("Starting FULL Roster download...");
@@ -2959,35 +1437,27 @@ namespace ArbWeb
             HandleRoster(null, sOutFile);
             PopCursor();
 			m_srpt.PopLevel();
-			System.IO.File.Delete(m_ebRosterCopy.Text);
-			System.IO.File.Copy(sOutFile, m_ebRosterCopy.Text);
+			System.IO.File.Delete(m_ebRosterWorking.Text);
+			System.IO.File.Copy(sOutFile, m_ebRosterWorking.Text);
 			m_srpt.AddMessage("Completed FULL Roster download.");
         }
 
-		private void InvalRoster()
-		{
-			m_rst = null;
-		}
 
-		private RST RstEnsure(string sInFile)
-		{
-			if (m_rst != null)
-				return m_rst;
-
-			m_rst = new RST();
-
-			m_rst.ReadRoster(sInFile);
-			return m_rst;
-		}
-
+		/* D O  U P L O A D  R O S T E R */
+		/*----------------------------------------------------------------------------
+			%%Function: DoUploadRoster
+			%%Qualified: ArbWeb.AwMainForm.DoUploadRoster
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		private void DoUploadRoster(object sender, EventArgs e)
 		{
 			m_srpt.AddMessage("Starting Roster upload...");
 			m_srpt.PushLevel();
 
-			string sInFile = m_ebRosterCopy.Text;
+			string sInFile = m_ebRosterWorking.Text;
 
-			RST rst = RstEnsure(sInFile);
+			Roster rst = RstEnsure(sInFile);
 
 			if (rst.IsQuick && (!m_cbRankOnly.Checked || !rst.HasRankings))
 				{
@@ -3001,35 +1471,32 @@ namespace ArbWeb
 			m_srpt.AddMessage("Completed Roster upload.");
 		}
 
-		private void InvalGameCount()
-		{
-			m_gc = null;
-		}
-
-		private CountsData GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled)
-		{
-			if (m_gc != null)
-				return m_gc;
-
-			CountsData gc = new CountsData(m_srpt);
-
-			gc.LoadData(sRoster, sGameFile, fIncludeCanceled, Int32.Parse(m_ebAffiliationIndex.Text));
-			m_gc = gc;
-			return gc;
-		}
-
+        /* D O  G E N  C O U N T S */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoGenCounts
+        	%%Qualified: ArbWeb.AwMainForm.DoGenCounts
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void DoGenCounts(object sender, EventArgs e)
 		{
 			m_srpt.AddMessage(String.Format("Generating analysis ({0})...", m_ebOutputFile.Text));
 			m_srpt.PushLevel();
 
-			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+			CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
 
-			gc.GenReport(m_ebOutputFile.Text);
+			gc.GenAnalysis(m_ebOutputFile.Text);
 			m_srpt.PopLevel();
 			m_srpt.AddMessage("Analysis complete.");
 		}
 
+        /* S  H T M L  R E A D  F I L E */
+        /*----------------------------------------------------------------------------
+        	%%Function: SHtmlReadFile
+        	%%Qualified: ArbWeb.AwMainForm.SHtmlReadFile
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private string SHtmlReadFile(string sFile)
         {
             string sHtml = "";
@@ -3043,6 +1510,13 @@ namespace ArbWeb
             return sHtml;
         }    
             
+        /* C H A N G E  S H O W  B R O W S E R */
+        /*----------------------------------------------------------------------------
+        	%%Function: ChangeShowBrowser
+        	%%Qualified: ArbWeb.AwMainForm.ChangeShowBrowser
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void ChangeShowBrowser(object sender, EventArgs e)
         {
             if (m_cbShowBrowser.Checked)
@@ -3051,22 +1525,43 @@ namespace ArbWeb
                 m_awc.Hide();
         }
 
+        /* D O  G E N E R I C  I N V A L  G C */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoGenericInvalGc
+        	%%Qualified: ArbWeb.AwMainForm.DoGenericInvalGc
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void DoGenericInvalGc(object sender, EventArgs e)
         {
             InvalGameCount();
         }
 
+        /* C H A N G E  P R O F I L E */
+        /*----------------------------------------------------------------------------
+        	%%Function: ChangeProfile
+        	%%Qualified: ArbWeb.AwMainForm.ChangeProfile
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void ChangeProfile(object sender, EventArgs e)
 		{
 			if (!m_fDontUpdateProfile)
 				{
 				DoSaveStateCore();
-				m_rehProfile = new ReHistory(m_rgreheProfile, String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_cbxProfile.Text), m_cbxProfile.Text);
+				m_rehProfile = new Settings(m_rgreheProfile, String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_cbxProfile.Text), m_cbxProfile.Text);
 				m_rehProfile.Load();
 				}
 		}
 
 
+        /* O N  P R O F I L E  L E A V E */
+        /*----------------------------------------------------------------------------
+        	%%Function: OnProfileLeave
+        	%%Qualified: ArbWeb.AwMainForm.OnProfileLeave
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void OnProfileLeave(object sender, EventArgs e)
         {
             if (m_fDontUpdateProfile)
@@ -3079,6 +1574,13 @@ namespace ArbWeb
 			ChangeProfile(sender, e);
         }
 
+		/* E N A B L E  C O N T R O L S */
+		/*----------------------------------------------------------------------------
+			%%Function: EnableControls
+			%%Qualified: ArbWeb.AwMainForm.EnableControls
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		void EnableControls()
 		{
 			m_chlbxSports.Enabled = m_cbFilterSport.Checked;
@@ -3089,134 +1591,193 @@ namespace ArbWeb
 			
 		}
 
+        /* H A N D L E  S P O R T  C H E C K E D */
+        /*----------------------------------------------------------------------------
+        	%%Function: HandleSportChecked
+        	%%Qualified: ArbWeb.AwMainForm.HandleSportChecked
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void HandleSportChecked(object sender, EventArgs e)
         {
 			EnableControls();
         }
 
+        /* H A N D L E  S P O R T  L E V E L  C H E C K E D */
+        /*----------------------------------------------------------------------------
+        	%%Function: HandleSportLevelChecked
+        	%%Qualified: ArbWeb.AwMainForm.HandleSportLevelChecked
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void HandleSportLevelChecked(object sender, EventArgs e)
         {
 			EnableControls();
         }
 
+        /* H A N D L E  S L O T  D E T A I L  C H E C K E D */
+        /*----------------------------------------------------------------------------
+        	%%Function: HandleSlotDetailChecked
+        	%%Qualified: ArbWeb.AwMainForm.HandleSlotDetailChecked
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void HandleSlotDetailChecked(object sender, EventArgs e)
         {
 
         }
 
-		string[] RgsFromChlbx(bool fUse, CheckedListBox chlbx)
-        {
-            return RgsFromChlbx(fUse, chlbx, -1, false, null, false);
-        }
-        
-		string[] RgsFromChlbxSport(bool fUse, CheckedListBox chlbx, string sSport, bool fMatch)
-		{
-			return RgsFromChlbx(fUse, chlbx, -1, false, sSport, fMatch);
-		}
 
-	    private string[] RgsFromChlbx(
-	        bool fUse,
-	        CheckedListBox chlbx,
-	        int iForceToggle,
-	        bool fForceOn,
-	        string sSport,
-	        bool fMatch)
-	    {
-	        string sSport2 = sSport == "Softball" ? "SB" : sSport;
-
-	        if (!fUse && sSport == null)
-	            return null;
-
-	        int c = chlbx.CheckedItems.Count;
-
-	        if (!fUse)
-	            c = chlbx.Items.Count;
-
-	        if (iForceToggle != -1)
-	            {
-	            if (fForceOn)
-	                c++;
-	            else
-	                c--;
-	            }
-
-	        string[] rgs = new string[c];
-	        int i = 0;
-
-	        if (!fUse)
-	            {
-	            int iT = 0;
-
-	            for (i = 0; i < c; i++)
-	                {
-	                rgs[iT] = (string) chlbx.Items[i];
-	                if (sSport != null)
-	                    {
-	                    if ((rgs[iT].IndexOf(sSport) >= 0 && fMatch)
-	                        || (rgs[iT].IndexOf(sSport) == -1 && !fMatch)
-	                        || (rgs[iT].IndexOf(sSport2) >= 0 && fMatch)
-	                        || (rgs[iT].IndexOf(sSport2) == -1 && !fMatch))
-	                        {
-	                        iT++;
-	                        }
-	                    }
-	                else
-	                    {
-	                    iT++;
-	                    }
-	                }
-	            if (iT < c)
-	                Array.Resize(ref rgs, iT);
-
-	            return rgs;
-	            }
-
-	        i = 0;
-	        foreach (int iChecked in chlbx.CheckedIndices)
-	            {
-	            if (iChecked == iForceToggle)
-	                continue;
-	            rgs[i] = (string) chlbx.Items[iChecked];
-	            if (sSport != null)
-	                {
-	                if ((rgs[i].IndexOf(sSport) >= 0 && fMatch)
-	                    || (rgs[i].IndexOf(sSport) == -1 && !fMatch))
-	                    {
-	                    i++;
-	                    }
-	                }
-	            else
-	                {
-	                i++;
-	                }
-	            }
-	        if (fForceOn && iForceToggle != -1)
-	            rgs[i++] = (string) chlbx.Items[iForceToggle];
-
-	        if (i < c)
-	            Array.Resize(ref rgs, i);
-
-	        return rgs;
-	    }
-
+	    /* G E N  S I T E  R O S T E R  R E P O R T */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: GenSiteRosterReport
+	    	%%Qualified: ArbWeb.AwMainForm.GenSiteRosterReport
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
 	    private void GenSiteRosterReport(object sender, EventArgs e)
 	    {
-	        CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+	        CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
 	        string sTempFile = String.Format("{0}\\temp{1}.doc", Environment.GetEnvironmentVariable("Temp"),
 	                                         System.Guid.NewGuid().ToString());
-	        RST rst = RstEnsure(m_ebRosterCopy.Text);
+	        Roster rst = RstEnsure(m_ebRosterWorking.Text);
 
-	        gc.GenSiteRosterResport(sTempFile, rst, RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
+	        gc.GenSiteRosterResport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
             // launch word with the file
 	        Process.Start(sTempFile);
 	        // System.IO.File.Delete(sTempFile);
 	    }
 
+        static string BuildAnnName(string sPrefix, string sSuffix, string sCtl)
+        {
+            return String.Format("{0}{1}{2}", sPrefix, sCtl, sSuffix);
+        }
+	    /* G E N  M A I L  M E R G E  M A I L */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: GenMailMergeMail
+	    	%%Qualified: ArbWeb.AwMainForm.GenMailMergeMail
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
+	    private void GenMailMergeMail(object sender, EventArgs e)
+	    {
+	        CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+	        Roster rst = RstEnsure(m_ebRosterWorking.Text);
+	        m_srpt.AddMessage("Generating mail merge documents...", StatusRpt.MSGT.Header, false);
+
+	        // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
+	        // rated for the sports we are filtered to
+	        GameData.GameSlots gms = gc.GamesFromFilter(ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+	                                                    ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), false, m_saOpenSlots);
+
+	        Roster rstFiltered;
+
+	        if (m_cbFilterRank.Checked)
+	            rstFiltered = rst.FilterByRanks(gms.RequiredRanks());
+	        else
+	            rstFiltered = rst;
+
+	        string sCsvTemp = SBuildTempFilename("MailMergeRoster", "csv");
+	        StreamWriter sw = new StreamWriter(sCsvTemp, false, System.Text.Encoding.Default);
+
+	        sw.WriteLine("email,firstname,lastname");
+	        foreach (RosterEntry rste in rstFiltered.Plrste)
+	            {
+	            sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.m_sLast);
+	            }
+	        sw.Flush();
+	        sw.Close();
+
+	        // ok, now create the mailmerge .docx
+	        string sTempName;
+	        string sArbiterHelpNeeded;
+
+	        OOXML.CreateMailMergeDoc("mailmergedoc.docx", sTempName = SBuildTempFilename("mailmergedoc", "docx"), sCsvTemp, gms, out sArbiterHelpNeeded);
+
+	        System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
+	        if (m_cbLaunch.Checked)
+	            {
+	            m_srpt.AddMessage("Done, launching document...", StatusRpt.MSGT.Header, false);
+	            System.Diagnostics.Process.Start(sTempName);
+	            }
+	        if (m_cbSetArbiterAnnounce.Checked)
+	            SetArbiterAnnounce(sArbiterHelpNeeded);
+	    }
+
+        void SetArbiterAnnounce(string sArbiterHelpNeeded)
+        {
+			m_srpt.AddMessage("Starting Announcement Set...");
+			m_srpt.PushLevel();
+
+            EnsureLoggedIn();
+            ThrowIfNot(m_awc.FNavToPage(_s_Announcements), "Couldn't nav to announcements page!");
+            m_awc.FWaitForNavFinish();
+
+            // now we need to find the URGENT HELP NEEDED row
+            IHTMLDocument2 oDoc2 = m_awc.Document2;
+            IHTMLElementCollection hec = (IHTMLElementCollection)oDoc2.all.tags("div");
+
+            string sCtl = null;
+
+            foreach (IHTMLElement he in hec)
+                {
+                if (he.id == "D9UrgentHelpNeeded")
+                    {
+                    IHTMLElement heFind = he;
+                    while (heFind.tagName.ToLower() != "tr")
+                        {
+                        heFind = heFind.parentElement;
+                        ThrowIfNot(heFind != null, "Can't find HELP announcement");
+                        }
+                    // ok, go up to the parent TR.
+                    // now find one of our controls and get its control number
+                    string s = heFind.innerHTML;
+                    int ich = s.IndexOf(_s_Announcements_Button_Edit_Prefix);
+                    if (ich > 0)
+                        {
+                        sCtl = s.Substring(ich + _s_Announcements_Button_Edit_Prefix.Length, 5);
+                        }
+                    break;
+                    }
+                }
+
+            ThrowIfNot(sCtl != null, "Can't find HELP announcement");
+
+            m_awc.ResetNav();
+            string sControl = BuildAnnName(_sid_Announcements_Button_Edit_Prefix, _sid_Announcements_Button_Edit_Suffix, sCtl);
+
+            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find edit button");
+            m_awc.FWaitForNavFinish();
+
+            // now edit the text
+            sControl = BuildAnnName(_s_Announcements_Textarea_Text_Prefix, _s_Announcements_Textarea_Text_Suffix, sCtl);
+
+            ThrowIfNot(ArbWebControl.FSetTextareaControlText(oDoc2, sControl, sArbiterHelpNeeded, true), "Can't set control text");
+            m_awc.FWaitForNavFinish();
+
+            sControl = BuildAnnName(_sid_Announcements_Button_Save_Prefix, _sid_Announcements_Button_Save_Suffix, sCtl);
+
+            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find save button");
+            m_awc.FWaitForNavFinish();
+
+            // and now save it.
+
+            m_srpt.PopLevel();
+			m_srpt.AddMessage("Completed Announcement Set.");
+        }
+
+	    /* G E N  O P E N  S L O T S  M A I L */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: GenOpenSlotsMail
+	    	%%Qualified: ArbWeb.AwMainForm.GenOpenSlotsMail
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
 	    private void GenOpenSlotsMail(object sender, EventArgs e)
 		{
-			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+			CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
 			string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
-            RST rst = RstEnsure(m_ebRosterCopy.Text);
+            Roster rst = RstEnsure(m_ebRosterWorking.Text);
             
             string sBcc = m_cbTestEmail.Checked ? "" : rst.SBuildAddressLine(m_ebFilter.Text); ;
 
@@ -3242,62 +1803,26 @@ namespace ArbWeb
 		        string[] rgs;
 
 		        oNote.HTMLBody += "<h1>Baseball open slots</h1>";
-		        rgs = RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", false);
+		        rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", false);
 		        gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
 		        oNote.HTMLBody += SHtmlReadFile(sTempFile) + "<h1>Softball Open Slots</h1>";
-		        rgs = RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", true);
+		        rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", true);
 		        gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
 		        oNote.HTMLBody += SHtmlReadFile(sTempFile);
 		        }
 		    else
 		        {
 		        gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-		                              RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
-		                              RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+		                              ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+		                              ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
 		        oNote.HTMLBody += SHtmlReadFile(sTempFile);
 		        }
 		    oNote.Display(true);
 
 			appOlk = null;
 			System.IO.File.Delete(sTempFile);            
-		}
-
-
-		void UpdateChlbxFromRgs(CheckedListBox chlbx, string[] rgsSource, string[] rgsChecked, string[] rgsFilterPrefix, bool fCheckAll)
-		{
-			chlbx.Items.Clear();
-			SortedList<string, int> mp = Utils.PlsUniqueFromRgs(rgsChecked);
-			
-			foreach (string s in rgsSource)
-				{
-				bool fSkip = false;
-
-				if (rgsFilterPrefix != null)
-					{
-					fSkip = true;
-					foreach (string sPrefix in rgsFilterPrefix)
-						{
-						if (s.Length > sPrefix.Length && String.Compare(s.Substring(0, sPrefix.Length), sPrefix, true/*ignoreCase*/) == 0)
-							{
-							fSkip = false;
-							break;
-							}
-						}
-					}
-				if (fSkip)
-					continue;
-
-				CheckState cs;
-
-				if (fCheckAll || mp.ContainsKey(s))
-					cs = CheckState.Checked;
-				else
-					cs = CheckState.Unchecked;
-
-				int i = chlbx.Items.Add(s, cs);
-				}
 		}
 
 	    private SlotAggr m_saOpenSlots;
@@ -3311,8 +1836,8 @@ namespace ArbWeb
             m_srpt.PopLevel();
             m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
 			// update regenerate the listboxes...
-			string[] rgsSports = RgsFromChlbx(true, m_chlbxSports);
-			string[] rgsSportLevels = RgsFromChlbx(true, m_chlbxSportLevels);
+			string[] rgsSports = ArbWebControl.RgsFromChlbx(true, m_chlbxSports);
+			string[] rgsSportLevels = ArbWebControl.RgsFromChlbx(true, m_chlbxSportLevels);
 
 			bool fCheckAllSports = false;
 			bool fCheckAllSportLevels = false;
@@ -3323,11 +1848,11 @@ namespace ArbWeb
 			if (rgsSports.Length == 0 && m_chlbxSportLevels.Items.Count == 0)
 				fCheckAllSportLevels = true;
 
-            UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
-            UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
-            string[] rgsRosterSites = RgsFromChlbx(true, m_chlbxRoster);
+            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
+            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
+            string[] rgsRosterSites = ArbWebControl.RgsFromChlbx(true, m_chlbxRoster);
 
-            UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
+            ArbWebControl.UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
             m_srpt.PopLevel();
         }
 
@@ -3335,8 +1860,8 @@ namespace ArbWeb
 	    {
 	        m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
 
-	        CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-	        RST rst = RstEnsure(m_ebRosterCopy.Text);
+	        CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+	        Roster rst = RstEnsure(m_ebRosterWorking.Text);
 
 	        m_srpt.PopLevel();
 	        m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
@@ -3346,10 +1871,10 @@ namespace ArbWeb
 
 	    private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
-            CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-            string[] rgsSports = RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);
-            string[] rgsSportLevels = RgsFromChlbx(true, m_chlbxSportLevels);
-            UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
+            CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+            string[] rgsSports = ArbWebControl.RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);
+            string[] rgsSportLevels = ArbWebControl.RgsFromChlbx(true, m_chlbxSportLevels);
+            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
         }
 
         private void m_pbReload_Click(object sender, EventArgs e)
@@ -3362,8 +1887,8 @@ namespace ArbWeb
 		{
 			m_srpt.AddMessage(String.Format("Generating games report ({0})...", m_ebGameOutput.Text));
 			m_srpt.PushLevel();
-			CountsData gc = GcEnsure(m_ebRosterCopy.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-			RST rst = RstEnsure(m_ebRosterCopy.Text);
+			CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+			Roster rst = RstEnsure(m_ebRosterWorking.Text);
 
             gc.GenGamesReport(m_ebGameOutput.Text);
 			m_srpt.PopLevel();
@@ -3391,7 +1916,7 @@ namespace ArbWeb
                 case FNC.RosterFile:
                     return m_ebRoster;
                 case FNC.RosterFile2:
-                    return m_ebRosterCopy;
+                    return m_ebRosterWorking;
                 case FNC.AnalysisFile:
                     return m_ebOutputFile;
                 case FNC.ReportFile:
@@ -3421,7 +1946,7 @@ namespace ArbWeb
 	    {
 	        if (m_cbLogToFile.Checked)
 	            {
-	            m_srpt.AttachLogfile(SBuildTempFilename("arblog"));
+	            m_srpt.AttachLogfile(SBuildTempFilename("arblog", "log"));
 	            m_srpt.SetLogLevel(5);
 	            m_srpt.SetFilter(StatusRpt.MSGT.Body);
 	            }
@@ -3431,190 +1956,8 @@ namespace ArbWeb
 	            m_srpt.SetFilter(StatusRpt.MSGT.Error);
 	            }
 	    }
-	}
 
-	public class ReHistory
-		{
-		public enum Type
-			{
-			Bool = 1,
-			Str = 2,
-			Int = 3,
-			Dttm = 4,
-			};
-	
-		public struct ReHistElt
-			{
-			public string sRePath;
-			public Type type;
-			public object oref;
-			public object oDefault;
-	
-			public ReHistElt(string s, Type typ, object o, object oDef)
-				{
-				sRePath = s;
-				type = typ;
-				oref = o;
-				oDefault = oDef;
-				}
-			};
-	
-		ReHistElt[] m_rgrehe;
-		string m_sRoot;
-		string m_sTag;
 
-		public bool FMatchesTag(string sTag)
-		{
-			return String.Compare(sTag, m_sTag) == 0;
-		}
-
-		public ReHistory(ReHistElt[] rgrehe, string sReRoot, string sTag)
-		{
-			m_rgrehe = rgrehe;
-			m_sRoot = sReRoot;
-			m_sTag = sTag;
-		}
-	
-		public void Save()
-        {
-			RegistryKey rk = Registry.CurrentUser.OpenSubKey(m_sRoot, true);
-	
-			if (rk == null)
-				{
-				rk = Registry.CurrentUser.CreateSubKey(m_sRoot);
-				if (rk == null)
-					return;
-				}
-	
-			foreach (ReHistElt rehe in m_rgrehe)
-				{
-				object oVal;
-	
-				if (rehe.oref is System.Windows.Forms.TextBox)
-					{
-					oVal = ((System.Windows.Forms.TextBox)rehe.oref).Text;
-					}
-				else if (rehe.oref is System.Windows.Forms.ComboBox)
-					{
-					oVal = ((System.Windows.Forms.ComboBox)rehe.oref).Text;
-					}
-				else if (rehe.oref is System.Windows.Forms.ListBox)
-					{
-					oVal = ((System.Windows.Forms.ListBox)rehe.oref).Text;
-					}
-				else if (rehe.oref is System.Windows.Forms.CheckBox)
-					{
-					oVal = ((System.Windows.Forms.CheckBox)rehe.oref).Checked;
-					}
-				else if (rehe.oref is System.Windows.Forms.DateTimePicker)
-					{
-					oVal = ((System.Windows.Forms.DateTimePicker)rehe.oref).Value;
-					}
-				else
-					{
-					throw(new Exception("Unkonwn control type in ReHistory.Save"));
-					}
-	
-				int nT;
-				
-				switch (rehe.type)
-					{
-					case Type.Dttm:
-						DateTime dttm = (DateTime)oVal;
-						rk.SetValue(rehe.sRePath, dttm.ToString());
-						break;
-					case Type.Str:
-						string sT = (string)oVal;
-						rk.SetValue(rehe.sRePath, sT);
-						break;
-					case Type.Bool:
-						nT = ((bool)oVal) ? 1 : 0;
-						rk.SetValue(rehe.sRePath, nT, RegistryValueKind.DWord);
-						break;
-					case Type.Int:
-						nT = Int32.Parse((string)oVal);
-						rk.SetValue(rehe.sRePath, nT, RegistryValueKind.DWord);
-						break;
-					}
-				}
-        }
-     
-		public void Load()
-		{
-			RegistryKey rk = Registry.CurrentUser.OpenSubKey(m_sRoot);
-			string sVal = "";
-			DateTime dttmVal = DateTime.Today;
-			int nVal = 0;
-			bool fVal = false;
-            int nT;
-            string sT;
-            
-			if (rk == null)
-				return;
-
-			foreach (ReHistElt rehe in m_rgrehe)
-				{
-				switch (rehe.type)
-					{
-					case Type.Dttm:
-						sT = (string)rk.GetValue(rehe.sRePath, rehe.oDefault);
-						sVal = sT;
-						try
-						{
-							dttmVal = DateTime.Parse(sT);
-						} catch
-						{
-						}
-						break;
-					case Type.Str:
-						sT = (string)rk.GetValue(rehe.sRePath, rehe.oDefault);
-						sVal = sT;
-						try
-						{
-						nVal = Int32.Parse(sT);
-						} catch
-						{
-						nVal = 0;
-						}
-						break;
-					case Type.Bool:
-						nT = (int)rk.GetValue(rehe.sRePath, rehe.oDefault);
-						fVal = (nT != 0 ? true : false);
-						break;
-					case Type.Int:
-                        nT = (int)rk.GetValue(rehe.sRePath, rehe.oDefault);
-						sVal = nT.ToString();
-						nVal = nT;
-						break;
-					}
-
-				if (rehe.oref is System.Windows.Forms.TextBox)
-					{
-					((System.Windows.Forms.TextBox)rehe.oref).Text = sVal;
-					}
-				else if (rehe.oref is System.Windows.Forms.ListBox)
-					{
-					((System.Windows.Forms.ListBox)rehe.oref).Text = sVal;
-					}
-				else if (rehe.oref is System.Windows.Forms.ComboBox)
-					{
-					((System.Windows.Forms.ComboBox)rehe.oref).Text = sVal;
-					}
-				else if (rehe.oref is System.Windows.Forms.CheckBox)
-					{
-					((System.Windows.Forms.CheckBox)rehe.oref).Checked = fVal;
-					}
-				else if (rehe.oref is System.Windows.Forms.DateTimePicker)
-					{
-					((System.Windows.Forms.DateTimePicker)rehe.oref).Value = dttmVal;
-					}
-				else
-					{
-					throw(new Exception("Unkonwn control type in ReHistory.Save"));
-					}
-
-				}
-		}
 	}
 
 }

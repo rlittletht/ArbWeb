@@ -27,6 +27,8 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -41,8 +43,6 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -93,6 +93,10 @@
     <Reference Include="Microsoft.mshtml">
       <Name>Microsoft.mshtml</Name>
       <HintPath>C:\Program Files\Microsoft.NET\Primary Interop Assemblies\Microsoft.mshtml.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -166,9 +170,27 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArbWebControl2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ArbWebControl2.Designer.cs">
+      <DependentUpon>ArbWebControl2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="games.cs" />
+    <Compile Include="ooxml.cs" />
+    <Compile Include="roster.cs" />
+    <Compile Include="slots.cs" />
+    <Compile Include="umpire.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="WebGames.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebRoster.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Content Include="App.ico" />
     <Compile Include="..\shared\statusbox.cs">
       <Link>statusbox.cs</Link>
@@ -179,26 +201,29 @@
     <Compile Include="ArbWeb.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ArbWebCore.cs">
+    <Compile Include="ArbWebControl.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ArbWebCore.Designer.cs">
-      <DependentUpon>ArbWebCore.cs</DependentUpon>
+    <Compile Include="ArbWebControl.Designer.cs">
+      <DependentUpon>ArbWebControl.cs</DependentUpon>
     </Compile>
     <Compile Include="GenCount.cs" />
     <EmbeddedResource Include="ArbWeb.resx">
       <DependentUpon>ArbWeb.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ArbWebCore.resx">
+    <EmbeddedResource Include="ArbWebControl.resx">
       <SubType>Designer</SubType>
-      <DependentUpon>ArbWebCore.cs</DependentUpon>
+      <DependentUpon>ArbWebControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ArbWebControl2.resx">
+      <DependentUpon>ArbWebControl2.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
-      <ProductName>.NET Framework Client Profile</ProductName>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
@@ -224,6 +249,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="mailmergedoc.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\liblet\cs\TCore.Settings\TCore.Settings.csproj">
+      <Project>{cf92fd1e-ce88-492e-a7c6-c4d29d908a22}</Project>
+      <Name>TCore.Settings</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
