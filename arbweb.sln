@@ -1,0 +1,23 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArbWeb", "ArbWeb.csproj", "{4FE06412-5609-4E6A-9B5E-586A9A3AF147}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ArbWebSetup", "..\ArbWebSetup\ArbWebSetup.vdproj", "{B42C9AF8-B5BC-42BB-9880-752B8D5C9C0A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4FE06412-5609-4E6A-9B5E-586A9A3AF147}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FE06412-5609-4E6A-9B5E-586A9A3AF147}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FE06412-5609-4E6A-9B5E-586A9A3AF147}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FE06412-5609-4E6A-9B5E-586A9A3AF147}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B42C9AF8-B5BC-42BB-9880-752B8D5C9C0A}.Debug|Any CPU.ActiveCfg = Debug
+		{B42C9AF8-B5BC-42BB-9880-752B8D5C9C0A}.Release|Any CPU.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
