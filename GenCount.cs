@@ -2904,7 +2904,9 @@ namespace ArbWeb
 			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
 			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Tourn").Success
 			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Softball").Success
-			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Administrative").Success
+                          || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Postseason").Success
+                          || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Fall Ball").Success
+                          || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Administrative").Success
 			              || Regex.Match(sLine, ", *50/50").Success
 			              || Regex.Match(sLine, ",_Events*").Success
 			              || Regex.Match(sLine, ",zEvents*").Success
