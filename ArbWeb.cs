@@ -9,6 +9,7 @@ using System.Net;
 using System.IO;
 using Microsoft.Win32;
 using AxSHDocVw;
+using StatusBox;
 using mshtml;
 using System.Text.RegularExpressions;
 using Microsoft.Office;
@@ -35,9 +36,9 @@ namespace ArbWeb
 		};
 
 	/// <summary>
-	/// Summary description for Form1.
+	/// Summary description for AwMainForm.
 	/// </summary>
-	public class Form1 : System.Windows.Forms.Form
+	public class AwMainForm : System.Windows.Forms.Form
 	{
 		// Top level web pages
 		private const string _s_Home = "http://www.arbitersports.com"; // ok2010
@@ -101,6 +102,8 @@ namespace ArbWeb
 		private const string _s_Page_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010
 		private const string _s_OfficialsView_Select_Filter = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$ddlFilter"; // ok2010
 		private const string _sid_OfficialsView_PrintRoster = "ctl00_ContentHolder_pgeOfficialsView_sbrReports_tskPrint"; // ok2010u
+    	private const string _sid_OfficialsView_ContentTable = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_dgOfficials"; // ok2013
+
 
 		// OfficialsEdit page
 		private const string _sid_OfficialsEdit_Button_Save = "ctl00_ContentHolder_pgeOfficialEdit_navOfficialEdit_btnSave"; // ok2010u
@@ -134,15 +137,11 @@ namespace ArbWeb
 		private const string _s_RanksEdit_Button_ReRank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnReRank"; // ok2010
 		private const string _s_RanksEdit_Button_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnRank"; // ok2010
 		private const string _s_RanksEdit_Input_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$txtRank"; // ok2010
-														
 
-        private Image m_imgCur;
-        private System.Windows.Forms.Button m_pbDownloadGames;
 
-		private ME[] rgmeMRU;
-        private int cmeMRU = 0;
-        private bool m_fWebInit = false;
-		private System.Windows.Forms.ContextMenu contextMenu1;
+	    private System.Windows.Forms.Button m_pbDownloadGames;
+
+	    private System.Windows.Forms.ContextMenu contextMenu1;
         private System.Windows.Forms.MenuItem menuItem1;
         private TextBox m_ebGameFile;
         private Label label2;
@@ -243,10 +242,10 @@ namespace ArbWeb
 
         public void EnableAdminFunctions()
         {
-            bool fAdmin = (String.Compare(System.Environment.MachineName, "magix", true) == 0);
+            bool fAdmin = (String.Compare(System.Environment.MachineName, "obelix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
-        public Form1()
+        public AwMainForm()
 		{
 			//
 			// Required for Windows Form Designer support
@@ -902,7 +901,7 @@ namespace ArbWeb
             this.m_pbBrowseGameFile.Name = "m_pbBrowseGameFile";
             this.m_pbBrowseGameFile.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGameFile.TabIndex = 68;
-            this.m_pbBrowseGameFile.Tag = ArbWeb.Form1.FNC.GameFile;
+            this.m_pbBrowseGameFile.Tag = ArbWeb.AwMainForm.FNC.GameFile;
             this.m_pbBrowseGameFile.Text = "...";
             this.m_pbBrowseGameFile.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
@@ -914,7 +913,7 @@ namespace ArbWeb
             this.m_pbBrowseGameFile2.Name = "m_pbBrowseGameFile2";
             this.m_pbBrowseGameFile2.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGameFile2.TabIndex = 69;
-            this.m_pbBrowseGameFile2.Tag = ArbWeb.Form1.FNC.GameFile2;
+            this.m_pbBrowseGameFile2.Tag = ArbWeb.AwMainForm.FNC.GameFile2;
             this.m_pbBrowseGameFile2.Text = "...";
             this.m_pbBrowseGameFile2.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
@@ -926,7 +925,7 @@ namespace ArbWeb
             this.m_pbBrowseRoster.Name = "m_pbBrowseRoster";
             this.m_pbBrowseRoster.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseRoster.TabIndex = 70;
-            this.m_pbBrowseRoster.Tag = ArbWeb.Form1.FNC.RosterFile;
+            this.m_pbBrowseRoster.Tag = ArbWeb.AwMainForm.FNC.RosterFile;
             this.m_pbBrowseRoster.Text = "...";
             this.m_pbBrowseRoster.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
@@ -938,7 +937,7 @@ namespace ArbWeb
             this.m_pbBrowseRoster2.Name = "m_pbBrowseRoster2";
             this.m_pbBrowseRoster2.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseRoster2.TabIndex = 71;
-            this.m_pbBrowseRoster2.Tag = ArbWeb.Form1.FNC.RosterFile2;
+            this.m_pbBrowseRoster2.Tag = ArbWeb.AwMainForm.FNC.RosterFile2;
             this.m_pbBrowseRoster2.Text = "...";
             this.m_pbBrowseRoster2.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
@@ -950,7 +949,7 @@ namespace ArbWeb
             this.m_pbBrowseGamesReport.Name = "m_pbBrowseGamesReport";
             this.m_pbBrowseGamesReport.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGamesReport.TabIndex = 72;
-            this.m_pbBrowseGamesReport.Tag = ArbWeb.Form1.FNC.ReportFile;
+            this.m_pbBrowseGamesReport.Tag = ArbWeb.AwMainForm.FNC.ReportFile;
             this.m_pbBrowseGamesReport.Text = "...";
             this.m_pbBrowseGamesReport.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
@@ -962,7 +961,7 @@ namespace ArbWeb
             this.m_pbBrowseAnalysis.Name = "m_pbBrowseAnalysis";
             this.m_pbBrowseAnalysis.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseAnalysis.TabIndex = 73;
-            this.m_pbBrowseAnalysis.Tag = ArbWeb.Form1.FNC.AnalysisFile;
+            this.m_pbBrowseAnalysis.Tag = ArbWeb.AwMainForm.FNC.AnalysisFile;
             this.m_pbBrowseAnalysis.Text = "...";
             this.m_pbBrowseAnalysis.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
@@ -1015,7 +1014,7 @@ namespace ArbWeb
             this.m_cbSplitSports.Text = "Automatic Softball/Baseball";
             this.m_cbSplitSports.UseVisualStyleBackColor = true;
             // 
-            // Form1
+            // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
             this.ClientSize = new System.Drawing.Size(723, 665);
@@ -1080,8 +1079,8 @@ namespace ArbWeb
             this.Controls.Add(this.label2);
             this.Controls.Add(this.m_ebGameFile);
             this.Controls.Add(this.m_pbDownloadGames);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "AwMainForm";
+            this.Text = "AwMainForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DoSaveState);
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -1096,7 +1095,7 @@ namespace ArbWeb
 		[STAThread]
 		static void Main() 
 		{
-			Application.Run(new Form1());
+			Application.Run(new AwMainForm());
 		}
 		
 		void AdjustRectForAspect(Rectangle rectOrig, ref Rectangle rectTarget)
@@ -1150,7 +1149,6 @@ namespace ArbWeb
 
 		private void m_pbLoadValues_Click(object sender, System.EventArgs e)
 		{
-			m_fWebInit = false;
 		}
             				
 		class PGL
@@ -1159,7 +1157,6 @@ namespace ArbWeb
 			public List<string> rgsLinkNames;
 			public List<string> rgsData;
 			public int iCur;
-			public string sPrefix;
 			};
 			
         bool m_fLoggedIn;
@@ -1187,7 +1184,7 @@ namespace ArbWeb
 			return false;
 		}
 
-        private bool FSetInputControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        private static bool FSetInputControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
         {
             IHTMLElementCollection hec;
 
@@ -1241,7 +1238,7 @@ namespace ArbWeb
         }
 
         // if fValueIsValue == false, then sValue is the "text" of the option control
-		bool FSelectMultiSelectOption(IHTMLDocument2 oDoc2, string sName, string sValue, bool fValueIsValue)
+	    static bool FSelectMultiSelectOption(IHTMLDocument2 oDoc2, string sName, string sValue, bool fValueIsValue)
 		{
 			IHTMLElementCollection hec;
 
@@ -1265,7 +1262,7 @@ namespace ArbWeb
 			return false;
 		}
 
-		bool FResetMultiSelectOptions(IHTMLDocument2 oDoc2, string sName)
+		static bool FResetMultiSelectOptions(IHTMLDocument2 oDoc2, string sName)
 		{
 			IHTMLElementCollection hec;
 
@@ -1346,14 +1343,17 @@ namespace ArbWeb
 			if (sTag.ToUpper() == "a")
 				{
 				foreach (IHTMLAnchorElement 
+				}
+		}
+
 #endif // no
 
-        private bool FClickControl(IHTMLDocument2 oDoc2, string sId)
+        private static bool FClickControl(ArbWebCore awc, IHTMLDocument2 oDoc2, string sId)
         {
 //			m_srpt.AddMessage("Before clickcontrol: "+sId);
             ((IHTMLElement)(oDoc2.all.item(sId, 0))).click();
 //			m_srpt.AddMessage("After clickcontrol");
-            return m_awc.FWaitForNavFinish();
+            return awc.FWaitForNavFinish();
         }
 
 		private bool FClickControlNoWait(IHTMLDocument2 oDoc2, string sId)
@@ -1402,7 +1402,7 @@ namespace ArbWeb
                     FSetInputControlText(oDoc2, _s_Home_Input_Password, m_ebPassword.Text, false);
 
                     m_awc.ResetNav();
-                    FClickControl(oDoc2, _s_Home_Button_SignIn);
+                    FClickControl(m_awc, oDoc2, _s_Home_Button_SignIn);
                     m_awc.FWaitForNavFinish();
                     }
                 oDoc2 = m_awc.Document2;
@@ -1446,55 +1446,11 @@ namespace ArbWeb
 		{
 			m_srpt.AddMessage("Starting games download...");
 			m_srpt.PushLevel();
+            string sTempFile = String.Format("{0}\\temp{1}.xls", Environment.GetEnvironmentVariable("Temp"),
+                                        System.Guid.NewGuid().ToString());
 
-            IHTMLDocument2 oDoc2 = null;
-            
-            EnsureLoggedIn();
-            
-            int count = 0;
-            string sFilter = null;
-            
-            while (count < 2)
-                {
-                // ok, now we're at the main assigner page...
-                if (!m_awc.FNavToPage(_s_Assigning))
-                    throw(new Exception("could not navigate to games view"));
-
-                oDoc2 = m_awc.Document2;
-                sFilter = SGetFilterID(oDoc2, _s_Assigning_Select_Filters, "All Games");
-                if (sFilter != null)
-                    break;
-                    
-                count++;
-                }
-                
-            if (sFilter == null)
-                throw(new Exception("there is no 'all games' filter"));
-
-			// now set that filter
-
-			m_awc.ResetNav();
-			FSetSelectControlText(oDoc2, _s_Assigning_Select_Filters, "All Games", false);
-			m_awc.FWaitForNavFinish();
-
-            if (!m_awc.FNavToPage(_s_Assigning_PrintAddress + sFilter))
-                throw(new Exception("could not navigate to the reports page!"));
-
-            // setup the file formats and go!
-            
-			oDoc2 = m_awc.Document2;
-            FSetSelectControlText(oDoc2, _s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
-
-			string sTempFile = String.Format("{0}\\temp{1}.xls", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
-			System.Windows.Forms.Clipboard.SetText(sTempFile);
-
-            m_awc.ResetNav();
-//          m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadGamesNewWindowDelegate));
-
-            FClickControlNoWait(oDoc2, _s_Assigning_Reports_Submit_Print);
-
-			MessageBox.Show(String.Format("Please download the games file to {0}. This path is on the clipboard, so you can just paste it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.", sTempFile), "ArbWeb", MessageBoxButtons.OK);
-            HandleDownloadGames(sTempFile);
+		    sTempFile = DownloadGamesToFile(sTempFile);
+		    HandleDownloadGames(sTempFile);
 
 			System.IO.File.Delete(sTempFile);
 
@@ -1513,11 +1469,80 @@ namespace ArbWeb
 		    return;
 		}
 
-	    
-		/* P G L  F R O M  P A G E  C O R E */
+	    private string DownloadGamesToFile(string sTempFile)
+	    {
+	        IHTMLDocument2 oDoc2 = null;
+
+	        EnsureLoggedIn();
+
+	        int count = 0;
+	        string sFilter = null;
+
+	        while (count < 2)
+	            {
+	            // ok, now we're at the main assigner page...
+	            if (!m_awc.FNavToPage(_s_Assigning))
+	                throw (new Exception("could not navigate to games view"));
+
+	            oDoc2 = m_awc.Document2;
+	            sFilter = SGetFilterID(oDoc2, _s_Assigning_Select_Filters, "All Games");
+	            if (sFilter != null)
+	                break;
+
+	            count++;
+	            }
+
+	        if (sFilter == null)
+	            throw (new Exception("there is no 'all games' filter"));
+
+	        // now set that filter
+
+	        m_awc.ResetNav();
+	        FSetSelectControlText(oDoc2, _s_Assigning_Select_Filters, "All Games", false);
+	        m_awc.FWaitForNavFinish();
+
+	        if (!m_awc.FNavToPage(_s_Assigning_PrintAddress + sFilter))
+	            throw (new Exception("could not navigate to the reports page!"));
+
+	        // setup the file formats and go!
+
+	        oDoc2 = m_awc.Document2;
+	        FSetSelectControlText(oDoc2, _s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
+
+
+	        System.Windows.Forms.Clipboard.SetText(sTempFile);
+
+	        m_awc.ResetNav();
+	        //          m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadGamesNewWindowDelegate));
+
+	        FClickControlNoWait(oDoc2, _s_Assigning_Reports_Submit_Print);
+
+	        MessageBox.Show(
+	            String.Format(
+	                "Please download the games file to {0}. This path is on the clipboard, so you can just paste it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
+	                sTempFile), "ArbWeb", MessageBoxButtons.OK);
+	        return sTempFile;
+	    }
+
+    	void NavigateOfficialsPageAllOfficials()
+		{
+			EnsureLoggedIn();
+
+			ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
+			m_awc.FWaitForNavFinish();
+    		
+			// from the officials view, make sure we are looking at active officials
+			m_awc.ResetNav();
+			IHTMLDocument2 oDoc2 = m_awc.Document2;
+
+			FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
+			m_awc.FWaitForNavFinish();
+		}
+
+	    /* P G L  F R O M  P A G E  C O R E */
 		/*----------------------------------------------------------------------------
 			%%Function: PglFromPageCore
-			%%Qualified: ArbWeb.Form1.PglFromPageCore
+			%%Qualified: ArbWeb.AwMainForm.PglFromPageCore
 			%%Contact: rlittle
 
 			Return a PGL (page of links) from the give sUrl.  
@@ -1543,17 +1568,10 @@ namespace ArbWeb
 
 			if (sUrl == _s_OfficialsView)
 				{
-				IHTMLDocument2 oDoc2 = m_awc.Document2;
-
-				// from the officials view, make sure we are looking at active officials
-				m_awc.ResetNav();
-				FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
-				m_awc.FWaitForNavFinish();
+    			NavigateOfficialsPageAllOfficials();
 				}
 
-			m_fWebInit = true;
-
-			IHTMLDocument2 oDoc = m_awc.Document2;
+		    IHTMLDocument2 oDoc = m_awc.Document2;
 			IHTMLElementCollection links = oDoc.links;
 			rgsLinks = new List<string>();
 			rgsLinkNames = new List<string>();
@@ -1637,7 +1655,7 @@ namespace ArbWeb
 		/* U P D A T E  M I S C */
 		/*----------------------------------------------------------------------------
 			%%Function: UpdateMisc
-			%%Qualified: ArbWeb.Form1.UpdateMisc
+			%%Qualified: ArbWeb.AwMainForm.UpdateMisc
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
@@ -1706,14 +1724,14 @@ namespace ArbWeb
 				{
 				m_srpt.AddMessage(String.Format("Updating misc info...", pgl.rgsData[pgl.iCur]));
 				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(oDoc2, _sid_MiscFields_Button_Save), "Couldn't find save button");
+				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_MiscFields_Button_Save), "Couldn't find save button");
 									
 				m_awc.FWaitForNavFinish();
 				}
             else
                 {
 				m_awc.ResetNav();
-                ThrowIfNot(FClickControl(oDoc2, _sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
+                ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
 //				((IHTMLElement)(oDoc2.all.item("pgeMiscFieldsEdit_navMiscFieldsEdit_btnSave", 0))).click();
 				m_awc.FWaitForNavFinish();
 				}
@@ -1757,7 +1775,7 @@ namespace ArbWeb
 		/* U P D A T E  I N F O */
 		/*----------------------------------------------------------------------------
 			%%Function: UpdateInfo
-			%%Qualified: ArbWeb.Form1.UpdateInfo
+			%%Qualified: ArbWeb.AwMainForm.UpdateInfo
 			%%Contact: rlittle
 
 			when we leave, if rst was null, then rste will have the values as we
@@ -1848,13 +1866,13 @@ namespace ArbWeb
 				{
 				m_srpt.AddMessage(String.Format("Updating general info...", pgl.rgsData[pgl.iCur]));
                 m_awc.ResetNav();
-                ThrowIfNot(FClickControl(oDoc2, _sid_OfficialsEdit_Button_Save), "couldn't find save button");
+                ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_OfficialsEdit_Button_Save), "couldn't find save button");
 				m_awc.FWaitForNavFinish();
 				}
 			else
 				{
 				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(oDoc2, _sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
+				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
 				m_awc.FWaitForNavFinish();
 				}
             if (rste.m_sAddress1 == null || rste.m_sAddress2 == null || rste.m_sCity == null || rste.m_sDateJoined == null
@@ -1867,233 +1885,279 @@ namespace ArbWeb
 				}
 		}
 
+        static void VisitRankCallbackUpload(RST rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebCore awc, StatusBox.StatusRpt srpt)
+		{
+			IHTMLDocument2 oDoc2;
+			oDoc2 = awc.Document2;
+
+			// make the rankings on the page match the rankings in our roster
+			List<RSTE> plrste = rst.Plrste;
+
+			// there are 3 things we can potentially do-
+			//  1) unrank
+			//  2) rank
+			//  3) re-rank
+
+			// all of these are most optimally done by multi-selecting and 
+			// doing like-item things together
+			// 
+			// so, we will collect all the stuff together
+
+			// just keep a list of officials to unrank.
+			// for rank and re-rank, we want a mapping of (rank -> list of officials)
+
+			List<string> plsUnrank = new List<string>();
+			Dictionary<int, List<string>> mpRank = new Dictionary<int, List<string>>();
+			Dictionary<int, List<string>> mpRerank = new Dictionary<int, List<string>>();
+
+			// first, unrank any officials that should now become unranked
+			foreach (RSTE rste in plrste)
+				{
+				string sReversed = String.Format("{0}, {1}", rste.m_sLast, rste.m_sFirst);
+
+				if (!rste.FRanked(sRank))
+					{
+					if (mpRanked.ContainsKey(sReversed))
+						{
+						// need to unrank
+						plsUnrank.Add(sReversed);
+						}
+					// else, we're cool..we're both unranked
+					}
+				else
+					{
+					int nRank = rste.Rank(sRank);
+
+					// see if we need to rank or rerank
+					if (mpRanked.ContainsKey(sReversed))
+						{
+						// may need to rerank
+						if (mpRanked[sReversed] != nRank)
+							{
+							// need to rerank
+							if (!mpRerank.ContainsKey(nRank))
+								mpRerank.Add(nRank, new List<string>());
+
+							mpRerank[nRank].Add(sReversed);
+							}
+						}
+					else
+						{
+						// need to rank
+						if (!mpRank.ContainsKey(nRank))
+							mpRank.Add(nRank, new List<string>());
+
+						mpRank[nRank].Add(sReversed);
+						}
+					}
+				}
+
+			// at this point, we have a list of jobs to do.
+
+			// first, unrank everyone that needs unranked
+			if (plsUnrank.Count > 0)
+				{
+				FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
+				foreach (string s in plsUnrank)
+					{
+					if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
+						throw new Exception("couldn't select an official for unranking!");
+					}
+
+				// now, do the unrank
+				awc.ResetNav();
+				FClickControl(awc, oDoc2, _s_RanksEdit_Button_Unrank);
+				awc.FWaitForNavFinish();
+				oDoc2 = awc.Document2;
+				}
+
+			// now, let's rerank the folks that need to be re-ranked
+			// we will do this once for every new rank we are setting
+			foreach (int nRank in mpRerank.Keys)
+				{
+				FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
+				foreach (string s in mpRerank[nRank])
+					{
+					if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
+						throw new Exception("couldn't select an official for reranking!");
+					}
+				FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
+
+				// now, rank'em
+				awc.ResetNav();
+				FClickControl(awc, oDoc2, _s_RanksEdit_Button_ReRank);
+				awc.FWaitForNavFinish();
+				oDoc2 = awc.Document2;
+				}
+
+			// finally, let's rank the folks that weren't ranked before
+
+			foreach (int nRank in mpRank.Keys)
+				{
+				FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_NotRanked);
+				foreach (string s in mpRank[nRank])
+					{
+					if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_NotRanked, s, false))
+						srpt.AddMessage(String.Format("Could not select an official for ranking: {0}", s),
+										  StatusRpt.MSGT.Error);
+					// throw new Exception("couldn't select an official for ranking!");
+					}
+
+				FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
+
+				// now, rank'em
+				awc.ResetNav();
+				FClickControl(awc, oDoc2, _s_RanksEdit_Button_Rank);
+				awc.FWaitForNavFinish();
+				oDoc2 = awc.Document2;
+				}
+		}
+
+        static void VisitRankCallbackDownload(RST rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebCore awc, StatusBox.StatusRpt srpt)
+		{
+			// don't do anything with unranked
+			// just add the rankings
+			foreach (string s in mpRanked.Keys)
+				rst.FAddRanking(s, sRank, mpRanked[s]);
+		}
+
+    	delegate void VisitRankCallback(RST rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebCore awc, StatusBox.StatusRpt srpt);
+
 		void HandleRankings(RST rst, ref RST rstBuilding)
 		{
 		    if (rst != null && rst.PlsRankings == null)
 		        return;
 		        
-			m_awc.ResetNav();
-			if (!m_awc.FNavToPage(_s_RanksEdit))
-				{
-				throw(new Exception("could not navigate to the bulk rankings page"));
-				}
-			m_awc.FWaitForNavFinish();
+			NavigateArbiterRankings();
 
-			IHTMLDocument2 oDoc2;
+		    IHTMLDocument2 oDoc2;
 
 			oDoc2 = m_awc.Document2;
-			List<string> plsRankings;
 
 			Dictionary<string, string> mpRankFilter = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_PosNames);
+			List<string> plsRankings = PlsRankingsBuildFromRst(rst, rstBuilding, mpRankFilter);
 
-			if (rst == null)
-				{
-				// now, build up our plsRankings
-				plsRankings = new List<string>();
-
-				foreach(string s in mpRankFilter.Keys)
-					plsRankings.Add(s);
-
-				rstBuilding.PlsRankings = plsRankings;
-				}
-			else
-				{
-				plsRankings = rst.PlsRankings;
-				}
-
-			// now, navigate to every ranked positions' page and either fetch or sync every
-			// official
-			foreach(string sRank in plsRankings)
-				{
-                m_srpt.AddMessage(String.Format("Processing ranks for {0}...", sRank));
-				
-				// try to navigate to the page
-				if (!mpRankFilter.ContainsKey(sRank))
-					{
-                    m_srpt.AddMessage("Ranks for position '{0}' do not exist on Arbiter!  Skipping...", StatusBox.StatusRpt.MSGT.Error);
-					continue;
-					}
-			
-				// make sure we have the right checkbox states 
-				// (Show unranked only = false, Show Active only = false)
-                FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Active);
-                FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Rank);
-
-                m_awc.ResetNav();
-                FSetSelectControlText(m_awc.Document2, _s_RanksEdit_Select_PosNames, sRank, false);
-                m_awc.FWaitForNavFinish();
-
-                oDoc2 = m_awc.Document2;
-                // m_awc.RefreshPage();
-                
-				List<string> plsUnranked = new List<string>();
-				Dictionary<string, int> mpRanked = new Dictionary<string, int>();
-                Dictionary<string, string> mpRankedId = new Dictionary<string, string>();
-                
-				Dictionary<string, string> mpT;
-
-				// unranked officials
-				mpT = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_NotRanked);
-
-				foreach (string s in mpT.Keys)
-					{
-					plsUnranked.Add(s);
-					}
-
-				// ranked officials
-				mpT = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_Ranked);
-
-				foreach (string s in mpT.Keys)
-					{
-					int iColon = s.IndexOf(":");
-					if (iColon == -1)
-						throw new Exception("bad format for ranked official on arbiter!");
-
-					int nRank = Int32.Parse(s.Substring(0, iColon));
-                    
-                    int iStart = iColon + 1;
-                    while (Char.IsWhiteSpace(s.Substring(iStart, 1)[0]))
-                        iStart++;
-                        
-					mpRanked.Add(s.Substring(iStart), nRank);
-					mpRankedId.Add(s.Substring(iStart), mpT[s]);
-					}
-
-				if (rst == null)
-					{
-					// don't do anything with unranked
-					// just add the rankings
-					foreach(string s in mpRanked.Keys)
-						{
-						rstBuilding.FAddRanking(s, sRank, mpRanked[s]);
-						}
-					}
-				else
-					{
-					// make the rankings on the page match the rankings in our roster
-					List<RSTE> plrste = rst.Plrste;
-
-					// there are 3 things we can potentially do-
-					//  1) unrank
-					//  2) rank
-					//  3) re-rank
-
-					// all of these are most optimally done by multi-selecting and 
-					// doing like-item things together
-					// 
-					// so, we will collect all the stuff together
-
-					// just keep a list of officials to unrank.
-					// for rank and re-rank, we want a mapping of (rank -> list of officials)
-
-					List<string> plsUnrank = new List<string>();
-					Dictionary<int, List<string>> mpRank = new Dictionary<int, List<string>>();
-					Dictionary<int, List<string>> mpRerank = new Dictionary<int, List<string>>();
-
-					// first, unrank any officials that should now become unranked
-					foreach (RSTE rste in plrste)
-						{
-						string sReversed = String.Format("{0}, {1}", rste.m_sLast, rste.m_sFirst);
-
-						if (!rste.FRanked(sRank))
-							{
-							if (mpRanked.ContainsKey(sReversed))
-								{
-								// need to unrank
-								plsUnrank.Add(sReversed);
-								}
-							// else, we're cool..we're both unranked
-							}
-						else
-							{
-							int nRank = rste.Rank(sRank);
-
-							// see if we need to rank or rerank
-							if (mpRanked.ContainsKey(sReversed))
-								{
-								// may need to rerank
-								if (mpRanked[sReversed] != nRank)
-									{
-									// need to rerank
-									if (!mpRerank.ContainsKey(nRank))
-										mpRerank.Add(nRank, new List<string>());
-
-									mpRerank[nRank].Add(sReversed);
-									}
-								}
-							else
-								{
-								// need to rank
-								if (!mpRank.ContainsKey(nRank))
-									mpRank.Add(nRank, new List<string>());
-
-								mpRank[nRank].Add(sReversed);
-								}
-							}
-						}
-
-					// at this point, we have a list of jobs to do.
-
-					// first, unrank everyone that needs unranked
-					if (plsUnrank.Count > 0)
-						{
-						FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
-						foreach (string s in plsUnrank)
-							{
-							if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
-								throw new Exception("couldn't select an official for unranking!");
-							}
-
-						// now, do the unrank
-						m_awc.ResetNav();
-						FClickControl(oDoc2, _s_RanksEdit_Button_Unrank);
-						m_awc.FWaitForNavFinish();
-						oDoc2 = m_awc.Document2;
-						}
-
-					// now, let's rerank the folks that need to be re-ranked
-					// we will do this once for every new rank we are setting
-					foreach(int nRank in mpRerank.Keys)
-						{
-						FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
-						foreach(string s in mpRerank[nRank])
-							{
-							if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
-								throw new Exception("couldn't select an official for reranking!");
-							}
-						FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
-
-						// now, rank'em
-						m_awc.ResetNav();
-						FClickControl(oDoc2, _s_RanksEdit_Button_ReRank);
-						m_awc.FWaitForNavFinish();
-						oDoc2 = m_awc.Document2;
-						}
-
-					// finally, let's rank the folks that weren't ranked before
-
-					foreach(int nRank in mpRank.Keys)
-						{
-						FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_NotRanked);
-						foreach(string s in mpRank[nRank])
-							{
-							if (!FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_NotRanked, s, false))
-								throw new Exception("couldn't select an official for ranking!");
-							}
-
-						FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
-
-						// now, rank'em
-						m_awc.ResetNav();
-						FClickControl(oDoc2, _s_RanksEdit_Button_Rank);
-						m_awc.FWaitForNavFinish();
-						oDoc2 = m_awc.Document2;
-						}
-					}
-				}
+		    if (rst == null)
+		        VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackDownload, rstBuilding);
+    		else
+		        VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackUpload, rst);
 		}
 
-		void AddOfficials(List<RSTE> plrsteNew)
+	    private void VisitRankings(List<string> plsRankedPositions, Dictionary<string, string> mpRankFilter, VisitRankCallback pfnVrc, RST rstParam)
+	    {
+            // now, navigate to every ranked positions' page and either fetch or sync every
+	        // official
+	        foreach (string sRankPosition in plsRankedPositions)
+	            {
+	            m_srpt.AddMessage(String.Format("Processing ranks for {0}...", sRankPosition));
+
+	            // try to navigate to the page
+	            if (!mpRankFilter.ContainsKey(sRankPosition))
+	                {
+	                m_srpt.AddMessage("Ranks for position '{0}' do not exist on Arbiter!  Skipping...",
+	                                  StatusBox.StatusRpt.MSGT.Error);
+	                continue;
+	                }
+
+	            // make sure we have the right checkbox states 
+	            // (Show unranked only = false, Show Active only = false)
+	            FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Active);
+	            FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Rank);
+
+	            m_awc.ResetNav();
+	            FSetSelectControlText(m_awc.Document2, _s_RanksEdit_Select_PosNames, sRankPosition, false);
+	            m_awc.FWaitForNavFinish();
+
+	            IHTMLDocument2 oDoc2 = m_awc.Document2;
+	            // m_awc.RefreshPage();
+
+	            List<string> plsUnranked = new List<string>();
+	            Dictionary<string, int> mpRanked = new Dictionary<string, int>();
+	            Dictionary<string, string> mpRankedId = new Dictionary<string, string>();
+
+	            Dictionary<string, string> mpT;
+
+	            // unranked officials
+	            mpT = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_NotRanked);
+
+	            foreach (string s in mpT.Keys)
+	                plsUnranked.Add(s);
+
+	            // ranked officials
+	            mpT = MpGetSelectValues(oDoc2, _s_RanksEdit_Select_Ranked);
+
+	            foreach (string s in mpT.Keys)
+	                {
+	                int iColon = s.IndexOf(":");
+	                if (iColon == -1)
+	                    throw new Exception("bad format for ranked official on arbiter!");
+
+	                int nRank = Int32.Parse(s.Substring(0, iColon));
+
+	                int iStart = iColon + 1;
+	                while (Char.IsWhiteSpace(s.Substring(iStart, 1)[0]))
+	                    iStart++;
+
+	                string sRankKey = s.Substring(iStart);
+	                if (!mpRanked.ContainsKey(sRankKey))
+	                    mpRanked.Add(sRankKey, nRank);
+	                else
+	                    {
+	                    m_srpt.AddMessage(
+	                        String.Format("Duplicate key {0} adding rank {1} to rank {2}", sRankKey, nRank, sRankPosition),
+	                        StatusRpt.MSGT.Error);
+	                    }
+
+	                if (!mpRankedId.ContainsKey(sRankKey))
+	                    mpRankedId.Add(sRankKey, mpT[s]);
+	                else
+	                    {
+	                    m_srpt.AddMessage(
+	                        String.Format("Duplicate key {0} adding rankid {1} to rank {2}", sRankKey, mpT[s], sRankPosition),
+	                        StatusRpt.MSGT.Error);
+	                    }
+	                }
+
+	            pfnVrc(rstParam, sRankPosition, mpRanked, mpRankedId, m_awc, m_srpt);
+	            }
+	    }
+
+	    private void VisitRosterRankUploaded(RST rst, string sRank, Dictionary<string, int> mpRanked, IHTMLDocument2 oDoc2,
+	                                         Dictionary<string, string> mpRankedId)
+	    {
+	    }
+
+	    private static void VisitRosterRankDownload(RST rstBuilding, Dictionary<string, int> mpRanked, string sRank)
+	    {
+	    }
+
+	    private static List<string> PlsRankingsBuildFromRst(RST rst, RST rstBuilding, Dictionary<string, string> mpRankFilter)
+	    {
+	        List<string> plsRankings;
+	        if (rst == null)
+	            {
+	            // now, build up our plsRankedPositions
+	            plsRankings = new List<string>();
+
+	            foreach (string s in mpRankFilter.Keys)
+	                plsRankings.Add(s);
+
+	            rstBuilding.PlsRankings = plsRankings;
+	            }
+	        else
+	            plsRankings = rst.PlsRankings;
+	        return plsRankings;
+	    }
+
+	    private void NavigateArbiterRankings()
+	    {
+	        m_awc.ResetNav();
+	        if (!m_awc.FNavToPage(_s_RanksEdit))
+	            throw (new Exception("could not navigate to the bulk rankings page"));
+	        m_awc.FWaitForNavFinish();
+	    }
+
+	    void AddOfficials(List<RSTE> plrsteNew)
 		{
 			foreach (RSTE rste in plrsteNew)
 				{
@@ -2118,7 +2182,7 @@ namespace ArbWeb
 				ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_Email, rste.m_sEmail, false/*fCheck*/), "Failed to find email control");
 
 				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
 				m_awc.FWaitForNavFinish(); 
 
 				// we are either adding a new user, or a user that arbiter already knows
@@ -2147,14 +2211,14 @@ namespace ArbWeb
 							{
 							// ok, then just cancel...
 							m_awc.ResetNav();
-							ThrowIfNot(FClickControl(oDoc2, _sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
+							ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
 							m_awc.FWaitForNavFinish(); 
 							continue;
 							}
 						}
 					// cool, just go on...
 					m_awc.ResetNav();
-					ThrowIfNot(FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+					ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
 					m_awc.FWaitForNavFinish(); 
 
 					// sigh, now we're being asked whether we want to add local personal info.  of course
@@ -2166,7 +2230,7 @@ namespace ArbWeb
 
 					// cool, let's just move on again...
 					m_awc.ResetNav();
-					ThrowIfNot(FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+					ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
 					m_awc.FWaitForNavFinish(); 
 
 					// now fallthrough to the "Official's info" page handling, which is common
@@ -2181,7 +2245,7 @@ namespace ArbWeb
 					ThrowIfNot(FSetInputControlText(oDoc2, _s_AddUser_Input_Zip, rste.m_sZip, false/*fCheck*/), "Failed to find zip control");
 
 					m_awc.ResetNav();
-					ThrowIfNot(FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+					ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
 					m_awc.FWaitForNavFinish(); 
 
 					// fallthrough to the common handling below
@@ -2194,14 +2258,14 @@ namespace ArbWeb
 
 				// don't worry about Active for now...Just click next again
 				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
 				m_awc.FWaitForNavFinish(); 
 
 				// and now we're on the finish page.  oddly enough, the finish button has the "Cancel" ID
 				ThrowIfNot(String.Compare("Finish", SGetControlValue(oDoc2, _sid_AddUser_Button_Cancel)) == 0, "Finish screen didn't have a finish button");
 
 				m_awc.ResetNav();
-				ThrowIfNot(FClickControl(oDoc2, _sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
+				ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
 				m_awc.FWaitForNavFinish(); 
 				m_srpt.PopLevel();
 				// and now we're back somewhere (probably officials edit page)
@@ -2210,10 +2274,49 @@ namespace ArbWeb
 			// and that's it...simple n'est pas?
 		}
 
+    	void UpdateLastAccess(RST rstBuilding)
+		{
+			NavigateOfficialsPageAllOfficials();
+
+    		// Assuming we are on the core officials page...
+			IHTMLDocument oDoc = m_awc.Document;
+			IHTMLDocument2 oDoc2 = m_awc.Document2;
+			IHTMLDocument3 oDoc3 = m_awc.Document3;
+
+    	    IHTMLTable ihtbl;
+//    		IHTMLTableRow ihtr;
+
+			// misc field info.  every text input field is a misc field we want to save
+			ihtbl = (IHTMLTable)oDoc2.all.item(_sid_OfficialsView_ContentTable, 0);
+    	   
+			foreach (IHTMLTableRow ihtr in ihtbl.rows)
+				{
+    			IHTMLElement iheEmail = (IHTMLElement)ihtr.cells.item(3);
+                IHTMLElement iheSignedIn = (IHTMLElement)ihtr.cells.item(4);
+
+    			if (iheEmail == null || iheSignedIn == null)
+    				continue;
+
+    			string sEmail = iheEmail.innerText;
+    			string sSignedIn = iheSignedIn.innerText;
+
+    			RSTE rste = rstBuilding.RsteLookupEmail(sEmail);
+    			if (rste == null)
+					{
+                m_srpt.AddMessage(String.Format("Lookup failed during UpdateLastAccess for official '{0}'({1})", ((IHTMLElement)ihtr.cells.item(2)).innerText, sEmail), StatusBox.StatusRpt.MSGT.Error);
+    				continue;
+					}
+
+				m_srpt.AddMessage(String.Format("Updating last access for official '{0}', {1}", rste.Name, sSignedIn), StatusBox.StatusRpt.MSGT.Body);
+    			rste.m_sLastSignin = sSignedIn;
+				}
+		}
+
+
 		/* D O  C O R E  R O S T E R  U P D A T E */
 		/*----------------------------------------------------------------------------
 			%%Function: DoCoreRosterUpdate
-			%%Qualified: ArbWeb.Form1.DoCoreRosterUpdate
+			%%Qualified: ArbWeb.AwMainForm.DoCoreRosterUpdate
 			%%Contact: rlittle
 
 			Do the core roster updating.  We are being given the list of links on
@@ -2263,7 +2366,7 @@ namespace ArbWeb
                         UpdateMisc(pgl, rst, ref rste);
 
                     // don't call UpdateInfo on a newly added official
-                    if (plrsteLimit == null && !rst.IsQuick)
+                    if (plrsteLimit == null && (rst == null || !rst.IsQuick))
                         UpdateInfo(pgl, rst, ref rste, fMarkOnly);
 
 					if (rst == null)
@@ -2323,7 +2426,7 @@ namespace ArbWeb
 		/* H A N D L E  R O S T E R */
 		/*----------------------------------------------------------------------------
 			%%Function: HandleRoster
-			%%Qualified: ArbWeb.Form1.HandleRoster
+			%%Qualified: ArbWeb.AwMainForm.HandleRoster
 			%%Contact: rlittle
 
 			If rst == null, then we're downloading the roster.  Otherwise, we are
@@ -2332,8 +2435,7 @@ namespace ArbWeb
 		void HandleRoster(RST rst, string sOutFile)
         {
             RST rstBuilding = null;
-            int i = 0;
-			PGL pgl;
+		    PGL pgl;
 
 			// we're not going to write the roster out until the end now...
 
@@ -2342,6 +2444,13 @@ namespace ArbWeb
 
 			pgl = PglGetOfficialsFromWeb();
 			DoCoreRosterUpdate(pgl, rst, rstBuilding, null/*plrsteLimit*/);
+
+    		if (rstBuilding != null)
+				{
+				// get the last login date from the officials main page
+				NavigateOfficialsPageAllOfficials();
+				UpdateLastAccess(rstBuilding);
+				}
 
 			if (rst != null)
 				{
@@ -2462,20 +2571,7 @@ namespace ArbWeb
 		}
 
 
-		private void DoPictPaint(object sender, System.Windows.Forms.PaintEventArgs e)
-		{
-			PictureBox pb = (PictureBox)sender;
-			// Image img = pb.Image; // System.Drawing.Image.FromFile(sSave);
-			if (m_imgCur != null)
-				{
-				Rectangle rectImg = new Rectangle(0, 0, m_imgCur.Width, m_imgCur.Height);
-				Rectangle rectDraw = pb.ClientRectangle;
-				AdjustRectForAspect(rectImg, ref rectDraw);
-				Draw(e.Graphics, rectDraw, m_imgCur);
-				}
-		}
-
-		private void DoSaveStateCore()
+	    private void DoSaveStateCore()
 		{
 			m_rehProfile.Save();
 			m_reh.Save();
@@ -2538,81 +2634,24 @@ namespace ArbWeb
 			m_srpt.AddMessage("Starting Quick Roster download...");
 			m_srpt.PushLevel();
 			PushCursor(Cursors.WaitCursor);
-			IHTMLDocument2 oDoc2;
 
-			string sOutFile = SBuildRosterFilename();
+		    string sOutFile = SBuildRosterFilename();
 
 			m_ebRoster.Text = sOutFile;
 
-			// navigate to the officials page...
-			EnsureLoggedIn();
+			//string sTempFile = "C:\\Users\\rlittle\\AppData\\Local\\Temp\\temp3c92cb56-0b95-41c0-8eb5-37387bacf4f6.csv";
+			string sTempFile = SRosterFileDownload();
 
-			ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
-            m_awc.FWaitForNavFinish();
-
-			oDoc2 = m_awc.Document2;
-
-			// from the officials view, make sure we are looking at active officials
-			m_awc.ResetNav();
-			FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
-			m_awc.FWaitForNavFinish();
-
-			oDoc2 = m_awc.Document2;
-			// now we have all officials showing.  download the report
-
-			// sometimes running the javascript takes a while, but the page isn't busy
-			int cTry = 3;
-			while (cTry > 0)
-				{
-				m_awc.ResetNav();
-				m_awc.ReportNavState("Before click on PrintRoster: ");
-				ThrowIfNot(FClickControl(oDoc2, _sid_OfficialsView_PrintRoster), "Can't click on roster control");
-				m_awc.FWaitForNavFinish();
-	
-				oDoc2 = m_awc.Document2;
-				if (FCheckForControl(oDoc2, _sid_RosterPrint_MergeStyle))
-					break;
-
-				cTry--;
-				}
-				
-			// now we are on the PrintRoster screen
-
-			// clicking on the Merge Style control will cause a page refresh
-			m_awc.ResetNav();
-			ThrowIfNot(FClickControl(oDoc2, _sid_RosterPrint_MergeStyle), "Can't click on roster control");
-			m_awc.FWaitForNavFinish();
-
-			oDoc2 = m_awc.Document2;
-
-			ThrowIfNot(FCheckForControl(oDoc2, _sid_RosterPrint_DateJoined), "Couldn't find expected control on roster print config!");
-
-			// check a whole bunch of config checkboxes
-			FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_DateJoined);
-			FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_OfficialNumber);
-			FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_MiscFields);
-			FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicPhone);
-			FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicAddress);
-
-			m_awc.ResetNav();
-//    		m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadQuickRosterNewWindowDelegate));
-//          m_awc.PushSaveToFile(sOutFile);
-
-            
-            ((IHTMLElement)(oDoc2.all.item(_sid_RosterPrint_BeginPrint, 0))).click();
-
-			string sTempFile = String.Format("{0}\\temp{1}.csv", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
-			System.Windows.Forms.Clipboard.SetText(sTempFile);
-            MessageBox.Show(String.Format("Please download the roster to {0}. This path is on the clipboard, so you can just past it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.", sTempFile), "ArbWeb", MessageBoxButtons.OK);
-            
 //			m_awc.PopSaveToFile();
 //			m_awc.PopNewWindow3Delegate();
 
-			// now, get the rankings
+			// now, get the rankings and update the last access date
 
 			RST rstBuilding = new RST();
 
 			rstBuilding.ReadRoster(sTempFile);
+
+    		UpdateLastAccess(rstBuilding);
 			HandleRankings(null, ref rstBuilding);
 			rstBuilding.WriteRoster(m_ebRoster.Text);
 //			System.IO.File.Copy(sTempFile, m_ebRoster.Text);
@@ -2625,13 +2664,83 @@ namespace ArbWeb
 			m_srpt.AddMessage("Completed Quick Roster download.");
 		}
 
-        private void DoDownloadRoster(object sender, EventArgs e)
+	    private string SRosterFileDownload()
+	    {
+	        IHTMLDocument2 oDoc2;
+// navigate to the officials page...
+	        EnsureLoggedIn();
+
+	        ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
+	        m_awc.FWaitForNavFinish();
+
+	        oDoc2 = m_awc.Document2;
+
+	        // from the officials view, make sure we are looking at active officials
+	        m_awc.ResetNav();
+	        FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
+	        m_awc.FWaitForNavFinish();
+
+	        oDoc2 = m_awc.Document2;
+	        // now we have all officials showing.  download the report
+
+	        // sometimes running the javascript takes a while, but the page isn't busy
+	        int cTry = 3;
+	        while (cTry > 0)
+	            {
+	            m_awc.ResetNav();
+	            m_awc.ReportNavState("Before click on PrintRoster: ");
+	            ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_OfficialsView_PrintRoster), "Can't click on roster control");
+	            m_awc.FWaitForNavFinish();
+
+	            oDoc2 = m_awc.Document2;
+	            if (FCheckForControl(oDoc2, _sid_RosterPrint_MergeStyle))
+	                break;
+
+	            cTry--;
+	            }
+
+	        // now we are on the PrintRoster screen
+
+	        // clicking on the Merge Style control will cause a page refresh
+	        m_awc.ResetNav();
+	        ThrowIfNot(FClickControl(m_awc, oDoc2, _sid_RosterPrint_MergeStyle), "Can't click on roster control");
+	        m_awc.FWaitForNavFinish();
+
+	        oDoc2 = m_awc.Document2;
+
+	        ThrowIfNot(FCheckForControl(oDoc2, _sid_RosterPrint_DateJoined),
+	                   "Couldn't find expected control on roster print config!");
+
+	        // check a whole bunch of config checkboxes
+	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_DateJoined);
+	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_OfficialNumber);
+	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_MiscFields);
+	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicPhone);
+	        FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicAddress);
+
+	        m_awc.ResetNav();
+//    		m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadQuickRosterNewWindowDelegate));
+//          m_awc.PushSaveToFile(sOutFile);
+
+
+	        ((IHTMLElement) (oDoc2.all.item(_sid_RosterPrint_BeginPrint, 0))).click();
+
+	        string sTempFile = String.Format("{0}\\temp{1}.csv", Environment.GetEnvironmentVariable("Temp"),
+	                                         System.Guid.NewGuid().ToString());
+	        System.Windows.Forms.Clipboard.SetText(sTempFile);
+	        MessageBox.Show(
+	            String.Format(
+	                "Please download the roster to {0}. This path is on the clipboard, so you can just past it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
+	                sTempFile), "ArbWeb", MessageBoxButtons.OK);
+	        return sTempFile;
+	    }
+
+	    private void DoDownloadRoster(object sender, EventArgs e)
         {
 			m_srpt.AddMessage("Starting FULL Roster download...");
 			m_srpt.PushLevel();
 
-			string sPrefix = "";
-            PushCursor(Cursors.WaitCursor);
+	        PushCursor(Cursors.WaitCursor);
 			string sOutFile = SBuildRosterFilename();
 
 			m_ebRoster.Text = sOutFile;

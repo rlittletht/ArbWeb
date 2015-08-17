@@ -93,6 +93,7 @@ namespace ArbWeb
 		public string m_sOfficialNumber;
 		public string m_sDateOfBirth;
 		public string m_sDateJoined;
+    	public string m_sLastSignin;
 		public string m_sGamesPerDay;
 		public string m_sGamesPerWeek;
 		public string m_sTotalGames;
@@ -125,7 +126,7 @@ namespace ArbWeb
 
 			m_fMarked = false;
 
-			if (m_rstt == RST.RSTT.QuickShort)
+			if (m_rstt == RST.RSTT.QuickShort || m_rstt == RST.RSTT.QuickShort2)
 				{
 				if (rgs.Length < 13)
 					throw new Exception("input line too short -- not enough fields");
@@ -140,16 +141,25 @@ namespace ArbWeb
 				m_sZip = rgs[6];
 				m_sOfficialNumber = rgs[11];
 				m_sDateJoined = rgs[12];
+    			i = 13;
 
+				if (m_rstt == RST.RSTT.QuickShort2)
+					{
+					m_sLastSignin = rgs[13];
+    				i++;
+					}
 				m_mpRanking = new Dictionary<string, int>();
-
-				i = 13;
 				}
 			else
 				{
 				if (m_rstt == RST.RSTT.QuickFull)
 					{
 					if (rgs.Length < 14)
+						throw new Exception("input line too short -- not enough fields");
+					}
+    			else if (m_rstt == RST.RSTT.QuickFull2)
+					{
+					if (rgs.Length < 15)
 						throw new Exception("input line too short -- not enough fields");
 					}
 				else
@@ -167,7 +177,7 @@ namespace ArbWeb
 				m_sState = rgs[6];
 				m_sZip = rgs[7];
 				m_sOfficialNumber = rgs[8];
-				if (m_rstt != RST.RSTT.QuickFull)
+				if (m_rstt != RST.RSTT.QuickFull && m_rstt != RST.RSTT.QuickFull2)
 					{
 					m_sDateOfBirth = rgs[9];
 					m_sDateJoined = rgs[10];
@@ -193,8 +203,9 @@ namespace ArbWeb
 						}
 
 					// now, read in the DateJoined
-					m_sDateJoined = rgs[i];
-					i++;
+					m_sDateJoined = rgs[i++];
+    				if (m_rstt == RST.RSTT.QuickFull2)
+						m_sLastSignin = rgs[i++];
 
 					// at this point, i points to the rankings...
 					}
@@ -224,7 +235,7 @@ namespace ArbWeb
 					}
 				}
 
-			if (m_rstt != RST.RSTT.QuickFull)
+			if (m_rstt != RST.RSTT.QuickFull && m_rstt != RST.RSTT.QuickFull2)
 				{
 				m_plsMisc = new List<string>();
 
@@ -331,12 +342,19 @@ namespace ArbWeb
 
                 rstt = RST.RSTT.QuickFull;
 
-				// rankings start right after the DateJoined field
+				// rankings start right after the DateJoined field (or LastSignin for QuickFull2)
 				iRank = 0;
 				while (iRank < rgs.Length)
 					{
 					if (rgs[iRank] == "DateJoined")
-						break;
+					    {
+					    if (iRank + 1 < rgs.Length && rgs[iRank + 1] == "LastSignin")
+					        {
+					        rstt = RST.RSTT.QuickFull2;
+					        iRank++;
+					        }
+					    break;
+					    }
 					iRank++;
 					}
 				iRank++;
@@ -374,9 +392,7 @@ namespace ArbWeb
 			if (sw == null)
 				throw new Exception("could not create file to write header");
 
-			string sFirst, sLast;
-
-            if (rstt != RST.RSTT.Full)
+		    if (rstt != RST.RSTT.Full)
 				{
 				// be careful here -- we have to have a predictable field BEFORE the misc fields, 
 				// as well as AFTER the misc fields.  This way, we can tell the difference between
@@ -390,11 +406,12 @@ namespace ArbWeb
 					}
 
 				sw.Write(",\"DateJoined\"");
+				sw.Write(",\"LastSignin\"");
 				}
 			else
 				{
-				sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",\"{14}\",\"{15}\",\"{16}\"", 
-						 "First", "Last", "Email", "Address1", "Address2", "City", "State", "Zip", "OfficialNumber", "DateOfBirth", "DateJoined",
+				sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",\"{14}\",\"{15}\",\"{16}\",\"{17}\"", 
+						 "First", "Last", "Email", "Address1", "Address2", "City", "State", "Zip", "OfficialNumber", "DateOfBirth", "DateJoined", "LastSignin",
 						 "GamesPerDay", "GamesPerWeek", "TotalGames", "WaitMinutes", "Ready", "Active");
 				}
 
@@ -426,8 +443,8 @@ namespace ArbWeb
 				}
 			else
 				{
-				sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",\"{14}\",\"{15}\",\"{16}\"", 
-						 m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, m_sOfficialNumber, m_sDateOfBirth, m_sDateJoined,
+				sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",\"{14}\",\"{15}\",\"{16}\",\"{17}\"", 
+						 m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, m_sOfficialNumber, m_sDateOfBirth, m_sDateJoined, m_sLastSignin,
 						 m_sGamesPerDay, m_sGamesPerWeek, m_sTotalGames, m_sWaitMinutes, m_fReady ? "1" : "0", m_fActive ? "1" : "0");
 				}
 
@@ -437,6 +454,7 @@ namespace ArbWeb
 					sw.Write(",\"{0}\"", s);
 
 				sw.Write(",\"{0}\"", m_sDateJoined);
+				sw.Write(",\"{0}\"", m_sLastSignin);
 				}
 
 			if (plsRankings != null)
@@ -480,7 +498,9 @@ namespace ArbWeb
 		{
 			Full,
 			QuickShort,
-			QuickFull
+    		QuickShort2,	// this includes LastSignin
+			QuickFull,
+    		QuickFull2		// this includes LastSignin
 		};
 
 		public RST()
@@ -648,6 +668,9 @@ namespace ArbWeb
 
 		public RSTE RsteLookupEmail(string sEmail)
 		{
+    		if (sEmail == null)
+    			return null;
+
 			if (sEmail.IndexOf(":") >= 0)
 				sEmail = sEmail.Substring(sEmail.IndexOf(":") + 1);
 
@@ -986,7 +1009,13 @@ namespace ArbWeb
 
 			public class Games // GMC
 		    {
-				public class Sport
+			    private const int icolGameAway = 18;
+			    private const int icolGameHome = 13;
+			    private const int icolGameSite = 10;
+			    private const int icolGameGame = 0;
+                private const int icolOfficial = 4;
+
+			    public class Sport
 				{
 					SortedList<string, string> m_plLevelPos;
 					SortedList<string, string> m_plLevel;
@@ -2031,8 +2060,10 @@ namespace ArbWeb
 				}
 
 				OpenSlots m_os;
+			    private int icolGameLevel;
+			    private int icolGameDateTime;
 
-				class OpenSlots
+			    class OpenSlots
 				{
 					SortedList<DateTime, SlotCount> m_mpSlotSc;
 					SortedList<string, Game> m_plgm;
@@ -2450,8 +2481,6 @@ namespace ArbWeb
 										sKey = String.Format("({0},{1})", sCol, sRow);
 									else
 										sKey = String.Format("({0},{1})", sRow, sCol);
-									
-									string sVal;
 
 									if (m_mpAxisValues.ContainsKey(sKey))
 										sw.WriteLine(String.Format("<td>{0}", m_mpAxisValues[sKey]));
@@ -2720,8 +2749,8 @@ namespace ArbWeb
 					string []rgsFields;
 					ReadState rs = ReadState.ScanForHeader;
 					bool fCanceled = false;
-					bool fOpenSlot;
-					bool fIgnore;
+					bool fOpenSlot = false;
+					bool fIgnore = false;
 					string sGame = "";
 					string sDateTime = "";
 					string sSport = "";
@@ -2734,24 +2763,22 @@ namespace ArbWeb
 
 					Dictionary<string, string> mpNamePos = new Dictionary<string, string>();
 					m_mpNameSportLevelCount = new Dictionary<string, Dictionary<string, int>>();
-					Umpire ump;
+					Umpire ump = null;
 					
 					while ((sLine = tr.ReadLine()) != null)
 						{
 						// first, change "foo, bar" into "foo bar" (get rid of quotes and the comma)
 						sLine = Regex.Replace(sLine, "\"([^\",]*),([^\",]*)\"", "$1$2");
 
-						if (sLine.Length < 2)
+						icolGameDateTime = 2;
+						if (sLine.Length < icolGameDateTime)
 							continue;
 
 						Regex rex = new Regex(",");
 						rgsFields = rex.Split(sLine);
 
 						// check for rainouts and cancellations
-						if (Regex.Match(sLine, "CANCEL*ED").Success
-							|| Regex.Match(sLine, "FORFEITED").Success
-							|| Regex.Match(sLine, "RAINED OUT").Success
-							|| Regex.Match(sLine, "SUSPEND*ED").Success)
+						if (FMatchGameCancelled(sLine))
 							{
 							fCanceled = true;
 							// drop us back to reading officials
@@ -2759,20 +2786,16 @@ namespace ArbWeb
 							continue;
 							}
 						// look for comments
-						if (Regex.Match(sLine, "^\"*\\[.*by.*\\]").Success
-							|| Regex.Match(sLine, "^[ \t]*\\[.*/.*/.*by.*\\]").Success)
+						if (FMatchGameComment(sLine))
 							{
-							rs = ReadState.ReadingComments;
-							m_srpt.AddMessage("Reading comment: " + sLine);
-							// skip comments from officials
+							rs = RsHandleGameComment(rs, sLine);
 							continue;
 							}
 
-						if (Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,,").Success
-						    || Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,").Success)
+						if (FMatchGameEmpty(sLine))
 							continue;
 
-						if (Regex.Match(rgsFields[13], "Total:").Success)
+						if (FMatchGameTotalLine(rgsFields))
 							{
 							// this is the final "total" line.  the only thing that should follow this is
 							// the final page break
@@ -2780,13 +2803,10 @@ namespace ArbWeb
 							continue;
 							}
 
+						icolGameLevel = 5;
 						if (rs == ReadState.ScanForHeader)
 							{
-							if (Regex.Match(sLine, "Game.*Date.*Sport.*Level").Success == false)
-								continue;
-
-							Debug.Assert(Regex.Match(rgsFields[4], "Sport.*Level").Success, "Sport & level not where expected!!");
-							rs = ReadState.ScanForGame;
+							rs = RsHandleScanForHeader(sLine, rgsFields, rs);
 							continue;
 							}
 
@@ -2795,8 +2815,7 @@ namespace ArbWeb
 							// when reading comments, we can get text in column 1; if the line ends with commas, then this is just
 							// a continuation of the comment (also be careful to look for another comment starting right after ours
 							// ends
-							if (Regex.Match(sLine, ",,,,,,,,,,,,,,,,,$").Success
-								&& !Regex.Match(sLine, "^\\*\\*\\*").Success)
+							if (FMatchGameCommentContinuation(sLine))
 								{
 								continue;
 								}
@@ -2806,125 +2825,16 @@ namespace ArbWeb
 							}
 
 						if (rs == ReadState.ReadingGame2)
-							{
-							// we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
-							// overflows
-							if (rgsFields[1].Length <= 1 && rgsFields[0].Length <= 1)
-								{
-								// nothing in that column means we have a continuation.  now lets concatenate all our stuff
-								sGame = AppendCheck(sGame, rgsFields[0]);
-								sDateTime = AppendCheck(sDateTime, rgsFields[2]);
-								sLevel = AppendCheck(sLevel, rgsFields[4]);
-								sSite = AppendCheck(sSite, rgsFields[9]);
-								sHome = AppendCheck(sHome, rgsFields[12]);
-								sAway = AppendCheck(sAway, rgsFields[15]);
-								continue;
-								}
-							rs = ReadState.ReadingOfficials1;
-							// fallthrough to reading officials
-							}
+						    rs = RsHandleReadingGame2(rgsFields, ref sGame, ref sDateTime, ref sLevel, ref sSite, ref sHome, ref sAway, rs);
 
 						if (rs == ReadState.ReadingOfficials2)
-							{
-							// we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
-							// overflows
-							if (rgsFields[1].Length <= 1 && rgsFields[0].Length <= 1 && rgsFields[3].Length > 1)
-								{
-								// nothing in that column means we have a continuation.  now lets concatenate all our stuff
-								mpNamePos.Remove(ReverseName(sNameLast));
-								string sName = String.Format("{0} {1}", sNameLast, rgsFields[3]);
-								sName = ReverseName(sName);
-								mpNamePos.Add(sName, sPosLast);
-								continue;
-								}
-							rs = ReadState.ReadingOfficials1;
-							// fallthrough to reading officials
-							}
+						    rs = RsHandleReadingGame2(rgsFields, mpNamePos, sNameLast, sPosLast, rs);
 
 						if (rs == ReadState.ReadingOfficials1)
-							{
-							// Games may have multiple officials, so we have to collect up the officials.
-							// we do this in mpNamePos
-							
-							// &&&& TODO: omit dates before here...
+						    rs = RsHandleReadingOfficials1(rst, fIncludeCanceled, sLine, rgsFields, mpNamePos, fCanceled, sSite, sGame,
+						                                   sHome, sAway, sLevel, sSport, rs, ref sPosLast, ref sNameLast, ref sDateTime, ref fOpenSlot, ref ump);
 
-							if (Regex.Match(sLine, "Attached").Success)
-								continue;
-
-							if (rgsFields[0].Length < 1)
-								{
-								// look for possible contiuation line; if not there, then we will fall back
-								// to ReadingOfficials1
-								rs = ReadState.ReadingOfficials2;	
-								sPosLast = rgsFields[1];
-								sNameLast = rgsFields[3];
-
-								if (Regex.Match(rgsFields[3] , "_____").Success)
-									{
-									fOpenSlot = true;
-									mpNamePos.Add(String.Format("!!OPEN{0}", mpNamePos.Count), rgsFields[1]);
-									continue;
-									}
-								else
-									{
-									string sName = ReverseName(rgsFields[3]);
-									mpNamePos.Add(sName, rgsFields[1]);
-									continue;
-									}
-								}
-							// otherwise we're done!!
-	//						m_srpt.AddMessage("recording results...");
-							if (!fCanceled || fIncludeCanceled)
-								{
-								// record our game
-
-
-								// we've got all the info for one particular game and its officials.
-
-								// walk through the officials that we have
-								foreach (string sName in mpNamePos.Keys)
-									{
-									string sPos = mpNamePos[sName];
-									string sEmail;
-									string sTeam;
-                                    string sNameUse = sName;
-									List<string> plsMisc = null;
-
-									if (Regex.Match(sName, "!!OPEN.*").Success)
-										{
-										sNameUse = null;
-										sEmail = "";
-										sTeam = "";
-										}
-									else
-										{
-										ump = rst.UmpireLookup(sName);
-	
-										if (ump == null)
-											{
-                                            m_srpt.AddMessage(String.Format("Cannot find info for Umpire: {0}", sName), StatusBox.StatusRpt.MSGT.Error);
-											sEmail = "";
-											sTeam = "";
-											}
-										else
-											{
-											sEmail = ump.Contact;
-											sTeam = ump.Misc;
-											plsMisc = ump.PlsMisc;
-											}
-										}
-                                    if (sPos != "Training")
-                                        {
-                                        if (sDateTime.EndsWith("TBA"))
-                                            sDateTime = sDateTime.Substring(0, sDateTime.Length - 3) + "00:00";
-                                    	AddGame(DateTime.Parse(sDateTime), sSite, sNameUse, sTeam, sEmail, sGame, sHome, sAway, sLevel, sSport, sPos, fCanceled, plsMisc);
-                                        }
-									}
-								}
-							rs = ReadState.ScanForGame;
-							}
-
-						if (Regex.Match(sLine, ".*Created by ArbiterSports").Success)
+						if (FMatchGameArbiterFooter(sLine))
 							{
 							Debug.Assert(rs == ReadState.ReadingComments || rs == ReadState.ScanForHeader || rs == ReadState.ScanForGame, String.Format("Page break at illegal position: state = {0}", rs));
 							rs = ReadState.ScanForHeader;
@@ -2932,53 +2842,245 @@ namespace ArbWeb
 							}
 
 						if (rs == ReadState.ScanForGame)
-							{
-							sGame = "";
-							sDateTime = "";
-							sSport = "";
-							sLevel = "";
-							sSite = "";
-							sHome = "";
-							sAway = "";
-							fCanceled = false;
-							fIgnore = false;
-							mpNamePos.Clear();
-
-							if (!(Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Baseball").Success
-                                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
-                                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Tourn").Success
-                                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Softball").Success
-                                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Administrative").Success
-								  || Regex.Match(sLine, ", *50/50").Success
-                                  || Regex.Match(sLine, ",_Events*").Success
-                                  || Regex.Match(sLine, ",zEvents*").Success
-                                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Training").Success))
-								{
-								Debug.Assert(false, String.Format("failed to find game as expected!: {0} ({1}", sLine, rs));
-								}
-							rs = ReadState.ReadingGame1;
-							// fallthrough to ReadingGame1
-							}
+						    rs = RsHandleScanForGame(ref sGame, mpNamePos, sLine, ref sDateTime, ref sSport, ref sLevel, ref sSite,
+						                             ref sHome, ref sAway, ref fCanceled, ref fIgnore, rs);
 
 						if (rs == ReadState.ReadingGame1)
-							{
-							// reading the first line of the game.  We should always get the sport and the first part of the team names here
-							sGame = AppendCheck(sGame, rgsFields[0]);
-							sDateTime = AppendCheck(sDateTime, rgsFields[2]);
-							sSport = AppendCheck(sSport, rgsFields[4]);
-							sSite = AppendCheck(sSite, rgsFields[9]);
-							sHome = AppendCheck(sHome, rgsFields[12]);
-							sAway = AppendCheck(sAway, rgsFields[15]);
-
-							rs = ReadState.ReadingGame2;
-							continue;
-							}
+						    rs = RsHandleReadingGame1(ref sGame, rgsFields, ref sDateTime, ref sSport, ref sSite, ref sHome, ref sAway, rs);
 						}
 
 					return true;
 				}
 
-				}
+			    private ReadState RsHandleScanForHeader(string sLine, string[] rgsFields, ReadState rs)
+			    {
+			        if (Regex.Match(sLine, "Game.*Date.*Sport.*Level").Success == false)
+			            return rs;
+
+			        Debug.Assert(Regex.Match(rgsFields[icolGameLevel], "Sport.*Level").Success, "Sport & level not where expected!!");
+			        rs = ReadState.ScanForGame;
+			        return rs;
+			    }
+
+			    private ReadState RsHandleGameComment(ReadState rs, string sLine)
+			    {
+			        rs = ReadState.ReadingComments;
+			        m_srpt.AddMessage("Reading comment: " + sLine);
+			        // skip comments from officials
+			        return rs;
+			    }
+
+			    private ReadState RsHandleReadingGame1(ref string sGame, string[] rgsFields, ref string sDateTime, ref string sSport,
+			                                           ref string sSite, ref string sHome, ref string sAway, ReadState rs)
+			    {
+// reading the first line of the game.  We should always get the sport and the first part of the team names here
+			        sGame = AppendCheck(sGame, rgsFields[icolGameGame]);
+			        sDateTime = AppendCheck(sDateTime, rgsFields[icolGameDateTime]);
+			        sSport = AppendCheck(sSport, rgsFields[icolGameLevel]);
+			        sSite = AppendCheck(sSite, rgsFields[icolGameSite]);
+			        sHome = AppendCheck(sHome, rgsFields[icolGameHome]);
+			        sAway = AppendCheck(sAway, rgsFields[icolGameAway]);
+
+			        rs = ReadState.ReadingGame2;
+			        return rs;
+			    }
+
+			    private static ReadState RsHandleScanForGame(ref string sGame, Dictionary<string, string> mpNamePos, string sLine, ref string sDateTime,
+			                                                 ref string sSport, ref string sLevel, ref string sSite, ref string sHome,
+			                                                 ref string sAway, ref bool fCanceled, ref bool fIgnore, ReadState rs)
+			    {
+			        sGame = "";
+			        sDateTime = "";
+			        sSport = "";
+			        sLevel = "";
+			        sSite = "";
+			        sHome = "";
+			        sAway = "";
+			        fCanceled = false;
+			        fIgnore = false;
+			        mpNamePos.Clear();
+
+			        if (!(Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Baseball").Success
+			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
+			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Tourn").Success
+			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Softball").Success
+			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Administrative").Success
+			              || Regex.Match(sLine, ", *50/50").Success
+			              || Regex.Match(sLine, ",_Events*").Success
+			              || Regex.Match(sLine, ",zEvents*").Success
+			              || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Training").Success))
+			            Debug.Assert(false, String.Format("failed to find game as expected!: {0} ({1}", sLine, rs));
+			        rs = ReadState.ReadingGame1;
+			        // fallthrough to ReadingGame1
+			        return rs;
+			    }
+
+			    private static bool FMatchGameArbiterFooter(string sLine)
+			    {
+			        return Regex.Match(sLine, ".*Created by ArbiterSports").Success;
+			    }
+
+			    private ReadState RsHandleReadingOfficials1(Roster rst, bool fIncludeCanceled, string sLine, string[] rgsFields,
+			                                                Dictionary<string, string> mpNamePos, bool fCanceled, string sSite, string sGame,
+			                                                string sHome, string sAway, string sLevel, string sSport, ReadState rs,
+			                                                ref string sPosLast, ref string sNameLast, ref string sDateTime, ref bool fOpenSlot, ref Umpire ump)
+			    {
+// Games may have multiple officials, so we have to collect up the officials.
+			        // we do this in mpNamePos
+
+			        // &&&& TODO: omit dates before here...
+
+			        if (Regex.Match(sLine, "Attached").Success)
+			            return rs;
+
+			        
+			        if (rgsFields[0].Length < 1)
+			            {
+			            // look for possible contiuation line; if not there, then we will fall back
+			            // to ReadingOfficials1
+			            rs = ReadState.ReadingOfficials2;
+			            sPosLast = rgsFields[1];
+			            sNameLast = rgsFields[icolOfficial];
+
+			            if (Regex.Match(rgsFields[icolOfficial], "_____").Success)
+			                {
+			                fOpenSlot = true;
+			                mpNamePos.Add(String.Format("!!OPEN{0}", mpNamePos.Count), rgsFields[1]);
+			                return rs;
+			                }
+			            else
+			                {
+			                string sName = ReverseName(rgsFields[icolOfficial]);
+			                mpNamePos.Add(sName, rgsFields[1]);
+			                return rs;
+			                }
+			            }
+			        // otherwise we're done!!
+			        //						m_srpt.AddMessage("recording results...");
+			        if (!fCanceled || fIncludeCanceled)
+			            {
+			            // record our game
+
+
+			            // we've got all the info for one particular game and its officials.
+
+			            // walk through the officials that we have
+			            foreach (string sName in mpNamePos.Keys)
+			                {
+			                string sPos = mpNamePos[sName];
+			                string sEmail;
+			                string sTeam;
+			                string sNameUse = sName;
+			                List<string> plsMisc = null;
+
+			                if (Regex.Match(sName, "!!OPEN.*").Success)
+			                    {
+			                    sNameUse = null;
+			                    sEmail = "";
+			                    sTeam = "";
+			                    }
+			                else
+			                    {
+			                    ump = rst.UmpireLookup(sName);
+
+			                    if (ump == null)
+			                        {
+			                        m_srpt.AddMessage(String.Format("Cannot find info for Umpire: {0}", sName),
+			                                          StatusBox.StatusRpt.MSGT.Error);
+			                        sEmail = "";
+			                        sTeam = "";
+			                        }
+			                    else
+			                        {
+			                        sEmail = ump.Contact;
+			                        sTeam = ump.Misc;
+			                        plsMisc = ump.PlsMisc;
+			                        }
+			                    }
+			                if (sPos != "Training")
+			                    {
+			                    if (sDateTime.EndsWith("TBA"))
+			                        sDateTime = sDateTime.Substring(0, sDateTime.Length - icolOfficial) + "00:00";
+			                    AddGame(DateTime.Parse(sDateTime), sSite, sNameUse, sTeam, sEmail, sGame, sHome, sAway, sLevel, sSport,
+			                            sPos, fCanceled, plsMisc);
+			                    }
+			                }
+			            }
+			        rs = ReadState.ScanForGame;
+			        return rs;
+			    }
+
+			    private static ReadState RsHandleReadingGame2(string[] rgsFields, Dictionary<string, string> mpNamePos, string sNameLast,
+			                                                  string sPosLast, ReadState rs)
+			    {
+// we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
+			        // overflows
+			        if (rgsFields[1].Length <= 1 && rgsFields[0].Length <= 1 && rgsFields[3].Length > 1)
+			            {
+			            // nothing in that column means we have a continuation.  now lets concatenate all our stuff
+			            mpNamePos.Remove(ReverseName(sNameLast));
+			            string sName = String.Format("{0} {1}", sNameLast, rgsFields[3]);
+			            sName = ReverseName(sName);
+			            mpNamePos.Add(sName, sPosLast);
+			            return rs;
+			            }
+			        rs = ReadState.ReadingOfficials1;
+			        // fallthrough to reading officials
+			        return rs;
+			    }
+
+			    private ReadState RsHandleReadingGame2(string[] rgsFields, ref string sGame, ref string sDateTime, ref string sLevel,
+			                                           ref string sSite, ref string sHome, ref string sAway, ReadState rs)
+			    {
+// we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
+			        // overflows
+			        if (rgsFields[1].Length <= 1 && rgsFields[icolGameGame].Length <= 1)
+			            {
+			            // nothing in that column means we have a continuation.  now lets concatenate all our stuff
+			            sGame = AppendCheck(sGame, rgsFields[icolGameGame]);
+			            sDateTime = AppendCheck(sDateTime, rgsFields[icolGameDateTime]);
+			            sLevel = AppendCheck(sLevel, rgsFields[icolGameLevel]);
+			            sSite = AppendCheck(sSite, rgsFields[icolGameSite]);
+			            sHome = AppendCheck(sHome, rgsFields[icolGameHome]);
+			            sAway = AppendCheck(sAway, rgsFields[icolGameAway]);
+			            return rs;
+			            }
+			        rs = ReadState.ReadingOfficials1;
+			        // fallthrough to reading officials
+			        return rs;
+			    }
+
+			    private static bool FMatchGameCommentContinuation(string sLine)
+			    {
+			        return Regex.Match(sLine, ",,,,,,,,,,,,,,,,,$").Success
+			               && !Regex.Match(sLine, "^\\*\\*\\*").Success;
+			    }
+
+			    private static bool FMatchGameTotalLine(string[] rgsFields)
+			    {
+			        return Regex.Match(rgsFields[13], "Total:").Success;
+			    }
+
+			    private static bool FMatchGameEmpty(string sLine)
+			    {
+			        return Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,,").Success
+			               || Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,").Success;
+			    }
+
+			    private static bool FMatchGameComment(string sLine)
+			    {
+			        return Regex.Match(sLine, "^\"*\\[.*by.*\\]").Success
+			               || Regex.Match(sLine, "^[ \t]*\\[.*/.*/.*by.*\\]").Success;
+			    }
+
+			    private static bool FMatchGameCancelled(string sLine)
+			    {
+			        return Regex.Match(sLine, ".*\\*\\*\\*.*CANCEL*ED").Success
+			               || Regex.Match(sLine, ".*\\*\\*\\*.*FORFEITED").Success
+			               || Regex.Match(sLine, ".*\\*\\*\\*.*RAINED OUT").Success
+			               || Regex.Match(sLine, ".*\\*\\*\\*.*SUSPEND*ED").Success;
+			    }
+		    }
 
 			Roster m_rst;
 			Games m_gms;
