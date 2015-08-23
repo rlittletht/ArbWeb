@@ -1,22 +1,14 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Windows.Forms;
-using System.Data;
-using System.Net;
 using System.IO;
 using Microsoft.Win32;
-using AxSHDocVw;
 using StatusBox;
 using mshtml;
-using System.Text.RegularExpressions;
-using Microsoft.Office;
 using System.Runtime.InteropServices;
 using Outlook=Microsoft.Office.Interop.Outlook;
-using Excel=Microsoft.Office.Interop.Excel;
 using System.Threading.Tasks;
 using TCore.Settings;
 
@@ -268,7 +260,7 @@ namespace ArbWeb
 
 //		ReHistory m_rehProfile;
 //		ReHistory m_reh;
-		ArbWebControl2 m_awc;
+		ArbWebControl m_awc;
 		bool m_fDontUpdateProfile;
 
         public void EnableAdminFunctions()
@@ -286,7 +278,7 @@ namespace ArbWeb
 			InitializeComponent();
 
 			m_srpt = new StatusBox.StatusRpt(m_recStatus);
-			m_awc = new ArbWebControl2(m_srpt);
+			m_awc = new ArbWebControl(m_srpt);
 			m_fDontUpdateProfile = true;
 			RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
 

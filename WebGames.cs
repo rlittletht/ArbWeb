@@ -1,23 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Windows.Forms;
-using System.Data;
 using System.Net;
-using System.IO;
-using Microsoft.Win32;
-using AxSHDocVw;
-using StatusBox;
 using mshtml;
-using System.Text.RegularExpressions;
-using Microsoft.Office;
-using System.Runtime.InteropServices;
-using Outlook=Microsoft.Office.Interop.Outlook;
-using Excel=Microsoft.Office.Interop.Excel;
-using System.Threading.Tasks;
 
 namespace ArbWeb
 {
@@ -155,6 +139,7 @@ namespace ArbWeb
             System.IO.File.Copy(sOutFile, m_ebGameCopy.Text);
         }
 
+#if notused
         private void DownloadGamesNewWindowDelegate(object sender, DWebBrowserEvents2_NewWindow3Event e)
         {
             // at this point, e.bstrUrlContext has the URL to the XLS schedule file!!!
@@ -176,6 +161,7 @@ namespace ArbWeb
             string sFile = m_ebRoster.Text;
             wc.DownloadFile(e.bstrUrl, sFile);
         }
+#endif
 #if no
 		private void TriggerDocumentDone(object sender, AxSHDocVw.DWebBrowserEvents2_DocumentCompleteEvent e)
 		{

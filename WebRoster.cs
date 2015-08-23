@@ -1,23 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Windows.Forms;
-using System.Data;
-using System.Net;
 using System.IO;
-using Microsoft.Win32;
-using AxSHDocVw;
 using StatusBox;
 using mshtml;
 using System.Text.RegularExpressions;
-using Microsoft.Office;
-using System.Runtime.InteropServices;
-using Outlook=Microsoft.Office.Interop.Outlook;
-using Excel=Microsoft.Office.Interop.Excel;
-using System.Threading.Tasks;
 
 namespace ArbWeb
 {
@@ -410,7 +397,7 @@ namespace ArbWeb
                 }
         }
 
-        private static void VisitRankCallbackUpload(Roster rst, string sRankPosition, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl2 awc, StatusBox.StatusRpt srpt)
+        private static void VisitRankCallbackUpload(Roster rst, string sRankPosition, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc, StatusBox.StatusRpt srpt)
         {
             IHTMLDocument2 oDoc2;
             oDoc2 = awc.Document2;
@@ -553,7 +540,7 @@ namespace ArbWeb
                 }
         }
 
-        private static void VisitRankCallbackDownload(Roster rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl2 awc, StatusBox.StatusRpt srpt)
+        private static void VisitRankCallbackDownload(Roster rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc, StatusBox.StatusRpt srpt)
         {
             // don't do anything with unranked
             // just add the rankings
@@ -561,7 +548,7 @@ namespace ArbWeb
                 rst.FAddRanking(s, sRank, mpRanked[s]);
         }
 
-        private delegate void VisitRankCallback(Roster rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl2 awc, StatusBox.StatusRpt srpt);
+        private delegate void VisitRankCallback(Roster rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc, StatusBox.StatusRpt srpt);
 
         private void HandleRankings(Roster rst, ref Roster rstBuilding)
         {

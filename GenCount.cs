@@ -1,24 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
-
-using Microsoft.Win32;
-using System.Collections;
-using System.Net;
-using AxSHDocVw;
-using mshtml;
-using Microsoft.Office;
-using System.Runtime.InteropServices;
 using StatusBox;
-using Outlook = Microsoft.Office.Interop.Outlook;
-using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ArbWeb
 	{
