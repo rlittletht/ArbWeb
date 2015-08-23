@@ -11,6 +11,8 @@ Project("{6141683F-8A12-4E36-9623-2EB02B2C2303}") = "ArbWebInstaller", "..\ArbWe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCore.Settings", "..\liblet\cs\TCore.Settings\TCore.Settings.csproj", "{CF92FD1E-CE88-492E-A7C6-C4D29D908A22}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cmdline", "..\liblet\cs\TCore.CmdLine\cmdline.csproj", "{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CD_ROM|Any CPU = CD_ROM|Any CPU
@@ -50,6 +52,16 @@ Global
 		{CF92FD1E-CE88-492E-A7C6-C4D29D908A22}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CF92FD1E-CE88-492E-A7C6-C4D29D908A22}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
 		{CF92FD1E-CE88-492E-A7C6-C4D29D908A22}.SingleImage|Any CPU.Build.0 = Release|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
+		{B83640E8-72F6-4F92-93FD-7FF7CEC3535E}.SingleImage|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

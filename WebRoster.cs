@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using StatusBox;
 using mshtml;
 using System.Text.RegularExpressions;
+using Win32Win;
 
 namespace ArbWeb
 {
@@ -55,7 +59,7 @@ namespace ArbWeb
             m_awc.ResetNav();
             IHTMLDocument2 oDoc2 = m_awc.Document2;
 
-            ArbWebControl.FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
+            m_awc.FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
             m_awc.FWaitForNavFinish();
         }
 
@@ -655,7 +659,7 @@ namespace ArbWeb
             ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Rank);
 
             m_awc.ResetNav();
-            ArbWebControl.FSetSelectControlText(m_awc.Document2, _s_RanksEdit_Select_PosNames, sRankPosition, false);
+            m_awc.FSetSelectControlText(m_awc.Document2, _s_RanksEdit_Select_PosNames, sRankPosition, false);
             m_awc.FWaitForNavFinish();
             return true;
         }
@@ -1168,24 +1172,10 @@ namespace ArbWeb
 			return sOutFile;
 		}
 
-		private void DoDownloadQuickRoster(object sender, EventArgs e)
-		{
-			m_srpt.AddMessage("Starting Quick Roster download...");
-			m_srpt.PushLevel();
-			PushCursor(Cursors.WaitCursor);
+        delegate void ProcessQuickRosterOfficialsDel(string sTempFile, string sOutFile);
 
-		    string sOutFile = SBuildRosterFilename();
-
-			m_ebRoster.Text = sOutFile;
-
-			//string sTempFile = "C:\\Users\\rlittle\\AppData\\Local\\Temp\\temp3c92cb56-0b95-41c0-8eb5-37387bacf4f6.csv";
-			string sTempFile = SRosterFileDownload();
-
-//			m_awc.PopSaveToFile();
-//			m_awc.PopNewWindow3Delegate();
-
-			// now, get the rankings and update the last access date
-
+        void DoProcessQuickRosterOfficials(string sTempFile, string sOutFile)
+        {
 			Roster rstBuilding = new Roster();
 
 			rstBuilding.ReadRoster(sTempFile);
@@ -1196,19 +1186,71 @@ namespace ArbWeb
 //			System.IO.File.Copy(sTempFile, m_ebRoster.Text);
 			System.IO.File.Delete(m_ebRosterWorking.Text);
 			System.IO.File.Copy(sOutFile, m_ebRosterWorking.Text);
+        }
+
+        private void ProcessQuickRosterOfficials(string sTempFile, string sOutFile)
+        {
+            if (m_awc.InvokeRequired)
+                {
+                IAsyncResult rslt = m_awc.BeginInvoke(new ProcessQuickRosterOfficialsDel(DoProcessQuickRosterOfficials), new object[] {sTempFile, sOutFile});
+                m_awc.EndInvoke(rslt);
+                }
+            else
+                DoProcessQuickRosterOfficials(sTempFile, sOutFile);
+        }
+
+        /* D O  D O W N L O A D  Q U I C K  R O S T E R  W O R K */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoDownloadQuickRosterWork
+        	%%Qualified: ArbWeb.AwMainForm.DoDownloadQuickRosterWork
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        void DoDownloadQuickRosterWork()
+        {
+			m_srpt.AddMessage("Starting Quick Roster download...");
+			m_srpt.PushLevel();
+	        PushCursor(Cursors.WaitCursor);
+
+		    string sOutFile = SBuildRosterFilename();
+
+            SetText(m_ebRoster, sOutFile);
+
+			//string sTempFile = "C:\\Users\\rlittle\\AppData\\Local\\Temp\\temp3c92cb56-0b95-41c0-8eb5-37387bacf4f6.csv";
+			string sTempFile = SRosterFileDownload();
+
+//			m_awc.PopSaveToFile();
+//			m_awc.PopNewWindow3Delegate();
+
+			// now, get the rankings and update the last access date
+
+            ProcessQuickRosterOfficials(sTempFile, sOutFile);
 
 			PopCursor();
 			m_srpt.PopLevel();
 
 			m_srpt.AddMessage("Completed Quick Roster download.");
-		}
+        }
 
-	    private string SRosterFileDownload()
-	    {
-	        IHTMLDocument2 oDoc2;
-// navigate to the officials page...
-	        EnsureLoggedIn();
+        private delegate AutoResetEvent LaunchRosterFileDownloadDel(string sTempFile);
 
+
+        AutoResetEvent LaunchRosterFileDownload(string sTempFile)
+        {
+            if (m_awc.InvokeRequired)
+                {
+                IAsyncResult rslt = m_awc.BeginInvoke(new LaunchRosterFileDownloadDel(DoLaunchRosterFileDownload), new object[] {sTempFile});
+                return (AutoResetEvent)m_awc.EndInvoke(rslt);
+                }
+            else
+                return DoLaunchRosterFileDownload(sTempFile);
+        }
+
+        AutoResetEvent DoLaunchRosterFileDownload(string sTempFile)
+        {
+            System.Windows.Forms.Clipboard.SetText(sTempFile);
+
+            IHTMLDocument2 oDoc2;
 	        ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
 	        m_awc.FWaitForNavFinish();
 
@@ -1216,7 +1258,7 @@ namespace ArbWeb
 
 	        // from the officials view, make sure we are looking at active officials
 	        m_awc.ResetNav();
-	        ArbWebControl.FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
+	        m_awc.FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
 	        m_awc.FWaitForNavFinish();
 
 	        oDoc2 = m_awc.Document2;
@@ -1262,15 +1304,31 @@ namespace ArbWeb
 //          m_awc.PushSaveToFile(sOutFile);
 
 
+            AutoResetEvent evtDownload = new AutoResetEvent(false);
+            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "roster.csv", sTempFile, "of OfficialsView.aspx from", evtDownload);
+
 	        ((IHTMLElement) (oDoc2.all.item(_sid_RosterPrint_BeginPrint, 0))).click();
+
+            return evtDownload;
+        }
+
+	    private string SRosterFileDownload()
+	    {
+// navigate to the officials page...
+	        EnsureLoggedIn();
 
 	        string sTempFile = String.Format("{0}\\temp{1}.csv", Environment.GetEnvironmentVariable("Temp"),
 	                                         System.Guid.NewGuid().ToString());
-	        System.Windows.Forms.Clipboard.SetText(sTempFile);
-	        MessageBox.Show(
+
+	        
+            var evtDownload = LaunchRosterFileDownload(sTempFile);
+            evtDownload.WaitOne();
+#if nomore
+            MessageBox.Show(
 	            String.Format(
 	                "Please download the roster to {0}. This path is on the clipboard, so you can just past it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
 	                sTempFile), "ArbWeb", MessageBoxButtons.OK);
+#endif
 	        return sTempFile;
 	    }
 		private void InvalRoster()

@@ -2,12 +2,14 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using Microsoft.Win32;
 using StatusBox;
 using mshtml;
 using System.Runtime.InteropServices;
+using TCore.CmdLine;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using System.Threading.Tasks;
 using TCore.Settings;
@@ -17,7 +19,7 @@ namespace ArbWeb
 	/// <summary>
 	/// Summary description for AwMainForm.
 	/// </summary>
-	public partial class AwMainForm : System.Windows.Forms.Form
+	public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch
     {
         #region ArbiterStrings
 
@@ -143,6 +145,12 @@ namespace ArbWeb
 	    private const string _sid_Announcements_Button_Save_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
 	    private const string _sid_Announcements_Button_Save_Suffix = "_btnSave";
 
+	    private const string _sid_Login_Span_Type_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
+	    private const string _sid_Login_Span_Type_Suffix = "_lblType2";
+
+	    private const string _sid_Login_Anchor_TypeLink_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
+	    private const string _sid_Login_Anchor_TypeLink_Suffix = "_UserTypeLink";
+
 #endregion
 
         #region Controls
@@ -237,6 +245,54 @@ namespace ArbWeb
 				throw new Exception(s);
 		}
 
+	    private bool m_fAutomateUpdateHelp = false;
+	    private List<string> m_plsAutomateIncludeSport = new List<string>();
+	    private string m_sAutomateDateStart = null;
+        private string m_sAutomateDateEnd = null;
+	    private bool m_fForceFutureGames = false;
+
+        public bool FDispatchCmdLineSwitch(CmdLineSwitch cls, string sParam, object oClient, out string sError)
+	    {
+	        sError = null;
+
+	        if (cls.Switch.Length == 1)
+	            {
+	            switch (cls.Switch[0])
+	                {
+	                case 'H':
+	                    m_fAutomateUpdateHelp = true;
+	                    break;
+	                case 'F':
+	                    m_plsAutomateIncludeSport.Add(sParam);
+	                    break;
+                    case 'f':
+	                    m_fForceFutureGames = true;
+	                    break;
+	                default:
+	                    sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+	                    return false;
+	                }
+	            return true;
+	            }
+	        if (cls.Switch == "DS")
+	            m_sAutomateDateStart = sParam;
+	        else if (cls.Switch == "DE")
+	            m_sAutomateDateEnd = sParam;
+	        else
+	            {
+	            sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+	            return false;
+	            }
+	        return true;
+	    }
+
+	    /* E  H _  R E N D E R  H E A D I N G  L I N E */
+		/*----------------------------------------------------------------------------
+			%%Function: EH_RenderHeadingLine
+			%%Qualified: ArbWeb.AwMainForm.EH_RenderHeadingLine
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
 		private void EH_RenderHeadingLine(object sender, System.Windows.Forms.PaintEventArgs e)
 		{
 			Label lbl = (Label)sender;
@@ -263,12 +319,27 @@ namespace ArbWeb
 		ArbWebControl m_awc;
 		bool m_fDontUpdateProfile;
 
+        /* E N A B L E  A D M I N  F U N C T I O N S */
+        /*----------------------------------------------------------------------------
+        	%%Function: EnableAdminFunctions
+        	%%Qualified: ArbWeb.AwMainForm.EnableAdminFunctions
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public void EnableAdminFunctions()
         {
             bool fAdmin = (String.Compare(System.Environment.MachineName, "obelix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
-        public AwMainForm()
+
+        /* A W  M A I N  F O R M */
+        /*----------------------------------------------------------------------------
+        	%%Function: AwMainForm
+        	%%Qualified: ArbWeb.AwMainForm.AwMainForm
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public AwMainForm(string[] rgsCmdLine)
 		{
             //
 			// Required for Windows Form Designer support
@@ -339,7 +410,153 @@ namespace ArbWeb
 
 			if (m_cbShowBrowser.Checked)
 				m_awc.Show();
+
+            CmdLineConfig clcfg = new CmdLineConfig(new CmdLineSwitch[]
+                {
+                new CmdLineSwitch("H", true /*fToggle*/, false /*fReq*/, "Update arbiter HELP NEEDED (includes downloading games, calculating slots). Requires -DS and -DE.", "help announce", null),
+                new CmdLineSwitch("DS", false /*fToggle*/, false /*fReq*/, "Start date for slot calculation (required if -H specified)", "date start", null),
+                new CmdLineSwitch("DE", false /*fToggle*/, false /*fReq*/, "End date for slot calculation (required if -H specified)", "date end", null),
+                new CmdLineSwitch("F", false /*fToggle*/, false /*fReq*/, "Check this item in the Game/Slot filter", "Sport filter", null),
+                new CmdLineSwitch("f", true /*fToggle*/, false /*fReq*/, "Force the games download to only download future games", "Future Games Only", null),
+                });
+
+            CmdLine cl = new CmdLine(clcfg);
+            string sError = null;
+
+            if (rgsCmdLine != null && rgsCmdLine.Length > 0)
+                m_srpt.AddMessage(String.Format("Commandline args: {0} {1}", rgsCmdLine.Length, rgsCmdLine[0]));
+
+            if (!cl.FParse(rgsCmdLine, this, null, out sError) || (m_fAutomateUpdateHelp && (m_sAutomateDateEnd == null || m_sAutomateDateStart == null)))
+                {
+                m_sbUsage = new StringBuilder();
+
+                cl.Usage(AppendUsageString);
+                MessageBox.Show(String.Format("Command Line error: {0}\n{1}", sError, m_sbUsage.ToString()), "ArbWeb");
+                m_fAutomating = true;
+                Close();
+                }
+
+            if (rgsCmdLine != null && rgsCmdLine.Length > 0)
+                {
+                m_fAutomating = true;
+
+                if (m_fAutomateUpdateHelp)
+                    {
+                    DateTime dttmStart = DateTime.Parse(m_sAutomateDateStart);
+                    DateTime dttmEnd = DateTime.Parse(m_sAutomateDateEnd);
+
+                    m_cbLaunch.Checked = false;
+                    m_cbSetArbiterAnnounce.Checked = true;
+                    m_dtpStart.Value = dttmStart;
+                    m_dtpEnd.Value = dttmEnd;
+                    if (m_fForceFutureGames)
+                        m_cbFutureOnly.Checked = true;
+
+                    QueueUIOp(new DelayedUIOpDel(DoDownloadGames), new object[]{null, null});
+                    QueueUIOp(new DelayedUIOpDel(CalcOpenSlots), new object[]{null, null});
+                    QueueUIOp(new DelayedUIOpDel(DoCheckSportListboxes), new object[]{null, null});
+                    QueueUIOp(new DelayedUIOpDel(GenMailMergeMail), new object[]{null, null});
+                    QueueUIOp(new DelayedUIOpDel(DoExitApp), new object[]{null, null});
+
+                    DoPendingQueueUIOp();
+                    }
+            }
 		}
+
+	    private StringBuilder m_sbUsage = null;
+
+        void AppendUsageString(string s)
+        {
+            m_sbUsage.AppendLine(s);
+        }
+
+	    private void DoCheckSportListboxes(object sender, EventArgs e)
+	    {
+	        if (m_plsAutomateIncludeSport.Count == 0)
+	            return;
+
+	        m_cbFilterSport.Checked = true;
+	        EnableControls();
+
+            // first, uncheck everone
+	        for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+	            {
+	            m_chlbxSports.SetItemChecked(i, false);
+	            }
+	        
+	        foreach (string s in m_plsAutomateIncludeSport)
+	            {
+	            // find the item in the listbox
+	            for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+	                {
+	                string sItem = (string) m_chlbxSports.Items[i];
+
+	                if (sItem.Contains(s))
+	                    m_chlbxSports.SetItemChecked(i, true);
+	                }
+	            }
+	        DoPendingQueueUIOp();
+	    }
+
+	    void DoExitApp(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+                delegate void DelayedUIOpDel(object sender, EventArgs e);
+
+        struct QueuedUIOp
+        {
+            public DelayedUIOpDel del;
+            public object[] rgo;
+
+            public QueuedUIOp(DelayedUIOpDel del, object[] rgo)
+            {
+                this.del = del;
+                this.rgo = rgo;
+            }
+        }
+
+	    private delegate void QueueUIOpDel(DelayedUIOpDel del, object[] rgo);
+
+        void DoQueueUIOp(DelayedUIOpDel del, object[] rgo)
+        {
+            QueuedUIOp qui = new QueuedUIOp(del, rgo);
+
+            plqui.Add(qui);
+        }
+
+        void QueueUIOp(DelayedUIOpDel del, object[] rgo)
+        {
+            if (this.InvokeRequired)
+                this.Invoke(new QueueUIOpDel(DoQueueUIOp), new object[] {del, rgo});
+            else
+                DoQueueUIOp(del, rgo);
+        }
+
+	    private delegate void DoPendingQueueUIOpDel( );
+
+        void DoDoPendingQueueUIOp()
+        {
+            if (plqui.Count > 0)
+                {
+                QueuedUIOp qui = plqui[0];
+
+                plqui.RemoveAt(0);
+                qui.del(qui.rgo[0], (EventArgs)qui.rgo[1]);
+                }
+        }
+
+        void DoPendingQueueUIOp()
+        {
+            if (this.InvokeRequired)
+                this.Invoke(new DoPendingQueueUIOpDel(DoDoPendingQueueUIOp));
+            else
+                DoDoPendingQueueUIOp();
+        }
+
+
+
+	    private List<QueuedUIOp> plqui = new List<QueuedUIOp>();
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -730,7 +947,6 @@ namespace ArbWeb
             this.m_cbOpenSlotDetail.TabIndex = 46;
             this.m_cbOpenSlotDetail.Text = "Include game/slot detail";
             this.m_cbOpenSlotDetail.UseVisualStyleBackColor = true;
-            this.m_cbOpenSlotDetail.CheckedChanged += new System.EventHandler(this.HandleSlotDetailChecked);
             // 
             // m_cbxProfile
             // 
@@ -873,7 +1089,7 @@ namespace ArbWeb
             this.m_pbReload.Size = new System.Drawing.Size(110, 24);
             this.m_pbReload.TabIndex = 61;
             this.m_pbReload.Text = "Load Data";
-            this.m_pbReload.Click += new System.EventHandler(this.m_pbReload_Click);
+            this.m_pbReload.Click += new System.EventHandler(this.DoReloadClick);
             // 
             // m_cbRankOnly
             // 
@@ -1243,15 +1459,58 @@ namespace ArbWeb
 		/// The main entry point for the application.
 		/// </summary>
 		[STAThread]
-		static void Main() 
+		static void Main(string[] rgsCmdLine) 
 		{
-			Application.Run(new AwMainForm());
+			Application.Run(new AwMainForm(rgsCmdLine));
 		}
 		
         bool m_fLoggedIn;
 
 		Roster m_rst;
 		CountsData m_gc;
+
+	    /* E N S U R E  A D M I N  L O G G E D  I N */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: EnsureAdminLoggedIn
+	    	%%Qualified: ArbWeb.AwMainForm.EnsureAdminLoggedIn
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
+	    private void EnsureAdminLoggedIn()
+	    {
+	        // now we need to find the URGENT HELP NEEDED row
+	        IHTMLDocument2 oDoc2 = m_awc.Document2;
+	        IHTMLElementCollection hec = (IHTMLElementCollection) oDoc2.all.tags("span");
+
+	        string sCtl = null;
+
+	        foreach (IHTMLElement he in hec)
+	            {
+	            if (he.id == null)
+	                continue;
+
+	            if (he.id.StartsWith(_sid_Login_Span_Type_Prefix) && he.innerText == "Admin")
+	                {
+                    // found a span with the right prefix and innerText, now figure out its control
+	                int ich = he.id.IndexOf(_sid_Login_Span_Type_Prefix);
+	                if (ich >= 0)
+	                    {
+	                    sCtl = he.id.Substring(ich + _sid_Login_Span_Type_Prefix.Length, 5);
+	                    }
+	                break;
+	                }
+	            }
+
+	        ThrowIfNot(sCtl != null, "Can't find Admin account link");
+
+	        m_awc.ResetNav();
+	        string sControl = BuildAnnName(_sid_Login_Anchor_TypeLink_Prefix, _sid_Login_Anchor_TypeLink_Suffix, sCtl);
+
+	        ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't admin link");
+	        m_awc.FWaitForNavFinish();
+	    }
+
+	    public delegate void EnsureLoggedInDel();
 
         /* E N S U R E  L O G G E D  I N */
         /*----------------------------------------------------------------------------
@@ -1260,7 +1519,26 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void EnsureLoggedIn()
+        void EnsureLoggedIn()
+        {
+            if (m_awc.InvokeRequired)
+                {
+                m_awc.Invoke(new EnsureLoggedInDel(DoEnsureLoggedIn));
+                }
+            else
+                {
+                DoEnsureLoggedIn();
+                }
+        }
+
+	    /* E N S U R E  L O G G E D  I N */
+        /*----------------------------------------------------------------------------
+        	%%Function: EnsureLoggedIn
+        	%%Qualified: ArbWeb.AwMainForm.EnsureLoggedIn
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void DoEnsureLoggedIn()
         {
             IHTMLDocument2 oDoc2;
 
@@ -1293,7 +1571,14 @@ namespace ArbWeb
 
                 oDoc2 = m_awc.Document2;
                 bool fToggledBrowser = false;
-                
+
+                if (ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Div_PnlAccounts))
+                    {
+                    EnsureAdminLoggedIn();
+                    }
+
+                // at this point, we are either going to get to the main page, or we are going to get a
+                // page asking us which account to login to
                 while (count < 100 && (ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Div_PnlAccounts) || !ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink)))
                     {
                     if (m_cbShowBrowser.Checked == false)
@@ -1340,6 +1625,8 @@ namespace ArbWeb
         }
 
 
+	    private bool m_fAutomating = false;
+
 	    /* D O  S A V E  S T A T E  C O R E */
 	    /*----------------------------------------------------------------------------
 	    	%%Function: DoSaveStateCore
@@ -1349,8 +1636,11 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
 	    private void DoSaveStateCore()
 		{
-			m_rehProfile.Save();
-			m_reh.Save();
+	        if (!m_fAutomating)
+	            {
+	            m_rehProfile.Save();
+	            m_reh.Save();
+	            }
 		}
 
 		/* D O  S A V E  S T A T E */
@@ -1374,11 +1664,45 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoDownloadGames(object sender, EventArgs e)
         {
-            DownloadGames();
+            var x = m_awc.Handle;
+
+            // let's make sure the webbrowser handle is created
+
+            m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
+            
+            Task tskDownloadGames = new Task(DownloadGames);
+
+            tskDownloadGames.Start();
+            // DownloadGames();
         }
 
+        /* D O  D O W N L O A D  Q U I C K  R O S T E R */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoDownloadQuickRoster
+        	%%Qualified: ArbWeb.AwMainForm.DoDownloadQuickRoster
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void DoDownloadQuickRoster(object sender, EventArgs e)
+		{
+            var x = m_awc.Handle;   // this makes sure that m_awc has a handle before we ask it if invoke is required.(forces it to get created on the correct thread)
+
+            Task tsk = new Task(DoDownloadQuickRosterWork);
+
+            tsk.Start();
+		}
+
         List<Cursor> m_plCursor;
-        
+
+	    private delegate void PushCursorDel(Cursor crs);
+
+	    private void DoPushCursor(Cursor crs)
+        {
+            m_plCursor.Add(this.Cursor);
+            this.Cursor = crs;
+        }
+
+
         /* P U S H  C U R S O R */
         /*----------------------------------------------------------------------------
         	%%Function: PushCursor
@@ -1388,10 +1712,22 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void PushCursor(Cursor crs)
         {
-            m_plCursor.Add(this.Cursor);
-            this.Cursor = crs;
+            if (this.InvokeRequired)
+                this.BeginInvoke(new PushCursorDel(DoPushCursor), crs);
+            else
+                DoPushCursor(crs);
         }
-        
+
+	    private delegate void PopCursorDel();
+
+        void DoPopCursor()
+        {
+            if (m_plCursor.Count > 0)
+                {
+                this.Cursor = m_plCursor[m_plCursor.Count - 1];
+                m_plCursor.RemoveAt(m_plCursor.Count - 1);
+                }
+        }
         /* P O P  C U R S O R */
         /*----------------------------------------------------------------------------
         	%%Function: PopCursor
@@ -1401,11 +1737,10 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void PopCursor()
         {
-            if (m_plCursor.Count > 0)
-                {
-                this.Cursor = m_plCursor[m_plCursor.Count - 1];
-                m_plCursor.RemoveAt(m_plCursor.Count - 1);
-                }
+            if (this.InvokeRequired)
+                this.BeginInvoke(new PopCursorDel(DoPopCursor));
+            else
+                DoPopCursor();
         }
 
 
@@ -1607,19 +1942,6 @@ namespace ArbWeb
 			EnableControls();
         }
 
-        /* H A N D L E  S L O T  D E T A I L  C H E C K E D */
-        /*----------------------------------------------------------------------------
-        	%%Function: HandleSlotDetailChecked
-        	%%Qualified: ArbWeb.AwMainForm.HandleSlotDetailChecked
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private void HandleSlotDetailChecked(object sender, EventArgs e)
-        {
-
-        }
-
-
 	    /* G E N  S I T E  R O S T E R  R E P O R T */
 	    /*----------------------------------------------------------------------------
 	    	%%Function: GenSiteRosterReport
@@ -1629,21 +1951,10 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
 	    private void GenSiteRosterReport(object sender, EventArgs e)
 	    {
-	        CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-	        string sTempFile = String.Format("{0}\\temp{1}.doc", Environment.GetEnvironmentVariable("Temp"),
-	                                         System.Guid.NewGuid().ToString());
-	        Roster rst = RstEnsure(m_ebRosterWorking.Text);
-
-	        gc.GenSiteRosterResport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
-            // launch word with the file
-	        Process.Start(sTempFile);
-	        // System.IO.File.Delete(sTempFile);
+	        DoGenSiteRosterReport();
 	    }
 
-        static string BuildAnnName(string sPrefix, string sSuffix, string sCtl)
-        {
-            return String.Format("{0}{1}{2}", sPrefix, sCtl, sSuffix);
-        }
+
 	    /* G E N  M A I L  M E R G E  M A I L */
 	    /*----------------------------------------------------------------------------
 	    	%%Function: GenMailMergeMail
@@ -1653,110 +1964,8 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
 	    private void GenMailMergeMail(object sender, EventArgs e)
 	    {
-	        CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-	        Roster rst = RstEnsure(m_ebRosterWorking.Text);
-	        m_srpt.AddMessage("Generating mail merge documents...", StatusRpt.MSGT.Header, false);
-
-	        // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
-	        // rated for the sports we are filtered to
-	        GameData.GameSlots gms = gc.GamesFromFilter(ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
-	                                                    ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), false, m_saOpenSlots);
-
-	        Roster rstFiltered;
-
-	        if (m_cbFilterRank.Checked)
-	            rstFiltered = rst.FilterByRanks(gms.RequiredRanks());
-	        else
-	            rstFiltered = rst;
-
-	        string sCsvTemp = SBuildTempFilename("MailMergeRoster", "csv");
-	        StreamWriter sw = new StreamWriter(sCsvTemp, false, System.Text.Encoding.Default);
-
-	        sw.WriteLine("email,firstname,lastname");
-	        foreach (RosterEntry rste in rstFiltered.Plrste)
-	            {
-	            sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.m_sLast);
-	            }
-	        sw.Flush();
-	        sw.Close();
-
-	        // ok, now create the mailmerge .docx
-	        string sTempName;
-	        string sArbiterHelpNeeded;
-
-	        OOXML.CreateMailMergeDoc("mailmergedoc.docx", sTempName = SBuildTempFilename("mailmergedoc", "docx"), sCsvTemp, gms, out sArbiterHelpNeeded);
-
-	        System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
-	        if (m_cbLaunch.Checked)
-	            {
-	            m_srpt.AddMessage("Done, launching document...", StatusRpt.MSGT.Header, false);
-	            System.Diagnostics.Process.Start(sTempName);
-	            }
-	        if (m_cbSetArbiterAnnounce.Checked)
-	            SetArbiterAnnounce(sArbiterHelpNeeded);
+	        DoGenMailMergeAndAnnouce();
 	    }
-
-        void SetArbiterAnnounce(string sArbiterHelpNeeded)
-        {
-			m_srpt.AddMessage("Starting Announcement Set...");
-			m_srpt.PushLevel();
-
-            EnsureLoggedIn();
-            ThrowIfNot(m_awc.FNavToPage(_s_Announcements), "Couldn't nav to announcements page!");
-            m_awc.FWaitForNavFinish();
-
-            // now we need to find the URGENT HELP NEEDED row
-            IHTMLDocument2 oDoc2 = m_awc.Document2;
-            IHTMLElementCollection hec = (IHTMLElementCollection)oDoc2.all.tags("div");
-
-            string sCtl = null;
-
-            foreach (IHTMLElement he in hec)
-                {
-                if (he.id == "D9UrgentHelpNeeded")
-                    {
-                    IHTMLElement heFind = he;
-                    while (heFind.tagName.ToLower() != "tr")
-                        {
-                        heFind = heFind.parentElement;
-                        ThrowIfNot(heFind != null, "Can't find HELP announcement");
-                        }
-                    // ok, go up to the parent TR.
-                    // now find one of our controls and get its control number
-                    string s = heFind.innerHTML;
-                    int ich = s.IndexOf(_s_Announcements_Button_Edit_Prefix);
-                    if (ich > 0)
-                        {
-                        sCtl = s.Substring(ich + _s_Announcements_Button_Edit_Prefix.Length, 5);
-                        }
-                    break;
-                    }
-                }
-
-            ThrowIfNot(sCtl != null, "Can't find HELP announcement");
-
-            m_awc.ResetNav();
-            string sControl = BuildAnnName(_sid_Announcements_Button_Edit_Prefix, _sid_Announcements_Button_Edit_Suffix, sCtl);
-
-            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find edit button");
-            m_awc.FWaitForNavFinish();
-
-            // now edit the text
-            sControl = BuildAnnName(_s_Announcements_Textarea_Text_Prefix, _s_Announcements_Textarea_Text_Suffix, sCtl);
-
-            ThrowIfNot(ArbWebControl.FSetTextareaControlText(oDoc2, sControl, sArbiterHelpNeeded, true), "Can't set control text");
-            m_awc.FWaitForNavFinish();
-
-            sControl = BuildAnnName(_sid_Announcements_Button_Save_Prefix, _sid_Announcements_Button_Save_Suffix, sCtl);
-
-            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find save button");
-            m_awc.FWaitForNavFinish();
-
-            // and now save it.
-
-            m_srpt.PopLevel();
-			m_srpt.AddMessage("Completed Announcement Set.");
-        }
 
 	    /* G E N  O P E N  S L O T S  M A I L */
 	    /*----------------------------------------------------------------------------
@@ -1766,101 +1975,30 @@ namespace ArbWeb
 	    	
 	    ----------------------------------------------------------------------------*/
 	    private void GenOpenSlotsMail(object sender, EventArgs e)
-		{
-			CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-			string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
-            Roster rst = RstEnsure(m_ebRosterWorking.Text);
-            
-            string sBcc = m_cbTestEmail.Checked ? "" : rst.SBuildAddressLine(m_ebFilter.Text); ;
-
-			Outlook.Application appOlk = (Outlook.Application)Marshal.GetActiveObject("Outlook.Application");
-
-			if (appOlk == null)
-				{
-				MessageBox.Show("No running instance of outlook!");
-				return;
-				}
-
-	        Outlook.MailItem oNote = appOlk.CreateItem(Outlook.OlItemType.olMailItem);
-			// Outlook.MailItem oNote = (Outlook.MailItem)appOlk.CreateItem(Outlook.OlItemType.olMailItem);
-
-			oNote.To = "rlittle@thetasoft.com";
-			oNote.BCC = sBcc;
-			oNote.Subject = "This is a test";
-			oNote.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
-            oNote.HTMLBody = "<html><style>\r\n*#myId {\ncolor:Blue;\n}\n</style><body><p>Put your preamble here...</p>";
-
-		    if (m_cbSplitSports.Checked)
-		        {
-		        string[] rgs;
-
-		        oNote.HTMLBody += "<h1>Baseball open slots</h1>";
-		        rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", false);
-		        gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
-		        oNote.HTMLBody += SHtmlReadFile(sTempFile) + "<h1>Softball Open Slots</h1>";
-		        rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", true);
-		        gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
-		        oNote.HTMLBody += SHtmlReadFile(sTempFile);
-		        }
-		    else
-		        {
-		        gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-		                              ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
-		                              ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
-		        oNote.HTMLBody += SHtmlReadFile(sTempFile);
-		        }
-		    oNote.Display(true);
-
-			appOlk = null;
-			System.IO.File.Delete(sTempFile);            
-		}
-
-	    private SlotAggr m_saOpenSlots;
-        private async void CalcOpenSlots(object sender, EventArgs e)
-        {
-            Task<CountsData> taskCalc = new Task<CountsData>(CalcOpenSlotsWork);
-            taskCalc.Start();
-
-            CountsData cd = await taskCalc;
-
-            m_srpt.PopLevel();
-            m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
-			// update regenerate the listboxes...
-			string[] rgsSports = ArbWebControl.RgsFromChlbx(true, m_chlbxSports);
-			string[] rgsSportLevels = ArbWebControl.RgsFromChlbx(true, m_chlbxSportLevels);
-
-			bool fCheckAllSports = false;
-			bool fCheckAllSportLevels = false;
-
-			if (rgsSports.Length == 0 && m_chlbxSports.Items.Count == 0)
-				fCheckAllSports = true;
-
-			if (rgsSports.Length == 0 && m_chlbxSportLevels.Items.Count == 0)
-				fCheckAllSportLevels = true;
-
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
-            string[] rgsRosterSites = ArbWebControl.RgsFromChlbx(true, m_chlbxRoster);
-
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
-            m_srpt.PopLevel();
-        }
-
-	    private CountsData CalcOpenSlotsWork()
 	    {
-	        m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
-
-	        CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-	        Roster rst = RstEnsure(m_ebRosterWorking.Text);
-
-	        m_srpt.PopLevel();
-	        m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
-	        m_saOpenSlots = gc.CalcOpenSlots(m_dtpStart.Value, m_dtpEnd.Value);
-	        return gc;
+	        DoGenOpenSlotsMail();
 	    }
 
+        /* C A L C  O P E N  S L O T S */
+        /*----------------------------------------------------------------------------
+        	%%Function: CalcOpenSlots
+        	%%Qualified: ArbWeb.AwMainForm.CalcOpenSlots
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void CalcOpenSlots(object sender, EventArgs e)
+        {
+            DoCalcOpenSlots();
+        }
+
+
+	    /* D O  S P O R T  L E V E L  F I L T E R */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: DoSportLevelFilter
+	    	%%Qualified: ArbWeb.AwMainForm.DoSportLevelFilter
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
 	    private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
             CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
@@ -1869,12 +2007,26 @@ namespace ArbWeb
             ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
         }
 
-        private void m_pbReload_Click(object sender, EventArgs e)
+        /* M _ P B  R E L O A D _  C L I C K */
+        /*----------------------------------------------------------------------------
+        	%%Function: m_pbReload_Click
+        	%%Qualified: ArbWeb.AwMainForm.m_pbReload_Click
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void DoReloadClick(object sender, EventArgs e)
 		{
             InvalRoster();
             InvalGameCount();
 		}
 
+        /* D O  G A M E S  R E P O R T */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoGamesReport
+        	%%Qualified: ArbWeb.AwMainForm.DoGamesReport
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void DoGamesReport(object sender, EventArgs e)
 		{
 			m_srpt.AddMessage(String.Format("Generating games report ({0})...", m_ebGameOutput.Text));
@@ -1897,6 +2049,13 @@ namespace ArbWeb
             AnalysisFile
             };
         
+        /* E B  F R O M  F N C */
+        /*----------------------------------------------------------------------------
+        	%%Function: EbFromFnc
+        	%%Qualified: ArbWeb.AwMainForm.EbFromFnc
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         TextBox EbFromFnc(FNC fnc)
         {
             switch (fnc)
@@ -1917,6 +2076,13 @@ namespace ArbWeb
             return null;
         }
         
+        /* D O  B R O W S E  O P E N */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoBrowseOpen
+        	%%Qualified: ArbWeb.AwMainForm.DoBrowseOpen
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void DoBrowseOpen(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -1929,11 +2095,25 @@ namespace ArbWeb
                 }
         }
 
+        /* M _ C B  L O G  T O  F I L E _  C H E C K E D  C H A N G E D */
+        /*----------------------------------------------------------------------------
+        	%%Function: m_cbLogToFile_CheckedChanged
+        	%%Qualified: ArbWeb.AwMainForm.m_cbLogToFile_CheckedChanged
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void m_cbLogToFile_CheckedChanged(object sender, EventArgs e)
         {
             SetupLogToFile();
         }
 
+	    /* S E T U P  L O G  T O  F I L E */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: SetupLogToFile
+	    	%%Qualified: ArbWeb.AwMainForm.SetupLogToFile
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
 	    private void SetupLogToFile()
 	    {
 	        if (m_cbLogToFile.Checked)

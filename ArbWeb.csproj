@@ -167,6 +167,9 @@
     </Compile>
     <Compile Include="games.cs" />
     <Compile Include="ooxml.cs" />
+    <Compile Include="reports.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="roster.cs" />
     <Compile Include="slots.cs" />
     <Compile Include="umpire.cs" />
@@ -177,6 +180,7 @@
     <Compile Include="WebRoster.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Win32Win.cs" />
     <Content Include="App.ico" />
     <Compile Include="..\shared\statusbox.cs">
       <Link>statusbox.cs</Link>
@@ -231,6 +235,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\liblet\cs\TCore.CmdLine\cmdline.csproj">
+      <Project>{b83640e8-72f6-4f92-93fd-7ff7cec3535e}</Project>
+      <Name>cmdline</Name>
+    </ProjectReference>
     <ProjectReference Include="..\liblet\cs\TCore.Settings\TCore.Settings.csproj">
       <Project>{cf92fd1e-ce88-492e-a7c6-c4d29d908a22}</Project>
       <Name>TCore.Settings</Name>

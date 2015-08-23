@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using mshtml;
@@ -63,24 +65,67 @@ namespace ArbWeb
         }
 
         
+        /* R E P O R T  N A V  S T A T E */
+        /*----------------------------------------------------------------------------
+        	%%Function: ReportNavState
+        	%%Qualified: ArbWeb.ArbWebControl.ReportNavState
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public void ReportNavState(string sTag)
         {
-//            m_srpt.AddMessage(String.Format("{0}: Busy: {1}, State: {2}, m_fNavDone: {3}", sTag, m_axWebBrowser1.Busy, m_fNavDone, m_axWebBrowser1.ReadyState));
+            m_srpt.LogData(String.Format("{0}: Busy: {1}, State: {2}, m_fNavDone: {3}", sTag, m_wbc.IsBusy, m_fNavDone, m_wbc.ReadyState), 3, StatusRpt.MSGT.Body);
         }
 
-       public bool FNavToPage(string sUrl)
-        {
-            ReportNavState("Entering FNavToPage: ");
+        public delegate bool FNavToPageDel(WebBrowser wbc, string sUrl);
 
-            m_wbc.Stop();
+        /* D O  N A V  T O  P A G E */
+        /*----------------------------------------------------------------------------
+        	%%Function: DoNavToPage
+        	%%Qualified: ArbWeb.ArbWebControl.DoNavToPage
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public bool DoNavToPage(WebBrowser wbc, string sUrl)
+        {
+            ReportNavState(String.Format("Entering FNavToPage({0})", sUrl));
+            wbc.Stop();
+
+            // m_wbc.Stop();
             WaitForBrowserReady();
             m_fNavDone = false;
-           m_wbc.Navigate(sUrl);
-            m_wbc.Visible = true;
+
+            wbc.Navigate(sUrl);
+            wbc.Visible = true;
 
             return FWaitForNavFinish();
         }
-        
+
+        /* F  N A V  T O  P A G E */
+        /*----------------------------------------------------------------------------
+        	%%Function: FNavToPage
+        	%%Qualified: ArbWeb.ArbWebControl.FNavToPage
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public bool FNavToPage(string sUrl)
+        {
+            if (m_wbc.InvokeRequired)
+                {
+                IAsyncResult rslt = m_wbc.BeginInvoke(new FNavToPageDel(DoNavToPage), new object[] {m_wbc, sUrl});
+                return (bool)m_wbc.EndInvoke(rslt);
+                }
+            else
+                return DoNavToPage(m_wbc, sUrl);
+        }
+
+        /* F  W A I T  F O R  N A V  F I N I S H */
+        /*----------------------------------------------------------------------------
+        	%%Function: FWaitForNavFinish
+        	%%Qualified: ArbWeb.ArbWebControl.FWaitForNavFinish
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public bool FWaitForNavFinish()
         {
             long s = 0;
@@ -136,16 +181,38 @@ namespace ArbWeb
             return true;
         }
 
+        /* R E F R E S H  P A G E */
+        /*----------------------------------------------------------------------------
+        	%%Function: RefreshPage
+        	%%Qualified: ArbWeb.ArbWebControl.RefreshPage
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public void RefreshPage()
         {
             m_fNavDone = false;
             m_wbc.Refresh();
             FWaitForNavFinish();
         }
+        /* T R I G G E R  D O C U M E N T  D O N E */
+        /*----------------------------------------------------------------------------
+        	%%Function: TriggerDocumentDone
+        	%%Qualified: ArbWeb.ArbWebControl.TriggerDocumentDone
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void TriggerDocumentDone(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
             m_fNavDone = true;
+            // m_srpt.AddMessage("TriggerDocumentDone raised");
         }
+        /* F  S E T  C H E C K B O X  C O N T R O L  V A L */
+        /*----------------------------------------------------------------------------
+        	%%Function: FSetCheckboxControlVal
+        	%%Qualified: ArbWeb.ArbWebControl.FSetCheckboxControlVal
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         static public bool FSetCheckboxControlVal(IHTMLDocument2 oDoc2, bool fChecked, string sName)
         {
             IHTMLElementCollection hec;
@@ -166,7 +233,23 @@ namespace ArbWeb
             return false;
         }
 
-        public static bool FSetTextareaControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        public bool FSetTextareaControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        {
+            m_srpt.LogData(String.Format("FSetTextareaControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
+
+            bool f = ArbWebControl.FSetTextareaControlTextForDoc(oDoc2, sName, sValue, fCheck);
+
+            m_srpt.LogData(String.Format("Return: {0}", f), 3, StatusRpt.MSGT.Body);
+            return f;
+        }
+        /* F  S E T  T E X T A R E A  C O N T R O L  T E X T */
+        /*----------------------------------------------------------------------------
+        	%%Function: FSetTextareaControlText
+        	%%Qualified: ArbWeb.ArbWebControl.FSetTextareaControlText
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public static bool FSetTextareaControlTextForDoc(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
         {
             IHTMLElementCollection hec;
 
@@ -194,6 +277,13 @@ namespace ArbWeb
                 }
             return fNeedSave;
         }
+        /* F  S E T  I N P U T  C O N T R O L  T E X T */
+        /*----------------------------------------------------------------------------
+        	%%Function: FSetInputControlText
+        	%%Qualified: ArbWeb.ArbWebControl.FSetInputControlText
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static bool FSetInputControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
         {
             IHTMLElementCollection hec;
@@ -257,6 +347,13 @@ namespace ArbWeb
         }
 
         // if fValueIsValue == false, then sValue is the "text" of the option control
+        /* F  S E L E C T  M U L T I  S E L E C T  O P T I O N */
+        /*----------------------------------------------------------------------------
+        	%%Function: FSelectMultiSelectOption
+        	%%Qualified: ArbWeb.ArbWebControl.FSelectMultiSelectOption
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static bool FSelectMultiSelectOption(IHTMLDocument2 oDoc2, string sName, string sValue, bool fValueIsValue)
         {
             IHTMLElementCollection hec;
@@ -280,6 +377,13 @@ namespace ArbWeb
                 }
             return false;
         }
+        /* F  R E S E T  M U L T I  S E L E C T  O P T I O N S */
+        /*----------------------------------------------------------------------------
+        	%%Function: FResetMultiSelectOptions
+        	%%Qualified: ArbWeb.ArbWebControl.FResetMultiSelectOptions
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static bool FResetMultiSelectOptions(IHTMLDocument2 oDoc2, string sName)
         {
             IHTMLElementCollection hec;
@@ -298,7 +402,33 @@ namespace ArbWeb
                 }
             return true;
         }
-        public static string SGetFilterID(IHTMLDocument2 oDoc2, string sName, string sValue)
+
+        /* S  G E T  F I L T E R  I  D */
+        /*----------------------------------------------------------------------------
+        	%%Function: SGetFilterID
+        	%%Qualified: ArbWeb.ArbWebControl.SGetFilterID
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public string SGetFilterID(IHTMLDocument2 oDoc2, string sName, string sValue)
+        {
+            m_srpt.LogData(String.Format("SGetFilterIDFromDoc for id {0}", sName), 3, StatusRpt.MSGT.Body);
+
+            string s = SGetFilterIDFromDoc(oDoc2, sName, sValue);
+
+            m_srpt.LogData(String.Format("Return: {0}", s), 3, StatusRpt.MSGT.Body);
+            return s;
+        }
+
+
+        /* S  G E T  F I L T E R  I  D */
+        /*----------------------------------------------------------------------------
+        	%%Function: SGetFilterID
+        	%%Qualified: ArbWeb.ArbWebControl.SGetFilterID
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public static string SGetFilterIDFromDoc(IHTMLDocument2 oDoc2, string sName, string sValue)
         {
             IHTMLElementCollection hec;
 
@@ -318,7 +448,25 @@ namespace ArbWeb
                 }
             return null;
         }
-        static public bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+
+       public bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        {
+             m_srpt.LogData(String.Format("FSetSelectControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
+
+           bool f = FSetSelectControlTextFromDoc(oDoc2, sName, sValue, fCheck);
+
+            m_srpt.LogData(String.Format("Return: {0}", f), 3, StatusRpt.MSGT.Body);
+            return f;
+
+        }
+        /* F  S E T  S E L E C T  C O N T R O L  T E X T */
+        /*----------------------------------------------------------------------------
+        	%%Function: FSetSelectControlText
+        	%%Qualified: ArbWeb.ArbWebControl.FSetSelectControlText
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        static public bool FSetSelectControlTextFromDoc(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
         {
             IHTMLElementCollection hec;
 
@@ -362,20 +510,49 @@ namespace ArbWeb
 		}
 
 #endif // no
+        /* F  C L I C K  C O N T R O L */
+        /*----------------------------------------------------------------------------
+        	%%Function: FClickControl
+        	%%Qualified: ArbWeb.ArbWebControl.FClickControl
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public bool FClickControl(IHTMLDocument2 oDoc2, string sId)
         {
-//			m_srpt.AddMessage("Before clickcontrol: "+sId);
+            m_srpt.LogData(String.Format("FClickControl {0}", sId), 3, StatusRpt.MSGT.Body);
             ((IHTMLElement)(oDoc2.all.item(sId, 0))).click();
 //			m_srpt.AddMessage("After clickcontrol");
             return FWaitForNavFinish();
         }
-        static public bool FClickControlNoWait(IHTMLDocument2 oDoc2, string sId)
+
+
+        public bool FClickControlNoWait(IHTMLDocument2 oDoc2, string sId)
+        {
+            m_srpt.LogData(String.Format("FClickControlNoWait: {0}", sId), 3, StatusRpt.MSGT.Body);
+            return FClickControlInDocNoWait(oDoc2, sId);
+        }
+
+        /* F  C L I C K  C O N T R O L  N O  W A I T */
+        /*----------------------------------------------------------------------------
+        	%%Function: FClickControlNoWait
+        	%%Qualified: ArbWeb.ArbWebControl.FClickControlNoWait
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        static public bool FClickControlInDocNoWait(IHTMLDocument2 oDoc2, string sId)
         {
 //			m_srpt.AddMessage("Before clickcontrol: "+sId);
             ((IHTMLElement)(oDoc2.all.item(sId, 0))).click();
 //			m_srpt.AddMessage("After clickcontrol");
             return true;
         }
+        /* F  C H E C K  F O R  C O N T R O L */
+        /*----------------------------------------------------------------------------
+        	%%Function: FCheckForControl
+        	%%Qualified: ArbWeb.ArbWebControl.FCheckForControl
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static bool FCheckForControl(IHTMLDocument2 oDoc2, string sId)
         {
             if (oDoc2.all.item(sId, 0) != null)
@@ -383,20 +560,48 @@ namespace ArbWeb
                 
             return false;
         }
+        /* S  G E T  C O N T R O L  V A L U E */
+        /*----------------------------------------------------------------------------
+        	%%Function: SGetControlValue
+        	%%Qualified: ArbWeb.ArbWebControl.SGetControlValue
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static string SGetControlValue(IHTMLDocument2 oDoc2, string sId)
         {
             if (FCheckForControl(oDoc2, sId))
                 return (string)((IHTMLInputElement)oDoc2.all.item(sId, 0)).value;
             return null;
         }
+        /* R G S  F R O M  C H L B X */
+        /*----------------------------------------------------------------------------
+        	%%Function: RgsFromChlbx
+        	%%Qualified: ArbWeb.ArbWebControl.RgsFromChlbx
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static string[] RgsFromChlbx(bool fUse, CheckedListBox chlbx)
         {
             return RgsFromChlbx(fUse, chlbx, -1, false, null, false);
         }
+        /* R G S  F R O M  C H L B X  S P O R T */
+        /*----------------------------------------------------------------------------
+        	%%Function: RgsFromChlbxSport
+        	%%Qualified: ArbWeb.ArbWebControl.RgsFromChlbxSport
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static string[] RgsFromChlbxSport(bool fUse, CheckedListBox chlbx, string sSport, bool fMatch)
         {
             return RgsFromChlbx(fUse, chlbx, -1, false, sSport, fMatch);
         }
+        /* R G S  F R O M  C H L B X */
+        /*----------------------------------------------------------------------------
+        	%%Function: RgsFromChlbx
+        	%%Qualified: ArbWeb.ArbWebControl.RgsFromChlbx
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static string[] RgsFromChlbx(
             bool fUse,
             CheckedListBox chlbx,
@@ -482,6 +687,13 @@ namespace ArbWeb
             return rgs;
         }
 
+        /* U P D A T E  C H L B X  F R O M  R G S */
+        /*----------------------------------------------------------------------------
+        	%%Function: UpdateChlbxFromRgs
+        	%%Qualified: ArbWeb.ArbWebControl.UpdateChlbxFromRgs
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         public static void UpdateChlbxFromRgs(CheckedListBox chlbx, string[] rgsSource, string[] rgsChecked, string[] rgsFilterPrefix, bool fCheckAll)
         {
             chlbx.Items.Clear();
@@ -515,6 +727,55 @@ namespace ArbWeb
 
                 int i = chlbx.Items.Add(s, cs);
                 }
+        }
+
+        /* O N  N A V I G A T I N G */
+        /*----------------------------------------------------------------------------
+        	%%Function: OnNavigating
+        	%%Qualified: ArbWeb.ArbWebControl.OnNavigating
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void OnNavigating(object sender, WebBrowserNavigatingEventArgs e)
+        {
+            m_srpt.AddMessage(String.Format("OnNavigating: {0}", e.Url));
+
+        }
+
+        /* O N  N A V I G A T E D */
+        /*----------------------------------------------------------------------------
+        	%%Function: OnNavigated
+        	%%Qualified: ArbWeb.ArbWebControl.OnNavigated
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void OnNavigated(object sender, WebBrowserNavigatedEventArgs e)
+        {
+            m_srpt.AddMessage(String.Format("OnNavigated: {0}", e.Url));
+        }
+
+        /* O N  N E W  W I N D O W */
+        /*----------------------------------------------------------------------------
+        	%%Function: OnNewWindow
+        	%%Qualified: ArbWeb.ArbWebControl.OnNewWindow
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void OnNewWindow(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+           m_srpt.AddMessage(String.Format("OnNewWindow called"));
+        }
+
+        /* O N  D O W N L O A D */
+        /*----------------------------------------------------------------------------
+        	%%Function: OnDownload
+        	%%Qualified: ArbWeb.ArbWebControl.OnDownload
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void OnDownload(object sender, EventArgs e)
+        {
+            m_srpt.AddMessage(String.Format("OnDownload called"));
         }
 
     }

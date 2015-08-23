@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Threading;
 using System.Windows.Forms;
 using System.Net;
 using mshtml;
+using StatusBox;
+using Win32Win;
 
 namespace ArbWeb
 {
@@ -34,6 +37,8 @@ namespace ArbWeb
 
             m_srpt.PopLevel();
             m_srpt.AddMessage("Completed downloading games.");
+            DoPendingQueueUIOp();
+
             return;
         }
 
@@ -43,6 +48,51 @@ namespace ArbWeb
 
             EnsureLoggedIn();
 
+            m_srpt.LogData("LaunchDownloadGames async task launched", 3, StatusRpt.MSGT.Body);
+            var evtDownload = LaunchDownloadGames(sTempFile);
+            m_srpt.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
+            evtDownload.WaitOne();
+            m_srpt.LogData("evtDownload.WaitOne() complete", 3, StatusRpt.MSGT.Body);
+//                {
+                //Application.DoEvents();
+                //Thread.Sleep(500);
+                //Application.DoEvents();
+                //}
+
+#if nomore
+            if (MessageBox.Show(String.Format("Please download the games file to {0}. This path is on the clipboard, so you can just paste it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.\n\n(NOTE: Click CANCEL if you need the clipboard reset with the pathname)",
+                                              sTempFile), "ArbWeb", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                {
+                System.Windows.Forms.Clipboard.SetText(sTempFile);
+                MessageBox.Show(String.Format("Please download the games file to {0}. This path is on the clipboard, so you can just paste it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
+                                              sTempFile), "ArbWeb", MessageBoxButtons.OKCancel);
+                }
+#endif // nomore
+
+            return sTempFile;
+        }
+
+        private delegate AutoResetEvent LaunchDownloadGamesDel(string sTempFile);
+
+        AutoResetEvent LaunchDownloadGames(string sTempFile)
+        {
+            if (m_awc.InvokeRequired)
+                {
+                m_srpt.LogData("InvokeRequired true for DoLaunchDownloadGames", 3, StatusRpt.MSGT.Body);
+
+                IAsyncResult rsl = m_awc.BeginInvoke(new LaunchDownloadGamesDel(DoLaunchDownloadGames), new object[] {sTempFile});
+                return (AutoResetEvent) m_awc.EndInvoke(rsl);
+                }
+            else
+                {
+                m_srpt.LogData("InvokeRequired false for DoLaunchDownloadGames", 3, StatusRpt.MSGT.Body);
+                return DoLaunchDownloadGames(sTempFile);
+                }
+        }
+
+        private AutoResetEvent DoLaunchDownloadGames(string sTempFile)
+        {
+            IHTMLDocument2 oDoc2 = m_awc.Document2;
             int count = 0;
             string sFilter = null;
             string sFilterReq = m_cbFutureOnly.Checked ? "Future Games" : "All Games";
@@ -54,7 +104,7 @@ namespace ArbWeb
                     throw (new Exception("could not navigate to games view"));
 
                 oDoc2 = m_awc.Document2;
-                sFilter = ArbWebControl.SGetFilterID(oDoc2, _s_Assigning_Select_Filters, sFilterReq);
+                sFilter = m_awc.SGetFilterID(oDoc2, _s_Assigning_Select_Filters, sFilterReq);
                 if (sFilter != null)
                     break;
 
@@ -67,7 +117,7 @@ namespace ArbWeb
             // now set that filter
 
             m_awc.ResetNav();
-            ArbWebControl.FSetSelectControlText(oDoc2, _s_Assigning_Select_Filters, sFilterReq, false);
+            m_awc.FSetSelectControlText(oDoc2, _s_Assigning_Select_Filters, sFilterReq, false);
             m_awc.FWaitForNavFinish();
 
             if (!m_awc.FNavToPage(_s_Assigning_PrintAddress + sFilter))
@@ -76,24 +126,35 @@ namespace ArbWeb
             // setup the file formats and go!
 
             oDoc2 = m_awc.Document2;
-            ArbWebControl.FSetSelectControlText(oDoc2, _s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
+            m_awc.FSetSelectControlText(oDoc2, _s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
 
-
+            m_srpt.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sTempFile);
 
             m_awc.ResetNav();
             //          m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadGamesNewWindowDelegate));
 
-            ArbWebControl.FClickControlNoWait(oDoc2, _s_Assigning_Reports_Submit_Print);
+            AutoResetEvent evtDownload = new AutoResetEvent(false);
 
-            if (MessageBox.Show(String.Format("Please download the games file to {0}. This path is on the clipboard, so you can just paste it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.\n\n(NOTE: Click CANCEL if you need the clipboard reset with the pathname)",
-                                              sTempFile), "ArbWeb", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
-                {
-                System.Windows.Forms.Clipboard.SetText(sTempFile);
-                MessageBox.Show(String.Format("Please download the games file to {0}. This path is on the clipboard, so you can just paste it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
-                                              sTempFile), "ArbWeb", MessageBoxButtons.OKCancel);
-                }
-            return sTempFile;
+            m_srpt.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
+            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "Schedule.xls", sTempFile, null, evtDownload);
+            m_awc.FClickControlNoWait(oDoc2, _s_Assigning_Reports_Submit_Print);
+            return evtDownload;
+        }
+
+        private delegate void SetTextDel(TextBox eb, string s);
+
+        private void DoSetText(TextBox eb, string s)
+        {
+            eb.Text = s;
+        }
+
+        void SetText(TextBox eb, string s)
+        {
+            if (eb.InvokeRequired)
+                eb.BeginInvoke(new SetTextDel(DoSetText), new object[] {eb, s});
+            else
+                DoSetText(eb, s);
         }
 
         private void HandleDownloadGames(string sFile)
@@ -134,7 +195,7 @@ namespace ArbWeb
                 }
             app.Quit();
             app = null;
-            m_ebGameFile.Text = sOutFile;
+            SetText(m_ebGameFile, sOutFile);
             System.IO.File.Delete(m_ebGameCopy.Text);
             System.IO.File.Copy(sOutFile, m_ebGameCopy.Text);
         }

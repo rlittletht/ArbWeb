@@ -41,13 +41,13 @@
             this.m_wbc.TabIndex = 0;
             this.m_wbc.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.TriggerDocumentDone);
             // 
-            // ArbWebControl2
+            // ArbWebControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(943, 596);
             this.Controls.Add(this.m_wbc);
-            this.Name = "ArbWebControl2";
+            this.Name = "ArbWebControl";
             this.Text = "ArbWebControl2";
             this.ResumeLayout(false);
 
