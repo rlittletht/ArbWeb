@@ -72,7 +72,7 @@ namespace Win32Win
         bool FHandleDialogAndClickButton(string sDlgClass, string sCaption, string sValidateText, string sReplaceText, string sButtonToPress, bool fWaitForDialog)
         {
             IntPtr hWnd;
-            int n = fWaitForDialog ? 60 : 1;
+            int n = fWaitForDialog ? 120 : 1;
 
             m_srpt.LogData(String.Format("FHandleDialogAndClickButton before FindWindow loop (Class={0}, Caption={1}) (WAIT_FOR_DIALOG={2})", sDlgClass, sCaption, fWaitForDialog), 3, StatusRpt.MSGT.Body);
 
