@@ -643,7 +643,7 @@ namespace ArbWeb
 
             foreach (RosterEntry rste in m_plrste)
                 {
-                if (!rste.Marked)
+                if (!rste.Marked && !String.IsNullOrEmpty(rste.Email))
                     plrste.Add(rste);
                 }
             return plrste;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using mshtml;
 using StatusBox;
@@ -25,7 +26,34 @@ namespace ArbWeb
         public IHTMLDocument4 Document4     {  get { return (IHTMLDocument4)m_wbc.Document.DomDocument; } }
         public IHTMLDocument5 Document5     {  get { return (IHTMLDocument5)m_wbc.Document.DomDocument; } }
 
-       public ArbWebControl(StatusRpt srpt)
+        private async Task<bool> PageLoad(int TimeOut)
+        {
+            TaskCompletionSource<bool> PageLoaded = null;
+            PageLoaded = new TaskCompletionSource<bool>();
+            int TimeElapsed = 0;
+            m_wbc.DocumentCompleted += (s, e) =>
+                {
+                if (m_wbc.ReadyState != WebBrowserReadyState.Complete)
+                        return;
+                if (PageLoaded.Task.IsCompleted)
+                        return;
+                PageLoaded.SetResult(true);
+                };
+            //
+            while (PageLoaded.Task.Status != TaskStatus.RanToCompletion)
+                {
+                await Task.Delay(10); //interval of 10 ms worked good for me
+                TimeElapsed++;
+                if (TimeElapsed >= TimeOut*100)
+                    {
+                    PageLoaded.TrySetResult(true);
+                    return false;
+                    //This prevents your method or thread from waiting forever
+                    }
+                }
+            return true;
+        }
+        public ArbWebControl(StatusRpt srpt)
         {
 #if notused
             m_plNewWindow3 = new List<DWebBrowserEvents2_NewWindow3EventHandler>();
@@ -34,14 +62,22 @@ namespace ArbWeb
             m_srpt = srpt;
 
             InitializeComponent();
+            m_wbc.ScriptErrorsSuppressed = true;
         }
 
         bool m_fNavDone;
-       public void ResetNav()
+        private string m_sUrlExpected;
+        public void ResetNav()
         {
             m_fNavDone = false;
+            m_sUrlExpected = null;
         }
 
+
+        async void WaitForBrowserReadyNew()
+        {
+            await PageLoad(10000);
+        }
 
         void WaitForBrowserReady()
         {
@@ -74,7 +110,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void ReportNavState(string sTag)
         {
-            m_srpt.LogData(String.Format("{0}: Busy: {1}, State: {2}, m_fNavDone: {3}", sTag, m_wbc.IsBusy, m_fNavDone, m_wbc.ReadyState), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData(String.Format("{0}: Busy: {1}, State: {3}, m_fNavDone: {2}", sTag, m_wbc.IsBusy, m_fNavDone, m_wbc.ReadyState), 3, StatusRpt.MSGT.Body);
         }
 
         public delegate bool FNavToPageDel(WebBrowser wbc, string sUrl);
@@ -94,6 +130,7 @@ namespace ArbWeb
             // m_wbc.Stop();
             WaitForBrowserReady();
             m_fNavDone = false;
+            m_sUrlExpected = sUrl;
 
             wbc.Navigate(sUrl);
             wbc.Visible = true;
@@ -119,6 +156,14 @@ namespace ArbWeb
                 return DoNavToPage(m_wbc, sUrl);
         }
 
+        public bool FWaitForNavFinishNew()
+        {
+            Task<bool> t = PageLoad(10000);
+
+            t.Wait();
+            return t.Result;
+        }
+
         /* F  W A I T  F O R  N A V  F I N I S H */
         /*----------------------------------------------------------------------------
         	%%Function: FWaitForNavFinish
@@ -129,7 +174,7 @@ namespace ArbWeb
         public bool FWaitForNavFinish()
         {
             long s = 0;
-
+            
             // ok, always yield and allow it to run first (so things can get pumping)
             Application.DoEvents();
             Thread.Sleep(50);
@@ -146,7 +191,7 @@ namespace ArbWeb
                 s++;
             }
 
-            ReportNavState("After NavDone Loop: ");
+            ReportNavState(String.Format("After NavDone Loop: {0}", s >= 200 ? "TIMEOUT" : "Completed"));
 
 #if notused
             if (m_fNavIntercept)
@@ -203,8 +248,15 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void TriggerDocumentDone(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
-            m_fNavDone = true;
-            // m_srpt.AddMessage("TriggerDocumentDone raised");
+            if (m_sUrlExpected == null || String.Compare(e.Url.ToString(), m_sUrlExpected, true) == 0)
+                {
+                ReportNavState(String.Format("TriggerDocumentDone MATCH: {0}", e.Url));
+                m_fNavDone = true;
+                }
+            else
+                {
+                ReportNavState(String.Format("TriggerDocumentDone NO MATCH: {0} {1}", e.Url, m_sUrlExpected));
+                }
         }
         /* F  S E T  C H E C K B O X  C O N T R O L  V A L */
         /*----------------------------------------------------------------------------
@@ -453,12 +505,24 @@ namespace ArbWeb
         {
              m_srpt.LogData(String.Format("FSetSelectControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
 
-           bool f = FSetSelectControlTextFromDoc(oDoc2, sName, sValue, fCheck);
+           bool f = FSetSelectControlTextFromDoc(this, oDoc2, sName, sValue, fCheck);
 
             m_srpt.LogData(String.Format("Return: {0}", f), 3, StatusRpt.MSGT.Body);
             return f;
 
         }
+
+        public void WaitDoLog(int msec)
+        {
+            while (msec > 0)
+                {
+                ReportNavState(String.Format("WaitDoLog {0}", msec));
+                Thread.Sleep(50);
+                msec -= 50;
+                Application.DoEvents();
+                }
+        }
+
         /* F  S E T  S E L E C T  C O N T R O L  T E X T */
         /*----------------------------------------------------------------------------
         	%%Function: FSetSelectControlText
@@ -466,7 +530,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        static public bool FSetSelectControlTextFromDoc(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        static public bool FSetSelectControlTextFromDoc(ArbWebControl awc, IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
         {
             IHTMLElementCollection hec;
 
@@ -488,12 +552,15 @@ namespace ArbWeb
                             IHTMLDocument4 oDoc4 = (IHTMLDocument4)oDoc2;
                             object eventObj = oDoc4.CreateEventObject(ref dummy);
                             HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
+                            awc.ReportNavState("Before FireEvent");
                             hsec.FireEvent("onchange", ref eventObj);
+                            awc.ReportNavState("After FireEvent");
                             return true;
                             }
                         }
                     }
                 }
+            awc.ReportNavState("never found control for set");
             return fNeedSave;
         }
 #if no

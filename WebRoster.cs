@@ -1015,7 +1015,7 @@ namespace ArbWeb
                     if (plrsteLimit == null && (rst == null || !rst.IsQuick))
                         UpdateInfo(pgl, rst, ref rste, fMarkOnly);
 
-                    if (rst == null)
+                    if (rst == null && !String.IsNullOrEmpty(rste.Email))
                         {
                         rstBuilding.Add(rste);
 //                        rste.AppendToFile(sOutFile, m_rgsRankings);
@@ -1025,10 +1025,13 @@ namespace ArbWeb
                         }
                     else
                         {
-                        RosterEntry rsteT = rst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
+                        if (!String.IsNullOrEmpty(pgl.plofi[pgl.iCur].sEmail))
+                            {
+                            RosterEntry rsteT = rst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
 
-                        if (rsteT != null)
-                            rsteT.Marked = true;
+                            if (rsteT != null)
+                                rsteT.Marked = true;
+                            }
                         }
 
                     if (m_cbTestOnly.Checked)
@@ -1251,6 +1254,7 @@ namespace ArbWeb
             System.Windows.Forms.Clipboard.SetText(sTempFile);
 
             IHTMLDocument2 oDoc2;
+	        m_awc.ResetNav();
 	        ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
 	        m_awc.FWaitForNavFinish();
 

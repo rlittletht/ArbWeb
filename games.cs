@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 
 using mshtml;
+using NUnit.Framework;
 using StatusBox;
 
 namespace ArbWeb
@@ -258,6 +259,8 @@ namespace ArbWeb
             private const int icolGameGame = 0;
             private const int icolOfficial = 4;
             private const int icolSlotStatus = 16;
+
+            public GameSlots() {} // just for unit tests
 
             public SortedList<string, Game> Games { get { return m_plgmSorted; } }
 
@@ -897,7 +900,7 @@ namespace ArbWeb
             {
                 string s = "", s2 = "", s3 = "";
 
-                s = ReverseName("Mary Van Whatsa Hoozit");
+                s = ReverseName(null, "Mary Van Whatsa Hoozit");
                 Debug.Assert(String.Compare(s, "Van Whatsa Hoozit,Mary") == 0);
                 Debug.Assert(ArbWeb.Roster.FSplitName(s, out s2, out s3));
                 Debug.Assert(s2 == "Mary");
@@ -1070,18 +1073,17 @@ namespace ArbWeb
 
             }
 
-
-            /* R E V E R S E  N A M E */
+            /* R E V E R S E  N A M E  S I M P L E */
             /*----------------------------------------------------------------------------
-					%%Function: ReverseName
-					%%Qualified: ArbWeb.CountsData:GameData:Games.ReverseName
-					%%Contact: rlittle
+            	%%Function: ReverseNameSimple
+            	%%Qualified: ArbWeb.GameData.GameSlots.ReverseNameSimple
+            	%%Contact: rlittle
 
-					Reverse the given "First Last" into "Last,First"
+				Reverse the given "First Last" into "Last,First"
 
-					Handles things like "van Doren, Martin"
-				----------------------------------------------------------------------------*/
-            private static string ReverseName(string s)
+				Handles things like "van Doren, Martin"
+            ----------------------------------------------------------------------------*/
+            static string ReverseNameSimple(string s)
             {
                 string[] rgs;
 
@@ -1092,6 +1094,89 @@ namespace ArbWeb
                 if (rgs[0] == null || rgs[1] == null)
                     return s;
                 return String.Format("{0},{1}", rgs[1], rgs[0]);
+            }
+
+            [Test]
+            [TestCase("Rob Little", "Little,Rob")]
+            [TestCase("Martin van Doren", "van Doren,Martin")]
+            [TestCase("Byron (Barney) Kinzer", "(Barney) Kinzer,Byron")]
+            public static void TestReverseNameSimple(string sIn, string sExpected)
+            {
+                string sActual = ReverseNameSimple(sIn);
+
+                Assert.AreEqual(sExpected, sActual);
+            }
+
+            /* R E V E R S E  N A M E  S I M P L E  P A R E N T H E T I C A L */
+            /*----------------------------------------------------------------------------
+            	%%Function: ReverseNameParenthetical
+            	%%Qualified: ArbWeb.GameData.GameSlots.ReverseNameParenthetical
+            	%%Contact: rlittle
+            	
+                Same as ReverseNameSimple, but allows parenthetical first names
+
+                Byron (Barney) Kinzer => "Kinzer,Byron (Barney)"
+            ----------------------------------------------------------------------------*/
+            static string ReverseNameParenthetical(string s)
+            {
+                // first, see if we match a parenthetical
+                if (s.IndexOf('(') <= 0)
+                    return ReverseNameSimple(s);
+
+                // that was just the quick check. now we need to see if there's a
+                // parenthetical match between the first and last name
+                string[] rgs;
+
+                rgs = CountsData.RexHelper.RgsMatch(s, "^[ \t]*([^ \t]*)([ \t]*\\([^ \t]*\\))[ \t]*([^\t]*) *$");
+                if (rgs.Length < 3)
+                    return ReverseNameSimple(s);
+
+                if (rgs[0] == null || rgs[1] == null || rgs[2] == null)
+                    return ReverseNameSimple(s);
+
+                return String.Format("{0},{1}{2}", rgs[2], rgs[0], rgs[1]);
+            }
+
+            [Test]
+            [TestCase("Rob Little", "Little,Rob")]
+            [TestCase("Martin van Doren", "van Doren,Martin")]
+            [TestCase("Byron (Barney) Kinzer", "Kinzer,Byron (Barney)")]
+            [TestCase("Byron(Barney) Kinzer", "Kinzer,Byron(Barney)")]
+            [TestCase("(Barney)Byron Kinzer", "Kinzer,(Barney)Byron")]
+            [TestCase("(Barney) Byron Kinzer", "Byron Kinzer,(Barney)")]
+            public static void TestReverseNameParenthetical(string sIn, string sExpected)
+            {
+                string sActual = ReverseNameParenthetical(sIn);
+
+                Assert.AreEqual(sExpected, sActual);
+            }
+
+            /* R E V E R S E  N A M E */
+            /*----------------------------------------------------------------------------
+				%%Function: ReverseName
+				%%Qualified: ArbWeb.CountsData:GameData:Games.ReverseName
+				%%Contact: rlittle
+
+                try to figure out the right reversal for the given name. Try each type of
+                reversal we know about and see if it matches an entry in the roster. if not, 
+                try the next one.  If all else fails, just return the simple reverse
+			----------------------------------------------------------------------------*/
+            private static string ReverseName(Roster rst, string s)
+            {
+                string sReverse, sFallback;
+
+                sFallback = sReverse = ReverseNameSimple(s);
+                if (rst == null)
+                    return sFallback;
+
+                if (rst.UmpireLookup(sReverse) != null)
+                    return sReverse;
+
+                sReverse = ReverseNameParenthetical(s);
+                if (rst.UmpireLookup(sReverse) != null)
+                    return sReverse;
+
+                return sFallback;
             }
 
 
@@ -1578,7 +1663,7 @@ namespace ArbWeb
                         rs = RsHandleReadingGame2(rgsFields, ref sGame, ref sDateTime, ref sLevel, ref sSite, ref sHome, ref sAway, rs);
 
                     if (rs == ReadState.ReadingOfficials2)
-                        rs = RsHandleReadingOfficials2(rgsFields, mpNamePos, mpNameStatus, sNameLast, sPosLast, sStatusLast, rs);
+                        rs = RsHandleReadingOfficials2(rst, rgsFields, mpNamePos, mpNameStatus, sNameLast, sPosLast, sStatusLast, rs);
 
                     if (rs == ReadState.ReadingOfficials1)
                         rs = RsHandleReadingOfficials1(rst, fIncludeCanceled, sLine, rgsFields, mpNamePos, mpNameStatus, fCanceled, sSite, sGame,
@@ -1749,7 +1834,7 @@ namespace ArbWeb
                         }
                     else
                         {
-                        string sName = ReverseName(rgsFields[icolOfficial]);
+                        string sName = ReverseName(rst, rgsFields[icolOfficial]);
                         mpNamePos.Add(sName, rgsFields[1]);
                         mpNameStatus.Add(sName, rgsFields[icolSlotStatus]);
                         return rs;
@@ -1824,7 +1909,7 @@ namespace ArbWeb
 			    	%%Contact: rlittle
 			    	
 			    ----------------------------------------------------------------------------*/
-            private static ReadState RsHandleReadingOfficials2(string[] rgsFields, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sNameLast,
+            private static ReadState RsHandleReadingOfficials2(Roster rst, string[] rgsFields, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sNameLast,
                 string sPosLast, string sStatusLast, ReadState rs)
             {
 // we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
@@ -1832,10 +1917,10 @@ namespace ArbWeb
                 if (FEmptyField(rgsFields[1]) && FEmptyField(rgsFields[0]) && !FEmptyField(rgsFields[3]))
                     {
                     // nothing in that column means we have a continuation.  now lets concatenate all our stuff
-                    mpNamePos.Remove(ReverseName(sNameLast));
-                    mpNameStatus.Remove(ReverseName(sNameLast));
+                    mpNamePos.Remove(ReverseName(rst, sNameLast));
+                    mpNameStatus.Remove(ReverseName(rst, sNameLast));
                     string sName = String.Format("{0} {1}", sNameLast, rgsFields[3]);
-                    sName = ReverseName(sName);
+                    sName = ReverseName(rst, sName);
                     mpNamePos.Add(sName, sPosLast);
                     mpNameStatus.Add(sName, sStatusLast);
                     return rs;

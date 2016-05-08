@@ -42,9 +42,13 @@ namespace ArbWeb
 		//private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2010
 		//private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
 		private const string _s_Home_Anchor_Login = "SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
-		private const string _s_Home_Input_Email = "ctl00$EmailTextbox"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2015
-		private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2015
-		private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2015
+//		private const string _s_Home_Input_Email = "ctl00$EmailTextbox"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2015
+//		private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2015
+//		private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2015
+//<input name="ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn" class="btn btn-dark form-control" id="ctl00_ContentHolder_pgeSignIn_conSignIn_btnSignIn" language="javascript" onclick="if (typeof(Page_ClientValidate) == 'function') { if(Page_ClientValidate()) { document.getElementsByName('__onceClickBtn').item(0).setAttribute('name',this.getAttribute('name')); var allControls = document.getElementsByName(this.getAttribute('name')); for (i=0; i < allControls.length; i++) {   if(allControls[i].getAttribute('id') == this.getAttribute('id')) {  allControls[i].setAttribute('name', allControls[i].getAttribute('name'));  allControls[i].disabled = true;  allControls[i].value = 'Signing In';  } }this.form.submit(); }} else { document.getElementsByName('__onceClickBtn').item(0).setAttribute('name',this.getAttribute('name')); var allControls = document.getElementsByName(this.getAttribute('name')); for (i=0; i < allControls.length; i++) {   if(allControls[i].getAttribute('id') == this.getAttribute('id')) {  allControls[i].setAttribute('name', allControls[i].getAttribute('name'));  allControls[i].disabled = true;  allControls[i].value = 'Signing In';  } }this.form.submit(); }" type="submit" value="Sign In">
+		private const string _s_Home_Input_Email = "ctl00$ContentHolder$pgeSignIn$conSignIn$txtEmail"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2016
+		private const string _s_Home_Input_Password = "txtPassword"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2016
+		private const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
 
         private const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
 		private const string _sid_Home_Anchor_ActingLink = "ctl00_ActingLink"; // ok2010
@@ -328,7 +332,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void EnableAdminFunctions()
         {
-            bool fAdmin = (String.Compare(System.Environment.MachineName, "obelix", true) == 0);
+            bool fAdmin = (String.Compare(System.Environment.MachineName, "majestix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
 
@@ -1604,6 +1608,10 @@ namespace ArbWeb
                     MessageBox.Show("Login failed for arbiter.net!");
                 else
                     m_fLoggedIn = true;
+
+                // and wait for nav to complete
+                m_awc.FWaitForNavFinish();
+                m_awc.ReportNavState("after login complete");
 				m_srpt.PopLevel();
 				m_srpt.AddMessage("Completed login.");
                 }
