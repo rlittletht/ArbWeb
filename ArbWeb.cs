@@ -1560,6 +1560,13 @@ namespace ArbWeb
             // DownloadGames();
         }
 
+        private void HandleRosterPostUpdateForDownload(Roster rstBuilding)
+        {
+            // get the last login date from the officials main page
+            NavigateOfficialsPageAllOfficials();
+            ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+        }
+
         /* D O  D O W N L O A D  R O S T E R */
         /*----------------------------------------------------------------------------
 	    	%%Function: DoDownloadRoster
@@ -1577,7 +1584,7 @@ namespace ArbWeb
 
             m_pr.Roster = sOutFile;
 
-            HandleRoster(null, sOutFile, null);
+            HandleRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
             PopCursor();
             m_srpt.PopLevel();
             System.IO.File.Delete(m_pr.RosterWorking);
@@ -1610,7 +1617,7 @@ namespace ArbWeb
             System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
         }
 
-        delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer);
+        delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer, HandleRosterPostUpdateDelegate hrpu);
 
         private async void DoUploadRosterWork()
         {
@@ -1649,7 +1656,7 @@ namespace ArbWeb
                 }
             else
                 {
-                HandleRoster(rst, sInFile, rstServer);
+                HandleRoster(rst, sInFile, rstServer, null);
                 }
             m_srpt.PopLevel();
             m_srpt.AddMessage("Completed Roster upload.");

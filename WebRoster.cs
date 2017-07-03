@@ -1335,6 +1335,8 @@ namespace ArbWeb
             return pgl;
         }
 
+        private delegate void HandleRosterPostUpdateDelegate(Roster rst);
+
         /* H A N D L E  R O S T E R */
         /*----------------------------------------------------------------------------
 			%%Function: HandleRoster
@@ -1344,7 +1346,7 @@ namespace ArbWeb
 			If rst == null, then we're downloading the roster.  Otherwise, we are
 			uploading
 		----------------------------------------------------------------------------*/
-        private void HandleRoster(Roster rst, string sOutFile, Roster rstServer)
+        private void HandleRoster(Roster rst, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
         {
             Roster rstBuilding = null;
             PGL pgl;
@@ -1357,12 +1359,7 @@ namespace ArbWeb
             pgl = PglGetOfficialsFromWeb();
             DoCoreRosterUpdate(pgl, rst, rstBuilding, rstServer, null /*plrsteLimit*/);
 
-            if (rstBuilding != null)
-                {
-                // get the last login date from the officials main page
-                NavigateOfficialsPageAllOfficials();
-                ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
-                }
+            handleRosterPostUpdate?.Invoke(rstBuilding);
 
             if (rst != null)
                 {
