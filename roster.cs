@@ -281,7 +281,8 @@ namespace ArbWeb
             CellPhone = 9,
             Email = 10,
             OfficialNumber = 11,
-            DateJoined = 12
+            DateJoined = 12,
+            BuiltInMac = 13
         }
 
         public static bool FVerifyHeaderColumns(string[] rgs)
@@ -349,21 +350,21 @@ namespace ArbWeb
                 if (rgs.Length < 13)
                     throw new Exception("input line too short -- not enough fields");
 
-                m_sFirst = rgs[0];
-                m_sLast = rgs[1];
-                m_sEmail = rgs[10];
-                m_sAddress1 = rgs[2];
-                m_sAddress2 = rgs[3];
-                m_sCity = rgs[4];
-                m_sState = rgs[5];
-                m_sZip = rgs[6];
-                m_sPhone1 = rgs[7];
-                m_sPhone2 = rgs[8];
-                m_sPhone3 = rgs[9];
+                m_sFirst = rgs[(int)Columns.FirstName];
+                m_sLast = rgs[(int)Columns.LastName];
+                m_sEmail = rgs[(int)Columns.Email];
+                m_sAddress1 = rgs[(int)Columns.Address1];
+                m_sAddress2 = rgs[(int)Columns.Address2];
+                m_sCity = rgs[(int)Columns.City];
+                m_sState = rgs[(int)Columns.State];
+                m_sZip = rgs[(int)Columns.PostalCode];
+                m_sPhone1 = rgs[(int)Columns.HomePhone];
+                m_sPhone2 = rgs[(int)Columns.WorkPhone];
+                m_sPhone3 = rgs[(int)Columns.CellPhone];
 
-                m_sOfficialNumber = rgs[11];
-                m_sDateJoined = rgs[12];
-                i = 13;
+                m_sOfficialNumber = rgs[(int)Columns.OfficialNumber];
+                m_sDateJoined = rgs[(int)Columns.DateJoined];
+                i = (int)Columns.BuiltInMac;
 
                 m_mpRanking = new Dictionary<string, int>();
                 }
