@@ -267,6 +267,68 @@ namespace ArbWeb
             m_rstt = Roster.RSTT.Full;
         }
 
+        public enum Columns
+        {
+            FirstName = 0,
+            LastName = 1, 
+            Address1 = 2,
+            Address2 = 3,
+            City = 4,
+            State = 5,
+            PostalCode = 6,
+            HomePhone = 7,
+            WorkPhone = 8,
+            CellPhone = 9,
+            Email = 10,
+            OfficialNumber = 11,
+            DateJoined = 12
+        }
+
+        public static bool FVerifyHeaderColumns(string[] rgs)
+        {
+            if (String.Compare(rgs[(int) Columns.FirstName], "FirstName", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.LastName], "LastName", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.Address1], "Address1", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.Address2], "Address2", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.City], "City", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.State], "State", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.PostalCode], "PostalCode", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.HomePhone], "HomePhone", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.WorkPhone], "WorkPhone", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.CellPhone], "CellPhone", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.Email], "Email", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int)Columns.OfficialNumber], "OfficalNumber", false) != 0  // take into account bad heading from ArbiterSports.
+                && String.Compare(rgs[(int) Columns.OfficialNumber], "OfficialNumber", false) != 0)
+                return false;
+
+            if (String.Compare(rgs[(int) Columns.DateJoined], "DateJoined", false) != 0)
+                return false;
+
+            return true;
+        }
+
         /* R  S  T  E */
         /*----------------------------------------------------------------------------
 			%%Function: RSTE
@@ -767,6 +829,9 @@ namespace ArbWeb
                         m_plsMisc = RosterEntry.PlsMiscFromHeadingLine(rgs);
 
                     fFirst = false;
+                    if (!RosterEntry.FVerifyHeaderColumns(rgs))
+                        throw new Exception("Column headers broken");
+
                     continue; // skip heading line
                     }
 
