@@ -1422,32 +1422,34 @@ namespace ArbWeb
 			return sOutFile;
 		}
 
-        delegate Roster ProcessQuickRosterOfficialsDel(string sDownloadedRoster, bool fIncludeRankings);
+        delegate Roster ProcessQuickRosterOfficialsDel(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess);
 
-        Roster DoProcessQuickRosterOfficials(string sDownloadedRoster, bool fIncludeRankings)
+        Roster DoProcessQuickRosterOfficials(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess)
         {
 			Roster rstBuilding = new Roster();
 
 			rstBuilding.ReadRoster(sDownloadedRoster);
 
-    		ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+            if (fIncludeLastAccess)
+    		    ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+
             if (fIncludeRankings)
 			    HandleRankings(null, ref rstBuilding);
 
             return rstBuilding;
         }
 
-        private Roster RosterQuickBuildFromDownloadedRoster(string sDownloadedRoster, bool fIncludeRankings)
+        private Roster RosterQuickBuildFromDownloadedRoster(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess)
         {
             Roster rst;
 
             if (m_awc.InvokeRequired)
                 {
-                IAsyncResult rslt = m_awc.BeginInvoke(new ProcessQuickRosterOfficialsDel(DoProcessQuickRosterOfficials), new object[] {sDownloadedRoster, fIncludeRankings});
+                IAsyncResult rslt = m_awc.BeginInvoke(new ProcessQuickRosterOfficialsDel(DoProcessQuickRosterOfficials), new object[] {sDownloadedRoster, fIncludeRankings, fIncludeLastAccess});
                 rst = (Roster)m_awc.EndInvoke(rslt);
                 }
             else
-                rst = DoProcessQuickRosterOfficials(sDownloadedRoster, fIncludeRankings);
+                rst = DoProcessQuickRosterOfficials(sDownloadedRoster, fIncludeRankings, fIncludeLastAccess);
 
             return rst;
         }
@@ -1480,7 +1482,7 @@ namespace ArbWeb
             string sTempFile = DownloadQuickRosterToFile();
 
             // now, update the last access date and fetch the rankings and update the last access date
-            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, true);
+            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, true, true);
 
             m_srpt.PopLevel();
 
@@ -1496,7 +1498,7 @@ namespace ArbWeb
             string sTempFile = DownloadQuickRosterToFile();
 
 			// now, update the last access date and fetch the rankings and update the last access date
-            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, false); 
+            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, false, false); 
 
 			m_srpt.PopLevel();
 
