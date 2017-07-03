@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using System.Net;
 using mshtml;
 using StatusBox;
+using TCore.Util;
 using Win32Win;
 
 namespace ArbWeb
@@ -13,14 +15,28 @@ namespace ArbWeb
     /// </summary>
     public partial class AwMainForm : System.Windows.Forms.Form
     {
+        private void TestDownload()
+        {
+            m_srpt.AddMessage("Starting test download...");
+            m_srpt.PushLevel();
+            string sTempFile = Filename.SBuildTempFilename("temp", "xls");
 
-        private void DownloadGames()
+            sTempFile = TestDownload(sTempFile, "http://thetasoft2.azurewebsites.net/rwp/TeamsReport.aspx");
+
+            m_srpt.PopLevel();
+            m_srpt.AddMessage("Completed test download.");
+            DoPendingQueueUIOp();
+
+            return;
+        }
+
+        private void DownloadGames(string sFilterReq)
         {
             m_srpt.AddMessage("Starting games download...");
             m_srpt.PushLevel();
-            string sTempFile = SBuildTempFilename("temp", "xls");
+            string sTempFile = Filename.SBuildTempFilename("temp", "xls");
 
-            sTempFile = DownloadGamesToFile(sTempFile);
+            sTempFile = DownloadGamesToFile(sTempFile, sFilterReq);
             HandleDownloadGames(sTempFile);
 
             System.IO.File.Delete(sTempFile);
@@ -42,14 +58,35 @@ namespace ArbWeb
             return;
         }
 
-        private string DownloadGamesToFile(string sTempFile)
+        Dictionary<string, string> MpFetchGameFilters()
+        {
+            if (!m_awc.FNavToPage(_s_Assigning))
+                throw (new Exception("could not navigate to games view"));
+
+            return ArbWebControl.MpGetSelectValues(m_srpt, m_awc.Document2, _s_Assigning_Select_Filters);
+        }
+
+        private string TestDownload(string sTempFile, string sTestAddress)
+        {
+            IHTMLDocument2 oDoc2 = null;
+
+            m_srpt.LogData("LaunchTestDownload async task launched", 3, StatusRpt.MSGT.Body);
+            var evtDownload = LaunchTestDownload(sTempFile, sTestAddress);
+            m_srpt.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
+            evtDownload.WaitOne();
+            m_srpt.LogData("evtDownload.WaitOne() complete", 3, StatusRpt.MSGT.Body);
+
+            return sTempFile;
+        }
+
+        private string DownloadGamesToFile(string sTempFile, string sFilterReq)
         {
             IHTMLDocument2 oDoc2 = null;
 
             EnsureLoggedIn();
 
             m_srpt.LogData("LaunchDownloadGames async task launched", 3, StatusRpt.MSGT.Body);
-            var evtDownload = LaunchDownloadGames(sTempFile);
+            var evtDownload = LaunchDownloadGames(sTempFile, sFilterReq);
             m_srpt.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
             evtDownload.WaitOne();
             m_srpt.LogData("evtDownload.WaitOne() complete", 3, StatusRpt.MSGT.Body);
@@ -72,30 +109,65 @@ namespace ArbWeb
             return sTempFile;
         }
 
-        private delegate AutoResetEvent LaunchDownloadGamesDel(string sTempFile);
+        private delegate AutoResetEvent LaunchTestDownloadDel(string sTempFile, string sTestAddress);
 
-        AutoResetEvent LaunchDownloadGames(string sTempFile)
+        AutoResetEvent LaunchTestDownload(string sTempFile, string sTestAddress)
+        {
+            if (m_awc.InvokeRequired)
+            {
+                m_srpt.LogData("InvokeRequired true for DoLaunchTestDownload", 3, StatusRpt.MSGT.Body);
+
+                IAsyncResult rsl = m_awc.BeginInvoke(new LaunchTestDownloadDel(DoLaunchTestDownload), sTempFile, sTestAddress);
+                return (AutoResetEvent)m_awc.EndInvoke(rsl);
+            }
+            else
+            {
+                m_srpt.LogData("InvokeRequired false for DoLaunchTestDownload", 3, StatusRpt.MSGT.Body);
+                return DoLaunchTestDownload(sTempFile, sTestAddress);
+            }
+        }
+
+        private AutoResetEvent DoLaunchTestDownload(string sTempFile, string sTestAddress)
+        {
+            m_srpt.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
+            System.Windows.Forms.Clipboard.SetText(sTempFile);
+
+            m_awc.ResetNav();
+            
+            AutoResetEvent evtDownload = new AutoResetEvent(false);
+
+            m_srpt.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
+
+            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "Teams.csv", "Teams", sTempFile, null, evtDownload);
+            if (!m_awc.FNavToPage(sTestAddress))
+                throw (new Exception("could not navigate to the test page!"));
+
+            return evtDownload;
+        }
+
+        private delegate AutoResetEvent LaunchDownloadGamesDel(string sTempFile, string sFilterReq);
+
+        AutoResetEvent LaunchDownloadGames(string sTempFile, string sFilterReq)
         {
             if (m_awc.InvokeRequired)
                 {
                 m_srpt.LogData("InvokeRequired true for DoLaunchDownloadGames", 3, StatusRpt.MSGT.Body);
 
-                IAsyncResult rsl = m_awc.BeginInvoke(new LaunchDownloadGamesDel(DoLaunchDownloadGames), new object[] {sTempFile});
+                IAsyncResult rsl = m_awc.BeginInvoke(new LaunchDownloadGamesDel(DoLaunchDownloadGames), sTempFile, sFilterReq);
                 return (AutoResetEvent) m_awc.EndInvoke(rsl);
                 }
             else
                 {
                 m_srpt.LogData("InvokeRequired false for DoLaunchDownloadGames", 3, StatusRpt.MSGT.Body);
-                return DoLaunchDownloadGames(sTempFile);
+                return DoLaunchDownloadGames(sTempFile, sFilterReq);
                 }
         }
 
-        private AutoResetEvent DoLaunchDownloadGames(string sTempFile)
+        private AutoResetEvent DoLaunchDownloadGames(string sTempFile, string sFilterReq)
         {
             IHTMLDocument2 oDoc2 = m_awc.Document2;
             int count = 0;
             string sFilter = null;
-            string sFilterReq = m_cbFutureOnly.Checked ? "Future Games" : "All Games";
 
             while (count < 2)
                 {
@@ -137,7 +209,7 @@ namespace ArbWeb
             AutoResetEvent evtDownload = new AutoResetEvent(false);
 
             m_srpt.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
-            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "Schedule.xls", sTempFile, null, evtDownload);
+            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "Schedule.xls", "Schedule", sTempFile, null, evtDownload);
             m_awc.FClickControlNoWait(oDoc2, _s_Assigning_Reports_Submit_Print);
             return evtDownload;
         }
@@ -169,17 +241,17 @@ namespace ArbWeb
             string sOutFile = "";
             string sPrefix = "";
 
-            if (m_ebGameFile.Text.Length < 1)
+            if (m_pr.GameFile.Length < 1)
                 {
                 sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
                 }
             else
                 {
-                sOutFile = System.IO.Path.GetDirectoryName(m_ebGameFile.Text);
+                sOutFile = System.IO.Path.GetDirectoryName(m_pr.GameFile);
                 string[] rgs;
-                if (m_ebGameFile.Text.Length > 5 && sOutFile.Length > 0)
+                if (m_pr.GameFile.Length > 5 && sOutFile.Length > 0)
                     {
-                    rgs = CountsData.RexHelper.RgsMatch(m_ebGameFile.Text.Substring(sOutFile.Length + 1), "([.*])games");
+                    rgs = CountsData.RexHelper.RgsMatch(m_pr.GameFile.Substring(sOutFile.Length + 1), "([.*])games");
                     if (rgs != null && rgs.Length > 0 && rgs[0] != null)
                         sPrefix = rgs[0];
                     }
@@ -195,9 +267,9 @@ namespace ArbWeb
                 }
             app.Quit();
             app = null;
-            SetText(m_ebGameFile, sOutFile);
-            System.IO.File.Delete(m_ebGameCopy.Text);
-            System.IO.File.Copy(sOutFile, m_ebGameCopy.Text);
+            m_pr.GameFile = sOutFile;
+            System.IO.File.Delete(m_pr.GameCopy);
+            System.IO.File.Copy(sOutFile, m_pr.GameCopy);
         }
 
 #if notused

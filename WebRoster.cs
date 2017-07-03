@@ -8,6 +8,7 @@ using System.IO;
 using StatusBox;
 using mshtml;
 using System.Text.RegularExpressions;
+using NUnit.Framework;
 using Win32Win;
 
 namespace ArbWeb
@@ -168,6 +169,29 @@ namespace ArbWeb
             return true;
         }
 
+        void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, ref RosterEntry rste)
+        {
+            rste.m_plsMisc = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, null);
+            if (rste.m_plsMisc.Count == 0)
+                throw new Exception("couldn't extract misc field for official");
+        }
+
+        void SetServerMiscFields(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste)
+        {
+            RosterEntry rsteNew = rst.RsteLookupEmail(rste.Email);
+            RosterEntry rsteServer = rstServer?.RsteLookupEmail(rste.Email);
+
+            if (rsteNew.FEqualsMisc(rsteServer))
+                return;
+
+            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc);
+
+            if (plsValue.Count == 0)
+                throw new Exception("couldn't extract misc field for official");
+
+            rste.m_plsMisc = plsValue;
+        }
+
         /* U P D A T E  M I S C */
         /*----------------------------------------------------------------------------
 			%%Function: UpdateMisc
@@ -175,20 +199,35 @@ namespace ArbWeb
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
-        private void UpdateMisc(PGL pgl, Roster rst, ref RosterEntry rste)
+        private void UpdateMisc(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste)
         {
-            // ok, nav to the page and scrape
-//			m_awc.ResetNav();
-//			ThrowIfNot(FClickControl(m_awc.Document2, "pgeOfficialEdit_cmnRelatedData_tskEditMiscFields"), "couldn't find misc fields link");
-//          m_awc.FWaitForNavFinish();
+            if (rst == null)
+                FetchMiscFieldsFromServer(sEmail, sOfficialID, ref rste);
+            else
+                SetServerMiscFields(sEmail, sOfficialID, rst, rstServer, ref rste);
+        }
 
-            if (!m_awc.FNavToPage(_s_EditUser_MiscFields + pgl.plofi[pgl.iCur].sOfficialID))
+        /* S Y N C  P L S  M I S C  W I T H  S E R V E R */
+        /*----------------------------------------------------------------------------
+        	%%Function: SyncPlsMiscWithServer
+        	%%Qualified: ArbWeb.AwMainForm.SyncPlsMiscWithServer
+        	%%Contact: rlittle
+        	
+            navigate to the custom fields page and return the values. if plsMiscNew
+            is supplied, then make sure the server matches that, and return fNeedSave
+            to let caller know that the page needs to be saved
+        ----------------------------------------------------------------------------*/
+        private List<string> SyncPlsMiscWithServer(IHTMLDocument2 oDoc2, string sEmail, string sOfficialID, List<string> plsMiscNew)
+        {
+            bool fNeedSave = false;
+            string sValue;
+
+            if (!m_awc.FNavToPage(_s_EditUser_MiscFields + sOfficialID))
                 {
                 throw (new Exception("could not navigate to the officials page"));
                 }
 
             IHTMLDocument oDoc = m_awc.Document;
-            IHTMLDocument2 oDoc2 = m_awc.Document2;
             IHTMLDocument3 oDoc3 = m_awc.Document3;
 
             IHTMLElementCollection hec;
@@ -196,8 +235,8 @@ namespace ArbWeb
             // misc field info.  every text input field is a misc field we want to save
             hec = (IHTMLElementCollection) oDoc2.all.tags("input");
             List<string> plsValue = new List<string>();
-            string sValue = null;
-            bool fNeedSave = false;
+
+            sValue = null;
 
             foreach (IHTMLInputElement ihie in hec)
                 {
@@ -207,28 +246,22 @@ namespace ArbWeb
                     sValue = ihie.value;
                     if (sValue == null)
                         sValue = "";
-                    if (rst != null)
-                        {
-                        // check to see if it matches what we have
-                        // find a match on email address first
-                        List<string> plsMisc = rst.PlsLookupEmail(pgl.plofi[pgl.iCur].sEmail);
 
-                        if (plsMisc != null)
+                    if (plsMiscNew != null)
+                        {
+                        if (plsMiscNew.Count <= plsValue.Count
+                            && ihie.value != null
+                            && ihie.value.Length > 0)
                             {
-                            if (plsMisc.Count <= plsValue.Count
-                                && ihie.value != null
-                                && ihie.value.Length > 0)
-                                {
-                                // null means empty which replaces non-empty
-                                ihie.value = "";
-                                fNeedSave = true;
-                                }
-                            else if (plsMisc.Count > plsValue.Count
-                                     && String.Compare(plsMisc[plsValue.Count], sValue, true /*ignoreCase*/) != 0)
-                                {
-                                ihie.value = plsMisc[plsValue.Count];
-                                fNeedSave = true;
-                                }
+                            // null means empty which replaces non-empty
+                            ihie.value = "";
+                            fNeedSave = true;
+                            }
+                        else if (plsMiscNew.Count > plsValue.Count
+                                 && String.Compare(plsMiscNew[plsValue.Count], sValue, true /*ignoreCase*/) != 0)
+                            {
+                            ihie.value = plsMiscNew[plsValue.Count];
+                            fNeedSave = true;
                             }
                         }
                     plsValue.Add(sValue);
@@ -236,9 +269,10 @@ namespace ArbWeb
                     }
                 }
 
+            // before we return, commit the change or cancel (so we are no longer on the page)
             if (fNeedSave)
                 {
-                m_srpt.AddMessage(String.Format("Updating misc info...", pgl.plofi[pgl.iCur].sEmail));
+                m_srpt.AddMessage(String.Format("Updating misc info...", sEmail));
                 m_awc.ResetNav();
                 ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_MiscFields_Button_Save), "Couldn't find save button");
 
@@ -248,17 +282,27 @@ namespace ArbWeb
                 {
                 m_awc.ResetNav();
                 ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
-//				((IHTMLElement)(oDoc2.all.item("pgeMiscFieldsEdit_navMiscFieldsEdit_btnSave", 0))).click();
+
                 m_awc.FWaitForNavFinish();
                 }
 
-            if (sValue == null || plsValue.Count == 0)
-                throw new Exception("couldn't extract misc field for official");
-
-            rste.m_plsMisc = plsValue;
+            return plsValue;
         }
 
-        private void MatchAssignText(IHTMLInputElement ihie, Roster rst, string sMatch, string sRsteMatched, ref string sAssign, ref bool fNeedSave, ref bool fFailAssign)
+        /* M A T C H  A S S I G N  T E X T */
+        /*----------------------------------------------------------------------------
+        	%%Function: MatchAssignText
+        	%%Qualified: ArbWeb.AwMainForm.MatchAssignText
+        	%%Contact: rlittle
+        	
+            Get the value for the control sMatch. Determine the current value of
+            that control (which will be returned in sAssign). 
+
+            sNewValue is not null and does not match the controls value, then
+            set the control to sNewValue (which will strangely leave sAssign
+            set to the OLD value)
+        ----------------------------------------------------------------------------*/
+        private void MatchAssignText(IHTMLInputElement ihie, string sMatch, string sNewValue, ref string sAssign, ref bool fNeedSave, ref bool fFailAssign)
         {
             if (ihie.name.Contains(sMatch))
                 {
@@ -267,12 +311,12 @@ namespace ArbWeb
                 if (sAssign == null)
                     sAssign = "";
 
-                if (rst != null)
+                if (sNewValue != null)
                     {
                     // check to see if it matches what we have
                     // find a match on email address first
-                    if (sRsteMatched != null
-                        && String.Compare(sRsteMatched, sAssign, true /*ignoreCase*/) != 0)
+                    if (sNewValue != null
+                        && String.Compare(sNewValue, sAssign, true /*ignoreCase*/) != 0)
                         {
                         if (ihie.disabled)
                             {
@@ -280,12 +324,68 @@ namespace ArbWeb
                             }
                         else
                             {
-                            ihie.value = sRsteMatched;
+                            ihie.value = sNewValue;
                             fNeedSave = true;
                             }
                         }
                     }
                 }
+        }
+
+        /* G E T  R O S T E R  I N F O  F R O M  S E R V E R */
+        /*----------------------------------------------------------------------------
+        	%%Function: GetRosterInfoFromServer
+        	%%Qualified: ArbWeb.AwMainForm.GetRosterInfoFromServer
+        	%%Contact: rlittle
+        	
+            Get the roster information from the server.
+        ----------------------------------------------------------------------------*/
+        void GetRosterInfoFromServer(string sEmail, string sOfficialID, ref RosterEntry rste)
+        {
+            SyncRsteWithServer(m_awc.Document2, sOfficialID, rste, null);
+
+            if (rste.m_sAddress1 == null || rste.m_sAddress2 == null || rste.m_sCity == null || rste.m_sDateJoined == null
+                || rste.m_sDateOfBirth == null || rste.m_sEmail == null || rste.m_sFirst == null || rste.m_sGamesPerDay == null
+                || rste.m_sGamesPerWeek == null || rste.m_sLast == null || rste.m_sOfficialNumber == null
+                || rste.m_sState == null || rste.m_sTotalGames == null || rste.m_sWaitMinutes == null
+                || rste.m_sZip == null)
+                {
+                throw new Exception("couldn't extract one more more fields from official info");
+                }
+        }
+
+        /* S E T  S E R V E R  R O S T E R  I N F O */
+        /*----------------------------------------------------------------------------
+        	%%Function: SetServerRosterInfo
+        	%%Qualified: ArbWeb.AwMainForm.SetServerRosterInfo
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        void SetServerRosterInfo(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, bool fMarkOnly)
+        {
+            RosterEntry rsteNew = null;
+            RosterEntry rsteServer = null;
+
+            if (rst != null)
+                rsteNew = rst.RsteLookupEmail(sEmail);
+
+            if (rsteNew == null)
+                rsteNew = new RosterEntry(); // just to get nulls filled in to the member variables
+            else
+                rsteNew.Marked = true;
+
+            if (fMarkOnly)
+                return;
+
+            if (rstServer != null)
+                {
+                rsteServer = rstServer.RsteLookupEmail(sEmail);
+                if (rsteNew.FEquals(rsteServer))
+                    return;
+                }
+
+            SyncRsteWithServer(m_awc.Document2, sOfficialID, rste, rsteNew);
+
         }
 
         /* U P D A T E  I N F O */
@@ -296,91 +396,159 @@ namespace ArbWeb
 
 			when we leave, if rst was null, then rste will have the values as we
 			fetched from arbiter
+
+            rstServer UNUSED right now
 		----------------------------------------------------------------------------*/
-        private void UpdateInfo(PGL pgl, Roster rst, ref RosterEntry rste, bool fMarkOnly)
+        private void UpdateInfo(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, bool fMarkOnly)
         {
-            bool fNeedSave = false;
-            bool fFailUpdate = false;
-
-            RosterEntry rsteMatch = null;
-
-            if (rst != null)
-                rsteMatch = rst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
-
-            if (rsteMatch == null)
-                rsteMatch = new RosterEntry(); // just to get nulls filled in to the member variables
+            if (rst == null)
+                GetRosterInfoFromServer(sEmail, sOfficialID, ref rste);
             else
-                rsteMatch.Marked = true;
+                SetServerRosterInfo(sEmail, sOfficialID, rst, rstServer, ref rste, fMarkOnly);
+        }
 
-            if (fMarkOnly)
-                return;
+        static void SetPhoneNames(int iPhoneRow, out string sPhoneNum, out string sidPhoneNum, out string sPhoneType, out string sPhoneCarrier, out string sPhonePublicNext)
+        {
+            sPhoneNum = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhoneNumber_Prefix, iPhoneRow, _s_EditUser_PhoneNumber_Suffix);
+            sidPhoneNum = String.Format("{0}ctl{1:00}{2}", _sid_EditUser_PhoneNumber_Prefix, iPhoneRow, _sid_EditUser_PhoneNumber_Suffix);
+            sPhoneType = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhoneType_Prefix, iPhoneRow, _s_EditUser_PhoneType_Suffix);
+            sPhoneCarrier = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhoneCarrier_Prefix, iPhoneRow, _s_EditUser_PhoneCarrier_Suffix);
+            sPhonePublicNext = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhonePublic_Prefix, iPhoneRow, _s_EditUser_PhonePublic_Suffix);
+        }
+
+        [TestCase(1, "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$txtPhone", "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_ctl01_txtPhone", "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$ddlPhoneType", "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$ddlCarrier", "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$chkPublic")]
+        [Test]
+        public static void TestSetPhoneNames(int iPhoneRow, string sExpectedNum, string sidExpectedNum, string sExpectedType, string sExpectedCarrier, string sExpectedPublic)
+        {
+            string sidNumActual, sNumActual, sTypeActual, sCarrierActual, sPublicActual;
+
+            SetPhoneNames(iPhoneRow, out sNumActual, out sidNumActual, out sTypeActual, out sCarrierActual, out sPublicActual);
+            Assert.AreEqual(sExpectedNum, sNumActual);
+            Assert.AreEqual(sExpectedType, sTypeActual);
+            Assert.AreEqual(sExpectedCarrier, sCarrierActual);
+            Assert.AreEqual(sExpectedPublic, sPublicActual);
+        }
+
+        /* S Y N C  R S T E  W I T H  S E R V E R */
+        /*----------------------------------------------------------------------------
+        	%%Function: SyncRsteWithServer
+        	%%Qualified: ArbWeb.AwMainForm.SyncRsteWithServer
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void SyncRsteWithServer(IHTMLDocument2 oDoc2, string sOfficialID, RosterEntry rsteOut, RosterEntry rsteNew)
+        {
+            bool fFailUpdate = false;
+            bool fNeedSave = false;
 
             // ok, nav to the page and scrape
-            if (!m_awc.FNavToPage(_s_EditUser + pgl.plofi[pgl.iCur].sOfficialID))
+            if (!m_awc.FNavToPage(_s_EditUser + sOfficialID))
                 {
                 throw (new Exception("could not navigate to the officials page"));
                 }
 
             IHTMLDocument oDoc = m_awc.Document;
-            IHTMLDocument2 oDoc2 = m_awc.Document2;
             IHTMLDocument3 oDoc3 = m_awc.Document3;
 
             IHTMLElementCollection hec;
 
             hec = (IHTMLElementCollection) oDoc2.all.tags("input");
 
+            string sPhoneNumberNext;
+            string sidPhoneNumberNext;
+            string sPhoneTypeNext;
+            string sPhoneCarrierNext;
+            string sPhonePublicNext;
+            int iNextPhone = 1;
+            SetPhoneNames(iNextPhone, out sPhoneNumberNext, out sidPhoneNumberNext, out sPhoneTypeNext, out sPhoneCarrierNext, out sPhonePublicNext);
+            
             foreach (IHTMLInputElement ihie in hec)
                 {
                 if (String.Compare(ihie.type, "checkbox", true) == 0)
                     {
                     // checkboxes are either ready or active
                     if (ihie.name.Contains("Active"))
-                        rste.m_fActive = String.Compare(ihie.value, "on", true) == 0;
+                        rsteOut.m_fActive = String.Compare(ihie.value, "on", true) == 0;
                     else if (ihie.name.Contains("Ready"))
-                        rste.m_fReady = String.Compare(ihie.value, "on", true) == 0;
+                        rsteOut.m_fReady = String.Compare(ihie.value, "on", true) == 0;
                     }
 
-                if (String.Compare(ihie.type, "text", true) == 0)
+                if (String.Compare(ihie.type, "text", true) == 0 && ihie.name != null)
                     {
-                    if (ihie.name.Contains("Email"))
+                    if (ihie.name.Contains(_s_EditUser_Email))
                         {
-//						if (ihie.value == null && rste.m_sEmail != null && rste.m_sEmail != "")
+//						if (ihie.value == null && rsteOut.m_sEmail != null && rsteOut.m_sEmail != "")
                         // continue;
 
-                        if (ihie.value != null && rste.m_sEmail != null)
+                        if (ihie.value != null && rsteOut.m_sEmail != null)
                             {
-                            if (String.Compare(ihie.value, rste.m_sEmail, true) != 0)
+                            if (String.Compare(ihie.value, rsteOut.m_sEmail, true) != 0)
                                 throw new Exception("email addresses don't match!");
                             }
                         else
                             {
-                            m_srpt.AddMessage(String.Format("NULL Email address for {0},{1}", rste.m_sFirst, rste.m_sLast), StatusBox.StatusRpt.MSGT.Error);
+                            m_srpt.AddMessage(String.Format("NULL Email address for {0},{1}", rsteOut.m_sFirst, rsteOut.m_sLast), StatusBox.StatusRpt.MSGT.Error);
                             }
                         }
-                    MatchAssignText(ihie, rst, "FirstName", rsteMatch.m_sFirst, ref rste.m_sFirst, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "LastName", rsteMatch.m_sLast, ref rste.m_sLast, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "Address1", rsteMatch.m_sAddress1, ref rste.m_sAddress1, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "Address2", rsteMatch.m_sAddress2, ref rste.m_sAddress2, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "City", rsteMatch.m_sCity, ref rste.m_sCity, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "State", rsteMatch.m_sState, ref rste.m_sState, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "PostalCode", rsteMatch.m_sZip, ref rste.m_sZip, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "OfficialNumber", rsteMatch.m_sOfficialNumber, ref rste.m_sOfficialNumber, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "DateOfBirth", rsteMatch.m_sDateOfBirth, ref rste.m_sDateOfBirth, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "DateJoined", rsteMatch.m_sDateJoined, ref rste.m_sDateJoined, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "GamesPerDay", rsteMatch.m_sGamesPerDay, ref rste.m_sGamesPerDay, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "GamesPerWeek", rsteMatch.m_sGamesPerWeek, ref rste.m_sGamesPerWeek, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "GamesTotal", rsteMatch.m_sTotalGames, ref rste.m_sTotalGames, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, rst, "WaitMinutes", rsteMatch.m_sWaitMinutes, ref rste.m_sWaitMinutes, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_FirstName, rsteNew?.m_sFirst, ref rsteOut.m_sFirst, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_LastName, rsteNew?.m_sLast, ref rsteOut.m_sLast, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_Address1, rsteNew?.m_sAddress1, ref rsteOut.m_sAddress1, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_Address2, rsteNew?.m_sAddress2, ref rsteOut.m_sAddress2, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_City, rsteNew?.m_sCity, ref rsteOut.m_sCity, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_State, rsteNew?.m_sState, ref rsteOut.m_sState, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_PostalCode, rsteNew?.m_sZip, ref rsteOut.m_sZip, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_OfficialNumber, rsteNew?.m_sOfficialNumber, ref rsteOut.m_sOfficialNumber, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, _s_EditUser_DateJoined, rsteNew?.m_sDateJoined, ref rsteOut.m_sDateJoined, ref fNeedSave, ref fFailUpdate);
+                    if (rsteNew == null || rsteNew.IsUploadableQuickroster)
+                        {
+                        MatchAssignText(ihie, _s_EditUser_DateOfBirth, rsteNew?.m_sDateOfBirth, ref rsteOut.m_sDateOfBirth, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, _s_EditUser_GamesPerDay, rsteNew?.m_sGamesPerDay, ref rsteOut.m_sGamesPerDay, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, _s_EditUser_GamesPerWeek, rsteNew?.m_sGamesPerWeek, ref rsteOut.m_sGamesPerWeek, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, _s_EditUser_GamesTotal, rsteNew?.m_sTotalGames, ref rsteOut.m_sTotalGames, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, _s_EditUser_WaitMinutes, rsteNew?.m_sWaitMinutes, ref rsteOut.m_sWaitMinutes, ref fNeedSave, ref fFailUpdate);
+                        }
+
+                    if (ihie.name.Contains(sPhoneNumberNext))
+                        {
+                        // we have a phone control.  Make sure it matches.
+                        // NOTE: We don't delete phone numbers, so if it turns out we don't have this number, just skip...
+                        if (MatchAssignPhoneNumber(oDoc2, rsteOut, rsteNew, iNextPhone, sPhoneNumberNext, sidPhoneNumberNext, sPhoneTypeNext, sPhonePublicNext))
+                            fNeedSave = true;
+
+                        iNextPhone++;
+                        SetPhoneNames(iNextPhone, out sPhoneNumberNext, out sidPhoneNumberNext, out sPhoneTypeNext, out sPhoneCarrierNext, out sPhonePublicNext);
+                        }
                     }
                 }
 
+            if (iNextPhone < 4 && rsteNew != null)
+                {
+                while (iNextPhone < 4)
+                    {
+                    SetPhoneNames(iNextPhone, out sPhoneNumberNext, out sidPhoneNumberNext, out sPhoneTypeNext, out sPhoneCarrierNext, out sPhonePublicNext);
+                    if (rsteNew.FHasPhoneNumber(iNextPhone))
+                        {
+                        // add this phone...
+                        m_awc.ResetNav();
+                        m_awc.ReportNavState("Before click control");
+                        ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
+                        m_awc.ReportNavState("After click control");
+                        m_awc.FWaitForNavFinish();
+                        oDoc2 = m_awc.Document2;
+                        if (MatchAssignPhoneNumber(oDoc2, rsteOut, rsteNew, iNextPhone, sPhoneNumberNext, sidPhoneNumberNext, sPhoneTypeNext, sPhonePublicNext))
+                            fNeedSave = true;
+                        }
+                    iNextPhone++;
+                    }
+                }
             if (fFailUpdate)
                 {
-                m_srpt.AddMessage(String.Format("FAILED to update some general info!  '{0}' was read only", pgl.plofi[pgl.iCur].sEmail), StatusBox.StatusRpt.MSGT.Error);
+                m_srpt.AddMessage(String.Format("FAILED to update some general info!  '{0}' was read only", rsteOut.Email), StatusBox.StatusRpt.MSGT.Error);
                 }
+
             if (fNeedSave)
                 {
-                m_srpt.AddMessage(String.Format("Updating general info...", pgl.plofi[pgl.iCur].sEmail));
+                m_srpt.AddMessage(String.Format("Updating general info...", rsteOut.Email));
                 m_awc.ResetNav();
                 ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_OfficialsEdit_Button_Save), "couldn't find save button");
                 m_awc.FWaitForNavFinish();
@@ -391,14 +559,52 @@ namespace ArbWeb
                 ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
                 m_awc.FWaitForNavFinish();
                 }
-            if (rste.m_sAddress1 == null || rste.m_sAddress2 == null || rste.m_sCity == null || rste.m_sDateJoined == null
-                || rste.m_sDateOfBirth == null || rste.m_sEmail == null || rste.m_sFirst == null || rste.m_sGamesPerDay == null
-                || rste.m_sGamesPerWeek == null || rste.m_sLast == null || rste.m_sOfficialNumber == null
-                || rste.m_sState == null || rste.m_sTotalGames == null || rste.m_sWaitMinutes == null
-                || rste.m_sZip == null)
+        }
+
+        private static bool MatchAssignPhoneNumber(IHTMLDocument2 oDoc2, RosterEntry rsteOut, RosterEntry rsteNew, int iNextPhone, string sPhoneNumberNext, string sidPhoneNumberNext, string sPhoneTypeNext, string sPhonePublicNext)
+        {
+            string sNumberNew = null;
+            string sTypeNew = null;
+            string sNumber = null;
+            string sType = null;
+            bool fNeedSave = false;
+
+            return false;
+
+            // handle the phone number
+            if (rsteNew != null)
                 {
-                throw new Exception("couldn't extract one more more fields from official info");
+                rsteNew.GetPhoneNumber(iNextPhone, out sNumberNew, out sTypeNew);
+                if (ArbWebControl.FSetInputControlText(oDoc2, sPhoneNumberNext, sNumberNew, true))
+                    {
+                    // new numbers are public by default
+                    ArbWebControl.FSetCheckboxControlVal(oDoc2, true, sPhonePublicNext);
+                    fNeedSave = true;
+                    }
                 }
+
+            sNumber = ArbWebControl.SGetControlValue(oDoc2, sidPhoneNumberNext);
+            if (sNumber == null)
+                {
+                return false;
+                }
+
+            // handle the type
+            // get the selected item first
+            string sTypeID = ArbWebControl.SGetSelectSelectedValue(oDoc2, sPhoneTypeNext);
+            // convert the type into the name
+            sType = ArbWebControl.SGetSelectValFromDoc(oDoc2, sPhoneTypeNext, sTypeID);
+
+            rsteOut.SetPhoneNumber(iNextPhone, sNumber, sType);
+
+            if (rsteNew != null && String.Compare(sType, sTypeNew) != 0)
+                {
+                // now set the type if we have a new number
+                string sNewTypeID = ArbWebControl.SGetSelectIDFromDoc(oDoc2, sPhoneTypeNext, sTypeNew);
+                ArbWebControl.FSetSelectControlValue(oDoc2, sPhoneTypeNext, sNewTypeID, false);
+                fNeedSave = true;
+                }
+            return fNeedSave;
         }
 
         private static void VisitRankCallbackUpload(Roster rst, string sRankPosition, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc, StatusBox.StatusRpt srpt)
@@ -567,6 +773,29 @@ namespace ArbWeb
 
             Dictionary<string, string> mpRankFilter = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, _s_RanksEdit_Select_PosNames);
             List<string> plsRankings = PlsRankingsBuildFromRst(rst, rstBuilding, mpRankFilter);
+
+            if (m_pr.SkipZ)
+                {
+                List<string> plsKeysToRemove = new List<string>();
+                foreach (string sKey in mpRankFilter.Keys)
+                    {
+                    if (sKey.StartsWith("z"))
+                        plsKeysToRemove.Add(sKey);
+                    }
+
+                foreach (string sKey in plsKeysToRemove)
+                    {
+                    mpRankFilter.Remove(sKey);
+                    }
+
+                int i = plsRankings.Count;
+
+                while (--i >= 0)
+                    {
+                    if (plsRankings[i].StartsWith("z"))
+                        plsRankings.RemoveAt(i);
+                    }
+                }
 
             if (rst == null)
                 VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackDownload, rstBuilding, false /*fVerbose*/);
@@ -836,6 +1065,24 @@ namespace ArbWeb
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_State, rste.m_sState, false /*fCheck*/), "Failed to find state control");
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_Zip, rste.m_sZip, false /*fCheck*/), "Failed to find zip control");
 
+                    string[] rgsPhoneNums = new string[] {_s_AddUser_Input_PhoneNum1, _s_AddUser_Input_PhoneNum2, _s_AddUser_Input_PhoneNum3};
+                    string[] rgsPhoneTypes = new string[] {_s_AddUser_Input_PhoneType1, _s_AddUser_Input_PhoneType2, _s_AddUser_Input_PhoneType3};
+
+                    int iPhone = 0;
+                    while (iPhone < 3)
+                        {
+                        string sPhoneNum, sPhoneType;
+
+                        rste.GetPhoneNumber(iPhone + 1/*convert to 1 based*/, out sPhoneNum, out sPhoneType);
+                        if (sPhoneNum != null)
+                            {
+                            ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, rgsPhoneNums[iPhone], sPhoneNum, false /*fCheck*/), "Failed to find phonenum* control");
+                            string sNewTypeID = ArbWebControl.SGetSelectIDFromDoc(oDoc2, rgsPhoneTypes[iPhone], sPhoneType);
+                            ArbWebControl.FSetSelectControlValue(oDoc2, rgsPhoneTypes[iPhone], sNewTypeID, false);
+                            }
+                        iPhone++;
+                        }
+
                     m_awc.ResetNav();
                     ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
                     m_awc.FWaitForNavFinish();
@@ -971,8 +1218,11 @@ namespace ArbWeb
 			we just added new officials and we just want to update their info/misc
 			fields...)
 			
+            rstServer is the latest roster from the server -- useful for quickly
+            determining what we need to update (without having to check the 
+            server again)
 		----------------------------------------------------------------------------*/
-        private void DoCoreRosterUpdate(PGL pgl, Roster rst, Roster rstBuilding, List<RosterEntry> plrsteLimit)
+        private void DoCoreRosterUpdate(PGL pgl, Roster rst, Roster rstBuilding, Roster rstServer, List<RosterEntry> plrsteLimit)
         {
             pgl.iCur = 0;
             Dictionary<string, bool> mpOfficials = new Dictionary<string, bool>();
@@ -986,7 +1236,7 @@ namespace ArbWeb
             while (pgl.iCur < pgl.plofi.Count && (rst == null || m_cbRankOnly.Checked == false) && pgl.iCur < pgl.plofi.Count)
                 {
                 if (rst == null
-                    || (rst.PlsLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
+                    || (rst.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
                         && pgl.plofi[pgl.iCur].sEmail.Length != 0))
                     {
                     RosterEntry rste = new RosterEntry();
@@ -1009,11 +1259,11 @@ namespace ArbWeb
                         }
 
                     if (!fMarkOnly)
-                        UpdateMisc(pgl, rst, ref rste);
+                        UpdateMisc(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, rst, rstServer, ref rste);
 
                     // don't call UpdateInfo on a newly added official
-                    if (plrsteLimit == null && (rst == null || !rst.IsQuick))
-                        UpdateInfo(pgl, rst, ref rste, fMarkOnly);
+                    if (plrsteLimit == null && (rst == null || !rst.IsQuick || rst.IsUploadableQuickroster))
+                        UpdateInfo(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, rst, rstServer, ref rste, fMarkOnly);
 
                     if (rst == null && !String.IsNullOrEmpty(rste.Email))
                         {
@@ -1034,7 +1284,7 @@ namespace ArbWeb
                             }
                         }
 
-                    if (m_cbTestOnly.Checked)
+                    if (m_pr.TestOnly)
                         {
                         break;
                         }
@@ -1094,7 +1344,7 @@ namespace ArbWeb
 			If rst == null, then we're downloading the roster.  Otherwise, we are
 			uploading
 		----------------------------------------------------------------------------*/
-        private void HandleRoster(Roster rst, string sOutFile)
+        private void HandleRoster(Roster rst, string sOutFile, Roster rstServer)
         {
             Roster rstBuilding = null;
             PGL pgl;
@@ -1105,7 +1355,7 @@ namespace ArbWeb
                 rstBuilding = new Roster();
 
             pgl = PglGetOfficialsFromWeb();
-            DoCoreRosterUpdate(pgl, rst, rstBuilding, null /*plrsteLimit*/);
+            DoCoreRosterUpdate(pgl, rst, rstBuilding, rstServer, null /*plrsteLimit*/);
 
             if (rstBuilding != null)
                 {
@@ -1132,7 +1382,7 @@ namespace ArbWeb
                         // so we get the misc fields updated.  Then fall through to the rankings and do everyone at
                         // once
                         pgl = PglGetOfficialsFromWeb(); // refresh to get new officials
-                        DoCoreRosterUpdate(pgl, rst, null /*rstBuilding*/, plrsteUnmarked);
+                        DoCoreRosterUpdate(pgl, rst, null /*rstBuilding*/, rstServer, plrsteUnmarked);
                         // now we can fall through to our core ranking handling...
                         }
                     }
@@ -1145,7 +1395,7 @@ namespace ArbWeb
             if (rst == null)
                 rstBuilding.WriteRoster(sOutFile);
 
-            if (m_cbTestOnly.Checked)
+            if (m_pr.TestOnly)
                 {
                 MessageBox.Show("Stopping after 1 roster item");
                 }
@@ -1155,17 +1405,17 @@ namespace ArbWeb
 			string sOutFile;
             string sPrefix = "";
             
-			if (m_ebRoster.Text.Length < 1)
+			if (m_pr.Roster.Length < 1)
 				{
 				sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
 				}
 			else
 				{
-				sOutFile = System.IO.Path.GetDirectoryName(m_ebRoster.Text);
+				sOutFile = System.IO.Path.GetDirectoryName(m_pr.Roster);
 				string[] rgs;
-				if (m_ebRoster.Text.Length > 5 && sOutFile.Length > 0)
+				if (m_pr.Roster.Length > 5 && sOutFile.Length > 0)
 					{
-					rgs = CountsData.RexHelper.RgsMatch(m_ebRoster.Text.Substring(sOutFile.Length + 1), "([.*])roster");
+					rgs = CountsData.RexHelper.RgsMatch(m_pr.Roster.Substring(sOutFile.Length + 1), "([.*])roster");
 					if (rgs != null && rgs.Length > 0 && rgs[0] != null)
 						sPrefix = rgs[0];
 					}
@@ -1175,31 +1425,47 @@ namespace ArbWeb
 			return sOutFile;
 		}
 
-        delegate void ProcessQuickRosterOfficialsDel(string sTempFile, string sOutFile);
+        delegate Roster ProcessQuickRosterOfficialsDel(string sDownloadedRoster, bool fIncludeRankings);
 
-        void DoProcessQuickRosterOfficials(string sTempFile, string sOutFile)
+        Roster DoProcessQuickRosterOfficials(string sDownloadedRoster, bool fIncludeRankings)
         {
 			Roster rstBuilding = new Roster();
 
-			rstBuilding.ReadRoster(sTempFile);
+			rstBuilding.ReadRoster(sDownloadedRoster);
 
     		ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
-			HandleRankings(null, ref rstBuilding);
-			rstBuilding.WriteRoster(m_ebRoster.Text);
-//			System.IO.File.Copy(sTempFile, m_ebRoster.Text);
-			System.IO.File.Delete(m_ebRosterWorking.Text);
-			System.IO.File.Copy(sOutFile, m_ebRosterWorking.Text);
+            if (fIncludeRankings)
+			    HandleRankings(null, ref rstBuilding);
+
+            return rstBuilding;
         }
 
-        private void ProcessQuickRosterOfficials(string sTempFile, string sOutFile)
+        private Roster RosterQuickBuildFromDownloadedRoster(string sDownloadedRoster, bool fIncludeRankings)
         {
+            Roster rst;
+
             if (m_awc.InvokeRequired)
                 {
-                IAsyncResult rslt = m_awc.BeginInvoke(new ProcessQuickRosterOfficialsDel(DoProcessQuickRosterOfficials), new object[] {sTempFile, sOutFile});
-                m_awc.EndInvoke(rslt);
+                IAsyncResult rslt = m_awc.BeginInvoke(new ProcessQuickRosterOfficialsDel(DoProcessQuickRosterOfficials), new object[] {sDownloadedRoster, fIncludeRankings});
+                rst = (Roster)m_awc.EndInvoke(rslt);
                 }
             else
-                DoProcessQuickRosterOfficials(sTempFile, sOutFile);
+                rst = DoProcessQuickRosterOfficials(sDownloadedRoster, fIncludeRankings);
+
+            return rst;
+        }
+
+        string DownloadQuickRosterToFile()
+        {
+			m_srpt.AddMessage("Starting Quick Roster download to temp file...");
+			m_srpt.PushLevel();
+
+	        PushCursor(Cursors.WaitCursor);
+			string sTempFile = SRosterFileDownload();
+
+			PopCursor();
+            m_srpt.PopLevel();
+            return sTempFile;
         }
 
         /* D O  D O W N L O A D  Q U I C K  R O S T E R  W O R K */
@@ -1209,34 +1475,39 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void DoDownloadQuickRosterWork()
+        Roster DoDownloadQuickRosterWork()
         {
-			m_srpt.AddMessage("Starting Quick Roster download...");
+            m_srpt.AddMessage("Starting Quick Roster download...");
+            m_srpt.PushLevel();
+
+            string sTempFile = DownloadQuickRosterToFile();
+
+            // now, update the last access date and fetch the rankings and update the last access date
+            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, true);
+
+            m_srpt.PopLevel();
+
+            m_srpt.AddMessage("Completed Quick Roster download.");
+            return rst;
+        }
+
+        Roster DoDownloadQuickRosterOfficialsOnlyWork()
+        {
+			m_srpt.AddMessage("Starting Quick Roster download (officials only, no rankings)...");
 			m_srpt.PushLevel();
-	        PushCursor(Cursors.WaitCursor);
 
-		    string sOutFile = SBuildRosterFilename();
+            string sTempFile = DownloadQuickRosterToFile();
 
-            SetText(m_ebRoster, sOutFile);
+			// now, update the last access date and fetch the rankings and update the last access date
+            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, false); 
 
-			//string sTempFile = "C:\\Users\\rlittle\\AppData\\Local\\Temp\\temp3c92cb56-0b95-41c0-8eb5-37387bacf4f6.csv";
-			string sTempFile = SRosterFileDownload();
-
-//			m_awc.PopSaveToFile();
-//			m_awc.PopNewWindow3Delegate();
-
-			// now, get the rankings and update the last access date
-
-            ProcessQuickRosterOfficials(sTempFile, sOutFile);
-
-			PopCursor();
 			m_srpt.PopLevel();
 
 			m_srpt.AddMessage("Completed Quick Roster download.");
+            return rst;
         }
 
         private delegate AutoResetEvent LaunchRosterFileDownloadDel(string sTempFile);
-
 
         AutoResetEvent LaunchRosterFileDownload(string sTempFile)
         {
@@ -1309,7 +1580,7 @@ namespace ArbWeb
 
 
             AutoResetEvent evtDownload = new AutoResetEvent(false);
-            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "roster.csv", sTempFile, "of OfficialsView.aspx from", evtDownload);
+            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "roster.csv", "roster", sTempFile, "of OfficialsView.aspx from", evtDownload);
 
 	        ((IHTMLElement) (oDoc2.all.item(_sid_RosterPrint_BeginPrint, 0))).click();
 
@@ -1331,7 +1602,7 @@ namespace ArbWeb
             MessageBox.Show(
 	            String.Format(
 	                "Please download the roster to {0}. This path is on the clipboard, so you can just past it into the file/save dialog when you click Save.\n\nWhen the download is complete, click OK.",
-	                sTempFile), "ArbWeb", MessageBoxButtons.OK);
+	                sDownloadedRoster), "ArbWeb", MessageBoxButtons.OK);
 #endif
 	        return sTempFile;
 	    }

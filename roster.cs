@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using NUnit.Framework;
 
 namespace ArbWeb
 {
@@ -31,6 +32,8 @@ namespace ArbWeb
         public string m_sPhone2;
         public string m_sPhone3;
 
+        public bool IsUploadableQuickroster {  get { return m_rstt == Roster.RSTT.QuickFull2 || m_rstt == Roster.RSTT.QuickFull; } }
+
         public int m_cRankings;
         public Dictionary<string, int> m_mpRanking;
 
@@ -58,7 +61,179 @@ namespace ArbWeb
             }
         }
 
+        public bool FHasPhoneNumber(int iPhone)
+        {
+            return !String.IsNullOrEmpty(NumberRawForPhone(iPhone));
+        }
+
+        static void ExtractNumberParts(string sNumberRaw, out string sNumber, out string sType)
+        {
+            sNumber = null;
+            sType = null;
+
+            if (String.IsNullOrEmpty(sNumberRaw))
+                {
+                return;
+                }
+
+            if (sNumberRaw.StartsWith("C:"))
+                {
+                sType = "Cellular";
+                }
+            else if (sNumberRaw.StartsWith("W:"))
+                {
+                sType = "Work";
+                }
+            else if (sNumberRaw.StartsWith("H"))
+                {
+                sType = "Home";
+                }
+            else
+                {
+                throw new Exception("Unknown phone type");
+                }
+
+            sNumber = sNumberRaw.Substring(2);
+        }
+
+        static string SConstructPhoneNumberFromParts(string sPhoneNumber, string sType)
+        {
+            return String.Format("{0}:{1}", sType.Substring(0, 1), sPhoneNumber);
+        }
+
+
+        [TestCase("C:425-555-1212", "425-555-1212", "Cellular")]
+        [TestCase("H:425-555-1212", "425-555-1212", "Home")]
+        [TestCase("W:425-555-1212", "425-555-1212", "Work")]
+        [TestCase(null, null, null)]
+        [Test]
+        public static void TestExtractNumberParts(string sNumberRaw, string sNumberExpected, string sTypeExpected)
+        {
+            string sNumberActual, sTypeActual;
+
+            ExtractNumberParts(sNumberRaw, out sNumberActual, out sTypeActual);
+            Assert.AreEqual(sNumberExpected, sNumberActual);
+            Assert.AreEqual(sTypeExpected, sTypeActual);
+        }
+        string NumberRawForPhone(int iPhone)
+        {
+            string sNumberRaw = null;
+
+            switch (iPhone)
+                {
+                case 1:
+                    sNumberRaw = m_sPhone1;
+                    break;
+                case 2:
+                    sNumberRaw = m_sPhone2;
+                    break;
+                case 3:
+                    sNumberRaw = m_sPhone3;
+                    break;
+                }
+            return sNumberRaw;
+        }
+        public void GetPhoneNumber(int iPhone, out string sNumber, out string sType)
+        {
+            string sNumberRaw = NumberRawForPhone(iPhone);
+            ExtractNumberParts(sNumberRaw, out sNumber, out sType);
+        }
+
+        public void SetPhoneNumber(int iPhone, string sPhoneNumber, string sType)
+        {
+            string sNumberRaw = SConstructPhoneNumberFromParts(sPhoneNumber, sType);
+
+            switch (iPhone)
+                {
+                case 1:
+                    m_sPhone1 = sNumberRaw;
+                    break;
+                case 2:
+                    m_sPhone2 = sNumberRaw;
+                    break;
+                case 3:
+                    m_sPhone3 = sNumberRaw;
+                    break;
+                }
+        }
+
         public Roster.RSTT m_rstt;
+
+        public bool FMatchAnyMisc(string sRegexFilter)
+        {
+            foreach (string s2 in m_plsMisc)
+                {
+                if (Regex.Match(s2, sRegexFilter, System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success)
+                    {
+                    return true;
+                    }
+                }
+            return false;
+        }
+
+        public bool FEqualsMisc(RosterEntry rste)
+        {
+            if (m_plsMisc?.Count != rste?.m_plsMisc?.Count)
+                return false;
+
+            int i;
+
+            for (i = 0; i < m_plsMisc.Count; i++)
+                {
+                if (String.Compare(m_plsMisc[i], rste.m_plsMisc[i]) != 0)
+                    return false;
+                }
+
+            return true;
+        }
+
+        /* F  E Q U A L S */
+        /*----------------------------------------------------------------------------
+        	%%Function: FEquals
+        	%%Qualified: ArbWeb.RosterEntry.FEquals
+        	%%Contact: rlittle
+        	
+            Compare the settable server fields to see if they are equivalent
+        ----------------------------------------------------------------------------*/
+        public bool FEquals(RosterEntry rste)
+        {
+            if (String.Compare(m_sFirst, rste.m_sFirst) != 0)
+                return false;
+            if (String.Compare(m_sLast, rste.m_sLast) != 0)
+                return false;
+            if (String.Compare(m_sAddress1, rste.m_sAddress1) != 0)
+                return false;
+            if (String.Compare(m_sAddress2, rste.m_sAddress2) != 0)
+                return false;
+            if (String.Compare(m_sCity, rste.m_sCity) != 0)
+                return false;
+            if (String.Compare(m_sState, rste.m_sState) != 0)
+                return false;
+            if (String.Compare(m_sZip, rste.m_sZip) != 0)
+                return false;
+            if (String.Compare(m_sOfficialNumber, rste.m_sOfficialNumber) != 0)
+                return false;
+            if (String.Compare(m_sDateOfBirth, rste.m_sDateOfBirth) != 0)
+                return false;
+//            if (String.Compare(m_sDateJoined, rste.m_sDateJoined) != 0)
+//                return false;
+            if (String.Compare(m_sGamesPerDay, rste.m_sGamesPerDay) != 0)
+                return false;
+            if (String.Compare(m_sGamesPerWeek, rste.m_sGamesPerWeek) != 0)
+                return false;
+            if (String.Compare(m_sTotalGames, rste.m_sTotalGames) != 0)
+                return false;
+            if (String.Compare(m_sWaitMinutes, rste.m_sWaitMinutes) != 0)
+                return false;
+            if (String.Compare(m_sPhone1, rste.m_sPhone1) != 0)
+                return false;
+            if (String.Compare(m_sPhone2, rste.m_sPhone2) != 0)
+                return false;
+            if (String.Compare(m_sPhone3, rste.m_sPhone3) != 0)
+                return false;
+
+            return true;
+        }
 
         public string OtherRanks(string sSport, string sPos, int nBase)
         {
@@ -236,6 +411,7 @@ namespace ArbWeb
         public string Last { get { return m_sLast; } }
         public string Email { get { return m_sEmail; } }
         public bool Marked { get { return m_fMarked; } set { m_fMarked = value; } }
+        public List<string> Misc {  get { return m_plsMisc; } }
 
         public int Rank(string s)
         {
@@ -381,8 +557,8 @@ namespace ArbWeb
                     iRank++;
                     }
                 iRank++;
-                if (iRank >= rgs.Length)
-                    throw (new Exception("bad format in heading line -- found no DateJoined in a quickroster"));
+                if (iRank > rgs.Length)
+                    throw (new Exception("bad format in heading line -- found no DateJoined in a quickroster, or date joined beyond the end of the array"));
                 }
             else
                 {
@@ -551,6 +727,7 @@ namespace ArbWeb
         }
 
         public bool IsQuick { get { return m_rstt != RSTT.Full; } }
+        public bool IsUploadableQuickroster {  get { return m_rstt == RSTT.QuickFull || m_rstt == RSTT.QuickFull2; } }
         public RSTT Rstt { get { return m_rstt; } }
 
         public bool HasRankings { get { return m_plsRankings.Count > 0; } }
@@ -790,12 +967,12 @@ namespace ArbWeb
 
         /* P L S  L O O K U P  E M A I L */
         /*----------------------------------------------------------------------------
-			%%Function: PlsLookupEmail
-			%%Qualified: ArbWeb.RST.PlsLookupEmail
+			%%Function: PlsMiscLookupEmail
+			%%Qualified: ArbWeb.RST.PlsMiscLookupEmail
 			%%Contact: rlittle
 			
 		----------------------------------------------------------------------------*/
-        public List<string> PlsLookupEmail(string sEmail)
+        public List<string> PlsMiscLookupEmail(string sEmail)
         {
             RosterEntry rste = RsteLookupEmail(sEmail);
             if (rste == null)
@@ -820,17 +997,7 @@ namespace ArbWeb
                 {
                 if (sRegexFilter != null)
                     {
-                    bool fMatched = false;
-
-                    foreach (string s2 in rste.m_plsMisc)
-                        {
-                        if (Regex.Match(s2, sRegexFilter, System.Text.RegularExpressions.RegexOptions.IgnoreCase).Success)
-                            {
-                            fMatched = true;
-                            break;
-                            }
-                        }
-                    if (!fMatched)
+                    if (rste.FMatchAnyMisc(sRegexFilter))
                         continue;
                     }
                 if (!fFirst)

@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Linq;
 using Microsoft.Win32;
 using StatusBox;
 using mshtml;
@@ -13,165 +14,211 @@ using TCore.CmdLine;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using System.Threading.Tasks;
 using TCore.Settings;
+using TCore.UI;
+using TCore.Util;
 
 namespace ArbWeb
 {
-	/// <summary>
-	/// Summary description for AwMainForm.
-	/// </summary>
-	public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch
+    /// <summary>
+    /// Summary description for AwMainForm.
+    /// </summary>
+    public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch
     {
+        public AwMainForm() {} // for unit tests only
+
         #region ArbiterStrings
 
         // Top level web pages
-		private const string _s_Home = "https://www.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
-		private const string _s_Assigning = "https://www.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
-		private const string _s_RanksEdit = "https://www.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
-		private const string _s_AddUser = "https://www.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u
-		private const string _s_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010u
-	    private const string _s_Announcements = "https://www.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
+        private const string _s_Home = "https://www.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
+        private const string _s_Assigning = "https://www.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
+        private const string _s_RanksEdit = "https://www.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
+        private const string _s_AddUser = "https://www.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u
+        private const string _s_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010u
+        private const string _s_Announcements = "https://www.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
 
-		// Direct access web pages
-		private const string _s_Assigning_PrintAddress = "https://www.arbitersports.com/Assigner/Games/Print.aspx?filterID="; // ok2010
-		private const string _s_EditUser_MiscFields = "https://www.arbitersports.com/Official/MiscFieldsEdit.aspx?userID="; // ok2010
-		private const string _s_EditUser = "https://www.arbitersports.com/Official/OfficialEdit.aspx?userID="; // ok2010u
+        // Direct access web pages
+        private const string _s_Assigning_PrintAddress = "https://www.arbitersports.com/Assigner/Games/Print.aspx?filterID="; // ok2010
+        private const string _s_EditUser_MiscFields = "https://www.arbitersports.com/Official/MiscFieldsEdit.aspx?userID="; // ok2010
+        private const string _s_EditUser = "https://www.arbitersports.com/Official/OfficialEdit.aspx?userID="; // ok2010u
 
-		// Home links
+        // Home links
 //		private const string _s_Home_Anchor_Login = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
-		//private const string _s_Home_Input_Email = "ctl00$EmailTextbox"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2010
-		//private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2010
-		//private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
-		private const string _s_Home_Anchor_Login = "SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
+        //private const string _s_Home_Input_Email = "ctl00$EmailTextbox"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2010
+        //private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2010
+        //private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
+        private const string _s_Home_Anchor_Login = "SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
 //		private const string _s_Home_Input_Email = "ctl00$EmailTextbox"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2015
 //		private const string _s_Home_Input_Password = "ctl00$PasswordTextbox"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2015
 //		private const string _s_Home_Button_SignIn = "ctl00$SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2015
 //<input name="ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn" class="btn btn-dark form-control" id="ctl00_ContentHolder_pgeSignIn_conSignIn_btnSignIn" language="javascript" onclick="if (typeof(Page_ClientValidate) == 'function') { if(Page_ClientValidate()) { document.getElementsByName('__onceClickBtn').item(0).setAttribute('name',this.getAttribute('name')); var allControls = document.getElementsByName(this.getAttribute('name')); for (i=0; i < allControls.length; i++) {   if(allControls[i].getAttribute('id') == this.getAttribute('id')) {  allControls[i].setAttribute('name', allControls[i].getAttribute('name'));  allControls[i].disabled = true;  allControls[i].value = 'Signing In';  } }this.form.submit(); }} else { document.getElementsByName('__onceClickBtn').item(0).setAttribute('name',this.getAttribute('name')); var allControls = document.getElementsByName(this.getAttribute('name')); for (i=0; i < allControls.length; i++) {   if(allControls[i].getAttribute('id') == this.getAttribute('id')) {  allControls[i].setAttribute('name', allControls[i].getAttribute('name'));  allControls[i].disabled = true;  allControls[i].value = 'Signing In';  } }this.form.submit(); }" type="submit" value="Sign In">
-		private const string _s_Home_Input_Email = "ctl00$ContentHolder$pgeSignIn$conSignIn$txtEmail"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2016
-		private const string _s_Home_Input_Password = "txtPassword"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2016
-		private const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
+        private const string _s_Home_Input_Email = "ctl00$ContentHolder$pgeSignIn$conSignIn$txtEmail"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2016
+        private const string _s_Home_Input_Password = "txtPassword"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2016
+        private const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
 
         private const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
-		private const string _sid_Home_Anchor_ActingLink = "ctl00_ActingLink"; // ok2010
+        private const string _sid_Home_Anchor_ActingLink = "ctl00_ActingLink"; // ok2010
 
-		// Assigning (games view) links
-		private const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2010
-		private const string _s_Assigning_Reports_Select_Format = "ctl00$ContentHolder$pgePrint$conPrint$ddlFormat"; // ok2010
-		private const string _s_Assigning_Reports_Submit_Print = "ctl00$ContentHolder$pgePrint$navPrint$btnBeginPrint"; // ok2010
+        // Assigning (games view) links
+        private const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2010
+        private const string _s_Assigning_Reports_Select_Format = "ctl00$ContentHolder$pgePrint$conPrint$ddlFormat"; // ok2010
+        private const string _s_Assigning_Reports_Submit_Print = "ctl00$ContentHolder$pgePrint$navPrint$btnBeginPrint"; // ok2010
 
-		// Add User links
-		private const string _s_AddUser_Input_FirstName = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtFirstName"; // ok2010
-		private const string _s_AddUser_Input_LastName = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtLastName"; // ok2010
-		private const string _s_AddUser_Input_Email = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtEmail"; // ok2010
-		private const string _s_AddUser_Input_Address1 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtAddress1"; // ok2010
-		private const string _s_AddUser_Input_Address2 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtAddress2"; // ok2010
-		private const string _s_AddUser_Input_City = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtCity"; // ok2010
-		private const string _s_AddUser_Input_State = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtState"; // ok2010
-		private const string _s_AddUser_Input_Zip = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtPostalCode"; // ok2010
-													 
-		private const string _s_AddUser_Input_PhoneNum1 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl00$txtPhone"; // ok2010a
-		private const string _s_AddUser_Input_PhoneNum2 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl01$txtPhone"; // ok2010a
-		private const string _s_AddUser_Input_PhoneNum3 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl02$txtPhone"; // ok2010a
-		private const string _s_AddUser_Input_PhoneType1 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl00$ddlPhone"; // ok2010a
-		private const string _s_AddUser_Input_PhoneType2 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl01$ddlPhone"; // ok2010a
-		private const string _s_AddUser_Input_PhoneType3 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl02$ddlPhone"; // ok2010a
-		private const string _sid_AddUser_Input_PhoneType1 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_rptPhones_ctl00_ddlPhone"; // ok2010a
-		private const string _sid_AddUser_Input_PhoneType2 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_rptPhones_ctl01_ddlPhone"; // ok2010a
-		private const string _sid_AddUser_Input_PhoneType3 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_rptPhones_ctl02_ddlPhone"; // ok2010a
+        // Add User links
+        private const string _s_AddUser_Input_FirstName = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtFirstName"; // ok2010
+        private const string _s_AddUser_Input_LastName = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtLastName"; // ok2010
+        private const string _s_AddUser_Input_Email = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtEmail"; // ok2010
+        private const string _s_AddUser_Input_Address1 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtAddress1"; // ok2010
+        private const string _s_AddUser_Input_Address2 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtAddress2"; // ok2010
+        private const string _s_AddUser_Input_City = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtCity"; // ok2010
+        private const string _s_AddUser_Input_State = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtState"; // ok2010
+        private const string _s_AddUser_Input_Zip = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$txtPostalCode"; // ok2010
 
-		private const string _sid_MiscFields_Button_Save = "ctl00_ContentHolder_pgeMiscFieldsEdit_navMiscFieldsEdit_btnSave"; // ok2010u
-		private const string _sid_MiscFields_Button_Cancel = "ctl00_ContentHolder_pgeMiscFieldsEdit_navMiscFieldsEdit_lnkCancel"; // ok2010u
+        private const string _s_AddUser_Input_PhoneNum1 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl00$txtPhone"; // ok2010a
+        private const string _s_AddUser_Input_PhoneNum2 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl01$txtPhone"; // ok2010a
+        private const string _s_AddUser_Input_PhoneNum3 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl02$txtPhone"; // ok2010a
+        private const string _s_AddUser_Input_PhoneType1 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl00$ddlPhone"; // ok2010a
+        private const string _s_AddUser_Input_PhoneType2 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl01$ddlPhone"; // ok2010a
+        private const string _s_AddUser_Input_PhoneType3 = "ctl00$ContentHolder$pgeUserAdd$conUserAdd$rptPhones$ctl02$ddlPhone"; // ok2010a
+        private const string _sid_AddUser_Input_PhoneType1 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_rptPhones_ctl00_ddlPhone"; // ok2010a
+        private const string _sid_AddUser_Input_PhoneType2 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_rptPhones_ctl01_ddlPhone"; // ok2010a
+        private const string _sid_AddUser_Input_PhoneType3 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_rptPhones_ctl02_ddlPhone"; // ok2010a
 
-		// phone types are Home, Work, Fax, Cellular, Pager, Security, Other
-		private const string _sid_AddUser_Button_Next = "ctl00_ContentHolder_pgeUserAdd_navUserAdd_btnNext"; // ok2010
-		private const string _sid_AddUser_Input_Address1 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_txtAddress1"; // ok2010
-		private const string _sid_AddUser_Input_IsActive = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_chkIsActive"; // ok2010
-		private const string _sid_AddUser_Button_Cancel = "ctl00_ContentHolder_pgeUserAdd_navUserAdd_lnkCancel"; // ok2010
-														   
-		// OfficialsView page
-		private const string _s_Page_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010
-		private const string _s_OfficialsView_Select_Filter = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$ddlFilter"; // ok2010
-		private const string _sid_OfficialsView_PrintRoster = "ctl00_ContentHolder_pgeOfficialsView_sbrReports_tskPrint"; // ok2010u
-    	private const string _sid_OfficialsView_ContentTable = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_dgOfficials"; // ok2013
+        // User Info Controls
+        private const string _s_EditUser_Email = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclEmails$rptEmail$ctl01$txtEmail"; // ok2016
+        private const string _s_EditUser_FirstName = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtFirstName"; // ok2016
+        private const string _s_EditUser_LastName = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtLastName"; // ok2016
+        private const string _s_EditUser_Address1 = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtAddress1"; // ok2016
+        private const string _s_EditUser_Address2 = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtAddress2"; // ok2016
+        private const string _s_EditUser_City = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtCity"; // ok2016
+        private const string _s_EditUser_State = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtState"; // ok2016
+        private const string _s_EditUser_PostalCode = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtPostalCode"; // ok2016
+        private const string _s_EditUser_OfficialNumber = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtOfficialNumber"; // ok2016
+        private const string _s_EditUser_DateOfBirth = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtDateOfBirth"; // ok2016
+        private const string _s_EditUser_DateJoined = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtDateJoined"; // ok2016
+        private const string _s_EditUser_GamesPerDay = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtGamesPerDay"; // ok2016
+        private const string _s_EditUser_GamesPerWeek = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtGamesPerWeek"; // ok2016
+        private const string _s_EditUser_GamesTotal = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtGamesTotal"; // ok2016
+        private const string _s_EditUser_WaitMinutes = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtWaitMinutes"; // ok2016
+
+
+        // PHONE CONTROLS
+        // format of control id is "ctl##" where ## is the line number starting at 1
+        private const string _s_EditUser_PhoneNumber_Prefix = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$"; // ok2016
+        private const string _s_EditUser_PhoneNumber_Suffix = "$txtPhone"; // ok2016
+        private const string _sid_EditUser_PhoneNumber_Prefix = "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_"; // ok 2016
+        private const string _sid_EditUser_PhoneNumber_Suffix = "_txtPhone"; // ok 2016
+        private const string _s_EditUser_PhoneType_Prefix = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$"; // ok2016
+        private const string _s_EditUser_PhoneType_Suffix = "$ddlPhoneType"; // ok2016
+        private const string _sid_EditUser_PhoneType_Prefix = "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_"; // ok2016
+        private const string _sid_EditUser_PhoneType_Suffix = "_ddlPhoneType"; // ok 2016
+        private const string _s_EditUser_PhoneCarrier_Prefix = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$"; // ok2016
+        private const string _s_EditUser_PhoneCarrier_Suffix = "$ddlCarrier"; // ok2016
+        private const string _sid_EditUser_PhoneCarrier_Prefix = "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_"; // ok 2016
+        private const string _sid_EditUser_PhoneCarrier_Suffix = "_ddlCarrier";
+
+        private const string _s_EditUser_PhonePublic_Prefix = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$";
+        private const string _s_EditUser_PhonePublic_Suffix = "$chkPublic";
+        private const string _sid_EditUser_PhonePublic_Prefix = "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_";
+        private const string _sid_EditUser_PhonePublic_Suffix = "_chkPublic";
+
+        private const string _sid_EditUser_PhoneNumber_AddNew = "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_ctl00_lnkAdd"; // ok2016
+
+        private const string _sid_MiscFields_Button_Save = "ctl00_ContentHolder_pgeMiscFieldsEdit_navMiscFieldsEdit_btnSave"; // ok2010u
+        private const string _sid_MiscFields_Button_Cancel = "ctl00_ContentHolder_pgeMiscFieldsEdit_navMiscFieldsEdit_lnkCancel"; // ok2010u
+
+        // phone types are Home, Work, Fax, Cellular, Pager, Security, Other
+        private const string _sid_AddUser_Button_Next = "ctl00_ContentHolder_pgeUserAdd_navUserAdd_btnNext"; // ok2010
+        private const string _sid_AddUser_Input_Address1 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_txtAddress1"; // ok2010
+        private const string _sid_AddUser_Input_IsActive = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_chkIsActive"; // ok2010
+        private const string _sid_AddUser_Button_Cancel = "ctl00_ContentHolder_pgeUserAdd_navUserAdd_lnkCancel"; // ok2010
+
+        // OfficialsView page
+        private const string _s_Page_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010
+        private const string _s_OfficialsView_Select_Filter = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$ddlFilter"; // ok2010
+        private const string _sid_OfficialsView_PrintRoster = "ctl00_ContentHolder_pgeOfficialsView_sbrReports_tskPrint"; // ok2010u
+        private const string _sid_OfficialsView_ContentTable = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_dgOfficials"; // ok2013
 
         private const string _s_OfficialsView_PaginationHrefPostbackSubstr = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$dgOfficials$ctl204$ctl"; // ok2014
 
-		// OfficialsEdit page
-		private const string _sid_OfficialsEdit_Button_Save = "ctl00_ContentHolder_pgeOfficialEdit_navOfficialEdit_btnSave"; // ok2010u
-		private const string _sid_OfficialsEdit_Button_Cancel = "ctl00_ContentHolder_pgeOfficialEdit_navOfficialEdit_lnkCancel"; // ok2010u
+        // OfficialsEdit page
+        private const string _sid_OfficialsEdit_Button_Save = "ctl00_ContentHolder_pgeOfficialEdit_navOfficialEdit_btnSave"; // ok2010u
+        private const string _sid_OfficialsEdit_Button_Cancel = "ctl00_ContentHolder_pgeOfficialEdit_navOfficialEdit_lnkCancel"; // ok2010u
 
-		// Roster print links
-		private const string _sid_RosterPrint_MergeStyle = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkMerge"; // ok2010u 
+        // Roster print links
+        private const string _sid_RosterPrint_MergeStyle = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkMerge"; // ok2010u 
 
-		private const string _s_RosterPrint_OfficialNumber = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkOfficialNumber"; // ok2010
-		private const string _s_RosterPrint_DateJoined = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkDateJoined"; // ok2010
-		private const string _s_RosterPrint_MiscFields = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkMiscFields"; // ok2010
-		private const string _s_RosterPrint_NonPublicPhone = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkIncludeNonPublic"; // ok2010
-		private const string _s_RosterPrint_NonPublicAddress = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkIncludeNonPublicAddress"; // ok2010
+        private const string _s_RosterPrint_OfficialNumber = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkOfficialNumber"; // ok2010
+        private const string _s_RosterPrint_DateJoined = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkDateJoined"; // ok2010
+        private const string _s_RosterPrint_MiscFields = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkMiscFields"; // ok2010
+        private const string _s_RosterPrint_NonPublicPhone = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkIncludeNonPublic"; // ok2010
+        private const string _s_RosterPrint_NonPublicAddress = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$chkIncludeNonPublicAddress"; // ok2010
 
-		private const string _sid_RosterPrint_OfficialNumber = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkOfficialNumber"; // ok2010
-		private const string _sid_RosterPrint_DateJoined = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkDateJoined"; // ok2010
-		private const string _sid_RosterPrint_MiscFields = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkMiscFields"; // ok2010
-		private const string _sid_RosterPrint_NonPublicPhone = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkIncludeNonPublic"; // ok2010
-		private const string _sid_RosterPrint_NonPublicAddress = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkIncludeNonPublicAddress"; // ok2010
-																  
-		private const string _sid_RosterPrint_BeginPrint = "ctl00_ContentHolder_pgeOfficialsView_navOfficialsView_btnBeginPrint"; // ok2010
+        private const string _sid_RosterPrint_OfficialNumber = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkOfficialNumber"; // ok2010
+        private const string _sid_RosterPrint_DateJoined = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkDateJoined"; // ok2010
+        private const string _sid_RosterPrint_MiscFields = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkMiscFields"; // ok2010
+        private const string _sid_RosterPrint_NonPublicPhone = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkIncludeNonPublic"; // ok2010
+        private const string _sid_RosterPrint_NonPublicAddress = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_chkIncludeNonPublicAddress"; // ok2010
 
-		// Ranks edit page
-		private const string _s_RanksEdit_Select_PosNames = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$ddlPosNames"; // ok2010
-		private const string _s_RanksEdit_Checkbox_Active = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$chkActive"; // ok2010
-		private const string _s_RanksEdit_Checkbox_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$chkRank"; // ok2010
-		private const string _s_RanksEdit_Select_NotRanked = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$lstNotRanked"; // ok2010
-		private const string _s_RanksEdit_Select_Ranked = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$lstRanked"; // ok2010
+        private const string _sid_RosterPrint_BeginPrint = "ctl00_ContentHolder_pgeOfficialsView_navOfficialsView_btnBeginPrint"; // ok2010
 
-		private const string _s_RanksEdit_Button_Unrank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnUnrank"; // ok2010
-		private const string _s_RanksEdit_Button_ReRank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnReRank"; // ok2010
-		private const string _s_RanksEdit_Button_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnRank"; // ok2010
-		private const string _s_RanksEdit_Input_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$txtRank"; // ok2010
+        // Ranks edit page
+        private const string _s_RanksEdit_Select_PosNames = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$ddlPosNames"; // ok2010
+        private const string _s_RanksEdit_Checkbox_Active = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$chkActive"; // ok2010
+        private const string _s_RanksEdit_Checkbox_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$chkRank"; // ok2010
+        private const string _s_RanksEdit_Select_NotRanked = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$lstNotRanked"; // ok2010
+        private const string _s_RanksEdit_Select_Ranked = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$lstRanked"; // ok2010
+
+        private const string _s_RanksEdit_Button_Unrank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnUnrank"; // ok2010
+        private const string _s_RanksEdit_Button_ReRank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnReRank"; // ok2010
+        private const string _s_RanksEdit_Button_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnRank"; // ok2010
+        private const string _s_RanksEdit_Input_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$txtRank"; // ok2010
 
         // Announcements page
-	    private const string _s_Announcements_Button_Edit_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";   // the control will be "ctl##"
-	    private const string _s_Announcements_Button_Edit_Suffix = "$btnEdit";
-	    private const string _s_Announcements_Checkbox_Assigners_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+        private const string _s_Announcements_Button_Edit_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+        private const string _s_Announcements_Button_Edit_Suffix = "$btnEdit";
+
+        private const string _s_Announcements_Checkbox_Assigners_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
+                             // the control will be "ctl##"
+
         private const string _s_Announcements_Checkbox_Assigners_Suffix = "$chkToAssigners_Edit";
-	    private const string _s_Announcements_Checkbox_Contacts_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+
+        private const string _s_Announcements_Checkbox_Contacts_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
+                             // the control will be "ctl##"
+
         private const string _s_Announcements_Checkbox_Contacts_Suffix = "$chkToContacts_Edit";
-	    private const string _s_Announcements_Select_Filters_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+
+        private const string _s_Announcements_Select_Filters_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
+                             // the control will be "ctl##"
+
         private const string _s_Announcements_Select_Filters_Suffix = "$ddlFilters";
-	    private const string _s_Announcements_Button_Save_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
+        private const string _s_Announcements_Button_Save_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
         private const string _s_Announcements_Button_Save_Suffix = "$btnSave";
 
-	    private const string _s_Announcements_Textarea_Text_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
-	    private const string _s_Announcements_Textarea_Text_Suffix = "$txtAnnouncement";
+        private const string _s_Announcements_Textarea_Text_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
+        private const string _s_Announcements_Textarea_Text_Suffix = "$txtAnnouncement";
 
         private const string _sid_Announcements_Button_Edit_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
-	    private const string _sid_Announcements_Button_Edit_Suffix = "_btnEdit";
+        private const string _sid_Announcements_Button_Edit_Suffix = "_btnEdit";
 
-	    private const string _sid_Announcements_Button_Save_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
-	    private const string _sid_Announcements_Button_Save_Suffix = "_btnSave";
+        private const string _sid_Announcements_Button_Save_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
+        private const string _sid_Announcements_Button_Save_Suffix = "_btnSave";
 
-	    private const string _sid_Login_Span_Type_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
-	    private const string _sid_Login_Span_Type_Suffix = "_lblType2";
+        private const string _sid_Login_Span_Type_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
+        private const string _sid_Login_Span_Type_Suffix = "_lblType2";
 
-	    private const string _sid_Login_Anchor_TypeLink_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
-	    private const string _sid_Login_Anchor_TypeLink_Suffix = "_UserTypeLink";
+        private const string _sid_Login_Anchor_TypeLink_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
+        private const string _sid_Login_Anchor_TypeLink_Suffix = "_UserTypeLink";
 
-#endregion
+        #endregion
 
         #region Controls
+
         private System.Windows.Forms.Button m_pbDownloadGames;
 
-	    private System.Windows.Forms.ContextMenu contextMenu1;
+        private System.Windows.Forms.ContextMenu contextMenu1;
         private System.Windows.Forms.MenuItem menuItem1;
-        private TextBox m_ebGameFile;
-        private Label label2;
-        private Label label3;
-        private TextBox m_ebUserID;
-        private Label label4;
-        private TextBox m_ebPassword;
         object Zero = 0;
         object EmptyString = "";
-        private Label label5;
-        private TextBox m_ebRoster;
         private Button button1;
         private GroupBox groupBox2;
         private RichTextBox m_recStatus;
@@ -184,11 +231,12 @@ namespace ArbWeb
         private Label m_lblSearchCriteria;
         private CheckBox m_cbShowBrowser;
         private Label label6;
-		
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+
         private Label label7;
         private Label label8;
         private Label label9;
@@ -206,11 +254,6 @@ namespace ArbWeb
         private CheckedListBox m_chlbxSportLevels;
         private CheckBox m_cbFilterLevel;
         private CheckBox m_cbTestEmail;
-        private TextBox m_ebGameCopy;
-        private TextBox m_ebRosterWorking;
-        private Label label13;
-        private Label label14;
-        private CheckBox m_cbTestOnly;
         private Button m_pbReload;
         private CheckBox m_cbRankOnly;
         private Label label15;
@@ -218,10 +261,6 @@ namespace ArbWeb
         private TextBox m_ebGameOutput;
         private Button m_pbGenGames;
         private CheckBox m_cbAddOfficialsOnly;
-        private Button m_pbBrowseGameFile;
-        private Button m_pbBrowseGameFile2;
-        private Button m_pbBrowseRoster;
-        private Button m_pbBrowseRoster2;
         private Button m_pbBrowseGamesReport;
         private Button m_pbBrowseAnalysis;
         private Button button3;
@@ -229,7 +268,6 @@ namespace ArbWeb
         private CheckBox m_cbFuzzyTimes;
         private CheckBox m_cbDatePivot;
         private CheckBox m_cbSplitSports;
-        private CheckBox m_cbLogToFile;
         private Label label18;
         private CheckedListBox m_chlbxRoster;
         private Button m_pbCreateRosterReport;
@@ -239,90 +277,85 @@ namespace ArbWeb
         private Label label19;
         private CheckBox m_cbLaunch;
         private CheckBox m_cbSetArbiterAnnounce;
+        private Button m_pbEditProfile;
+        private Button m_pbAddProfile;
+        private ComboBox m_cbxGameFilter;
+        private Button m_pbRefreshGameFilters;
+        private Button pbTestDownload;
+        private StatusBox.StatusRpt m_srpt;
 
-		private StatusBox.StatusRpt m_srpt;
         #endregion
 
         private void ThrowIfNot(bool f, string s)
-		{
-			if (!f)
-				throw new Exception(s);
-		}
+        {
+            if (!f)
+                throw new Exception(s);
+        }
 
-	    private bool m_fAutomateUpdateHelp = false;
-	    private List<string> m_plsAutomateIncludeSport = new List<string>();
-	    private string m_sAutomateDateStart = null;
+        private bool m_fAutomateUpdateHelp = false;
+        private List<string> m_plsAutomateIncludeSport = new List<string>();
+        private string m_sAutomateDateStart = null;
         private string m_sAutomateDateEnd = null;
-	    private bool m_fForceFutureGames = false;
+        private bool m_fForceFutureGames = false;
+
+        private Settings.SettingsElt[] m_rgrehe;
+        private Settings m_reh;
+
+        ArbWebControl m_awc;
+        bool m_fDontUpdateProfile;
+        bool m_fLoggedIn;
+        Roster m_rst;
+        CountsData m_gc;
+        private bool m_fAutomating = false;
+
+        #region Top Level Program Flow
 
         public bool FDispatchCmdLineSwitch(CmdLineSwitch cls, string sParam, object oClient, out string sError)
-	    {
-	        sError = null;
+        {
+            sError = null;
 
-	        if (cls.Switch.Length == 1)
-	            {
-	            switch (cls.Switch[0])
-	                {
-	                case 'H':
-	                    m_fAutomateUpdateHelp = true;
-	                    break;
-	                case 'F':
-	                    m_plsAutomateIncludeSport.Add(sParam);
-	                    break;
+            if (cls.Switch.Length == 1)
+                {
+                switch (cls.Switch[0])
+                    {
+                    case 'H':
+                        m_fAutomateUpdateHelp = true;
+                        break;
+                    case 'F':
+                        m_plsAutomateIncludeSport.Add(sParam);
+                        break;
                     case 'f':
-	                    m_fForceFutureGames = true;
-	                    break;
-	                default:
-	                    sError = String.Format("Unknown arg: '{0}'", cls.Switch);
-	                    return false;
-	                }
-	            return true;
-	            }
-	        if (cls.Switch == "DS")
-	            m_sAutomateDateStart = sParam;
-	        else if (cls.Switch == "DE")
-	            m_sAutomateDateEnd = sParam;
-	        else
-	            {
-	            sError = String.Format("Unknown arg: '{0}'", cls.Switch);
-	            return false;
-	            }
-	        return true;
-	    }
+                        m_fForceFutureGames = true;
+                        break;
+                    default:
+                        sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+                        return false;
+                    }
+                return true;
+                }
+            if (cls.Switch == "DS")
+                m_sAutomateDateStart = sParam;
+            else if (cls.Switch == "DE")
+                m_sAutomateDateEnd = sParam;
+            else
+                {
+                sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+                return false;
+                }
+            return true;
+        }
 
-	    /* E  H _  R E N D E R  H E A D I N G  L I N E */
-		/*----------------------------------------------------------------------------
-			%%Function: EH_RenderHeadingLine
-			%%Qualified: ArbWeb.AwMainForm.EH_RenderHeadingLine
-			%%Contact: rlittle
-			
-		----------------------------------------------------------------------------*/
-		private void EH_RenderHeadingLine(object sender, System.Windows.Forms.PaintEventArgs e)
-		{
-			Label lbl = (Label)sender;
-			string s = (string)lbl.Tag;
 
-			SizeF sf = e.Graphics.MeasureString(s, lbl.Font);
-			int nWidth = (int)sf.Width;
-			int nHeight = (int)sf.Height;
+        private StringBuilder m_sbUsage = null;
 
-			e.Graphics.DrawString(s, lbl.Font, new SolidBrush(Color.SlateBlue), 0, 0);// new System.Drawing.Point(0, (lbl.Width - nWidth) / 2));
-			e.Graphics.DrawLine(new Pen(new SolidBrush(Color.Gray), 1), 6 + nWidth + 1, (nHeight / 2), lbl.Width, (nHeight / 2));
+        void AppendUsageString(string s)
+        {
+            m_sbUsage.AppendLine(s);
+        }
 
-		}
+        #endregion 
 
-	    private Settings.SettingsElt[] m_rgreheProfile;
-        private Settings.SettingsElt[] m_rgrehe;
-		// ReHistory.ReHistElt[] m_rgreheProfile;
-		// ReHistory.ReHistElt[] m_rgrehe;
-	    private Settings m_rehProfile;
-	    private Settings m_reh;
-
-//		ReHistory m_rehProfile;
-//		ReHistory m_reh;
-		ArbWebControl m_awc;
-		bool m_fDontUpdateProfile;
-
+        #region Form Support
         /* E N A B L E  A D M I N  F U N C T I O N S */
         /*----------------------------------------------------------------------------
         	%%Function: EnableAdminFunctions
@@ -335,7 +368,6 @@ namespace ArbWeb
             bool fAdmin = (String.Compare(System.Environment.MachineName, "majestix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
-
         /* A W  M A I N  F O R M */
         /*----------------------------------------------------------------------------
         	%%Function: AwMainForm
@@ -344,85 +376,64 @@ namespace ArbWeb
         	
         ----------------------------------------------------------------------------*/
         public AwMainForm(string[] rgsCmdLine)
-		{
+        {
             //
-			// Required for Windows Form Designer support
-			//
-			m_plCursor = new List<Cursor>();
+            // Required for Windows Form Designer support
+            //
+            m_plCursor = new List<Cursor>();
 
-			InitializeComponent();
+            InitializeComponent();
 
-			m_srpt = new StatusBox.StatusRpt(m_recStatus);
-			m_awc = new ArbWebControl(m_srpt);
-			m_fDontUpdateProfile = true;
-			RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
+            m_srpt = new StatusBox.StatusRpt(m_recStatus);
+            m_awc = new ArbWebControl(m_srpt);
+            m_fDontUpdateProfile = true;
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
 
             if (rk == null)
                 rk = Registry.CurrentUser.CreateSubKey("Software\\Thetasoft\\ArbWeb");
-                
-			string []rgs = rk.GetSubKeyNames();
 
-			foreach(string s in rgs)
-				{
-				m_cbxProfile.Items.Add(s);
-				}
-			m_rgreheProfile = new[] 
-				{ 
-					new Settings.SettingsElt("Login", Settings.Type.Str, m_ebUserID, ""), 
-					new Settings.SettingsElt("Password", Settings.Type.Str, m_ebPassword, ""), 
-					new Settings.SettingsElt("GameFile", Settings.Type.Str, m_ebGameFile, ""), 
-					new Settings.SettingsElt("Roster", Settings.Type.Str, m_ebRoster, ""),
-					new Settings.SettingsElt("GameFileCopy", Settings.Type.Str, m_ebGameCopy, ""), 
-					new Settings.SettingsElt("RosterCopy", Settings.Type.Str, m_ebRosterWorking, ""),
-					new Settings.SettingsElt("GameOutput", Settings.Type.Str, m_ebGameOutput, ""),
-					new Settings.SettingsElt("OutputFile", Settings.Type.Str, m_ebOutputFile, ""),
-					new Settings.SettingsElt("IncludeCanceled", Settings.Type.Bool, m_cbIncludeCanceled, 0),
-					new Settings.SettingsElt("ShowBrowser", Settings.Type.Bool, m_cbShowBrowser, 0), 
-					new Settings.SettingsElt("LastSlotStartDate", Settings.Type.Dttm, m_dtpStart, ""),
-					new Settings.SettingsElt("LastSlotEndDate", Settings.Type.Dttm, m_dtpEnd, ""),
-					new Settings.SettingsElt("LastOpenSlotDetail", Settings.Type.Bool, m_cbOpenSlotDetail, 0),
-					new Settings.SettingsElt("LastGroupTimeSlots", Settings.Type.Bool, m_cbFuzzyTimes, 0),
-					new Settings.SettingsElt("LastTestEmail", Settings.Type.Bool, m_cbTestEmail, 0),
-					new Settings.SettingsElt("AddOfficialsOnly", Settings.Type.Bool, m_cbAddOfficialsOnly, 0),
-					new Settings.SettingsElt("AfiliationIndex", Settings.Type.Int, m_ebAffiliationIndex, 0),
-					new Settings.SettingsElt("LastSplitSports", Settings.Type.Bool, m_cbSplitSports, 0),
-					new Settings.SettingsElt("LastPivotDate", Settings.Type.Bool, m_cbDatePivot, 0),
-					new Settings.SettingsElt("LastLogToFile", Settings.Type.Bool, m_cbLogToFile, 0),
-					new Settings.SettingsElt("FilterMailMergeByRank", Settings.Type.Bool, m_cbFilterRank, 0),
-					new Settings.SettingsElt("DownloadOnlyFutureGames", Settings.Type.Bool, m_cbFutureOnly, 0),
-                    new Settings.SettingsElt("LaunchMailMergeDoc", Settings.Type.Bool, m_cbLaunch, 0),
-                    new Settings.SettingsElt("SetArbiterAnnouncement", Settings.Type.Bool, m_cbSetArbiterAnnounce, 0),
-				};
+            string[] rgs = rk.GetSubKeyNames();
 
-			m_rgrehe = new []
-				{
-					new Settings.SettingsElt("LastProfile", Settings.Type.Str, m_cbxProfile, "")
-				};
+            foreach (string s in rgs)
+                {
+                m_cbxProfile.Items.Add(s);
+                }
 
+            m_rgrehe = new[]
+                           {
+                               new Settings.SettingsElt("LastProfile", Settings.Type.Str, m_cbxProfile, "")
+                           };
+
+            m_reh = new Settings(m_rgrehe, "Software\\Thetasoft\\ArbWeb", "root");
+            m_reh.Load();
+
+            m_pr = new Profile();
+            m_pr.Load(m_cbxProfile.Text);
             SetupLogToFile();
 
-			m_reh = new Settings(m_rgrehe, "Software\\Thetasoft\\ArbWeb", "root");
-			m_reh.Load();
+            SetUIForProfile(m_pr);
 
+            // load MRU from registry
+            m_fDontUpdateProfile = false;
+            EnableControls();
 
-			m_rehProfile = new Settings(m_rgreheProfile, String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_cbxProfile.Text), m_cbxProfile.Text);
-
-			// load MRU from registry
-			m_rehProfile.Load();
-			m_fDontUpdateProfile = false;
-			EnableControls();
-
-			if (m_cbShowBrowser.Checked)
-				m_awc.Show();
+            if (m_cbShowBrowser.Checked)
+                m_awc.Show();
 
             CmdLineConfig clcfg = new CmdLineConfig(new CmdLineSwitch[]
-                {
-                new CmdLineSwitch("H", true /*fToggle*/, false /*fReq*/, "Update arbiter HELP NEEDED (includes downloading games, calculating slots). Requires -DS and -DE.", "help announce", null),
-                new CmdLineSwitch("DS", false /*fToggle*/, false /*fReq*/, "Start date for slot calculation (required if -H specified)", "date start", null),
-                new CmdLineSwitch("DE", false /*fToggle*/, false /*fReq*/, "End date for slot calculation (required if -H specified)", "date end", null),
-                new CmdLineSwitch("F", false /*fToggle*/, false /*fReq*/, "Check this item in the Game/Slot filter", "Sport filter", null),
-                new CmdLineSwitch("f", true /*fToggle*/, false /*fReq*/, "Force the games download to only download future games", "Future Games Only", null),
-                });
+                                                        {
+                                                            new CmdLineSwitch("H", true /*fToggle*/, false /*fReq*/,
+                                                                              "Update arbiter HELP NEEDED (includes downloading games, calculating slots). Requires -DS and -DE.",
+                                                                              "help announce", null),
+                                                            new CmdLineSwitch("DS", false /*fToggle*/, false /*fReq*/, "Start date for slot calculation (required if -H specified)",
+                                                                              "date start", null),
+                                                            new CmdLineSwitch("DE", false /*fToggle*/, false /*fReq*/, "End date for slot calculation (required if -H specified)",
+                                                                              "date end", null),
+                                                            new CmdLineSwitch("F", false /*fToggle*/, false /*fReq*/, "Check this item in the Game/Slot filter", "Sport filter",
+                                                                              null),
+                                                            new CmdLineSwitch("f", true /*fToggle*/, false /*fReq*/, "Force the games download to only download future games",
+                                                                              "Future Games Only", null),
+                                                        });
 
             CmdLine cl = new CmdLine(clcfg);
             string sError = null;
@@ -456,57 +467,51 @@ namespace ArbWeb
                     if (m_fForceFutureGames)
                         m_cbFutureOnly.Checked = true;
 
-                    QueueUIOp(new DelayedUIOpDel(DoDownloadGames), new object[]{null, null});
-                    QueueUIOp(new DelayedUIOpDel(CalcOpenSlots), new object[]{null, null});
-                    QueueUIOp(new DelayedUIOpDel(DoCheckSportListboxes), new object[]{null, null});
-                    QueueUIOp(new DelayedUIOpDel(GenMailMergeMail), new object[]{null, null});
-                    QueueUIOp(new DelayedUIOpDel(DoExitApp), new object[]{null, null});
+                    QueueUIOp(new DelayedUIOpDel(DoDownloadGames), new object[] {null, null});
+                    QueueUIOp(new DelayedUIOpDel(CalcOpenSlots), new object[] {null, null});
+                    QueueUIOp(new DelayedUIOpDel(DoCheckSportListboxes), new object[] {null, null});
+                    QueueUIOp(new DelayedUIOpDel(GenMailMergeMail), new object[] {null, null});
+                    QueueUIOp(new DelayedUIOpDel(DoExitApp), new object[] {null, null});
 
                     DoPendingQueueUIOp();
                     }
-            }
-		}
-
-	    private StringBuilder m_sbUsage = null;
-
-        void AppendUsageString(string s)
-        {
-            m_sbUsage.AppendLine(s);
+                }
         }
+        private void DoCheckSportListboxes(object sender, EventArgs e)
+        {
+            if (m_plsAutomateIncludeSport.Count == 0)
+                return;
 
-	    private void DoCheckSportListboxes(object sender, EventArgs e)
-	    {
-	        if (m_plsAutomateIncludeSport.Count == 0)
-	            return;
-
-	        m_cbFilterSport.Checked = true;
-	        EnableControls();
+            m_cbFilterSport.Checked = true;
+            EnableControls();
 
             // first, uncheck everone
-	        for (int i = 0; i < m_chlbxSports.Items.Count; i++)
-	            {
-	            m_chlbxSports.SetItemChecked(i, false);
-	            }
-	        
-	        foreach (string s in m_plsAutomateIncludeSport)
-	            {
-	            // find the item in the listbox
-	            for (int i = 0; i < m_chlbxSports.Items.Count; i++)
-	                {
-	                string sItem = (string) m_chlbxSports.Items[i];
+            for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+                {
+                m_chlbxSports.SetItemChecked(i, false);
+                }
 
-	                if (sItem.Contains(s))
-	                    m_chlbxSports.SetItemChecked(i, true);
-	                }
-	            }
-	        DoPendingQueueUIOp();
-	    }
+            foreach (string s in m_plsAutomateIncludeSport)
+                {
+                // find the item in the listbox
+                for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+                    {
+                    string sItem = (string) m_chlbxSports.Items[i];
 
-	    void DoExitApp(object sender, EventArgs e)
+                    if (sItem.Contains(s))
+                        m_chlbxSports.SetItemChecked(i, true);
+                    }
+                }
+            DoPendingQueueUIOp();
+        }
+
+        void DoExitApp(object sender, EventArgs e)
         {
             this.Close();
         }
-                delegate void DelayedUIOpDel(object sender, EventArgs e);
+
+        #region Queued UI Op
+        delegate void DelayedUIOpDel(object sender, EventArgs e);
 
         struct QueuedUIOp
         {
@@ -520,7 +525,7 @@ namespace ArbWeb
             }
         }
 
-	    private delegate void QueueUIOpDel(DelayedUIOpDel del, object[] rgo);
+        private delegate void QueueUIOpDel(DelayedUIOpDel del, object[] rgo);
 
         void DoQueueUIOp(DelayedUIOpDel del, object[] rgo)
         {
@@ -537,7 +542,7 @@ namespace ArbWeb
                 DoQueueUIOp(del, rgo);
         }
 
-	    private delegate void DoPendingQueueUIOpDel( );
+        private delegate void DoPendingQueueUIOpDel();
 
         void DoDoPendingQueueUIOp()
         {
@@ -546,7 +551,7 @@ namespace ArbWeb
                 QueuedUIOp qui = plqui[0];
 
                 plqui.RemoveAt(0);
-                qui.del(qui.rgo[0], (EventArgs)qui.rgo[1]);
+                qui.del(qui.rgo[0], (EventArgs) qui.rgo[1]);
                 }
         }
 
@@ -560,42 +565,92 @@ namespace ArbWeb
 
 
 
-	    private List<QueuedUIOp> plqui = new List<QueuedUIOp>();
+        private List<QueuedUIOp> plqui = new List<QueuedUIOp>();
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if (components != null) 
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
 
-		#region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #endregion
+
+
+        List<Cursor> m_plCursor;
+
+        private delegate void PushCursorDel(Cursor crs);
+
+        private void DoPushCursor(Cursor crs)
+        {
+            m_plCursor.Add(this.Cursor);
+            this.Cursor = crs;
+        }
+
+
+        /* P U S H  C U R S O R */
+        /*----------------------------------------------------------------------------
+        	%%Function: PushCursor
+        	%%Qualified: ArbWeb.AwMainForm.PushCursor
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        void PushCursor(Cursor crs)
+        {
+            if (this.InvokeRequired)
+                this.BeginInvoke(new PushCursorDel(DoPushCursor), crs);
+            else
+                DoPushCursor(crs);
+        }
+
+        private delegate void PopCursorDel();
+
+        void DoPopCursor()
+        {
+            if (m_plCursor.Count > 0)
+                {
+                this.Cursor = m_plCursor[m_plCursor.Count - 1];
+                m_plCursor.RemoveAt(m_plCursor.Count - 1);
+                }
+        }
+        /* P O P  C U R S O R */
+        /*----------------------------------------------------------------------------
+        	%%Function: PopCursor
+        	%%Qualified: ArbWeb.AwMainForm.PopCursor
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        void PopCursor()
+        {
+            if (this.InvokeRequired)
+                this.BeginInvoke(new PopCursorDel(DoPopCursor));
+            else
+                DoPopCursor();
+        }
+        
+        #endregion
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                {
+                if (components != null)
+                    {
+                    components.Dispose();
+                    }
+                }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.Windows.Forms.Label label17;
             this.m_pbDownloadGames = new System.Windows.Forms.Button();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
             this.menuItem1 = new System.Windows.Forms.MenuItem();
-            this.m_ebGameFile = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.m_ebUserID = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.m_ebPassword = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.m_ebRoster = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.m_recStatus = new System.Windows.Forms.RichTextBox();
@@ -625,11 +680,6 @@ namespace ArbWeb
             this.m_chlbxSportLevels = new System.Windows.Forms.CheckedListBox();
             this.m_cbFilterLevel = new System.Windows.Forms.CheckBox();
             this.m_cbTestEmail = new System.Windows.Forms.CheckBox();
-            this.m_ebGameCopy = new System.Windows.Forms.TextBox();
-            this.m_ebRosterWorking = new System.Windows.Forms.TextBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.m_cbTestOnly = new System.Windows.Forms.CheckBox();
             this.m_pbReload = new System.Windows.Forms.Button();
             this.m_cbRankOnly = new System.Windows.Forms.CheckBox();
             this.label15 = new System.Windows.Forms.Label();
@@ -637,10 +687,6 @@ namespace ArbWeb
             this.m_ebGameOutput = new System.Windows.Forms.TextBox();
             this.m_pbGenGames = new System.Windows.Forms.Button();
             this.m_cbAddOfficialsOnly = new System.Windows.Forms.CheckBox();
-            this.m_pbBrowseGameFile = new System.Windows.Forms.Button();
-            this.m_pbBrowseGameFile2 = new System.Windows.Forms.Button();
-            this.m_pbBrowseRoster = new System.Windows.Forms.Button();
-            this.m_pbBrowseRoster2 = new System.Windows.Forms.Button();
             this.m_pbBrowseGamesReport = new System.Windows.Forms.Button();
             this.m_pbBrowseAnalysis = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
@@ -648,7 +694,6 @@ namespace ArbWeb
             this.m_cbFuzzyTimes = new System.Windows.Forms.CheckBox();
             this.m_cbDatePivot = new System.Windows.Forms.CheckBox();
             this.m_cbSplitSports = new System.Windows.Forms.CheckBox();
-            this.m_cbLogToFile = new System.Windows.Forms.CheckBox();
             this.label18 = new System.Windows.Forms.Label();
             this.m_chlbxRoster = new System.Windows.Forms.CheckedListBox();
             this.m_pbCreateRosterReport = new System.Windows.Forms.Button();
@@ -658,6 +703,11 @@ namespace ArbWeb
             this.label19 = new System.Windows.Forms.Label();
             this.m_cbLaunch = new System.Windows.Forms.CheckBox();
             this.m_cbSetArbiterAnnounce = new System.Windows.Forms.CheckBox();
+            this.m_pbEditProfile = new System.Windows.Forms.Button();
+            this.m_pbAddProfile = new System.Windows.Forms.Button();
+            this.m_cbxGameFilter = new System.Windows.Forms.ComboBox();
+            this.m_pbRefreshGameFilters = new System.Windows.Forms.Button();
+            this.pbTestDownload = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -674,7 +724,7 @@ namespace ArbWeb
             // m_pbDownloadGames
             // 
             this.m_pbDownloadGames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbDownloadGames.Location = new System.Drawing.Point(589, 28);
+            this.m_pbDownloadGames.Location = new System.Drawing.Point(589, 77);
             this.m_pbDownloadGames.Name = "m_pbDownloadGames";
             this.m_pbDownloadGames.Size = new System.Drawing.Size(110, 24);
             this.m_pbDownloadGames.TabIndex = 14;
@@ -692,74 +742,10 @@ namespace ArbWeb
             this.menuItem1.Index = 0;
             this.menuItem1.Text = "Paste";
             // 
-            // m_ebGameFile
-            // 
-            this.m_ebGameFile.Location = new System.Drawing.Point(76, 55);
-            this.m_ebGameFile.Name = "m_ebGameFile";
-            this.m_ebGameFile.Size = new System.Drawing.Size(208, 20);
-            this.m_ebGameFile.TabIndex = 18;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 59);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(54, 13);
-            this.label2.TabIndex = 19;
-            this.label2.Text = "Game File";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 32);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(43, 13);
-            this.label3.TabIndex = 21;
-            this.label3.Text = "User ID";
-            // 
-            // m_ebUserID
-            // 
-            this.m_ebUserID.Location = new System.Drawing.Point(76, 29);
-            this.m_ebUserID.Name = "m_ebUserID";
-            this.m_ebUserID.Size = new System.Drawing.Size(109, 20);
-            this.m_ebUserID.TabIndex = 20;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(192, 32);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(53, 13);
-            this.label4.TabIndex = 23;
-            this.label4.Text = "Password";
-            // 
-            // m_ebPassword
-            // 
-            this.m_ebPassword.Location = new System.Drawing.Point(252, 29);
-            this.m_ebPassword.Name = "m_ebPassword";
-            this.m_ebPassword.Size = new System.Drawing.Size(99, 20);
-            this.m_ebPassword.TabIndex = 22;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(310, 62);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(63, 13);
-            this.label5.TabIndex = 25;
-            this.label5.Text = "Ump Roster";
-            // 
-            // m_ebRoster
-            // 
-            this.m_ebRoster.Location = new System.Drawing.Point(379, 59);
-            this.m_ebRoster.Name = "m_ebRoster";
-            this.m_ebRoster.Size = new System.Drawing.Size(175, 20);
-            this.m_ebRoster.TabIndex = 24;
-            // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(589, 52);
+            this.button1.Location = new System.Drawing.Point(589, 26);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(110, 24);
             this.button1.TabIndex = 26;
@@ -854,7 +840,6 @@ namespace ArbWeb
             this.m_lblSearchCriteria.Size = new System.Drawing.Size(688, 16);
             this.m_lblSearchCriteria.TabIndex = 34;
             this.m_lblSearchCriteria.Tag = "Shared Configuration";
-            this.m_lblSearchCriteria.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // m_cbShowBrowser
             // 
@@ -876,7 +861,6 @@ namespace ArbWeb
             this.label6.Size = new System.Drawing.Size(688, 19);
             this.label6.TabIndex = 36;
             this.label6.Tag = "Games Worked Analysis";
-            this.label6.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // label7
             // 
@@ -887,7 +871,6 @@ namespace ArbWeb
             this.label7.Size = new System.Drawing.Size(688, 19);
             this.label7.TabIndex = 37;
             this.label7.Tag = "Open Slot Reporting";
-            this.label7.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // label8
             // 
@@ -955,7 +938,7 @@ namespace ArbWeb
             // m_cbxProfile
             // 
             this.m_cbxProfile.FormattingEnabled = true;
-            this.m_cbxProfile.Location = new System.Drawing.Point(406, 28);
+            this.m_cbxProfile.Location = new System.Drawing.Point(56, 28);
             this.m_cbxProfile.Name = "m_cbxProfile";
             this.m_cbxProfile.Size = new System.Drawing.Size(143, 21);
             this.m_cbxProfile.TabIndex = 47;
@@ -965,7 +948,7 @@ namespace ArbWeb
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(364, 32);
+            this.label11.Location = new System.Drawing.Point(14, 32);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(36, 13);
             this.label11.TabIndex = 48;
@@ -990,7 +973,6 @@ namespace ArbWeb
             this.label12.Size = new System.Drawing.Size(662, 19);
             this.label12.TabIndex = 50;
             this.label12.Tag = "Slot reporting";
-            this.label12.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // m_cbFilterSport
             // 
@@ -1043,48 +1025,6 @@ namespace ArbWeb
             this.m_cbTestEmail.Text = "Generate test email";
             this.m_cbTestEmail.UseVisualStyleBackColor = true;
             // 
-            // m_ebGameCopy
-            // 
-            this.m_ebGameCopy.Location = new System.Drawing.Point(76, 78);
-            this.m_ebGameCopy.Name = "m_ebGameCopy";
-            this.m_ebGameCopy.Size = new System.Drawing.Size(208, 20);
-            this.m_ebGameCopy.TabIndex = 56;
-            // 
-            // m_ebRosterWorking
-            // 
-            this.m_ebRosterWorking.Location = new System.Drawing.Point(379, 82);
-            this.m_ebRosterWorking.Name = "m_ebRosterWorking";
-            this.m_ebRosterWorking.Size = new System.Drawing.Size(175, 20);
-            this.m_ebRosterWorking.TabIndex = 57;
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(11, 81);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(59, 13);
-            this.label13.TabIndex = 58;
-            this.label13.Text = "  (Working)";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(311, 85);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(59, 13);
-            this.label14.TabIndex = 59;
-            this.label14.Text = "  (Working)";
-            // 
-            // m_cbTestOnly
-            // 
-            this.m_cbTestOnly.AutoSize = true;
-            this.m_cbTestOnly.Location = new System.Drawing.Point(227, 106);
-            this.m_cbTestOnly.Name = "m_cbTestOnly";
-            this.m_cbTestOnly.Size = new System.Drawing.Size(130, 17);
-            this.m_cbTestOnly.TabIndex = 60;
-            this.m_cbTestOnly.Text = "TEST Only (1 op only)";
-            this.m_cbTestOnly.UseVisualStyleBackColor = true;
-            // 
             // m_pbReload
             // 
             this.m_pbReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -1098,7 +1038,7 @@ namespace ArbWeb
             // m_cbRankOnly
             // 
             this.m_cbRankOnly.AutoSize = true;
-            this.m_cbRankOnly.Location = new System.Drawing.Point(363, 106);
+            this.m_cbRankOnly.Location = new System.Drawing.Point(227, 106);
             this.m_cbRankOnly.Name = "m_cbRankOnly";
             this.m_cbRankOnly.Size = new System.Drawing.Size(132, 17);
             this.m_cbRankOnly.TabIndex = 62;
@@ -1114,7 +1054,6 @@ namespace ArbWeb
             this.label15.Size = new System.Drawing.Size(688, 19);
             this.label15.TabIndex = 63;
             this.label15.Tag = "Game Reporting";
-            this.label15.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // label16
             // 
@@ -1145,60 +1084,12 @@ namespace ArbWeb
             // m_cbAddOfficialsOnly
             // 
             this.m_cbAddOfficialsOnly.AutoSize = true;
-            this.m_cbAddOfficialsOnly.Location = new System.Drawing.Point(502, 106);
+            this.m_cbAddOfficialsOnly.Location = new System.Drawing.Point(361, 106);
             this.m_cbAddOfficialsOnly.Name = "m_cbAddOfficialsOnly";
             this.m_cbAddOfficialsOnly.Size = new System.Drawing.Size(149, 17);
             this.m_cbAddOfficialsOnly.TabIndex = 67;
             this.m_cbAddOfficialsOnly.Text = "Upload New Officials Only";
             this.m_cbAddOfficialsOnly.UseVisualStyleBackColor = true;
-            // 
-            // m_pbBrowseGameFile
-            // 
-            this.m_pbBrowseGameFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbBrowseGameFile.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile.Location = new System.Drawing.Point(257, 61);
-            this.m_pbBrowseGameFile.Name = "m_pbBrowseGameFile";
-            this.m_pbBrowseGameFile.Size = new System.Drawing.Size(23, 15);
-            this.m_pbBrowseGameFile.TabIndex = 68;
-            this.m_pbBrowseGameFile.Tag = ArbWeb.AwMainForm.FNC.GameFile;
-            this.m_pbBrowseGameFile.Text = "...";
-            this.m_pbBrowseGameFile.Click += new System.EventHandler(this.DoBrowseOpen);
-            // 
-            // m_pbBrowseGameFile2
-            // 
-            this.m_pbBrowseGameFile2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbBrowseGameFile2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(258, 83);
-            this.m_pbBrowseGameFile2.Name = "m_pbBrowseGameFile2";
-            this.m_pbBrowseGameFile2.Size = new System.Drawing.Size(23, 15);
-            this.m_pbBrowseGameFile2.TabIndex = 69;
-            this.m_pbBrowseGameFile2.Tag = ArbWeb.AwMainForm.FNC.GameFile2;
-            this.m_pbBrowseGameFile2.Text = "...";
-            this.m_pbBrowseGameFile2.Click += new System.EventHandler(this.DoBrowseOpen);
-            // 
-            // m_pbBrowseRoster
-            // 
-            this.m_pbBrowseRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbBrowseRoster.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster.Location = new System.Drawing.Point(527, 64);
-            this.m_pbBrowseRoster.Name = "m_pbBrowseRoster";
-            this.m_pbBrowseRoster.Size = new System.Drawing.Size(23, 15);
-            this.m_pbBrowseRoster.TabIndex = 70;
-            this.m_pbBrowseRoster.Tag = ArbWeb.AwMainForm.FNC.RosterFile;
-            this.m_pbBrowseRoster.Text = "...";
-            this.m_pbBrowseRoster.Click += new System.EventHandler(this.DoBrowseOpen);
-            // 
-            // m_pbBrowseRoster2
-            // 
-            this.m_pbBrowseRoster2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbBrowseRoster2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster2.Location = new System.Drawing.Point(527, 87);
-            this.m_pbBrowseRoster2.Name = "m_pbBrowseRoster2";
-            this.m_pbBrowseRoster2.Size = new System.Drawing.Size(23, 15);
-            this.m_pbBrowseRoster2.TabIndex = 71;
-            this.m_pbBrowseRoster2.Tag = ArbWeb.AwMainForm.FNC.RosterFile2;
-            this.m_pbBrowseRoster2.Text = "...";
-            this.m_pbBrowseRoster2.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
             // m_pbBrowseGamesReport
             // 
@@ -1208,7 +1099,7 @@ namespace ArbWeb
             this.m_pbBrowseGamesReport.Name = "m_pbBrowseGamesReport";
             this.m_pbBrowseGamesReport.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseGamesReport.TabIndex = 72;
-            this.m_pbBrowseGamesReport.Tag = ArbWeb.AwMainForm.FNC.ReportFile;
+            this.m_pbBrowseGamesReport.Tag = ArbWeb.EditProfile.FNC.ReportFile;
             this.m_pbBrowseGamesReport.Text = "...";
             this.m_pbBrowseGamesReport.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
@@ -1220,14 +1111,14 @@ namespace ArbWeb
             this.m_pbBrowseAnalysis.Name = "m_pbBrowseAnalysis";
             this.m_pbBrowseAnalysis.Size = new System.Drawing.Size(23, 15);
             this.m_pbBrowseAnalysis.TabIndex = 73;
-            this.m_pbBrowseAnalysis.Tag = ArbWeb.AwMainForm.FNC.AnalysisFile;
+            this.m_pbBrowseAnalysis.Tag = ArbWeb.EditProfile.FNC.AnalysisFile;
             this.m_pbBrowseAnalysis.Text = "...";
             this.m_pbBrowseAnalysis.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
             // button3
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(589, 76);
+            this.button3.Location = new System.Drawing.Point(589, 51);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(110, 24);
             this.button3.TabIndex = 74;
@@ -1273,17 +1164,6 @@ namespace ArbWeb
             this.m_cbSplitSports.Text = "Automatic Softball/Baseball";
             this.m_cbSplitSports.UseVisualStyleBackColor = true;
             // 
-            // m_cbLogToFile
-            // 
-            this.m_cbLogToFile.AutoSize = true;
-            this.m_cbLogToFile.Location = new System.Drawing.Point(654, 106);
-            this.m_cbLogToFile.Name = "m_cbLogToFile";
-            this.m_cbLogToFile.Size = new System.Drawing.Size(72, 17);
-            this.m_cbLogToFile.TabIndex = 81;
-            this.m_cbLogToFile.Text = "Log to file";
-            this.m_cbLogToFile.UseVisualStyleBackColor = true;
-            this.m_cbLogToFile.CheckedChanged += new System.EventHandler(this.m_cbLogToFile_CheckedChanged);
-            // 
             // label18
             // 
             this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -1293,7 +1173,6 @@ namespace ArbWeb
             this.label18.Size = new System.Drawing.Size(662, 19);
             this.label18.TabIndex = 82;
             this.label18.Tag = "Site roster report";
-            this.label18.Paint += new System.Windows.Forms.PaintEventHandler(this.EH_RenderHeadingLine);
             // 
             // m_chlbxRoster
             // 
@@ -1374,10 +1253,67 @@ namespace ArbWeb
             this.m_cbSetArbiterAnnounce.Text = "Set Arbiter Announce";
             this.m_cbSetArbiterAnnounce.UseVisualStyleBackColor = true;
             // 
+            // m_pbEditProfile
+            // 
+            this.m_pbEditProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbEditProfile.Location = new System.Drawing.Point(217, 25);
+            this.m_pbEditProfile.Name = "m_pbEditProfile";
+            this.m_pbEditProfile.Size = new System.Drawing.Size(110, 24);
+            this.m_pbEditProfile.TabIndex = 91;
+            this.m_pbEditProfile.Text = "Edit Profile";
+            this.m_pbEditProfile.Click += new System.EventHandler(this.EditProfile);
+            // 
+            // m_pbAddProfile
+            // 
+            this.m_pbAddProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbAddProfile.Location = new System.Drawing.Point(334, 26);
+            this.m_pbAddProfile.Name = "m_pbAddProfile";
+            this.m_pbAddProfile.Size = new System.Drawing.Size(110, 24);
+            this.m_pbAddProfile.TabIndex = 92;
+            this.m_pbAddProfile.Text = "Add Profile";
+            this.m_pbAddProfile.Click += new System.EventHandler(this.AddProfile);
+            // 
+            // m_cbxGameFilter
+            // 
+            this.m_cbxGameFilter.FormattingEnabled = true;
+            this.m_cbxGameFilter.Location = new System.Drawing.Point(421, 77);
+            this.m_cbxGameFilter.Name = "m_cbxGameFilter";
+            this.m_cbxGameFilter.Size = new System.Drawing.Size(130, 21);
+            this.m_cbxGameFilter.TabIndex = 93;
+            // 
+            // m_pbRefreshGameFilters
+            // 
+            this.m_pbRefreshGameFilters.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.m_pbRefreshGameFilters.Location = new System.Drawing.Point(554, 73);
+            this.m_pbRefreshGameFilters.Margin = new System.Windows.Forms.Padding(0);
+            this.m_pbRefreshGameFilters.Name = "m_pbRefreshGameFilters";
+            this.m_pbRefreshGameFilters.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.m_pbRefreshGameFilters.Size = new System.Drawing.Size(29, 30);
+            this.m_pbRefreshGameFilters.TabIndex = 94;
+            this.m_pbRefreshGameFilters.Text = "🔁";
+            this.m_pbRefreshGameFilters.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.m_pbRefreshGameFilters.UseVisualStyleBackColor = true;
+            this.m_pbRefreshGameFilters.Click += new System.EventHandler(this.RefreshGameFilters);
+            // 
+            // pbTestDownload
+            // 
+            this.pbTestDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbTestDownload.Location = new System.Drawing.Point(56, 55);
+            this.pbTestDownload.Name = "pbTestDownload";
+            this.pbTestDownload.Size = new System.Drawing.Size(110, 24);
+            this.pbTestDownload.TabIndex = 95;
+            this.pbTestDownload.Text = "Test Download";
+            this.pbTestDownload.Click += new System.EventHandler(this.DoTestDownload);
+            // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
             this.ClientSize = new System.Drawing.Size(707, 806);
+            this.Controls.Add(this.pbTestDownload);
+            this.Controls.Add(this.m_pbRefreshGameFilters);
+            this.Controls.Add(this.m_cbxGameFilter);
+            this.Controls.Add(this.m_pbAddProfile);
+            this.Controls.Add(this.m_pbEditProfile);
             this.Controls.Add(this.m_cbSetArbiterAnnounce);
             this.Controls.Add(this.m_cbLaunch);
             this.Controls.Add(this.label19);
@@ -1387,7 +1323,6 @@ namespace ArbWeb
             this.Controls.Add(this.m_pbCreateRosterReport);
             this.Controls.Add(this.m_chlbxRoster);
             this.Controls.Add(this.label18);
-            this.Controls.Add(this.m_cbLogToFile);
             this.Controls.Add(this.m_cbSplitSports);
             this.Controls.Add(this.m_cbDatePivot);
             this.Controls.Add(this.m_cbFuzzyTimes);
@@ -1396,10 +1331,6 @@ namespace ArbWeb
             this.Controls.Add(this.button3);
             this.Controls.Add(this.m_pbBrowseAnalysis);
             this.Controls.Add(this.m_pbBrowseGamesReport);
-            this.Controls.Add(this.m_pbBrowseRoster2);
-            this.Controls.Add(this.m_pbBrowseRoster);
-            this.Controls.Add(this.m_pbBrowseGameFile2);
-            this.Controls.Add(this.m_pbBrowseGameFile);
             this.Controls.Add(this.m_cbAddOfficialsOnly);
             this.Controls.Add(this.m_pbGenGames);
             this.Controls.Add(this.label16);
@@ -1407,11 +1338,6 @@ namespace ArbWeb
             this.Controls.Add(this.label15);
             this.Controls.Add(this.m_cbRankOnly);
             this.Controls.Add(this.m_pbReload);
-            this.Controls.Add(this.m_cbTestOnly);
-            this.Controls.Add(this.label14);
-            this.Controls.Add(this.label13);
-            this.Controls.Add(this.m_ebRosterWorking);
-            this.Controls.Add(this.m_ebGameCopy);
             this.Controls.Add(this.m_cbTestEmail);
             this.Controls.Add(this.m_chlbxSportLevels);
             this.Controls.Add(this.m_cbFilterLevel);
@@ -1440,14 +1366,6 @@ namespace ArbWeb
             this.Controls.Add(this.m_pbGenCounts);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.button1);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.m_ebRoster);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.m_ebPassword);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.m_ebUserID);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.m_ebGameFile);
             this.Controls.Add(this.m_pbDownloadGames);
             this.Name = "AwMainForm";
             this.Text = "AwMainForm";
@@ -1456,65 +1374,63 @@ namespace ArbWeb
             this.ResumeLayout(false);
             this.PerformLayout();
 
-		}
-		#endregion
+        }
 
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
-		[STAThread]
-		static void Main(string[] rgsCmdLine) 
-		{
-			Application.Run(new AwMainForm(rgsCmdLine));
-		}
-		
-        bool m_fLoggedIn;
+        #endregion
 
-		Roster m_rst;
-		CountsData m_gc;
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main(string[] rgsCmdLine)
+        {
+            Application.Run(new AwMainForm(rgsCmdLine));
+        }
 
-	    /* E N S U R E  A D M I N  L O G G E D  I N */
-	    /*----------------------------------------------------------------------------
+
+        #region Navigation Support
+        /* E N S U R E  A D M I N  L O G G E D  I N */
+        /*----------------------------------------------------------------------------
 	    	%%Function: EnsureAdminLoggedIn
 	    	%%Qualified: ArbWeb.AwMainForm.EnsureAdminLoggedIn
 	    	%%Contact: rlittle
 	    	
 	    ----------------------------------------------------------------------------*/
-	    private void EnsureAdminLoggedIn()
-	    {
-	        // now we need to find the URGENT HELP NEEDED row
-	        IHTMLDocument2 oDoc2 = m_awc.Document2;
-	        IHTMLElementCollection hec = (IHTMLElementCollection) oDoc2.all.tags("span");
+        private void EnsureAdminLoggedIn()
+        {
+            // now we need to find the URGENT HELP NEEDED row
+            IHTMLDocument2 oDoc2 = m_awc.Document2;
+            IHTMLElementCollection hec = (IHTMLElementCollection) oDoc2.all.tags("span");
 
-	        string sCtl = null;
+            string sCtl = null;
 
-	        foreach (IHTMLElement he in hec)
-	            {
-	            if (he.id == null)
-	                continue;
+            foreach (IHTMLElement he in hec)
+                {
+                if (he.id == null)
+                    continue;
 
-	            if (he.id.StartsWith(_sid_Login_Span_Type_Prefix) && he.innerText == "Admin")
-	                {
+                if (he.id.StartsWith(_sid_Login_Span_Type_Prefix) && he.innerText == "Admin")
+                    {
                     // found a span with the right prefix and innerText, now figure out its control
-	                int ich = he.id.IndexOf(_sid_Login_Span_Type_Prefix);
-	                if (ich >= 0)
-	                    {
-	                    sCtl = he.id.Substring(ich + _sid_Login_Span_Type_Prefix.Length, 5);
-	                    }
-	                break;
-	                }
-	            }
+                    int ich = he.id.IndexOf(_sid_Login_Span_Type_Prefix);
+                    if (ich >= 0)
+                        {
+                        sCtl = he.id.Substring(ich + _sid_Login_Span_Type_Prefix.Length, 5);
+                        }
+                    break;
+                    }
+                }
 
-	        ThrowIfNot(sCtl != null, "Can't find Admin account link");
+            ThrowIfNot(sCtl != null, "Can't find Admin account link");
 
-	        m_awc.ResetNav();
-	        string sControl = BuildAnnName(_sid_Login_Anchor_TypeLink_Prefix, _sid_Login_Anchor_TypeLink_Suffix, sCtl);
+            m_awc.ResetNav();
+            string sControl = BuildAnnName(_sid_Login_Anchor_TypeLink_Prefix, _sid_Login_Anchor_TypeLink_Suffix, sCtl);
 
-	        ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't admin link");
-	        m_awc.FWaitForNavFinish();
-	    }
+            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't admin link");
+            m_awc.FWaitForNavFinish();
+        }
 
-	    public delegate void EnsureLoggedInDel();
+        public delegate void EnsureLoggedInDel();
 
         /* E N S U R E  L O G G E D  I N */
         /*----------------------------------------------------------------------------
@@ -1535,7 +1451,7 @@ namespace ArbWeb
                 }
         }
 
-	    /* E N S U R E  L O G G E D  I N */
+        /* E N S U R E  L O G G E D  I N */
         /*----------------------------------------------------------------------------
         	%%Function: EnsureLoggedIn
         	%%Qualified: ArbWeb.AwMainForm.EnsureLoggedIn
@@ -1548,8 +1464,8 @@ namespace ArbWeb
 
             if (m_fLoggedIn == false)
                 {
-				m_srpt.AddMessage("Logging in...");
-				m_srpt.PushLevel();
+                m_srpt.AddMessage("Logging in...");
+                m_srpt.PushLevel();
                 // login to arbiter
                 // nav to the main arbiter login page
                 if (!m_awc.FNavToPage(_s_Home))
@@ -1562,15 +1478,15 @@ namespace ArbWeb
                     IHTMLDocument oDoc = m_awc.Document;
                     IHTMLDocument3 oDoc3 = m_awc.Document3;
 
-					ArbWebControl.FSetInputControlText(oDoc2, _s_Home_Input_Email, m_ebUserID.Text, false);
-                    ArbWebControl.FSetInputControlText(oDoc2, _s_Home_Input_Password, m_ebPassword.Text, false);
+                    ArbWebControl.FSetInputControlText(oDoc2, _s_Home_Input_Email, m_pr.UserID, false);
+                    ArbWebControl.FSetInputControlText(oDoc2, _s_Home_Input_Password, m_pr.Password, false);
 
                     m_awc.ResetNav();
                     m_awc.FClickControl(oDoc2, _s_Home_Button_SignIn);
                     m_awc.FWaitForNavFinish();
                     }
                 oDoc2 = m_awc.Document2;
-                
+
                 int count = 0;
 
                 oDoc2 = m_awc.Document2;
@@ -1591,18 +1507,18 @@ namespace ArbWeb
                         ChangeShowBrowser(null, null);
                         fToggledBrowser = true;
                         }
-                        
+
                     Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
                     oDoc2 = m_awc.Document2;
                     }
-                    
+
                 if (fToggledBrowser)
                     {
                     m_cbShowBrowser.Checked = false;
                     ChangeShowBrowser(null, null);
-                    }                    
-                    
+                    }
+
                 oDoc2 = m_awc.Document2;
                 if (!ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink))
                     MessageBox.Show("Login failed for arbiter.net!");
@@ -1612,56 +1528,13 @@ namespace ArbWeb
                 // and wait for nav to complete
                 m_awc.FWaitForNavFinish();
                 m_awc.ReportNavState("after login complete");
-				m_srpt.PopLevel();
-				m_srpt.AddMessage("Completed login.");
+                m_srpt.PopLevel();
+                m_srpt.AddMessage("Completed login.");
                 }
         }
-        
-        /* S  B U I L D  T E M P  F I L E N A M E */
-        /*----------------------------------------------------------------------------
-        	%%Function: SBuildTempFilename
-        	%%Qualified: ArbWeb.AwMainForm.SBuildTempFilename
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private string SBuildTempFilename(string sBaseName, string sExt)
-        {
-            return String.Format("{0}\\{1}{2}.{3}", Environment.GetEnvironmentVariable("Temp"),
-                                 sBaseName,
-                                 System.Guid.NewGuid().ToString(),
-                                 sExt);
-        }
+        #endregion
 
-
-	    private bool m_fAutomating = false;
-
-	    /* D O  S A V E  S T A T E  C O R E */
-	    /*----------------------------------------------------------------------------
-	    	%%Function: DoSaveStateCore
-	    	%%Qualified: ArbWeb.AwMainForm.DoSaveStateCore
-	    	%%Contact: rlittle
-	    	
-	    ----------------------------------------------------------------------------*/
-	    private void DoSaveStateCore()
-		{
-	        if (!m_fAutomating)
-	            {
-	            m_rehProfile.Save();
-	            m_reh.Save();
-	            }
-		}
-
-		/* D O  S A V E  S T A T E */
-		/*----------------------------------------------------------------------------
-			%%Function: DoSaveState
-			%%Qualified: ArbWeb.AwMainForm.DoSaveState
-			%%Contact: rlittle
-			
-		----------------------------------------------------------------------------*/
-		private void DoSaveState(object sender, FormClosingEventArgs e)
-        {
-			DoSaveStateCore();
-        }
+        #region Operation Implementation
 
         /* D O  D O W N L O A D  G A M E S */
         /*----------------------------------------------------------------------------
@@ -1673,15 +1546,43 @@ namespace ArbWeb
         private void DoDownloadGames(object sender, EventArgs e)
         {
             var x = m_awc.Handle;
+            string sFilterReq = (string)m_cbxGameFilter.SelectedItem;
+            if (sFilterReq == null)
+                sFilterReq = "All Games";
 
             // let's make sure the webbrowser handle is created
 
             m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
-            
-            Task tskDownloadGames = new Task(DownloadGames);
+
+            Task tskDownloadGames = new Task(() => DownloadGames(sFilterReq));
 
             tskDownloadGames.Start();
             // DownloadGames();
+        }
+
+        /* D O  D O W N L O A D  R O S T E R */
+        /*----------------------------------------------------------------------------
+	    	%%Function: DoDownloadRoster
+	    	%%Qualified: ArbWeb.AwMainForm.DoDownloadRoster
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
+        private void DoDownloadRoster(object sender, EventArgs e)
+        {
+            m_srpt.AddMessage("Starting FULL Roster download...");
+            m_srpt.PushLevel();
+
+            PushCursor(Cursors.WaitCursor);
+            string sOutFile = SBuildRosterFilename();
+
+            m_pr.Roster = sOutFile;
+
+            HandleRoster(null, sOutFile, null);
+            PopCursor();
+            m_srpt.PopLevel();
+            System.IO.File.Delete(m_pr.RosterWorking);
+            System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
+            m_srpt.AddMessage("Completed FULL Roster download.");
         }
 
         /* D O  D O W N L O A D  Q U I C K  R O S T E R */
@@ -1691,120 +1592,82 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void DoDownloadQuickRoster(object sender, EventArgs e)
-		{
-            var x = m_awc.Handle;   // this makes sure that m_awc has a handle before we ask it if invoke is required.(forces it to get created on the correct thread)
+        private async void DoDownloadQuickRoster(object sender, EventArgs e)
+        {
+            var x = m_awc.Handle; // this makes sure that m_awc has a handle before we ask it if invoke is required.(forces it to get created on the correct thread)
 
-            Task tsk = new Task(DoDownloadQuickRosterWork);
+            Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterWork);
 
             tsk.Start();
-		}
 
-        List<Cursor> m_plCursor;
+            string sOutFile = SBuildRosterFilename();
+            m_pr.Roster = sOutFile;
 
-	    private delegate void PushCursorDel(Cursor crs);
+            Roster rst = await tsk;
 
-	    private void DoPushCursor(Cursor crs)
-        {
-            m_plCursor.Add(this.Cursor);
-            this.Cursor = crs;
+            rst.WriteRoster(sOutFile);
+            System.IO.File.Delete(m_pr.RosterWorking);
+            System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
         }
 
+        delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer);
 
-        /* P U S H  C U R S O R */
-        /*----------------------------------------------------------------------------
-        	%%Function: PushCursor
-        	%%Qualified: ArbWeb.AwMainForm.PushCursor
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        void PushCursor(Cursor crs)
+        private async void DoUploadRosterWork()
         {
-            if (this.InvokeRequired)
-                this.BeginInvoke(new PushCursorDel(DoPushCursor), crs);
-            else
-                DoPushCursor(crs);
-        }
+            m_srpt.AddMessage("Starting Roster upload...");
+            m_srpt.PushLevel();
+            Roster rstServer = null;
 
-	    private delegate void PopCursorDel();
-
-        void DoPopCursor()
-        {
-            if (m_plCursor.Count > 0)
+            if (m_pr.DownloadRosterOnUpload)
                 {
-                this.Cursor = m_plCursor[m_plCursor.Count - 1];
-                m_plCursor.RemoveAt(m_plCursor.Count - 1);
+                // first thing to do is download a new (temporary) roster copy
+                Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterOfficialsOnlyWork);
+
+                tsk.Start();
+                rstServer = await tsk;
                 }
-        }
-        /* P O P  C U R S O R */
-        /*----------------------------------------------------------------------------
-        	%%Function: PopCursor
-        	%%Qualified: ArbWeb.AwMainForm.PopCursor
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        void PopCursor()
-        {
-            if (this.InvokeRequired)
-                this.BeginInvoke(new PopCursorDel(DoPopCursor));
-            else
-                DoPopCursor();
-        }
 
+            // now, check the roster we just downloaded against the roster we just already have
 
-	    /* D O  D O W N L O A D  R O S T E R */
-	    /*----------------------------------------------------------------------------
-	    	%%Function: DoDownloadRoster
-	    	%%Qualified: ArbWeb.AwMainForm.DoDownloadRoster
-	    	%%Contact: rlittle
-	    	
-	    ----------------------------------------------------------------------------*/
-	    private void DoDownloadRoster(object sender, EventArgs e)
-        {
-			m_srpt.AddMessage("Starting FULL Roster download...");
-			m_srpt.PushLevel();
+            string sInFile = m_pr.RosterWorking;
 
-	        PushCursor(Cursors.WaitCursor);
-			string sOutFile = SBuildRosterFilename();
+            Roster rst = RstEnsure(sInFile);
 
-			m_ebRoster.Text = sOutFile;
-
-            HandleRoster(null, sOutFile);
-            PopCursor();
-			m_srpt.PopLevel();
-			System.IO.File.Delete(m_ebRosterWorking.Text);
-			System.IO.File.Copy(sOutFile, m_ebRosterWorking.Text);
-			m_srpt.AddMessage("Completed FULL Roster download.");
-        }
-
-
-		/* D O  U P L O A D  R O S T E R */
-		/*----------------------------------------------------------------------------
-			%%Function: DoUploadRoster
-			%%Qualified: ArbWeb.AwMainForm.DoUploadRoster
-			%%Contact: rlittle
-			
-		----------------------------------------------------------------------------*/
-		private void DoUploadRoster(object sender, EventArgs e)
-		{
-			m_srpt.AddMessage("Starting Roster upload...");
-			m_srpt.PushLevel();
-
-			string sInFile = m_ebRosterWorking.Text;
-
-			Roster rst = RstEnsure(sInFile);
-
-			if (rst.IsQuick && (!m_cbRankOnly.Checked || !rst.HasRankings))
-				{
+            if (rst.IsQuick && (!m_cbRankOnly.Checked || !rst.HasRankings))
+                {
 //				MessageBox.Show("Cannot upload a quick roster.  Please perform a full roster download before uploading.\n\nIf you want to upload rankings only, please check 'Upload Rankings Only'");
 //    			m_srpt.PopLevel();
                 m_srpt.AddMessage("Detected QuickRoster...", StatusBox.StatusRpt.MSGT.Warning);
                 }
 
-			HandleRoster(rst, sInFile);
-			m_srpt.PopLevel();
-			m_srpt.AddMessage("Completed Roster upload.");
-		}
+            // compare the two rosters to find differences
+
+            if (m_awc.InvokeRequired)
+                {
+                IAsyncResult rslt = m_awc.BeginInvoke(new HandleRosterDel(HandleRoster), new object[] {rst, sInFile, rstServer});
+                m_awc.EndInvoke(rslt);
+                }
+            else
+                {
+                HandleRoster(rst, sInFile, rstServer);
+                }
+            m_srpt.PopLevel();
+            m_srpt.AddMessage("Completed Roster upload.");
+        }
+
+        /* D O  U P L O A D  R O S T E R */
+        /*----------------------------------------------------------------------------
+			%%Function: DoUploadRoster
+			%%Qualified: ArbWeb.AwMainForm.DoUploadRoster
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
+        private void DoUploadRoster(object sender, EventArgs e)
+        {
+            Task tsk = new Task(DoUploadRosterWork);
+
+            tsk.Start();
+        }
 
         /* D O  G E N  C O U N T S */
         /*----------------------------------------------------------------------------
@@ -1814,37 +1677,16 @@ namespace ArbWeb
         	
         ----------------------------------------------------------------------------*/
         private void DoGenCounts(object sender, EventArgs e)
-		{
-			m_srpt.AddMessage(String.Format("Generating analysis ({0})...", m_ebOutputFile.Text));
-			m_srpt.PushLevel();
-
-			CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-
-			gc.GenAnalysis(m_ebOutputFile.Text);
-			m_srpt.PopLevel();
-			m_srpt.AddMessage("Analysis complete.");
-		}
-
-        /* S  H T M L  R E A D  F I L E */
-        /*----------------------------------------------------------------------------
-        	%%Function: SHtmlReadFile
-        	%%Qualified: ArbWeb.AwMainForm.SHtmlReadFile
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private string SHtmlReadFile(string sFile)
         {
-            string sHtml = "";
-            TextReader tr = new StreamReader(sFile);
-            string sLine;
-                        
-            while ((sLine = tr.ReadLine()) != null)
-                sHtml += " " + sLine;
-                
-            tr.Close();
-            return sHtml;
-        }    
-            
+            m_srpt.AddMessage(String.Format("Generating analysis ({0})...", m_ebOutputFile.Text));
+            m_srpt.PushLevel();
+
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
+
+            gc.GenAnalysis(m_ebOutputFile.Text);
+            m_srpt.PopLevel();
+            m_srpt.AddMessage("Analysis complete.");
+        }
         /* C H A N G E  S H O W  B R O W S E R */
         /*----------------------------------------------------------------------------
         	%%Function: ChangeShowBrowser
@@ -1860,6 +1702,7 @@ namespace ArbWeb
                 m_awc.Hide();
         }
 
+
         /* D O  G E N E R I C  I N V A L  G C */
         /*----------------------------------------------------------------------------
         	%%Function: DoGenericInvalGc
@@ -1870,43 +1713,6 @@ namespace ArbWeb
         private void DoGenericInvalGc(object sender, EventArgs e)
         {
             InvalGameCount();
-        }
-
-        /* C H A N G E  P R O F I L E */
-        /*----------------------------------------------------------------------------
-        	%%Function: ChangeProfile
-        	%%Qualified: ArbWeb.AwMainForm.ChangeProfile
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private void ChangeProfile(object sender, EventArgs e)
-		{
-			if (!m_fDontUpdateProfile)
-				{
-				DoSaveStateCore();
-				m_rehProfile = new Settings(m_rgreheProfile, String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_cbxProfile.Text), m_cbxProfile.Text);
-				m_rehProfile.Load();
-				}
-		}
-
-
-        /* O N  P R O F I L E  L E A V E */
-        /*----------------------------------------------------------------------------
-        	%%Function: OnProfileLeave
-        	%%Qualified: ArbWeb.AwMainForm.OnProfileLeave
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private void OnProfileLeave(object sender, EventArgs e)
-        {
-            if (m_fDontUpdateProfile)
-                return;
-               
-			if (m_rehProfile.FMatchesTag(m_cbxProfile.Text))
-				return;
-
-			// otherwise, this is a new profile
-			ChangeProfile(sender, e);
         }
 
 		/* E N A B L E  C O N T R O L S */
@@ -2009,7 +1815,7 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
 	    private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
-            CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             string[] rgsSports = ArbWebControl.RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);
             string[] rgsSportLevels = ArbWebControl.RgsFromChlbx(true, m_chlbxSportLevels);
             ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
@@ -2039,24 +1845,26 @@ namespace ArbWeb
 		{
 			m_srpt.AddMessage(String.Format("Generating games report ({0})...", m_ebGameOutput.Text));
 			m_srpt.PushLevel();
-			CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-			Roster rst = RstEnsure(m_ebRosterWorking.Text);
+			CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
+			Roster rst = RstEnsure(m_pr.RosterWorking);
 
             gc.GenGamesReport(m_ebGameOutput.Text);
 			m_srpt.PopLevel();
 			m_srpt.AddMessage("Games report complete.");
 		}
 
-        enum FNC // FileName Control
-            {
-            GameFile,
-            GameFile2,
-            RosterFile,
-            RosterFile2,
-            ReportFile,
-            AnalysisFile
-            };
-        
+        /* M _ C B  L O G  T O  F I L E _  C H E C K E D  C H A N G E D */
+        /*----------------------------------------------------------------------------
+        	%%Function: m_cbLogToFile_CheckedChanged
+        	%%Qualified: ArbWeb.AwMainForm.m_cbLogToFile_CheckedChanged
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void m_cbLogToFile_CheckedChanged(object sender, EventArgs e)
+        {
+            SetupLogToFile();
+        }
+
         /* E B  F R O M  F N C */
         /*----------------------------------------------------------------------------
         	%%Function: EbFromFnc
@@ -2064,21 +1872,13 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        TextBox EbFromFnc(FNC fnc)
+        TextBox EbFromFnc(EditProfile.FNC fnc)
         {
             switch (fnc)
                 {
-                case FNC.GameFile:
-                    return m_ebGameFile;
-                case FNC.GameFile2:
-                    return m_ebGameCopy;
-                case FNC.RosterFile:
-                    return m_ebRoster;
-                case FNC.RosterFile2:
-                    return m_ebRosterWorking;
-                case FNC.AnalysisFile:
+                case ArbWeb.EditProfile.FNC.AnalysisFile:
                     return m_ebOutputFile;
-                case FNC.ReportFile:
+                case ArbWeb.EditProfile.FNC.ReportFile:
                     return m_ebGameOutput;
                 }
             return null;
@@ -2094,7 +1894,7 @@ namespace ArbWeb
         private void DoBrowseOpen(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            TextBox eb = EbFromFnc((FNC)(((Button)sender).Tag));
+            TextBox eb = EbFromFnc((EditProfile.FNC)(((Button)sender).Tag));
             
             ofd.InitialDirectory = Path.GetDirectoryName(eb.Text);
             if (ofd.ShowDialog() == DialogResult.OK)
@@ -2103,17 +1903,45 @@ namespace ArbWeb
                 }
         }
 
-        /* M _ C B  L O G  T O  F I L E _  C H E C K E D  C H A N G E D */
-        /*----------------------------------------------------------------------------
-        	%%Function: m_cbLogToFile_CheckedChanged
-        	%%Qualified: ArbWeb.AwMainForm.m_cbLogToFile_CheckedChanged
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private void m_cbLogToFile_CheckedChanged(object sender, EventArgs e)
+        private void RefreshGameFilters(object sender, EventArgs e)
         {
-            SetupLogToFile();
+            EnsureLoggedIn();
+
+            Dictionary<string, string> mpFilters = MpFetchGameFilters();
+            SetGameFiltersFromEnumerable(m_cbxGameFilter, mpFilters.Keys);
+            m_pr.GameFilters = mpFilters.Keys.ToArray();
+            m_pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
         }
+        #endregion
+
+        #region Support Functions
+
+	    private void SetGameFiltersFromEnumerable(ComboBox cbx, IEnumerable<string> iens, string sNewFilter = null)
+	    {
+            string sCurFilter = sNewFilter;
+            if (sCurFilter == null && m_cbxGameFilter.SelectedItem != null)
+                {
+                sCurFilter = (string)m_cbxGameFilter.SelectedItem;
+                }
+            if (sCurFilter == null)
+                sCurFilter = "All Games";
+
+            m_cbxGameFilter.Items.Clear();
+	        if (iens == null)
+	            return;
+
+            int iSelected = -1;
+            int i = 0;
+            foreach (string s in iens)
+                {
+                m_cbxGameFilter.Items.Add(s);
+                if (string.Compare(s, sCurFilter, true /*fIgnoreCase*/) == 0)
+                    iSelected = i;
+                i++;
+                }
+            if (iSelected != -1)
+                m_cbxGameFilter.SelectedIndex = iSelected;
+	    }
 
 	    /* S E T U P  L O G  T O  F I L E */
 	    /*----------------------------------------------------------------------------
@@ -2124,9 +1952,9 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
 	    private void SetupLogToFile()
 	    {
-	        if (m_cbLogToFile.Checked)
+	        if (m_pr.LogToFile)
 	            {
-	            m_srpt.AttachLogfile(SBuildTempFilename("arblog", "log"));
+	            m_srpt.AttachLogfile(Filename.SBuildTempFilename("arblog", "log"));
 	            m_srpt.SetLogLevel(5);
 	            m_srpt.SetFilter(StatusRpt.MSGT.Body);
 	            }
@@ -2137,7 +1965,184 @@ namespace ArbWeb
 	            }
 	    }
 
+        /* S  H T M L  R E A D  F I L E */
+        /*----------------------------------------------------------------------------
+        	%%Function: SHtmlReadFile
+        	%%Qualified: ArbWeb.AwMainForm.SHtmlReadFile
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private string SHtmlReadFile(string sFile)
+        {
+            string sHtml = "";
+            TextReader tr = new StreamReader(sFile);
+            string sLine;
+                        
+            while ((sLine = tr.ReadLine()) != null)
+                sHtml += " " + sLine;
+                
+            tr.Close();
+            return sHtml;
+        }    
+        #endregion
 
-	}
+        #region Profiles
+	    private Profile m_pr;
+
+	    void SetUIForProfile(Profile pr)
+	    {
+	        m_ebGameOutput.Text = pr.GameOutput;
+	        m_ebOutputFile.Text = pr.OutputFile;
+	        m_cbIncludeCanceled.Checked = pr.IncludeCanceled;
+	        m_cbShowBrowser.Checked = pr.ShowBrowser;
+	        try
+	            {
+	            m_dtpStart.Value = pr.Start;
+	            }
+	        catch
+	            {
+	            m_dtpStart.Value = DateTime.Today;
+	            }
+
+	        try
+	            {
+	            m_dtpEnd.Value = pr.End;
+	            }
+	        catch
+	            {
+	            m_dtpEnd.Value = DateTime.Today;
+	            }
+	        m_cbOpenSlotDetail.Checked = pr.OpenSlotDetail;
+	        m_cbFuzzyTimes.Checked = pr.FuzzyTimes;
+	        m_cbTestEmail.Checked = pr.TestEmail;
+	        m_cbAddOfficialsOnly.Checked = pr.AddOfficialsOnly;
+	        m_ebAffiliationIndex.Text = pr.AffiliationIndex;
+	        m_cbSplitSports.Checked = pr.SplitSports;
+	        m_cbDatePivot.Checked = pr.DatePivot;
+	        m_cbFilterRank.Checked = pr.FilterRank;
+	        m_cbFutureOnly.Checked = pr.FutureOnly;
+	        m_cbLaunch.Checked = pr.Launch;
+	        m_cbSetArbiterAnnounce.Checked = pr.SetArbiterAnnounce;
+	        SetGameFiltersFromEnumerable(m_cbxGameFilter, pr.GameFilters, pr.GameFilter);
+	    }
+
+	    void UpdateProfileFromUI(Profile pr)
+	    {
+	        pr.GameOutput = m_ebGameOutput.Text;
+	        pr.OutputFile = m_ebOutputFile.Text;
+	        pr.IncludeCanceled = m_cbIncludeCanceled.Checked;
+	        pr.ShowBrowser = m_cbShowBrowser.Checked;
+	        pr.Start = m_dtpStart.Value;
+	        pr.End = m_dtpEnd.Value;
+	        pr.OpenSlotDetail = m_cbOpenSlotDetail.Checked;
+	        pr.FuzzyTimes = m_cbFuzzyTimes.Checked;
+	        pr.TestEmail = m_cbTestEmail.Checked;
+	        pr.AddOfficialsOnly = m_cbAddOfficialsOnly.Checked;
+	        pr.AffiliationIndex = m_ebAffiliationIndex.Text;
+	        pr.SplitSports = m_cbSplitSports.Checked;
+	        pr.DatePivot = m_cbDatePivot.Checked;
+	        pr.FilterRank = m_cbFilterRank.Checked;
+	        pr.FutureOnly = m_cbFutureOnly.Checked;
+	        pr.Launch = m_cbLaunch.Checked;
+	        pr.SetArbiterAnnounce = m_cbSetArbiterAnnounce.Checked;
+	        pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
+            // don't worry about setting GameFilters -- we already set that when we populated it.
+	    }
+
+
+        /* C H A N G E  P R O F I L E */
+        /*----------------------------------------------------------------------------
+        	%%Function: ChangeProfile
+        	%%Qualified: ArbWeb.AwMainForm.ChangeProfile
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void ChangeProfile(object sender, EventArgs e)
+		{
+			if (!m_fDontUpdateProfile)
+				{
+				DoSaveStateCore();
+				m_pr = new Profile();
+                m_pr.Load(m_cbxProfile.Text);
+                SetUIForProfile(m_pr);
+				}
+		}
+
+	    /* D O  S A V E  S T A T E  C O R E */
+	    /*----------------------------------------------------------------------------
+	    	%%Function: DoSaveStateCore
+	    	%%Qualified: ArbWeb.AwMainForm.DoSaveStateCore
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
+	    private void DoSaveStateCore()
+		{
+	        if (!m_fAutomating)
+	            {
+	            UpdateProfileFromUI(m_pr);
+	            m_pr.Save();
+	            m_reh.Save();
+	            }
+		}
+
+		/* D O  S A V E  S T A T E */
+		/*----------------------------------------------------------------------------
+			%%Function: DoSaveState
+			%%Qualified: ArbWeb.AwMainForm.DoSaveState
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
+		private void DoSaveState(object sender, FormClosingEventArgs e)
+        {
+			DoSaveStateCore();
+        }
+
+        /* O N  P R O F I L E  L E A V E */
+        /*----------------------------------------------------------------------------
+        	%%Function: OnProfileLeave
+        	%%Qualified: ArbWeb.AwMainForm.OnProfileLeave
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private void OnProfileLeave(object sender, EventArgs e)
+        {
+            if (m_fDontUpdateProfile)
+                return;
+               
+            if (m_pr.FCompareProfile(m_cbxProfile.Text))
+				return;
+
+			// otherwise, this is a new profile
+			ChangeProfile(sender, e);
+        }
+
+        private void EditProfile(object sender, EventArgs e)
+        {
+            ArbWeb.EditProfile.FShowEditProfile(m_pr);
+        }
+
+        private void AddProfile(object sender, EventArgs e)
+        {
+            string sProfileName = ArbWeb.EditProfile.AddProfile();
+            m_cbxProfile.Items.Add(sProfileName);
+            m_cbxProfile.SelectedIndex = m_cbxProfile.Items.Count - 1;
+            ChangeProfile(null, null);
+        }
+
+        #endregion
+
+        private void DoTestDownload(object sender, EventArgs e)
+        {
+            var x = m_awc.Handle;
+            // let's make sure the webbrowser handle is created
+
+            m_srpt.LogData("Testing Download", 3, StatusRpt.MSGT.Header);
+
+            Task tskDownloadTest = new Task(() => TestDownload());
+
+            tskDownloadTest.Start();
+            // DownloadGames();
+        }
+    }
 
 }

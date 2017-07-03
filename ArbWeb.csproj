@@ -27,7 +27,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -165,8 +165,15 @@
     <Compile Include="ArbWebControl.Designer.cs">
       <DependentUpon>ArbWebControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="EditProfile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditProfile.Designer.cs">
+      <DependentUpon>EditProfile.cs</DependentUpon>
+    </Compile>
     <Compile Include="games.cs" />
     <Compile Include="ooxml.cs" />
+    <Compile Include="Profile.cs" />
     <Compile Include="reports.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -198,6 +205,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ArbWebControl.resx">
       <DependentUpon>ArbWebControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditProfile.resx">
+      <DependentUpon>EditProfile.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +252,14 @@
     <ProjectReference Include="..\liblet\cs\TCore.Settings\TCore.Settings.csproj">
       <Project>{cf92fd1e-ce88-492e-a7c6-c4d29d908a22}</Project>
       <Name>TCore.Settings</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\liblet\cs\TCore.UI\TCore.UI.csproj">
+      <Project>{9213a90f-a23f-4bc5-827c-164ecb6c6cc2}</Project>
+      <Name>TCore.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\liblet\cs\TCore.Util\TCore.Util.csproj">
+      <Project>{59868345-bc40-4771-a4d7-7c6a763663f0}</Project>
+      <Name>TCore.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
