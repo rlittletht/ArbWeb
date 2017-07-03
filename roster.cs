@@ -845,6 +845,9 @@ namespace ArbWeb
             m_plsRankings = null;
             while ((sLine = tr.ReadLine()) != null)
                 {
+                if (String.IsNullOrEmpty(sLine) || String.IsNullOrWhiteSpace(sLine))
+                    continue;
+
                 rgs = Csv.LineToArray(sLine);
 
                 if (fFirst && sLine.Contains("First") && sLine.Contains("Email") && sLine.Contains("Address2"))
