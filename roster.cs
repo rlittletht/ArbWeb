@@ -98,6 +98,9 @@ namespace ArbWeb
 
         static string SConstructPhoneNumberFromParts(string sPhoneNumber, string sType)
         {
+            if (String.IsNullOrEmpty(sPhoneNumber))
+                return sPhoneNumber;
+
             return String.Format("{0}:{1}", sType.Substring(0, 1), sPhoneNumber);
         }
 
@@ -155,6 +158,20 @@ namespace ArbWeb
                     m_sPhone3 = sNumberRaw;
                     break;
                 }
+        }
+
+        public void SetNextPhoneNumber(string sPhoneNumber, string sType)
+        {
+            int iPhone = 1;
+
+            if (String.IsNullOrEmpty(m_sPhone1))
+                iPhone = 1;
+            if (String.IsNullOrEmpty(m_sPhone2))
+                iPhone = 2;
+            if (String.IsNullOrEmpty(m_sPhone3))
+                iPhone = 3;
+
+            SetPhoneNumber(iPhone, sPhoneNumber, sType);
         }
 
         public Roster.RSTT m_rstt;
@@ -267,7 +284,7 @@ namespace ArbWeb
             m_rstt = Roster.RSTT.Full;
         }
 
-        public enum Columns
+        public enum QuickCommonColumns
         {
             FirstName = 0,
             LastName = 1, 
@@ -281,52 +298,62 @@ namespace ArbWeb
             CellPhone = 9,
             Email = 10,
             OfficialNumber = 11,
-            DateJoined = 12,
-            BuiltInMac = 13
+            QuickCommonMac = 12
         }
 
-        public static bool FVerifyHeaderColumns(string[] rgs)
+        public enum QuickShortColumns
         {
-            if (String.Compare(rgs[(int) Columns.FirstName], "FirstName", false) != 0)
-                return false;
+            QuickShortFirst = 12,
+            DateJoined = 12,
+            QuickShortMac = 13
+        }
 
-            if (String.Compare(rgs[(int) Columns.LastName], "LastName", false) != 0)
-                return false;
+        public static bool FVerifyHeaderColumns(string[] rgs, Roster.RSTT rstt)
+        {
+            if (rstt == Roster.RSTT.QuickShort || rstt == Roster.RSTT.QuickFull || rstt == Roster.RSTT.QuickFull2)
+                {
+                if (String.Compare(rgs[(int) QuickCommonColumns.FirstName], "FirstName", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.Address1], "Address1", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.LastName], "LastName", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.Address2], "Address2", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.Address1], "Address1", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.City], "City", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.Address2], "Address2", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.State], "State", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.City], "City", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.PostalCode], "PostalCode", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.State], "State", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.HomePhone], "HomePhone", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.PostalCode], "PostalCode", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.WorkPhone], "WorkPhone", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.HomePhone], "HomePhone", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.CellPhone], "CellPhone", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.WorkPhone], "WorkPhone", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.Email], "Email", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.CellPhone], "CellPhone", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int)Columns.OfficialNumber], "OfficalNumber", false) != 0  // take into account bad heading from ArbiterSports.
-                && String.Compare(rgs[(int) Columns.OfficialNumber], "OfficialNumber", false) != 0)
-                return false;
+                if (String.Compare(rgs[(int) QuickCommonColumns.Email], "Email", false) != 0)
+                    return false;
 
-            if (String.Compare(rgs[(int) Columns.DateJoined], "DateJoined", false) != 0)
-                return false;
-
+                if (String.Compare(rgs[(int) QuickCommonColumns.OfficialNumber], "OfficalNumber", false) != 0 // take into account bad heading from ArbiterSports.
+                    && String.Compare(rgs[(int) QuickCommonColumns.OfficialNumber], "OfficialNumber", false) != 0)
+                    return false;
+                }
+            if (rstt == Roster.RSTT.QuickShort)
+                {
+                if (String.Compare(rgs[(int) QuickShortColumns.DateJoined], "DateJoined", false) != 0)
+                    return false;
+                }
             return true;
         }
 
@@ -350,21 +377,22 @@ namespace ArbWeb
                 if (rgs.Length < 13)
                     throw new Exception("input line too short -- not enough fields");
 
-                m_sFirst = rgs[(int)Columns.FirstName];
-                m_sLast = rgs[(int)Columns.LastName];
-                m_sEmail = rgs[(int)Columns.Email];
-                m_sAddress1 = rgs[(int)Columns.Address1];
-                m_sAddress2 = rgs[(int)Columns.Address2];
-                m_sCity = rgs[(int)Columns.City];
-                m_sState = rgs[(int)Columns.State];
-                m_sZip = rgs[(int)Columns.PostalCode];
-                m_sPhone1 = rgs[(int)Columns.HomePhone];
-                m_sPhone2 = rgs[(int)Columns.WorkPhone];
-                m_sPhone3 = rgs[(int)Columns.CellPhone];
+                m_sFirst = rgs[(int)QuickCommonColumns.FirstName];
+                m_sLast = rgs[(int)QuickCommonColumns.LastName];
+                m_sEmail = rgs[(int)QuickCommonColumns.Email];
+                m_sAddress1 = rgs[(int)QuickCommonColumns.Address1];
+                m_sAddress2 = rgs[(int)QuickCommonColumns.Address2];
+                m_sCity = rgs[(int)QuickCommonColumns.City];
+                m_sState = rgs[(int)QuickCommonColumns.State];
+                m_sZip = rgs[(int)QuickCommonColumns.PostalCode];
 
-                m_sOfficialNumber = rgs[(int)Columns.OfficialNumber];
-                m_sDateJoined = rgs[(int)Columns.DateJoined];
-                i = (int)Columns.BuiltInMac;
+                SetNextPhoneNumber(rgs[(int)QuickCommonColumns.HomePhone], "H");
+                SetNextPhoneNumber(rgs[(int)QuickCommonColumns.WorkPhone], "W");
+                SetNextPhoneNumber(rgs[(int)QuickCommonColumns.CellPhone], "C");
+
+                m_sOfficialNumber = rgs[(int)QuickCommonColumns.OfficialNumber];
+                m_sDateJoined = rgs[(int)QuickShortColumns.DateJoined];
+                i = (int)QuickShortColumns.QuickShortMac;
 
                 m_mpRanking = new Dictionary<string, int>();
                 }
@@ -830,7 +858,7 @@ namespace ArbWeb
                         m_plsMisc = RosterEntry.PlsMiscFromHeadingLine(rgs);
 
                     fFirst = false;
-                    if (!RosterEntry.FVerifyHeaderColumns(rgs))
+                    if (!RosterEntry.FVerifyHeaderColumns(rgs, m_rstt))
                         throw new Exception("Column headers broken");
 
                     continue; // skip heading line
