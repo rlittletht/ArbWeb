@@ -299,7 +299,7 @@ namespace ArbWeb
                                              System.Guid.NewGuid().ToString());
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
-            gc.GenSiteRosterResport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
+            gc.GenSiteRosterReport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
             // launch word with the file
             Process.Start(sTempFile);
             // System.IO.File.Delete(sTempFile);

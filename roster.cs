@@ -264,7 +264,7 @@ namespace ArbWeb
                 {
                 if (sKey.StartsWith(sSport) && !sKey.EndsWith(sPos))
                     {
-                    if (m_mpRanking[sKey] == nBase)
+                    if (m_mpRanking[sKey] == nBase || m_mpRanking[sKey] == 1)
                         continue;
 
                     if (sOther.Length > 0)

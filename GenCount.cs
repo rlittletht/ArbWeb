@@ -86,7 +86,7 @@ namespace ArbWeb
 			// read in the roster of umpires...
 		}
 
-        public void GenSiteRosterResport(string sReportFile, Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+        public void GenSiteRosterReport(string sReportFile, Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
         {
             m_gmd.GenSiteRosterReport(sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd);
         }
