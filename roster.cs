@@ -96,12 +96,15 @@ namespace ArbWeb
             sNumber = sNumberRaw.Substring(2);
         }
 
-        static string SConstructPhoneNumberFromParts(string sPhoneNumber, string sType)
+        static string SConstructPhoneNumberFromParts(string sPhoneNumber, string sTypeDefault)
         {
             if (String.IsNullOrEmpty(sPhoneNumber))
                 return sPhoneNumber;
 
-            return String.Format("{0}:{1}", sType.Substring(0, 1), sPhoneNumber);
+            if (sPhoneNumber.StartsWith("C:") || sPhoneNumber.StartsWith("W:") || sPhoneNumber.StartsWith("H:"))
+                return sPhoneNumber;
+
+            return String.Format("{0}:{1}", sTypeDefault.Substring(0, 1), sPhoneNumber);
         }
 
 
@@ -142,9 +145,9 @@ namespace ArbWeb
             ExtractNumberParts(sNumberRaw, out sNumber, out sType);
         }
 
-        public void SetPhoneNumber(int iPhone, string sPhoneNumber, string sType)
+        public void SetPhoneNumber(int iPhone, string sPhoneNumber, string sTypeDefault)
         {
-            string sNumberRaw = SConstructPhoneNumberFromParts(sPhoneNumber, sType);
+            string sNumberRaw = SConstructPhoneNumberFromParts(sPhoneNumber, sTypeDefault);
 
             switch (iPhone)
                 {
@@ -160,18 +163,20 @@ namespace ArbWeb
                 }
         }
 
-        public void SetNextPhoneNumber(string sPhoneNumber, string sType)
+        public void SetNextPhoneNumber(string sPhoneNumber, string sTypeDefault)
         {
             int iPhone = 1;
 
             if (String.IsNullOrEmpty(m_sPhone1))
                 iPhone = 1;
-            if (String.IsNullOrEmpty(m_sPhone2))
+            else if (String.IsNullOrEmpty(m_sPhone2))
                 iPhone = 2;
-            if (String.IsNullOrEmpty(m_sPhone3))
+            else if (String.IsNullOrEmpty(m_sPhone3))
                 iPhone = 3;
+            else
+                return;
 
-            SetPhoneNumber(iPhone, sPhoneNumber, sType);
+            SetPhoneNumber(iPhone, sPhoneNumber, sTypeDefault);
         }
 
         public Roster.RSTT m_rstt;
@@ -419,9 +424,10 @@ namespace ArbWeb
                 m_sCity = rgs[5];
                 m_sState = rgs[6];
                 m_sZip = rgs[7];
-                m_sPhone1 = rgs[8];
-                m_sPhone2 = rgs[9];
-                m_sPhone3 = rgs[10];
+                SetNextPhoneNumber(rgs[8], "H");
+                SetNextPhoneNumber(rgs[9], "W");
+                SetNextPhoneNumber(rgs[10], "C");
+
                 m_sOfficialNumber = rgs[11];
                 if (m_rstt != Roster.RSTT.QuickFull && m_rstt != Roster.RSTT.QuickFull2)
                     {

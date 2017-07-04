@@ -569,8 +569,6 @@ namespace ArbWeb
             string sType = null;
             bool fNeedSave = false;
 
-            return false;
-
             // handle the phone number
             if (rsteNew != null)
                 {
