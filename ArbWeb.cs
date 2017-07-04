@@ -1651,7 +1651,7 @@ namespace ArbWeb
 
             if (m_awc.InvokeRequired)
                 {
-                IAsyncResult rslt = m_awc.BeginInvoke(new HandleRosterDel(HandleRoster), new object[] {rst, sInFile, rstServer});
+                IAsyncResult rslt = m_awc.BeginInvoke(new HandleRosterDel(HandleRoster), new object[] {rst, sInFile, rstServer, null});
                 m_awc.EndInvoke(rslt);
                 }
             else
