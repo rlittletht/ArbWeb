@@ -1962,7 +1962,7 @@ namespace ArbWeb
 	        if (m_pr.LogToFile)
 	            {
 	            m_srpt.AttachLogfile(Filename.SBuildTempFilename("arblog", "log"));
-	            m_srpt.SetLogLevel(5);
+	            m_srpt.SetLogLevel(1);
 	            m_srpt.SetFilter(StatusRpt.MSGT.Body);
 	            }
 	        else
