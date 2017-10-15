@@ -1313,8 +1313,11 @@ namespace ArbWeb
                     sw.WriteLine("<tr>");
                     if (gm.Open)
                         {
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Pos));
-                        sw.WriteLine("<td colspan='4'>&nbsp;");
+                        if (!gm.Sport.Contains("Admin"))
+                            {
+                            sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Pos));
+                            sw.WriteLine("<td colspan='4'>&nbsp;");
+                            }
                         }
                     else
                         {
