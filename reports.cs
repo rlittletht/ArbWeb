@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using System.Threading.Tasks;
 using TCore.Settings;
+using TCore.Util;
 
 namespace ArbWeb
 {
@@ -41,8 +42,8 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoGenMailMergeAndAnnouce()
         {
-            CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-            Roster rst = RstEnsure(m_ebRosterWorking.Text);
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
+            Roster rst = RstEnsure(m_pr.RosterWorking);
             m_srpt.AddMessage("Generating mail merge documents...", StatusRpt.MSGT.Header, false);
 
             m_srpt.LogData("GamesFromFilter...", 3, StatusRpt.MSGT.Header);
@@ -60,14 +61,15 @@ namespace ArbWeb
             else
                 rstFiltered = rst;
 
-            string sCsvTemp = SBuildTempFilename("MailMergeRoster", "csv");
+            string sCsvTemp = Filename.SBuildTempFilename("MailMergeRoster", "csv");
             m_srpt.LogData(String.Format("Writing filtered roster to {0}", sCsvTemp), 3, StatusRpt.MSGT.Body);
             StreamWriter sw = new StreamWriter(sCsvTemp, false, System.Text.Encoding.Default);
 
             sw.WriteLine("email,firstname,lastname");
             foreach (RosterEntry rste in rstFiltered.Plrste)
                 {
-                sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.m_sLast);
+                if (m_ebFilter.Text == "" || rste.FMatchAnyMisc(m_ebFilter.Text))
+                    sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.m_sLast);
                 }
             sw.Flush();
             sw.Close();
@@ -80,7 +82,7 @@ namespace ArbWeb
             string sApp = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string sFile = Path.Combine(Path.GetPathRoot(sApp),Path.GetDirectoryName(sApp), "mailmergedoc.docx");
 
-            sTempName = SBuildTempFilename("mailmergedoc", "docx");
+            sTempName = Filename.SBuildTempFilename("mailmergedoc", "docx");
             m_srpt.LogData(String.Format("Writing mailmergedoc to {0} using template at {1}", sTempName, sFile), 3, StatusRpt.MSGT.Body);
             OOXML.CreateMailMergeDoc(sFile, sTempName, sCsvTemp, gms, out sArbiterHelpNeeded);
 
@@ -179,9 +181,9 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoGenOpenSlotsMail()
         {
-            CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
-            Roster rst = RstEnsure(m_ebRosterWorking.Text);
+            Roster rst = RstEnsure(m_pr.RosterWorking);
 
             string sBcc = m_cbTestEmail.Checked ? "" : rst.SBuildAddressLine(m_ebFilter.Text);
             ;
@@ -281,8 +283,8 @@ namespace ArbWeb
         {
             m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
 
-            CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
-            Roster rst = RstEnsure(m_ebRosterWorking.Text);
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
+            Roster rst = RstEnsure(m_pr.RosterWorking);
 
             m_srpt.PopLevel();
             m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
@@ -292,12 +294,12 @@ namespace ArbWeb
 
         private void DoGenSiteRosterReport()
         {
-            CountsData gc = GcEnsure(m_ebRosterWorking.Text, m_ebGameCopy.Text, m_cbIncludeCanceled.Checked);
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             string sTempFile = String.Format("{0}\\temp{1}.doc", Environment.GetEnvironmentVariable("Temp"),
                                              System.Guid.NewGuid().ToString());
-            Roster rst = RstEnsure(m_ebRosterWorking.Text);
+            Roster rst = RstEnsure(m_pr.RosterWorking);
 
-            gc.GenSiteRosterResport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
+            gc.GenSiteRosterReport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
             // launch word with the file
             Process.Start(sTempFile);
             // System.IO.File.Delete(sTempFile);

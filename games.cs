@@ -1243,9 +1243,6 @@ namespace ArbWeb
             public void GenReport(string sReport)
             {
                 StreamWriter sw = new StreamWriter(sReport, false, Encoding.Default);
-                sw.WriteLine("Analysis (with detail) of Umpire Assignments");
-                sw.WriteLine("--------------------------------------------");
-
                 bool fFirst = true;
 
                 m_plsLegend.Sort();
@@ -1316,18 +1313,39 @@ namespace ArbWeb
                     sw.WriteLine("<tr>");
                     if (gm.Open)
                         {
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Pos));
-                        sw.WriteLine("<td colspan='4'>&nbsp;");
+                        if (!gm.Sport.Contains("Admin"))
+                            {
+                            sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Pos));
+                            sw.WriteLine("<td colspan='4'>&nbsp;");
+                            }
                         }
                     else
                         {
                         RosterEntry rste = rst.RsteLookupEmail(gm.Email);
                         int nBaseRank;
+                        string sName;
+                        string sOtherRanks;
+                        string sPhone;
 
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0} ({1})", gm.Pos, nBaseRank = rste.Rank(String.Format("{0}, {1}", gm.Sport, gm.Pos))));
-                        sw.WriteLine(String.Format("<td class='rosterInnerName'>{0}", rste.Name));
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", rste.CellPhone));
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", rste.OtherRanks(gm.Sport, gm.Pos, nBaseRank)));
+                        if (rste == null)
+                            {
+                            sName = "<unknown>";
+                            sOtherRanks = "";
+                            nBaseRank = 0;
+                            sPhone = "";
+                            }
+                        else
+                            {
+                            sPhone = rste.CellPhone;
+                            sName = rste.Name;
+                            nBaseRank = rste.Rank(String.Format("{0}, {1}", gm.Sport, gm.Pos));
+                            sOtherRanks = rste.OtherRanks(gm.Sport, gm.Pos, nBaseRank);
+                            }
+                        
+                        sw.WriteLine(String.Format("<td class='rosterInner'>{0} ({1})", gm.Pos, nBaseRank));
+                        sw.WriteLine(String.Format("<td class='rosterInnerName'>{0}", sName));
+                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", sPhone));
+                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", sOtherRanks));
                         sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Status));
                         }
                     }
@@ -1980,7 +1998,7 @@ namespace ArbWeb
 			    ----------------------------------------------------------------------------*/
             private static bool FMatchGameTotalLine(string[] rgsFields)
             {
-                return Regex.Match(rgsFields[13], "Total:").Success;
+                return Regex.Match(rgsFields[13], "Total:").Success || Regex.Match(rgsFields[14], "Total:").Success;
             }
 
             /* F  M A T C H  G A M E  E M P T Y */
