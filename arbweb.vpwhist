@@ -7,7 +7,7 @@ ArbWeb.vpj=,Debug|AnyCPU
 ..\liblet\cs\TCore.UI\TCore.UI.vpj=,Debug|AnyCPU
 ..\liblet\cs\TCore.Util\TCore.Util.vpj=,Debug|AnyCPU
 [ProjectDates]
-ArbWeb.csproj=20160522222915446
+ArbWeb.csproj=20171015212127886
 ..\liblet\cs\TCore.Settings\TCore.Settings.csproj=20151019003540595
 ..\liblet\cs\TCore.CmdLine\cmdline.csproj=20150216022944032
 ..\liblet\cs\TCore.UI\TCore.UI.csproj=20151104011445485

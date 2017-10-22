@@ -433,6 +433,7 @@ namespace ArbWeb
                     {
                     throw (new Exception(
                         "This is probably rstt.Full - this was never updated to account for the phone fields we now write out."));
+#if deadcode
                     m_sDateOfBirth = rgs[12];
                     m_sDateJoined = rgs[13];
                     m_sGamesPerDay = rgs[14];
@@ -443,6 +444,7 @@ namespace ArbWeb
                     m_fReady = rgs[18] == "1" ? true : false;
                     m_fActive = rgs[19] == "1" ? true : false;
                     i = 20;
+#endif
                     }
                 else
                     {
@@ -659,9 +661,11 @@ namespace ArbWeb
                 throw (new Exception("No idea if this code works anymore..."));
                 // ranks start at column 17 and go until we see "Misc..." (or run out of fields)
 
+#if deadcode
                 rstt = Roster.RSTT.Full;
                 iRank = 17;
-                }
+#endif
+            }
 
             List<string> pls = new List<string>();
 
@@ -828,7 +832,7 @@ namespace ArbWeb
 
         public List<string> PlsRankings { get { return m_plsRankings; } set { m_plsRankings = value; } }
 
-        public List<string> PlsMisc { get { return m_plsMisc; } }
+        public List<string> PlsMisc { get => m_plsMisc; set => m_plsMisc = value; }
 
         /* R E A D  R O S T E R */
         /*----------------------------------------------------------------------------

@@ -169,9 +169,13 @@ namespace ArbWeb
             return true;
         }
 
-        void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, ref RosterEntry rste)
+        void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, ref RosterEntry rste, Roster rstBuilding)
         {
-            rste.m_plsMisc = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, null);
+            List<string> plsMiscBuilding = rstBuilding.PlsMisc;
+
+            rste.m_plsMisc = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, null, null, ref plsMiscBuilding);
+            rstBuilding.PlsMisc = plsMiscBuilding;
+
             if (rste.m_plsMisc.Count == 0)
                 throw new Exception("couldn't extract misc field for official");
         }
@@ -184,7 +188,11 @@ namespace ArbWeb
             if (rsteNew.FEqualsMisc(rsteServer))
                 return;
 
-            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc);
+            List<string> plsMiscServer = rstServer.PlsMisc;
+
+            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc, rst.PlsMisc, ref plsMiscServer);
+
+            rstServer.PlsMisc = plsMiscServer;
 
             if (plsValue.Count == 0)
                 throw new Exception("couldn't extract misc field for official");
@@ -199,14 +207,50 @@ namespace ArbWeb
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
-        private void UpdateMisc(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste)
+        private void UpdateMisc(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, Roster rstBuilding)
         {
             if (rst == null)
-                FetchMiscFieldsFromServer(sEmail, sOfficialID, ref rste);
+                FetchMiscFieldsFromServer(sEmail, sOfficialID, ref rste, rstBuilding);
             else
                 SetServerMiscFields(sEmail, sOfficialID, rst, rstServer, ref rste);
         }
 
+        private static string MiscLabelFromControl(IHTMLElement ihe)
+        {
+            IHTMLElement iheParent;
+
+            iheParent = ihe;
+            do
+                {
+                iheParent = iheParent.parentElement;
+                } while (iheParent != null && String.Compare(iheParent.tagName, "TR", StringComparison.InvariantCultureIgnoreCase) != 0);
+
+            if (iheParent == null)
+                return null;
+
+            // now, find the first TD child
+            IHTMLElementCollection ihecChildren;
+
+            ihecChildren = (IHTMLElementCollection)iheParent.children;
+
+            foreach (IHTMLElement iheChild in ihecChildren)
+                {
+                if (String.Compare(iheChild.tagName, "TD", StringComparison.InvariantCultureIgnoreCase) == 0)
+                    return iheChild.innerText.Trim();
+                }
+
+            return null;
+
+        }
+
+        static int IMiscFromMiscName(List<string>plsMiscMap, string sMiscName)
+        {
+            for (int i = 0; i < plsMiscMap.Count; i++)
+                if (String.Compare(plsMiscMap[i], sMiscName, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    return i;
+
+            return -1;
+        }
         /* S Y N C  P L S  M I S C  W I T H  S E R V E R */
         /*----------------------------------------------------------------------------
         	%%Function: SyncPlsMiscWithServer
@@ -216,8 +260,12 @@ namespace ArbWeb
             navigate to the custom fields page and return the values. if plsMiscNew
             is supplied, then make sure the server matches that, and return fNeedSave
             to let caller know that the page needs to be saved
+
+            This will make sure to use plsMiscMapNew to get the right misc value into
+            the right server control.  It will also build up plsMiscMapServer so
+            we have a correct order map for the pls that we return to the caller.
         ----------------------------------------------------------------------------*/
-        private List<string> SyncPlsMiscWithServer(IHTMLDocument2 oDoc2, string sEmail, string sOfficialID, List<string> plsMiscNew)
+        private List<string> SyncPlsMiscWithServer(IHTMLDocument2 oDoc2, string sEmail, string sOfficialID, List<string> plsMiscNew, List<string>plsMiscMapNew, ref List<string>plsMiscMapServer)
         {
             bool fNeedSave = false;
             string sValue;
@@ -240,8 +288,11 @@ namespace ArbWeb
 
             foreach (IHTMLInputElement ihie in hec)
                 {
-                if (String.Compare(ihie.type, "text", true) == 0)
+                if (String.Compare(ihie.type, "text", true) == 0 && ihie.name != null && ihie.name.Contains(s_MiscField_EditControlSubstring))
                     {
+                    // figure out which misc field this is
+                    string sMiscLabel = MiscLabelFromControl((IHTMLElement)ihie);
+
                     // cool, extract the value
                     sValue = ihie.value;
                     if (sValue == null)
@@ -249,7 +300,12 @@ namespace ArbWeb
 
                     if (plsMiscNew != null)
                         {
-                        if (plsMiscNew.Count <= plsValue.Count
+                        int iMisc = IMiscFromMiscName(plsMiscMapNew, sMiscLabel);
+
+                        if (iMisc == -1)
+                            throw new Exception("couldn't find misc field name! (OR maybe this is a new misc field that the roster doesn't know about, in which case we should just set it to empty, but this isn't debugged yet so we don't trust that decision yet, hence the exception");
+
+                        if (iMisc == -1 // couldn't find this server misc field in the roster's list of misc fields...set to empty
                             && ihie.value != null
                             && ihie.value.Length > 0)
                             {
@@ -257,14 +313,30 @@ namespace ArbWeb
                             ihie.value = "";
                             fNeedSave = true;
                             }
-                        else if (plsMiscNew.Count > plsValue.Count
-                                 && String.Compare(plsMiscNew[plsValue.Count], sValue, true /*ignoreCase*/) != 0)
+                        else if (iMisc != -1
+                                 && String.Compare(plsMiscNew[iMisc], sValue, true /*ignoreCase*/) != 0)
                             {
-                            ihie.value = plsMiscNew[plsValue.Count];
+                            ihie.value = plsMiscNew[iMisc];
                             fNeedSave = true;
                             }
                         }
-                    plsValue.Add(sValue);
+                    // we always keep the server plsMiscMap up to date
+                    int iMiscServer = IMiscFromMiscName(plsMiscMapServer, sMiscLabel);
+
+                    if (iMiscServer == -1)
+                        {
+                        plsValue.Add(sValue);
+                        plsMiscMapServer.Add(sMiscLabel);
+                        }
+                    else
+                        {
+                        if (plsValue.Count <= iMiscServer)
+                            {
+                            while (plsValue.Count <= iMiscServer)
+                                plsValue.Add("");
+                            }
+                        plsValue[iMiscServer] = sValue;
+                        }
                     // don't break here -- just get the next misc value...
                     }
                 }
@@ -1257,7 +1329,7 @@ namespace ArbWeb
                         }
 
                     if (!fMarkOnly)
-                        UpdateMisc(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, rst, rstServer, ref rste);
+                        UpdateMisc(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, rst, rstServer, ref rste, rstBuilding);
 
                     // don't call UpdateInfo on a newly added official
                     if (plrsteLimit == null && (rst == null || !rst.IsQuick || rst.IsUploadableQuickroster))
@@ -1343,6 +1415,11 @@ namespace ArbWeb
 
 			If rst == null, then we're downloading the roster.  Otherwise, we are
 			uploading
+
+            FUTURE: Make this a generic "VisitRoster" with callbacks or methods
+            specific to upload or download (i.e. core out the code shared by 
+            upload and download, then make separate upload and download functions
+            with no duplication)
 		----------------------------------------------------------------------------*/
         private void HandleRoster(Roster rst, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
         {
