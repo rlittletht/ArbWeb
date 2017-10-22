@@ -56,7 +56,8 @@ namespace ArbWeb
         private const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
 
         private const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
-        private const string _sid_Home_Anchor_ActingLink = "ctl00_ActingLink"; // ok2010
+        // private const string _sid_Home_Anchor_ActingLink = "ctl00_ActingLink"; // ok2010
+        private const string _sid_Home_Anchor_NeedHelpLink = "ctl00_PageHelpTextLink"; // ok2017
 
         // Assigning (games view) links
         private const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2010
@@ -208,6 +209,8 @@ namespace ArbWeb
 
         private const string _sid_Login_Anchor_TypeLink_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
         private const string _sid_Login_Anchor_TypeLink_Suffix = "_UserTypeLink";
+
+        private const string s_MiscField_EditControlSubstring = "txtMiscFieldValue";
 
         #endregion
 
@@ -1460,8 +1463,6 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoEnsureLoggedIn()
         {
-            IHTMLDocument2 oDoc2;
-
             if (m_fLoggedIn == false)
                 {
                 m_srpt.AddMessage("Logging in...");
@@ -1472,8 +1473,8 @@ namespace ArbWeb
                     throw (new Exception("could not navigate to arbiter homepage!"));
 
                 // if this control is already there, then we were auto-logged in...
-                oDoc2 = m_awc.Document2;
-                if (!ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink))
+                IHTMLDocument2 oDoc2 = m_awc.Document2;
+                if (!ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_NeedHelpLink))
                     {
                     IHTMLDocument oDoc = m_awc.Document;
                     IHTMLDocument3 oDoc3 = m_awc.Document3;
@@ -1485,7 +1486,6 @@ namespace ArbWeb
                     m_awc.FClickControl(oDoc2, _s_Home_Button_SignIn);
                     m_awc.FWaitForNavFinish();
                     }
-                oDoc2 = m_awc.Document2;
 
                 int count = 0;
 
@@ -1499,7 +1499,7 @@ namespace ArbWeb
 
                 // at this point, we are either going to get to the main page, or we are going to get a
                 // page asking us which account to login to
-                while (count < 100 && (ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Div_PnlAccounts) || !ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink)))
+                while (count < 100 && (ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Div_PnlAccounts) || !ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_NeedHelpLink)))
                     {
                     if (m_cbShowBrowser.Checked == false)
                         {
@@ -1511,6 +1511,7 @@ namespace ArbWeb
                     Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
                     oDoc2 = m_awc.Document2;
+                    count++;
                     }
 
                 if (fToggledBrowser)
@@ -1520,8 +1521,8 @@ namespace ArbWeb
                     }
 
                 oDoc2 = m_awc.Document2;
-                if (!ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_ActingLink))
-                    MessageBox.Show("Login failed for arbiter.net!");
+                if (!ArbWebControl.FCheckForControl(oDoc2, _sid_Home_Anchor_NeedHelpLink))
+                    MessageBox.Show("Login failed for ArbiterOne!");
                 else
                     m_fLoggedIn = true;
 
@@ -1617,9 +1618,17 @@ namespace ArbWeb
             System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
         }
 
+
         delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer, HandleRosterPostUpdateDelegate hrpu);
 
-        private async void DoUploadRosterWork()
+
+        /*----------------------------------------------------------------------------
+        	%%Function: DoUploadRosterWork
+        	%%Qualified: ArbWeb.AwMainForm.DoUploadRosterWork
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private async void DoUploadRosterWork(string sRosterToUpload)
         {
             m_srpt.AddMessage("Starting Roster upload...");
             m_srpt.PushLevel();
@@ -1636,7 +1645,8 @@ namespace ArbWeb
 
             // now, check the roster we just downloaded against the roster we just already have
 
-            string sInFile = m_pr.RosterWorking;
+            InvalRoster();
+            string sInFile = sRosterToUpload;
 
             Roster rst = RstEnsure(sInFile);
 
@@ -1656,10 +1666,28 @@ namespace ArbWeb
                 }
             else
                 {
-                HandleRoster(rst, sInFile, rstServer, null);
+                HandleRoster(rst, null, rstServer, null);
                 }
             m_srpt.PopLevel();
             m_srpt.AddMessage("Completed Roster upload.");
+        }
+
+        string SGetRosterToUpload()
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            ofd.InitialDirectory = Path.GetDirectoryName(m_pr.RosterWorking);
+            ofd.Filter = "CSV Files|*.csv";
+            if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                return ofd.FileName;
+                }
+            return null;
+        }
+
+        bool FLoadRosterToUpload()
+        {
+            return false;
         }
 
         /* D O  U P L O A D  R O S T E R */
@@ -1671,7 +1699,13 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
         private void DoUploadRoster(object sender, EventArgs e)
         {
-            Task tsk = new Task(DoUploadRosterWork);
+            string sRosterToUpload = SGetRosterToUpload();
+
+            if (sRosterToUpload == null)
+                return;
+
+
+            Task tsk = new Task(() => DoUploadRosterWork(sRosterToUpload));
 
             tsk.Start();
         }
@@ -1962,7 +1996,7 @@ namespace ArbWeb
 	        if (m_pr.LogToFile)
 	            {
 	            m_srpt.AttachLogfile(Filename.SBuildTempFilename("arblog", "log"));
-	            m_srpt.SetLogLevel(1);
+	            m_srpt.SetLogLevel(5);
 	            m_srpt.SetFilter(StatusRpt.MSGT.Body);
 	            }
 	        else

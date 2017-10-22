@@ -55,6 +55,8 @@
             this.m_cbTestOnly = new System.Windows.Forms.CheckBox();
             this.m_cbIgnoreZSports = new System.Windows.Forms.CheckBox();
             this.m_cbDownloadRosterOnUpload = new System.Windows.Forms.CheckBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.m_ebLogLevel = new System.Windows.Forms.TextBox();
             label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
@@ -316,11 +318,29 @@
             this.m_cbDownloadRosterOnUpload.Text = "Download server roster on upload";
             this.m_cbDownloadRosterOnUpload.UseVisualStyleBackColor = true;
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(18, 157);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(54, 13);
+            this.label8.TabIndex = 90;
+            this.label8.Text = "Log Level";
+            // 
+            // m_ebLogLevel
+            // 
+            this.m_ebLogLevel.Location = new System.Drawing.Point(77, 154);
+            this.m_ebLogLevel.Name = "m_ebLogLevel";
+            this.m_ebLogLevel.Size = new System.Drawing.Size(99, 20);
+            this.m_ebLogLevel.TabIndex = 91;
+            // 
             // EditProfile
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(840, 267);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.m_ebLogLevel);
             this.Controls.Add(this.m_cbDownloadRosterOnUpload);
             this.Controls.Add(this.m_cbIgnoreZSports);
             this.Controls.Add(this.m_cbLogToFile);
@@ -383,5 +403,7 @@
         private System.Windows.Forms.CheckBox m_cbTestOnly;
         private System.Windows.Forms.CheckBox m_cbIgnoreZSports;
         private System.Windows.Forms.CheckBox m_cbDownloadRosterOnUpload;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox m_ebLogLevel;
     }
 }

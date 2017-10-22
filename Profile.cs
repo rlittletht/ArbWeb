@@ -52,6 +52,9 @@ namespace ArbWeb
         private string m_sProfileName;
         private string[] m_rgsGameFilters;
         private string m_sGameFilter;
+        private int m_nLogLevel;
+
+        public int LogLevel {  get { return m_nLogLevel;} set { m_nLogLevel = value; } }
 
         public string[] GameFilters { get { return m_rgsGameFilters; } set { m_rgsGameFilters = value; } }
         public string GameFilter { get { return m_sGameFilter; } set { m_sGameFilter = value; } }
@@ -117,6 +120,7 @@ namespace ArbWeb
                                       new Settings.SettingsElt("DownloadRosterOnUpload", Settings.Type.Bool, false, 0),
                                       new Settings.SettingsElt("GameFiltersCache", Settings.Type.StrArray, new string[] {}, new string[] {}),
                                       new Settings.SettingsElt("LastGameFilter", Settings.Type.Str, "", "All Games"),
+                                      new Settings.SettingsElt("LastLogLevel", Settings.Type.Int, 0, 0), 
                                   };
         }
 
@@ -151,6 +155,7 @@ namespace ArbWeb
             m_fDownloadRosterOnUpload = m_ehProfile.FValue("DownloadRosterOnUpload");
             m_rgsGameFilters = m_ehProfile.RgsValue("GameFiltersCache");
             m_sGameFilter = m_ehProfile.SValue("LastGameFilter");
+            m_nLogLevel = m_ehProfile.NValue("LastLogLevel");
         }
 
         void SetSettingsFromData()
@@ -184,6 +189,7 @@ namespace ArbWeb
             m_ehProfile.SetFValue("DownloadRosterOnUpload", m_fDownloadRosterOnUpload);
             m_ehProfile.SetRgsValue("GameFiltersCache", m_rgsGameFilters);
             m_ehProfile.SetSValue("LastGameFilter", m_sGameFilter);
+            m_ehProfile.SetNValue("LastLogLevel", m_nLogLevel);
         }
 
         public void Load(string sProfileName)

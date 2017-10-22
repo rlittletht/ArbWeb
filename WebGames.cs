@@ -68,8 +68,6 @@ namespace ArbWeb
 
         private string TestDownload(string sTempFile, string sTestAddress)
         {
-            IHTMLDocument2 oDoc2 = null;
-
             m_srpt.LogData("LaunchTestDownload async task launched", 3, StatusRpt.MSGT.Body);
             var evtDownload = LaunchTestDownload(sTempFile, sTestAddress);
             m_srpt.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
@@ -81,8 +79,6 @@ namespace ArbWeb
 
         private string DownloadGamesToFile(string sTempFile, string sFilterReq)
         {
-            IHTMLDocument2 oDoc2 = null;
-
             EnsureLoggedIn();
 
             m_srpt.LogData("LaunchDownloadGames async task launched", 3, StatusRpt.MSGT.Body);

@@ -31,6 +31,8 @@ namespace ArbWeb
             pr.TestOnly = ep.m_cbTestOnly.Checked;
             pr.SkipZ = ep.m_cbIgnoreZSports.Checked;
             pr.DownloadRosterOnUpload = ep.m_cbDownloadRosterOnUpload.Checked;
+            pr.LogLevel = Int32.Parse(ep.m_ebLogLevel.Text);
+
         }
 
         public static bool FShowEditProfile(Profile pr)
@@ -48,6 +50,7 @@ namespace ArbWeb
             ep.m_cbTestOnly.Checked = pr.TestOnly;
             ep.m_cbIgnoreZSports.Checked = pr.SkipZ;
             ep.m_cbDownloadRosterOnUpload.Checked = pr.DownloadRosterOnUpload;
+            ep.m_ebLogLevel.Text = pr.LogLevel.ToString();
 
             if (ep.ShowDialog() == DialogResult.OK)
                 {
