@@ -1298,14 +1298,17 @@ namespace ArbWeb
                 }
         }
 
-
-        /* D O  C O R E  R O S T E R  U P D A T E */
         /*----------------------------------------------------------------------------
-			%%Function: DoCoreRosterUpdate
-			%%Qualified: ArbWeb.AwMainForm.DoCoreRosterUpdate
-			%%Contact: rlittle
+        	%%Function: DoCoreRosterSync
+        	%%Qualified: ArbWeb.AwMainForm.DoCoreRosterSync
+        	%%Contact: rlittle
+        	
+            Do the core roster syncing. 
+            
+            We are either syncing server->local (download) 
+            or local->server (upload).
 
-			Do the core roster updating.  We are being given the list of links on
+            We are being given the list of links on
 			the official's edit page, the roster that we are uploading (if any),
 			and a list of officials to limit our handling to (this is used when 
 			we just added new officials and we just want to update their info/misc
@@ -1314,8 +1317,8 @@ namespace ArbWeb
             rstServer is the latest roster from the server -- useful for quickly
             determining what we need to update (without having to check the 
             server again)
-		----------------------------------------------------------------------------*/
-        private void DoCoreRosterUpdate(PGL pgl, Roster rst, Roster rstBuilding, Roster rstServer, List<RosterEntry> plrsteLimit)
+        ----------------------------------------------------------------------------*/
+        private void DoCoreRosterSync(PGL pgl, Roster rst, Roster rstBuilding, Roster rstServer, List<RosterEntry> plrsteLimit)
         {
             pgl.iCur = 0;
             Dictionary<string, bool> mpOfficials = new Dictionary<string, bool>();
@@ -1455,7 +1458,7 @@ namespace ArbWeb
                 rstBuilding = new Roster();
 
             pgl = PglGetOfficialsFromWeb();
-            DoCoreRosterUpdate(pgl, rst, rstBuilding, rstServer, null /*plrsteLimit*/);
+            DoCoreRosterSync(pgl, rst, rstBuilding, rstServer, null /*plrsteLimit*/);
 
             handleRosterPostUpdate?.Invoke(rstBuilding);
 
@@ -1477,7 +1480,7 @@ namespace ArbWeb
                         // so we get the misc fields updated.  Then fall through to the rankings and do everyone at
                         // once
                         pgl = PglGetOfficialsFromWeb(); // refresh to get new officials
-                        DoCoreRosterUpdate(pgl, rst, null /*rstBuilding*/, rstServer, plrsteUnmarked);
+                        DoCoreRosterSync(pgl, rst, null /*rstBuilding*/, rstServer, plrsteUnmarked);
                         // now we can fall through to our core ranking handling...
                         }
                     }
