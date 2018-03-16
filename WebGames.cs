@@ -60,10 +60,10 @@ namespace ArbWeb
 
         Dictionary<string, string> MpFetchGameFilters()
         {
-            if (!m_awc.FNavToPage(_s_Assigning))
+            if (!m_awc.FNavToPage(WebCore._s_Assigning))
                 throw (new Exception("could not navigate to games view"));
 
-            return ArbWebControl.MpGetSelectValues(m_srpt, m_awc.Document2, _s_Assigning_Select_Filters);
+            return ArbWebControl.MpGetSelectValues(m_srpt, m_awc.Document2, WebCore._s_Assigning_Select_Filters);
         }
 
         private string TestDownload(string sTempFile, string sTestAddress)
@@ -168,11 +168,11 @@ namespace ArbWeb
             while (count < 2)
                 {
                 // ok, now we're at the main assigner page...
-                if (!m_awc.FNavToPage(_s_Assigning))
+                if (!m_awc.FNavToPage(WebCore._s_Assigning))
                     throw (new Exception("could not navigate to games view"));
 
                 oDoc2 = m_awc.Document2;
-                sFilter = m_awc.SGetFilterID(oDoc2, _s_Assigning_Select_Filters, sFilterReq);
+                sFilter = m_awc.SGetFilterID(oDoc2, WebCore._s_Assigning_Select_Filters, sFilterReq);
                 if (sFilter != null)
                     break;
 
@@ -185,16 +185,16 @@ namespace ArbWeb
             // now set that filter
 
             m_awc.ResetNav();
-            m_awc.FSetSelectControlText(oDoc2, _s_Assigning_Select_Filters, sFilterReq, false);
+            m_awc.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Select_Filters, sFilterReq, false);
             m_awc.FWaitForNavFinish();
 
-            if (!m_awc.FNavToPage(_s_Assigning_PrintAddress + sFilter))
+            if (!m_awc.FNavToPage(WebCore._s_Assigning_PrintAddress + sFilter))
                 throw (new Exception("could not navigate to the reports page!"));
 
             // setup the file formats and go!
 
             oDoc2 = m_awc.Document2;
-            m_awc.FSetSelectControlText(oDoc2, _s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
+            m_awc.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
 
             m_srpt.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sTempFile);
@@ -206,7 +206,7 @@ namespace ArbWeb
 
             m_srpt.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
             Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "Schedule.xls", "Schedule", sTempFile, null, evtDownload);
-            m_awc.FClickControlNoWait(oDoc2, _s_Assigning_Reports_Submit_Print);
+            m_awc.FClickControlNoWait(oDoc2, WebCore._s_Assigning_Reports_Submit_Print);
             return evtDownload;
         }
 

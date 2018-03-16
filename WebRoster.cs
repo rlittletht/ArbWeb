@@ -53,14 +53,14 @@ namespace ArbWeb
         {
             EnsureLoggedIn();
 
-            ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
+            ThrowIfNot(m_awc.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
             m_awc.FWaitForNavFinish();
 
             // from the officials view, make sure we are looking at active officials
             m_awc.ResetNav();
             IHTMLDocument2 oDoc2 = m_awc.Document2;
 
-            m_awc.FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
+            m_awc.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, "All Officials", true);
             m_awc.FWaitForNavFinish();
         }
 
@@ -270,7 +270,7 @@ namespace ArbWeb
             bool fNeedSave = false;
             string sValue;
 
-            if (!m_awc.FNavToPage(_s_EditUser_MiscFields + sOfficialID))
+            if (!m_awc.FNavToPage(WebCore._s_EditUser_MiscFields + sOfficialID))
                 {
                 throw (new Exception("could not navigate to the officials page"));
                 }
@@ -288,7 +288,7 @@ namespace ArbWeb
 
             foreach (IHTMLInputElement ihie in hec)
                 {
-                if (String.Compare(ihie.type, "text", true) == 0 && ihie.name != null && ihie.name.Contains(s_MiscField_EditControlSubstring))
+                if (String.Compare(ihie.type, "text", true) == 0 && ihie.name != null && ihie.name.Contains(WebCore.s_MiscField_EditControlSubstring))
                     {
                     // figure out which misc field this is
                     string sMiscLabel = MiscLabelFromControl((IHTMLElement)ihie);
@@ -346,14 +346,14 @@ namespace ArbWeb
                 {
                 m_srpt.AddMessage(String.Format("Updating misc info...", sEmail));
                 m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_MiscFields_Button_Save), "Couldn't find save button");
+                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_MiscFields_Button_Save), "Couldn't find save button");
 
                 m_awc.FWaitForNavFinish();
                 }
             else
                 {
                 m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
+                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
 
                 m_awc.FWaitForNavFinish();
                 }
@@ -486,11 +486,11 @@ namespace ArbWeb
 
         static void SetPhoneNames(int iPhoneRow, out string sPhoneNum, out string sidPhoneNum, out string sPhoneType, out string sPhoneCarrier, out string sPhonePublicNext)
         {
-            sPhoneNum = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhoneNumber_Prefix, iPhoneRow, _s_EditUser_PhoneNumber_Suffix);
-            sidPhoneNum = String.Format("{0}ctl{1:00}{2}", _sid_EditUser_PhoneNumber_Prefix, iPhoneRow, _sid_EditUser_PhoneNumber_Suffix);
-            sPhoneType = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhoneType_Prefix, iPhoneRow, _s_EditUser_PhoneType_Suffix);
-            sPhoneCarrier = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhoneCarrier_Prefix, iPhoneRow, _s_EditUser_PhoneCarrier_Suffix);
-            sPhonePublicNext = String.Format("{0}ctl{1:00}{2}", _s_EditUser_PhonePublic_Prefix, iPhoneRow, _s_EditUser_PhonePublic_Suffix);
+            sPhoneNum = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhoneNumber_Prefix, iPhoneRow, WebCore._s_EditUser_PhoneNumber_Suffix);
+            sidPhoneNum = String.Format("{0}ctl{1:00}{2}", WebCore._sid_EditUser_PhoneNumber_Prefix, iPhoneRow, WebCore._sid_EditUser_PhoneNumber_Suffix);
+            sPhoneType = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhoneType_Prefix, iPhoneRow, WebCore._s_EditUser_PhoneType_Suffix);
+            sPhoneCarrier = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhoneCarrier_Prefix, iPhoneRow, WebCore._s_EditUser_PhoneCarrier_Suffix);
+            sPhonePublicNext = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhonePublic_Prefix, iPhoneRow, WebCore._s_EditUser_PhonePublic_Suffix);
         }
 
         [TestCase(1, "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$txtPhone", "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_ctl01_txtPhone", "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$ddlPhoneType", "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$ddlCarrier", "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$chkPublic")]
@@ -519,7 +519,7 @@ namespace ArbWeb
             bool fNeedSave = false;
 
             // ok, nav to the page and scrape
-            if (!m_awc.FNavToPage(_s_EditUser + sOfficialID))
+            if (!m_awc.FNavToPage(WebCore._s_EditUser + sOfficialID))
                 {
                 throw (new Exception("could not navigate to the officials page"));
                 }
@@ -552,7 +552,7 @@ namespace ArbWeb
 
                 if (String.Compare(ihie.type, "text", true) == 0 && ihie.name != null)
                     {
-                    if (ihie.name.Contains(_s_EditUser_Email))
+                    if (ihie.name.Contains(WebCore._s_EditUser_Email))
                         {
 //						if (ihie.value == null && rsteOut.m_sEmail != null && rsteOut.m_sEmail != "")
                         // continue;
@@ -567,22 +567,22 @@ namespace ArbWeb
                             m_srpt.AddMessage(String.Format("NULL Email address for {0},{1}", rsteOut.m_sFirst, rsteOut.m_sLast), StatusBox.StatusRpt.MSGT.Error);
                             }
                         }
-                    MatchAssignText(ihie, _s_EditUser_FirstName, rsteNew?.m_sFirst, ref rsteOut.m_sFirst, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_LastName, rsteNew?.m_sLast, ref rsteOut.m_sLast, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_Address1, rsteNew?.m_sAddress1, ref rsteOut.m_sAddress1, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_Address2, rsteNew?.m_sAddress2, ref rsteOut.m_sAddress2, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_City, rsteNew?.m_sCity, ref rsteOut.m_sCity, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_State, rsteNew?.m_sState, ref rsteOut.m_sState, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_PostalCode, rsteNew?.m_sZip, ref rsteOut.m_sZip, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_OfficialNumber, rsteNew?.m_sOfficialNumber, ref rsteOut.m_sOfficialNumber, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, _s_EditUser_DateJoined, rsteNew?.m_sDateJoined, ref rsteOut.m_sDateJoined, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_FirstName, rsteNew?.m_sFirst, ref rsteOut.m_sFirst, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_LastName, rsteNew?.m_sLast, ref rsteOut.m_sLast, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_Address1, rsteNew?.m_sAddress1, ref rsteOut.m_sAddress1, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_Address2, rsteNew?.m_sAddress2, ref rsteOut.m_sAddress2, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_City, rsteNew?.m_sCity, ref rsteOut.m_sCity, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_State, rsteNew?.m_sState, ref rsteOut.m_sState, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_PostalCode, rsteNew?.m_sZip, ref rsteOut.m_sZip, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_OfficialNumber, rsteNew?.m_sOfficialNumber, ref rsteOut.m_sOfficialNumber, ref fNeedSave, ref fFailUpdate);
+                    MatchAssignText(ihie, WebCore._s_EditUser_DateJoined, rsteNew?.m_sDateJoined, ref rsteOut.m_sDateJoined, ref fNeedSave, ref fFailUpdate);
                     if (rsteNew == null || rsteNew.IsUploadableQuickroster)
                         {
-                        MatchAssignText(ihie, _s_EditUser_DateOfBirth, rsteNew?.m_sDateOfBirth, ref rsteOut.m_sDateOfBirth, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, _s_EditUser_GamesPerDay, rsteNew?.m_sGamesPerDay, ref rsteOut.m_sGamesPerDay, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, _s_EditUser_GamesPerWeek, rsteNew?.m_sGamesPerWeek, ref rsteOut.m_sGamesPerWeek, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, _s_EditUser_GamesTotal, rsteNew?.m_sTotalGames, ref rsteOut.m_sTotalGames, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, _s_EditUser_WaitMinutes, rsteNew?.m_sWaitMinutes, ref rsteOut.m_sWaitMinutes, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, WebCore._s_EditUser_DateOfBirth, rsteNew?.m_sDateOfBirth, ref rsteOut.m_sDateOfBirth, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, WebCore._s_EditUser_GamesPerDay, rsteNew?.m_sGamesPerDay, ref rsteOut.m_sGamesPerDay, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, WebCore._s_EditUser_GamesPerWeek, rsteNew?.m_sGamesPerWeek, ref rsteOut.m_sGamesPerWeek, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, WebCore._s_EditUser_GamesTotal, rsteNew?.m_sTotalGames, ref rsteOut.m_sTotalGames, ref fNeedSave, ref fFailUpdate);
+                        MatchAssignText(ihie, WebCore._s_EditUser_WaitMinutes, rsteNew?.m_sWaitMinutes, ref rsteOut.m_sWaitMinutes, ref fNeedSave, ref fFailUpdate);
                         }
 
                     if (ihie.name.Contains(sPhoneNumberNext))
@@ -608,7 +608,7 @@ namespace ArbWeb
                         // add this phone...
                         m_awc.ResetNav();
                         m_awc.ReportNavState("Before click control");
-                        ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
+                        ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
                         m_awc.ReportNavState("After click control");
                         m_awc.FWaitForNavFinish();
                         oDoc2 = m_awc.Document2;
@@ -627,13 +627,13 @@ namespace ArbWeb
                 {
                 m_srpt.AddMessage(String.Format("Updating general info...", rsteOut.Email));
                 m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_OfficialsEdit_Button_Save), "couldn't find save button");
+                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_OfficialsEdit_Button_Save), "couldn't find save button");
                 m_awc.FWaitForNavFinish();
                 }
             else
                 {
                 m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
+                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
                 m_awc.FWaitForNavFinish();
                 }
         }
@@ -698,16 +698,16 @@ namespace ArbWeb
             // first, unrank everyone that needs unranked
             if (plsUnrank.Count > 0)
                 {
-                ArbWebControl.FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
+                ArbWebControl.FResetMultiSelectOptions(oDoc2, WebCore._s_RanksEdit_Select_Ranked);
                 foreach (string s in plsUnrank)
                     {
-                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
+                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, WebCore._s_RanksEdit_Select_Ranked, mpRankedId[s], true))
                         throw new Exception("couldn't select an official for unranking!");
                     }
 
                 // now, do the unrank
                 awc.ResetNav();
-                awc.FClickControl(oDoc2, _s_RanksEdit_Button_Unrank);
+                awc.FClickControl(oDoc2, WebCore._s_RanksEdit_Button_Unrank);
                 awc.FWaitForNavFinish();
                 oDoc2 = awc.Document2;
                 }
@@ -716,17 +716,17 @@ namespace ArbWeb
             // we will do this once for every new rank we are setting
             foreach (int nRank in mpRerank.Keys)
                 {
-                ArbWebControl.FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_Ranked);
+                ArbWebControl.FResetMultiSelectOptions(oDoc2, WebCore._s_RanksEdit_Select_Ranked);
                 foreach (string s in mpRerank[nRank])
                     {
-                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_Ranked, mpRankedId[s], true))
+                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, WebCore._s_RanksEdit_Select_Ranked, mpRankedId[s], true))
                         throw new Exception("couldn't select an official for reranking!");
                     }
-                ArbWebControl.FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
+                ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
 
                 // now, rank'em
                 awc.ResetNav();
-                awc.FClickControl(oDoc2, _s_RanksEdit_Button_ReRank);
+                awc.FClickControl(oDoc2, WebCore._s_RanksEdit_Button_ReRank);
                 awc.FWaitForNavFinish();
                 oDoc2 = awc.Document2;
                 }
@@ -735,20 +735,20 @@ namespace ArbWeb
 
             foreach (int nRank in mpRank.Keys)
                 {
-                ArbWebControl.FResetMultiSelectOptions(oDoc2, _s_RanksEdit_Select_NotRanked);
+                ArbWebControl.FResetMultiSelectOptions(oDoc2, WebCore._s_RanksEdit_Select_NotRanked);
                 foreach (string s in mpRank[nRank])
                     {
-                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, _s_RanksEdit_Select_NotRanked, s, false))
+                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, WebCore._s_RanksEdit_Select_NotRanked, s, false))
                         srpt.AddMessage(String.Format("Could not select an official for ranking: {0}", s),
                                         StatusRpt.MSGT.Error);
                     // throw new Exception("couldn't select an official for ranking!");
                     }
 
-                ArbWebControl.FSetInputControlText(oDoc2, _s_RanksEdit_Input_Rank, nRank.ToString(), false);
+                ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
 
                 // now, rank'em
                 awc.ResetNav();
-                awc.FClickControl(oDoc2, _s_RanksEdit_Button_Rank);
+                awc.FClickControl(oDoc2, WebCore._s_RanksEdit_Button_Rank);
                 awc.FWaitForNavFinish();
                 oDoc2 = awc.Document2;
                 }
@@ -846,7 +846,7 @@ namespace ArbWeb
 
             oDoc2 = m_awc.Document2;
 
-            Dictionary<string, string> mpRankFilter = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, _s_RanksEdit_Select_PosNames);
+            Dictionary<string, string> mpRankFilter = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, WebCore._s_RanksEdit_Select_PosNames);
             List<string> plsRankings = PlsRankingsBuildFromRst(rst, rstBuilding, mpRankFilter);
 
             if (m_pr.SkipZ)
@@ -959,11 +959,11 @@ namespace ArbWeb
 
             // make sure we have the right checkbox states 
             // (Show unranked only = false, Show Active only = false)
-            ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Active);
-            ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, _s_RanksEdit_Checkbox_Rank);
+            ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, WebCore._s_RanksEdit_Checkbox_Active);
+            ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, WebCore._s_RanksEdit_Checkbox_Rank);
 
             m_awc.ResetNav();
-            m_awc.FSetSelectControlText(m_awc.Document2, _s_RanksEdit_Select_PosNames, sRankPosition, false);
+            m_awc.FSetSelectControlText(m_awc.Document2, WebCore._s_RanksEdit_Select_PosNames, sRankPosition, false);
             m_awc.FWaitForNavFinish();
             return true;
         }
@@ -977,13 +977,13 @@ namespace ArbWeb
             Dictionary<string, string> mpT;
 
             // unranked officials
-            mpT = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, _s_RanksEdit_Select_NotRanked);
+            mpT = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, WebCore._s_RanksEdit_Select_NotRanked);
 
             foreach (string s in mpT.Keys)
                 plsUnranked.Add(s);
 
             // ranked officials
-            mpT = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, _s_RanksEdit_Select_Ranked);
+            mpT = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, WebCore._s_RanksEdit_Select_Ranked);
 
             foreach (string s in mpT.Keys)
                 {
@@ -1048,7 +1048,7 @@ namespace ArbWeb
         private void NavigateArbiterRankings()
         {
             m_awc.ResetNav();
-            if (!m_awc.FNavToPage(_s_RanksEdit))
+            if (!m_awc.FNavToPage(WebCore._s_RanksEdit))
                 throw (new Exception("could not navigate to the bulk rankings page"));
             m_awc.FWaitForNavFinish();
         }
@@ -1063,7 +1063,7 @@ namespace ArbWeb
 
                 // go to the add user page
                 m_awc.ResetNav();
-                if (!m_awc.FNavToPage(_s_AddUser))
+                if (!m_awc.FNavToPage(WebCore._s_AddUser))
                     {
                     throw (new Exception("could not navigate to the add user page"));
                     }
@@ -1073,18 +1073,18 @@ namespace ArbWeb
 
                 oDoc2 = m_awc.Document2;
 
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_FirstName, rste.m_sFirst, false /*fCheck*/), "Failed to find first name control");
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_LastName, rste.m_sLast, false /*fCheck*/), "Failed to find last name control");
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_Email, rste.m_sEmail, false /*fCheck*/), "Failed to find email control");
+                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_FirstName, rste.m_sFirst, false /*fCheck*/), "Failed to find first name control");
+                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_LastName, rste.m_sLast, false /*fCheck*/), "Failed to find last name control");
+                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Email, rste.m_sEmail, false /*fCheck*/), "Failed to find email control");
 
                 m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
                 m_awc.FWaitForNavFinish();
 
                 // we are either adding a new user, or a user that arbiter already knows
                 // about...
                 // 
-                if (!ArbWebControl.FCheckForControl(oDoc2, _sid_AddUser_Input_Address1))
+                if (!ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_AddUser_Input_Address1))
                     {
                     m_srpt.AddMessage(String.Format("Email {0} already in use", rste.m_sEmail), StatusBox.StatusRpt.MSGT.Warning);
 
@@ -1107,14 +1107,14 @@ namespace ArbWeb
                             {
                             // ok, then just cancel...
                             m_awc.ResetNav();
-                            ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
+                            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
                             m_awc.FWaitForNavFinish();
                             continue;
                             }
                         }
                     // cool, just go on...
                     m_awc.ResetNav();
-                    ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
                     m_awc.FWaitForNavFinish();
 
                     // sigh, now we're being asked whether we want to add local personal info.  of course
@@ -1126,7 +1126,7 @@ namespace ArbWeb
 
                     // cool, let's just move on again...
                     m_awc.ResetNav();
-                    ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
                     m_awc.FWaitForNavFinish();
 
                     // now fallthrough to the "Official's info" page handling, which is common
@@ -1134,14 +1134,14 @@ namespace ArbWeb
                 else
                     {
                     // if there's an address control, then this is a brand new official
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_Address1, rste.m_sAddress1, false /*fCheck*/), "Failed to find address1 control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_Address1, rste.m_sAddress2, false /*fCheck*/), "Failed to find address2 control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_City, rste.m_sCity, false /*fCheck*/), "Failed to find city control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_State, rste.m_sState, false /*fCheck*/), "Failed to find state control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, _s_AddUser_Input_Zip, rste.m_sZip, false /*fCheck*/), "Failed to find zip control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.m_sAddress1, false /*fCheck*/), "Failed to find address1 control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.m_sAddress2, false /*fCheck*/), "Failed to find address2 control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_City, rste.m_sCity, false /*fCheck*/), "Failed to find city control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_State, rste.m_sState, false /*fCheck*/), "Failed to find state control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Zip, rste.m_sZip, false /*fCheck*/), "Failed to find zip control");
 
-                    string[] rgsPhoneNums = new string[] {_s_AddUser_Input_PhoneNum1, _s_AddUser_Input_PhoneNum2, _s_AddUser_Input_PhoneNum3};
-                    string[] rgsPhoneTypes = new string[] {_s_AddUser_Input_PhoneType1, _s_AddUser_Input_PhoneType2, _s_AddUser_Input_PhoneType3};
+                    string[] rgsPhoneNums = new string[] {WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2, WebCore._s_AddUser_Input_PhoneNum3};
+                    string[] rgsPhoneTypes = new string[] {WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2, WebCore._s_AddUser_Input_PhoneType3};
 
                     int iPhone = 0;
                     while (iPhone < 3)
@@ -1159,7 +1159,7 @@ namespace ArbWeb
                         }
 
                     m_awc.ResetNav();
-                    ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
                     m_awc.FWaitForNavFinish();
 
                     // fallthrough to the common handling below
@@ -1168,18 +1168,18 @@ namespace ArbWeb
                 // now we are on the last add official page
                 // the only thing that *might* be interesting on this page is the active button which is
                 // not checked by default...
-                ThrowIfNot(ArbWebControl.FCheckForControl(oDoc2, _sid_AddUser_Input_IsActive), "bad hierarchy in add user.  expected screen with 'active' checkbox, didn't find it.");
+                ThrowIfNot(ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_AddUser_Input_IsActive), "bad hierarchy in add user.  expected screen with 'active' checkbox, didn't find it.");
 
                 // don't worry about Active for now...Just click next again
                 m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Next), "Can't click next button on adduser");
+                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
                 m_awc.FWaitForNavFinish();
 
                 // and now we're on the finish page.  oddly enough, the finish button has the "Cancel" ID
-                ThrowIfNot(String.Compare("Finish", ArbWebControl.SGetControlValue(oDoc2, _sid_AddUser_Button_Cancel)) == 0, "Finish screen didn't have a finish button");
+                ThrowIfNot(String.Compare("Finish", ArbWebControl.SGetControlValue(oDoc2, WebCore._sid_AddUser_Button_Cancel)) == 0, "Finish screen didn't have a finish button");
 
                 m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
+                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
                 m_awc.FWaitForNavFinish();
                 m_srpt.PopLevel();
                 // and now we're back somewhere (probably officials edit page)
@@ -1216,7 +1216,7 @@ namespace ArbWeb
 
             foreach (IHTMLAnchorElement iha in ihec)
                 {
-                if (iha.href != null && iha.href.Contains(_s_OfficialsView_PaginationHrefPostbackSubstr))
+                if (iha.href != null && iha.href.Contains(WebCore._s_OfficialsView_PaginationHrefPostbackSubstr))
                     {
                     // we can't just remember this element because we will be navigating around.  instead we will
                     // just remember the entire target so we can find it again
@@ -1252,7 +1252,7 @@ namespace ArbWeb
             IHTMLTable ihtbl;
 
             // misc field info.  every text input field is a misc field we want to save
-            ihtbl = (IHTMLTable) oDoc2.all.item(_sid_OfficialsView_ContentTable, 0);
+            ihtbl = (IHTMLTable) oDoc2.all.item(WebCore._sid_OfficialsView_ContentTable, 0);
 
             foreach (IHTMLTableRow ihtr in ihtbl.rows)
                 {
@@ -1605,14 +1605,14 @@ namespace ArbWeb
 
             IHTMLDocument2 oDoc2;
 	        m_awc.ResetNav();
-	        ThrowIfNot(m_awc.FNavToPage(_s_Page_OfficialsView), "Couldn't nav to officials view!");
+	        ThrowIfNot(m_awc.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
 	        m_awc.FWaitForNavFinish();
 
 	        oDoc2 = m_awc.Document2;
 
 	        // from the officials view, make sure we are looking at active officials
 	        m_awc.ResetNav();
-	        m_awc.FSetSelectControlText(oDoc2, _s_OfficialsView_Select_Filter, "All Officials", true);
+	        m_awc.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, "All Officials", true);
 	        m_awc.FWaitForNavFinish();
 
 	        oDoc2 = m_awc.Document2;
@@ -1624,11 +1624,11 @@ namespace ArbWeb
 	            {
 	            m_awc.ResetNav();
 	            m_awc.ReportNavState("Before click on PrintRoster: ");
-	            ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_OfficialsView_PrintRoster), "Can't click on roster control");
+	            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_OfficialsView_PrintRoster), "Can't click on roster control");
 	            m_awc.FWaitForNavFinish();
 
 	            oDoc2 = m_awc.Document2;
-	            if (ArbWebControl.FCheckForControl(oDoc2, _sid_RosterPrint_MergeStyle))
+	            if (ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_RosterPrint_MergeStyle))
 	                break;
 
 	            cTry--;
@@ -1638,20 +1638,20 @@ namespace ArbWeb
 
 	        // clicking on the Merge Style control will cause a page refresh
 	        m_awc.ResetNav();
-	        ThrowIfNot(m_awc.FClickControl(oDoc2, _sid_RosterPrint_MergeStyle), "Can't click on roster control");
+	        ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_RosterPrint_MergeStyle), "Can't click on roster control");
 	        m_awc.FWaitForNavFinish();
 
 	        oDoc2 = m_awc.Document2;
 
-	        ThrowIfNot(ArbWebControl.FCheckForControl(oDoc2, _sid_RosterPrint_DateJoined),
+	        ThrowIfNot(ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_RosterPrint_DateJoined),
 	                   "Couldn't find expected control on roster print config!");
 
 	        // check a whole bunch of config checkboxes
-	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_DateJoined);
-	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_OfficialNumber);
-	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_MiscFields);
-	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicPhone);
-	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, _s_RosterPrint_NonPublicAddress);
+	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_DateJoined);
+	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_OfficialNumber);
+	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_MiscFields);
+	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_NonPublicPhone);
+	        ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_NonPublicAddress);
 
 	        m_awc.ResetNav();
 //    		m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadQuickRosterNewWindowDelegate));
@@ -1661,7 +1661,7 @@ namespace ArbWeb
             AutoResetEvent evtDownload = new AutoResetEvent(false);
             Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "roster.csv", "roster", sTempFile, "of OfficialsView.aspx from", evtDownload);
 
-	        ((IHTMLElement) (oDoc2.all.item(_sid_RosterPrint_BeginPrint, 0))).click();
+	        ((IHTMLElement) (oDoc2.all.item(WebCore._sid_RosterPrint_BeginPrint, 0))).click();
 
             return evtDownload;
         }

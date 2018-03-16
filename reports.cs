@@ -112,7 +112,7 @@ namespace ArbWeb
             m_srpt.PushLevel();
 
             EnsureLoggedIn();
-            ThrowIfNot(m_awc.FNavToPage(_s_Announcements), "Couldn't nav to announcements page!");
+            ThrowIfNot(m_awc.FNavToPage(WebCore._s_Announcements), "Couldn't nav to announcements page!");
             m_awc.FWaitForNavFinish();
 
             // now we need to find the URGENT HELP NEEDED row
@@ -137,10 +137,10 @@ namespace ArbWeb
                     // ok, go up to the parent TR.
                     // now find one of our controls and get its control number
                     string s = heFind.innerHTML;
-                    int ich = s.IndexOf(_s_Announcements_Button_Edit_Prefix);
+                    int ich = s.IndexOf(WebCore._s_Announcements_Button_Edit_Prefix);
                     if (ich > 0)
                         {
-                        sCtl = s.Substring(ich + _s_Announcements_Button_Edit_Prefix.Length, 5);
+                        sCtl = s.Substring(ich + WebCore._s_Announcements_Button_Edit_Prefix.Length, 5);
                         }
                     m_srpt.LogData(String.Format("Extracted ID for announcment to set: {0}", sCtl), 3, StatusRpt.MSGT.Body);
                     break;
@@ -150,18 +150,18 @@ namespace ArbWeb
             ThrowIfNot(sCtl != null, "Can't find HELP announcement");
 
             m_awc.ResetNav();
-            string sControl = BuildAnnName(_sid_Announcements_Button_Edit_Prefix, _sid_Announcements_Button_Edit_Suffix, sCtl);
+            string sControl = BuildAnnName(WebCore._sid_Announcements_Button_Edit_Prefix, WebCore._sid_Announcements_Button_Edit_Suffix, sCtl);
 
             ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find edit button");
             m_awc.FWaitForNavFinish();
 
             // now edit the text
-            sControl = BuildAnnName(_s_Announcements_Textarea_Text_Prefix, _s_Announcements_Textarea_Text_Suffix, sCtl);
+            sControl = BuildAnnName(WebCore._s_Announcements_Textarea_Text_Prefix, WebCore._s_Announcements_Textarea_Text_Suffix, sCtl);
 
             m_awc.FSetTextareaControlText(oDoc2, sControl, sArbiterHelpNeeded, true);
             m_awc.FWaitForNavFinish();
 
-            sControl = BuildAnnName(_sid_Announcements_Button_Save_Prefix, _sid_Announcements_Button_Save_Suffix, sCtl);
+            sControl = BuildAnnName(WebCore._sid_Announcements_Button_Save_Prefix, WebCore._sid_Announcements_Button_Save_Suffix, sCtl);
 
             ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find save button");
             m_awc.FWaitForNavFinish();
