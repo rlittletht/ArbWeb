@@ -598,7 +598,7 @@ namespace ArbWeb
             this.button1.Size = new System.Drawing.Size(110, 24);
             this.button1.TabIndex = 26;
             this.button1.Text = "Get FULL Roster";
-            this.button1.Click += new System.EventHandler(this.DoDownloadRoster);
+            this.button1.Click += new System.EventHandler(this.HandleDownloadRosterClick);
             // 
             // groupBox2
             // 
@@ -667,7 +667,7 @@ namespace ArbWeb
             this.m_pbUploadRoster.Size = new System.Drawing.Size(110, 24);
             this.m_pbUploadRoster.TabIndex = 32;
             this.m_pbUploadRoster.Text = "Upload Roster";
-            this.m_pbUploadRoster.Click += new System.EventHandler(this.DoUploadRoster);
+            this.m_pbUploadRoster.Click += new System.EventHandler(this.HandleUploadRosterClick);
             // 
             // m_pbOpenSlots
             // 
@@ -971,7 +971,7 @@ namespace ArbWeb
             this.button3.Size = new System.Drawing.Size(110, 24);
             this.button3.TabIndex = 74;
             this.button3.Text = "Get Quick Roster";
-            this.button3.Click += new System.EventHandler(this.DoDownloadQuickRoster);
+            this.button3.Click += new System.EventHandler(this.HandleDownloadQuickRosterClick);
             // 
             // m_ebAffiliationIndex
             // 
@@ -1250,13 +1250,6 @@ namespace ArbWeb
             DoDownloadGames();
         }
 
-        private void HandleRosterPostUpdateForDownload(Roster rstBuilding)
-        {
-            // get the last login date from the officials main page
-            NavigateOfficialsPageAllOfficials();
-            ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
-        }
-
         /* D O  D O W N L O A D  R O S T E R */
         /*----------------------------------------------------------------------------
 	    	%%Function: DoDownloadRoster
@@ -1264,22 +1257,9 @@ namespace ArbWeb
 	    	%%Contact: rlittle
 	    	
 	    ----------------------------------------------------------------------------*/
-        private void DoDownloadRoster(object sender, EventArgs e)
+        private void HandleDownloadRosterClick(object sender, EventArgs e)
         {
-            m_srpt.AddMessage("Starting FULL Roster download...");
-            m_srpt.PushLevel();
-
-            PushCursor(Cursors.WaitCursor);
-            string sOutFile = SBuildRosterFilename();
-
-            m_pr.Roster = sOutFile;
-
-            HandleRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
-            PopCursor();
-            m_srpt.PopLevel();
-            System.IO.File.Delete(m_pr.RosterWorking);
-            System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
-            m_srpt.AddMessage("Completed FULL Roster download.");
+            DoDownloadRoster();
         }
 
         /* D O  D O W N L O A D  Q U I C K  R O S T E R */
@@ -1289,95 +1269,14 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private async void DoDownloadQuickRoster(object sender, EventArgs e)
+        private void HandleDownloadQuickRosterClick(object sender, EventArgs e)
         {
-            var x = m_awc.Handle; // this makes sure that m_awc has a handle before we ask it if invoke is required.(forces it to get created on the correct thread)
-
-            Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterWork);
-
-            tsk.Start();
-
-            string sOutFile = SBuildRosterFilename();
-            m_pr.Roster = sOutFile;
-
-            Roster rst = await tsk;
-
-            rst.WriteRoster(sOutFile);
-            System.IO.File.Delete(m_pr.RosterWorking);
-            System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
+            DoDownloadQuickRoster();
         }
 
 
         delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer, HandleRosterPostUpdateDelegate hrpu);
 
-
-        /*----------------------------------------------------------------------------
-        	%%Function: DoUploadRosterWork
-        	%%Qualified: ArbWeb.AwMainForm.DoUploadRosterWork
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private async void DoUploadRosterWork(string sRosterToUpload)
-        {
-            m_srpt.AddMessage("Starting Roster upload...");
-            m_srpt.PushLevel();
-            Roster rstServer = null;
-
-            if (m_pr.DownloadRosterOnUpload)
-                {
-                // first thing to do is download a new (temporary) roster copy
-                Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterOfficialsOnlyWork);
-
-                tsk.Start();
-                rstServer = await tsk;
-                }
-
-            // now, check the roster we just downloaded against the roster we just already have
-
-            InvalRoster();
-            string sInFile = sRosterToUpload;
-
-            Roster rst = RstEnsure(sInFile);
-
-            if (rst.IsQuick && (!m_cbRankOnly.Checked || !rst.HasRankings))
-                {
-//				MessageBox.Show("Cannot upload a quick roster.  Please perform a full roster download before uploading.\n\nIf you want to upload rankings only, please check 'Upload Rankings Only'");
-//    			m_srpt.PopLevel();
-                m_srpt.AddMessage("Detected QuickRoster...", StatusBox.StatusRpt.MSGT.Warning);
-                }
-
-            // compare the two rosters to find differences
-
-            if (m_awc.InvokeRequired)
-                {
-                IAsyncResult rslt = m_awc.BeginInvoke(new HandleRosterDel(HandleRoster), new object[] {rst, sInFile, rstServer, null});
-                m_awc.EndInvoke(rslt);
-                }
-            else
-                {
-                HandleRoster(rst, null, rstServer, null);
-                }
-            m_srpt.PopLevel();
-            m_srpt.AddMessage("Completed Roster upload.");
-        }
-
-        string SGetRosterToUpload()
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-
-            ofd.InitialDirectory = Path.GetDirectoryName(m_pr.RosterWorking);
-            ofd.Filter = "CSV Files|*.csv";
-            if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                return ofd.FileName;
-                }
-            return null;
-        }
-
-        bool FLoadRosterToUpload()
-        {
-            return false;
-        }
 
         /* D O  U P L O A D  R O S T E R */
         /*----------------------------------------------------------------------------
@@ -1386,17 +1285,9 @@ namespace ArbWeb
 			%%Contact: rlittle
 			
 		----------------------------------------------------------------------------*/
-        private void DoUploadRoster(object sender, EventArgs e)
+        private void HandleUploadRosterClick(object sender, EventArgs e)
         {
-            string sRosterToUpload = SGetRosterToUpload();
-
-            if (sRosterToUpload == null)
-                return;
-
-
-            Task tsk = new Task(() => DoUploadRosterWork(sRosterToUpload));
-
-            tsk.Start();
+            DoRosterUpload();
         }
 
         /* D O  G E N  C O U N T S */
