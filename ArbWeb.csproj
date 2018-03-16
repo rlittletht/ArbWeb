@@ -190,6 +190,10 @@
     <Compile Include="WebRoster.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="WebRosterDownload.cs" />
+    <Compile Include="WebRosterUpload.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Win32Win.cs" />
     <Content Include="App.ico" />
     <Compile Include="..\shared\statusbox.cs">
