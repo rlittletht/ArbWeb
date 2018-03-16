@@ -460,7 +460,7 @@ namespace ArbWeb
                     foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
                         {
                         if ((fValueIsValue && ihoe.value == sValue) ||
-                            (!fValueIsValue && ihoe.text == sValue))
+                            (!fValueIsValue && String.Compare(ihoe.text, sValue, true) == 0))
                             {
                             ihoe.selected = true;
                             return true;

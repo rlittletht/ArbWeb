@@ -452,6 +452,11 @@ namespace ArbWeb
             if (rstServer != null)
                 {
                 rsteServer = rstServer.RsteLookupEmail(sEmail);
+                if (rsteServer == null)
+                    {
+                    m_srpt.AddMessage(String.Format("NULL Server entry for {0}, SKIPPING", sEmail), StatusBox.StatusRpt.MSGT.Error);
+                    return;
+                    } 
                 if (rsteNew.FEquals(rsteServer))
                     return;
                 }

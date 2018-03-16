@@ -66,6 +66,7 @@ namespace Win32Win
         private string m_sNameShort;
         private string m_sTarget;
         private string m_sChildFind;
+        private string m_sAltChildFind;
         private AutoResetEvent m_evtCallerWaiting;
         private string m_sProgressWait;
         private string m_sClassNameFinding; // the class name for the child control we are looking for (this SHOULD be sent in through lParam, but I'm too tired to figure out how to coerce managed strings into lParams in native code and back again)
@@ -101,13 +102,13 @@ namespace Win32Win
             return true;
         }
 
-        private bool FSearchForExpectedTextInControls(string sTextToFind, string sClassName, string sPrologueMsg, IntPtr hWnd)
+        private bool FSearchForExpectedTextInControls(string sTextToFind, string sAltTextToFind, string sClassName, string sPrologueMsg, IntPtr hWnd)
         {
             int cRetry = 3;
 
             while (cRetry >= 0)
                 {
-                if (FSearchForExpectedTextInControlsCore(sTextToFind, sClassName, sPrologueMsg, hWnd))
+                if (FSearchForExpectedTextInControlsCore(sTextToFind, sAltTextToFind, sClassName, sPrologueMsg, hWnd))
                     return true;
 
                 m_srpt.LogData(String.Format("Retry {0}...", cRetry), 3, StatusRpt.MSGT.Body);
@@ -117,21 +118,22 @@ namespace Win32Win
                 }
             return false;
         }
-        private bool FSearchForExpectedTextInControlsCore(string sTextToFind, string sClassName, string sPrologueMsg, IntPtr hWnd)
+        private bool FSearchForExpectedTextInControlsCore(string sTextToFind, string sAltTextToFind, string sClassName, string sPrologueMsg, IntPtr hWnd)
         {
             m_fFound = false;
             m_sChildFind = sTextToFind;
+            m_sAltChildFind = sAltTextToFind;
 
-            m_srpt.LogData(String.Format("{0} {1}", sPrologueMsg, sTextToFind), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData(String.Format("{0} {1}/{2}", sPrologueMsg, sTextToFind, sAltTextToFind), 3, StatusRpt.MSGT.Body);
             m_sClassNameFinding = sClassName;
             Win32.EnumChildWindows(hWnd, new Win32.EnumChildWindowCallback(EnumChildCallback), IntPtr.Zero);
             if (!m_fFound)
             {
-                m_srpt.LogData(String.Format("Couldn't find expected text: {0}", sTextToFind), 3, StatusRpt.MSGT.Body);
+                m_srpt.LogData(String.Format("Couldn't find expected text: {0}/{1}", sTextToFind, sAltTextToFind), 3, StatusRpt.MSGT.Body);
                 return false;
             }
 
-            m_srpt.LogData(String.Format("Found expected text: {0}, {1}", sTextToFind, m_fFound), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData(String.Format("Found expected text: {0}, {1}", m_sChildFound, m_fFound), 3, StatusRpt.MSGT.Body);
             return true;
         }
 
@@ -201,10 +203,10 @@ namespace Win32Win
         // This will sit around waiting for the right window to show up, and then handle it according to the
         // parameters given to us.
         // (designed to be run on a thread of its own)
-        bool FHandleDialogAndClickButton(string sDlgClass, string sCaption, string sValidateText, string sValidateTextClassName, string sReplaceText, string sButtonToPress, bool fWaitForDialog)
+        bool FHandleDialogAndClickButton(string sDlgClass, string sCaption, string sValidateText, string sValidateTextShort, string sValidateTextClassName, string sReplaceText, string sButtonToPress, bool fWaitForDialog)
         {
             IntPtr hWnd;
-            int n = fWaitForDialog ? 300 : 1;
+            int n = fWaitForDialog ? 400 : 1;
 
             m_srpt.LogData(String.Format("FHandleDialogAndClickButton before FindWindow loop (Class={0}, Caption={1}) (WAIT_FOR_DIALOG={2}, VALIDATE_TEXT={3}, REPLACE_TEXT={4}, BUTTON_TO_PRESS={5})", sDlgClass, sCaption, fWaitForDialog, sValidateText ?? "null", sReplaceText ?? "null", sButtonToPress ?? "null"), 3, StatusRpt.MSGT.Body);
 
@@ -212,8 +214,10 @@ namespace Win32Win
                 return false;
 
             // now, enum the chilren to make sure that one of them has the text we are looking for!
-            if (!FSearchForExpectedTextInControls(sValidateText, sValidateTextClassName, "FHandleDialogAndClickButton before EnumChildWindows looking for", hWnd))
+            if (!FSearchForExpectedTextInControls(sValidateText, sValidateTextShort, sValidateTextClassName, "FHandleDialogAndClickButton before EnumChildWindows looking for", hWnd))
                 return false;
+
+            m_srpt.LogData($"About to try to replace text, {sValidateText} => {sReplaceText}", 3, StatusRpt.MSGT.Body);
 
             if (sReplaceText != null)
                 {
@@ -222,7 +226,7 @@ namespace Win32Win
                 }
 
             // ok yay, found it.  now we have to make like we clicked on a button...so let's find the button
-            if (!FSearchForExpectedTextInControls(sButtonToPress, null, "FHandleDialogAndClickButton before EnumChildWindows looking for button text ", hWnd))
+            if (!FSearchForExpectedTextInControls(sButtonToPress, null, null, "FHandleDialogAndClickButton before EnumChildWindows looking for button text ", hWnd))
                 return false;
 
             // now click on the button...
@@ -263,20 +267,20 @@ namespace Win32Win
         {
             m_srpt.LogData("TrapFileDownloadWork top of loop", 3, StatusRpt.MSGT.Body);
 
-            if (FHandleDialogAndClickButton("#32770", "File Download", m_sName, null, null, "&Save", true))
+            if (FHandleDialogAndClickButton("#32770", "File Download", m_sName, null, null, null, "&Save", true))
                 {
                 int c = 0;
 
                 // do it again in case the first button click didn't work, go figure?
                 m_srpt.LogData("TrapFileDownloadWork before repeat for click", 3, StatusRpt.MSGT.Body);
-                while (FHandleDialogAndClickButton("#32770", "File Download", m_sName, null, null, "&Save", false))
+                while (FHandleDialogAndClickButton("#32770", "File Download", m_sName, null, null, null, "&Save", false))
                     {
                     m_srpt.LogData(String.Format("Had to click the button again ({0} times)...", ++c), 3, StatusRpt.MSGT.Body);
                     Thread.Sleep(700);
                     }
 
                 m_srpt.LogData("TrapFileDownloadWork before SaveAs", 3, StatusRpt.MSGT.Body);
-                FHandleDialogAndClickButton("#32770", "Save As", m_sNameShort, "Edit", m_sTarget, "&Save", true);
+                FHandleDialogAndClickButton("#32770", "Save As", m_sName, m_sNameShort, "Edit", m_sTarget, "&Save", true);
                 }
 
             if (m_evtCallerWaiting != null)
@@ -284,6 +288,7 @@ namespace Win32Win
         }
 
         private bool m_fFound;
+        private string m_sChildFound;
         private IntPtr m_hwndFound;
 
         public int EnumWndCallback(IntPtr hWnd, IntPtr lParam)
@@ -296,9 +301,13 @@ namespace Win32Win
 
             m_srpt.LogData(String.Format("EnumWndCallback: {0} =? {1} (hwnd = 0x{2:X8}", s, m_sChildFind, (Int64)hWnd), 3, StatusRpt.MSGT.Body);
 
-            if (s.Contains(m_sChildFind))
+            if (s.Contains(m_sChildFind) || (m_sAltChildFind != null && s.Contains(m_sAltChildFind)))
                 {
                 m_fFound = true;
+                if (s.Contains(m_sChildFind))
+                    m_sChildFound = m_sChildFind;
+                else
+                    m_sChildFound = m_sAltChildFind;
                 m_hwndFound = hWnd;
                 m_srpt.LogData("EnumWndCallback: FOUND", 3, StatusRpt.MSGT.Body);
                 return 0;

@@ -247,11 +247,11 @@ namespace ArbWeb
                 return false;
             if (String.Compare(m_sWaitMinutes, rste.m_sWaitMinutes) != 0)
                 return false;
-            if (String.Compare(m_sPhone1, rste.m_sPhone1) != 0)
+            if (!(String.IsNullOrEmpty(m_sPhone1) && String.IsNullOrEmpty(rste.m_sPhone1)) && String.Compare(m_sPhone1, rste.m_sPhone1) != 0)
                 return false;
-            if (String.Compare(m_sPhone2, rste.m_sPhone2) != 0)
+            if (!(String.IsNullOrEmpty(m_sPhone2) && String.IsNullOrEmpty(rste.m_sPhone2)) && String.Compare(m_sPhone2, rste.m_sPhone2) != 0)
                 return false;
-            if (String.Compare(m_sPhone3, rste.m_sPhone3) != 0)
+            if (!(String.IsNullOrEmpty(m_sPhone3) && String.IsNullOrEmpty(rste.m_sPhone3)) && String.Compare(m_sPhone3, rste.m_sPhone3) != 0)
                 return false;
 
             return true;
@@ -1084,6 +1084,10 @@ namespace ArbWeb
 
             return rste.m_plsMisc;
         }
+
+        #region Fobar
+
+        #endregion
 
         /* S  B U I L D  A D D R E S S  L I N E */
         /*----------------------------------------------------------------------------
