@@ -294,7 +294,7 @@ namespace ArbWeb
                     if (m_fForceFutureGames)
                         m_cbFutureOnly.Checked = true;
 
-                    QueueUIOp(new DelayedUIOpDel(DoDownloadGames), new object[] {null, null});
+                    QueueUIOp(new DelayedUIOpDel(HandleDownloadGamesClick), new object[] {null, null});
                     QueueUIOp(new DelayedUIOpDel(CalcOpenSlots), new object[] {null, null});
                     QueueUIOp(new DelayedUIOpDel(DoCheckSportListboxes), new object[] {null, null});
                     QueueUIOp(new DelayedUIOpDel(GenMailMergeMail), new object[] {null, null});
@@ -577,7 +577,7 @@ namespace ArbWeb
             this.m_pbDownloadGames.Size = new System.Drawing.Size(110, 24);
             this.m_pbDownloadGames.TabIndex = 14;
             this.m_pbDownloadGames.Text = "Download Games";
-            this.m_pbDownloadGames.Click += new System.EventHandler(this.DoDownloadGames);
+            this.m_pbDownloadGames.Click += new System.EventHandler(this.HandleDownloadGamesClick);
             // 
             // contextMenu1
             // 
@@ -1245,21 +1245,9 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void DoDownloadGames(object sender, EventArgs e)
+        private void HandleDownloadGamesClick(object sender, EventArgs e)
         {
-            var x = m_awc.Handle;
-            string sFilterReq = (string)m_cbxGameFilter.SelectedItem;
-            if (sFilterReq == null)
-                sFilterReq = "All Games";
-
-            // let's make sure the webbrowser handle is created
-
-            m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
-
-            Task tskDownloadGames = new Task(() => DownloadGames(sFilterReq));
-
-            tskDownloadGames.Start();
-            // DownloadGames();
+            DoDownloadGames();
         }
 
         private void HandleRosterPostUpdateForDownload(Roster rstBuilding)

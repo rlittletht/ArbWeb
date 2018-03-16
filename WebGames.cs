@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using System.Net;
+using System.Threading.Tasks;
 using mshtml;
 using StatusBox;
 using TCore.Util;
@@ -15,6 +16,12 @@ namespace ArbWeb
     /// </summary>
     public partial class AwMainForm : System.Windows.Forms.Form
     {
+        /*----------------------------------------------------------------------------
+        	%%Function: TestDownload
+        	%%Qualified: ArbWeb.AwMainForm.TestDownload
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void TestDownload()
         {
             m_srpt.AddMessage("Starting test download...");
@@ -30,6 +37,12 @@ namespace ArbWeb
             return;
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: DownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.DownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void DownloadGames(string sFilterReq)
         {
             m_srpt.AddMessage("Starting games download...");
@@ -66,6 +79,12 @@ namespace ArbWeb
             return ArbWebControl.MpGetSelectValues(m_srpt, m_awc.Document2, WebCore._s_Assigning_Select_Filters);
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: TestDownload
+        	%%Qualified: ArbWeb.AwMainForm.TestDownload
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private string TestDownload(string sTempFile, string sTestAddress)
         {
             m_srpt.LogData("LaunchTestDownload async task launched", 3, StatusRpt.MSGT.Body);
@@ -77,6 +96,12 @@ namespace ArbWeb
             return sTempFile;
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: DownloadGamesToFile
+        	%%Qualified: ArbWeb.AwMainForm.DownloadGamesToFile
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private string DownloadGamesToFile(string sTempFile, string sFilterReq)
         {
             EnsureLoggedIn();
@@ -107,6 +132,12 @@ namespace ArbWeb
 
         private delegate AutoResetEvent LaunchTestDownloadDel(string sTempFile, string sTestAddress);
 
+        /*----------------------------------------------------------------------------
+        	%%Function: LaunchTestDownload
+        	%%Qualified: ArbWeb.AwMainForm.LaunchTestDownload
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         AutoResetEvent LaunchTestDownload(string sTempFile, string sTestAddress)
         {
             if (m_awc.InvokeRequired)
@@ -123,6 +154,12 @@ namespace ArbWeb
             }
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: DoLaunchTestDownload
+        	%%Qualified: ArbWeb.AwMainForm.DoLaunchTestDownload
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private AutoResetEvent DoLaunchTestDownload(string sTempFile, string sTestAddress)
         {
             m_srpt.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
@@ -143,6 +180,12 @@ namespace ArbWeb
 
         private delegate AutoResetEvent LaunchDownloadGamesDel(string sTempFile, string sFilterReq);
 
+        /*----------------------------------------------------------------------------
+        	%%Function: LaunchDownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.LaunchDownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         AutoResetEvent LaunchDownloadGames(string sTempFile, string sFilterReq)
         {
             if (m_awc.InvokeRequired)
@@ -159,6 +202,12 @@ namespace ArbWeb
                 }
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: DoLaunchDownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.DoLaunchDownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private AutoResetEvent DoLaunchDownloadGames(string sTempFile, string sFilterReq)
         {
             IHTMLDocument2 oDoc2 = m_awc.Document2;
@@ -217,6 +266,12 @@ namespace ArbWeb
             eb.Text = s;
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: SetText
+        	%%Qualified: ArbWeb.AwMainForm.SetText
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         void SetText(TextBox eb, string s)
         {
             if (eb.InvokeRequired)
@@ -225,6 +280,12 @@ namespace ArbWeb
                 DoSetText(eb, s);
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: HandleDownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.HandleDownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
         private void HandleDownloadGames(string sFile)
         {
             object missing = System.Type.Missing;
@@ -268,42 +329,6 @@ namespace ArbWeb
             System.IO.File.Copy(sOutFile, m_pr.GameCopy);
         }
 
-#if notused
-        private void DownloadGamesNewWindowDelegate(object sender, DWebBrowserEvents2_NewWindow3Event e)
-        {
-            // at this point, e.bstrUrlContext has the URL to the XLS schedule file!!!
-            WebClient wc = new WebClient();
-
-            string sFile = String.Format("{0}\\{1}", Environment.GetEnvironmentVariable("temp"), System.Guid.NewGuid().ToString());
-            wc.DownloadFile(e.bstrUrl, sFile);
-            HandleDownloadGames(sFile);
-            System.IO.File.Delete(sFile);
-        }
-
-        private void DownloadQuickRosterNewWindowDelegate(object sender, DWebBrowserEvents2_NewWindow3Event e)
-        {
-            // at this point, e.bstrUrlContext has the URL to the CSV schedule file!!!
-            WebClient wc = new WebClient();
-            object missing = System.Type.Missing;
-
-            // copy the file directly to the output filenames
-            string sFile = m_ebRoster.Text;
-            wc.DownloadFile(e.bstrUrl, sFile);
-        }
-#endif
-#if no
-		private void TriggerDocumentDone(object sender, AxSHDocVw.DWebBrowserEvents2_DocumentCompleteEvent e)
-		{
-			fNavDone = true;
-		}
-		bool m_fInternalBrowserChange = false;
-
-		private void ShowBrowserStateChange(object sender, System.EventArgs e) {
-			if (!m_fInternalBrowserChange)
-				m_axWebBrowser1.Visible = true;
-			
-		}
-#endif // no
         private void contextMenu1_Popup(object sender, System.EventArgs e)
         {
 
@@ -325,6 +350,28 @@ namespace ArbWeb
 			m_gc = gc;
 			return gc;
 		}
+
+        /*----------------------------------------------------------------------------
+        	%%Function: DoDownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.DoDownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        void DoDownloadGames()
+        {
+            var x = m_awc.Handle;
+            string sFilterReq = (string)m_cbxGameFilter.SelectedItem;
+            if (sFilterReq == null)
+                sFilterReq = "All Games";
+
+            // let's make sure the webbrowser handle is created
+
+            m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
+
+            Task tskDownloadGames = new Task(() => DownloadGames(sFilterReq));
+
+            tskDownloadGames.Start();
+        }
 
     }
 }
