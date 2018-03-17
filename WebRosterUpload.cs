@@ -80,6 +80,57 @@ namespace ArbWeb
 
         }
 
+        bool FConfirmExistingArbiterUserAdd(IHTMLDocument2 oDoc2, RosterEntry rsteNewUser)
+        {
+            m_srpt.AddMessage(String.Format("Email {0} already in use", rsteNewUser.m_sEmail), StatusBox.StatusRpt.MSGT.Warning);
+
+            // this email is member of another group.  we can't change their personal info
+            // do a quick sanity match to make sure this is the same user
+            string sText = oDoc2.body.innerText;
+            string sPrefix = "is already being used in the system by ";
+            int iFirst = sText.IndexOf(sPrefix);
+
+            ThrowIfNot(iFirst > 0, "Failed hierarchy on assumed 'in use' email name");
+            iFirst += sPrefix.Length;
+
+            int iLast = sText.IndexOf(". Click", iFirst);
+            ThrowIfNot(iLast > iFirst, "couldn't find the end of the users name on 'in use' email page");
+
+            string sName = sText.Substring(iFirst, iLast - iFirst);
+            if (String.Compare(sName, rsteNewUser.Name, true /*ignoreCase*/) != 0)
+                {
+                if (MessageBox.Show(
+                        String.Format("Trying to add office {0} and found a mismatch with existing official {1}, with email {2}", rsteNewUser.Name, sName, rsteNewUser.m_sEmail),
+                        "ArbWeb", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                    // ok, then just cancel...
+                    m_awc.ResetNav();
+                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
+                    m_awc.FWaitForNavFinish();
+                    return false;
+                    }
+                }
+
+            // cool, just go on...
+            m_awc.ResetNav();
+            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+            m_awc.FWaitForNavFinish();
+
+            // sigh, now we're being asked whether we want to add local personal info.  of course
+            // we don't since it will be thrown away when they choose to join our group!
+
+            // but make sure that we're really on that page...
+            sText = oDoc2.body.innerText;
+            ThrowIfNot(sText.IndexOf("as a fully integrated user") > 0, "Didn't find the confirmation text on 'personal info' portion of existing user sequence");
+
+            // cool, let's just move on again...
+            m_awc.ResetNav();
+            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+            m_awc.FWaitForNavFinish();
+
+            // now fallthrough to the "Official's info" page handling, which is common
+            return true;
+        }
         /*----------------------------------------------------------------------------
         	%%Function: AddOfficials
         	%%Qualified: ArbWeb.AwMainForm.AddOfficials
@@ -89,7 +140,7 @@ namespace ArbWeb
         private void AddOfficials(List<RosterEntry> plrsteNew)
         {
             foreach (RosterEntry rste in plrsteNew)
-            {
+                {
                 // add the official rste
                 m_srpt.AddMessage(String.Format("Adding official '{0}', {1}", rste.Name, rste.m_sEmail), StatusBox.StatusRpt.MSGT.Body);
                 m_srpt.PushLevel();
@@ -97,9 +148,9 @@ namespace ArbWeb
                 // go to the add user page
                 m_awc.ResetNav();
                 if (!m_awc.FNavToPage(WebCore._s_AddUser))
-                {
+                    {
                     throw (new Exception("could not navigate to the add user page"));
-                }
+                    }
 
                 m_awc.FWaitForNavFinish();
 
@@ -119,57 +170,12 @@ namespace ArbWeb
                 // about...
                 // 
                 if (!ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_AddUser_Input_Address1))
-                {
-                    m_srpt.AddMessage(String.Format("Email {0} already in use", rste.m_sEmail), StatusBox.StatusRpt.MSGT.Warning);
-
-                    // this email is member of another group.  we can't change their personal info
-                    // do a quick sanity match to make sure this is the same user
-                    string sText = oDoc2.body.innerText;
-                    string sPrefix = "is already being used in the system by ";
-                    int iFirst = sText.IndexOf(sPrefix);
-
-                    ThrowIfNot(iFirst > 0, "Failed hierarchy on assumed 'in use' email name");
-                    iFirst += sPrefix.Length;
-
-                    int iLast = sText.IndexOf(". Click", iFirst);
-                    ThrowIfNot(iLast > iFirst, "couldn't find the end of the users name on 'in use' email page");
-
-                    string sName = sText.Substring(iFirst, iLast - iFirst);
-                    if (String.Compare(sName, rste.Name, true /*ignoreCase*/) != 0)
                     {
-                        if (MessageBox.Show(
-                                String.Format("Trying to add office {0} and found a mismatch with existing official {1}, with email {2}", rste.Name, sName, rste.m_sEmail),
-                                "ArbWeb", MessageBoxButtons.YesNo) != DialogResult.Yes)
-                        {
-                            // ok, then just cancel...
-                            m_awc.ResetNav();
-                            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
-                            m_awc.FWaitForNavFinish();
-                            continue;
-                        }
+                    if (!FConfirmExistingArbiterUserAdd(oDoc2, rste))
+                        continue; // don't add this user, they cancelled
                     }
-
-                    // cool, just go on...
-                    m_awc.ResetNav();
-                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-                    m_awc.FWaitForNavFinish();
-
-                    // sigh, now we're being asked whether we want to add local personal info.  of course
-                    // we don't since it will be thrown away when they choose to join our group!
-
-                    // but make sure that we're really on that page...
-                    sText = oDoc2.body.innerText;
-                    ThrowIfNot(sText.IndexOf("as a fully integrated user") > 0, "Didn't find the confirmation text on 'personal info' portion of existing user sequence");
-
-                    // cool, let's just move on again...
-                    m_awc.ResetNav();
-                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-                    m_awc.FWaitForNavFinish();
-
-                    // now fallthrough to the "Official's info" page handling, which is common
-                }
                 else
-                {
+                    {
                     // if there's an address control, then this is a brand new official
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.m_sAddress1, false /*fCheck*/), "Failed to find address1 control");
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.m_sAddress2, false /*fCheck*/), "Failed to find address2 control");
@@ -177,31 +183,31 @@ namespace ArbWeb
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_State, rste.m_sState, false /*fCheck*/), "Failed to find state control");
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Zip, rste.m_sZip, false /*fCheck*/), "Failed to find zip control");
 
-                    string[] rgsPhoneNums = new string[] { WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2, WebCore._s_AddUser_Input_PhoneNum3 };
-                    string[] rgsPhoneTypes = new string[] { WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2, WebCore._s_AddUser_Input_PhoneType3 };
+                    string[] rgsPhoneNums = new string[] {WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2, WebCore._s_AddUser_Input_PhoneNum3};
+                    string[] rgsPhoneTypes = new string[] {WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2, WebCore._s_AddUser_Input_PhoneType3};
 
                     int iPhone = 0;
                     while (iPhone < 3)
-                    {
+                        {
                         string sPhoneNum, sPhoneType;
 
                         rste.GetPhoneNumber(iPhone + 1 /*convert to 1 based*/, out sPhoneNum, out sPhoneType);
                         if (sPhoneNum != null)
-                        {
+                            {
                             ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, rgsPhoneNums[iPhone], sPhoneNum, false /*fCheck*/), "Failed to find phonenum* control");
                             string sNewTypeID = ArbWebControl.SGetSelectIDFromDoc(oDoc2, rgsPhoneTypes[iPhone], sPhoneType);
                             ArbWebControl.FSetSelectControlValue(oDoc2, rgsPhoneTypes[iPhone], sNewTypeID, false);
-                        }
+                            }
 
                         iPhone++;
-                    }
+                        }
 
                     m_awc.ResetNav();
                     ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
                     m_awc.FWaitForNavFinish();
 
                     // fallthrough to the common handling below
-                }
+                    }
 
                 // now we are on the last add official page
                 // the only thing that *might* be interesting on this page is the active button which is
@@ -223,7 +229,7 @@ namespace ArbWeb
                 m_srpt.PopLevel();
                 // and now we're back somewhere (probably officials edit page)
                 // continue to the next one...
-            }
+                }
 
             // and that's it...simple n'est pas?
         }
