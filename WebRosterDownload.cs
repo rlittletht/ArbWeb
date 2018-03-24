@@ -237,7 +237,7 @@ namespace ArbWeb
 
             // from the officials view, make sure we are looking at active officials
             m_awc.ResetNav();
-            m_awc.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, "All Officials", true);
+            m_awc.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, WebCore._sid_OfficialsView_Select_Filter, "All Officials", true);
             m_awc.FWaitForNavFinish();
 
             oDoc2 = m_awc.Document2;

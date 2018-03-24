@@ -234,7 +234,7 @@ namespace ArbWeb
             // now set that filter
 
             m_awc.ResetNav();
-            m_awc.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Select_Filters, sFilterReq, false);
+            m_awc.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Select_Filters, null, sFilterReq, false);
             m_awc.FWaitForNavFinish();
 
             if (!m_awc.FNavToPage(WebCore._s_Assigning_PrintAddress + sFilter))
@@ -243,7 +243,7 @@ namespace ArbWeb
             // setup the file formats and go!
 
             oDoc2 = m_awc.Document2;
-            m_awc.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
+            m_awc.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Reports_Select_Format, WebCore._sid_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
 
             m_srpt.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sTempFile);

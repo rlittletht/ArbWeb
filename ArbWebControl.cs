@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using mshtml;
+using Microsoft.SqlServer.Server;
 using StatusBox;
 
 namespace ArbWeb
@@ -562,11 +563,11 @@ namespace ArbWeb
                 }
             return null;
         }
-        public bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        public bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sid, string sValue, bool fCheck)
         {
             m_srpt.LogData(String.Format("FSetSelectControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
 
-            bool f = FSetSelectControlTextFromDoc(this, oDoc2, sName, sValue, fCheck);
+            bool f = FSetSelectControlTextFromDoc(this, oDoc2, sName, sid, sValue, fCheck);
 
             m_srpt.LogData(String.Format("Return: {0}", f), 3, StatusRpt.MSGT.Body);
             return f;
@@ -583,6 +584,116 @@ namespace ArbWeb
                 }
         }
 
+#if no
+        static void DispatchEventNew(ArbWebControl awc, int iIndex, string sControl, IHTMLSelectElement ihie, IHTMLOptionElement ihoe, IHTMLDocument2 oDoc2)
+        {
+            ihoe.selected = true;
+            object dummy = null;
+            IHTMLDocument4 oDoc4 = awc.Document4;
+            object eventObj = oDoc4.CreateEventObject(ref dummy);
+            var obj = eventObj;
+            obj.initEvent("onchange", true, true);
+
+            IHTMLEventObj2 obj2 = (IHTMLEventObj2)eventObj;
+
+            HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
+            awc.ReportNavState("Before FireEvent");
+            hsec.selectedIndex = iIndex;
+            
+            obj2.fromElement = hsec;
+            obj2.srcElement = hsec;
+            obj2.propertyName = sControl;
+
+            bool f;
+            oDoc4.FireEvent("change", ref eventObj);
+
+            awc.ReportNavState("After FireEvent");
+        }
+#endif
+
+        public static void DispatchChangeEventCore(ArbWebControl awc, string sidControl, string sEvent)
+        {
+            awc.ResetNav();
+            awc.ReportNavState("Before FireEvent");
+            //            ihe3.FireEvent("onchange", ref eventObj);
+
+            HtmlElement head = awc.AxWeb.Document.GetElementsByTagName("head")[0];
+            HtmlElement scriptEl = awc.AxWeb.Document.CreateElement("script");
+            IHTMLScriptElement element = (IHTMLScriptElement)scriptEl.DomElement;
+
+            element.text = "function triggerOnChange() " +
+                           "{{ " +
+                           //                           "alert('im here'); " +
+                           $"var ctl = document.getElementById('{sidControl}'); " +
+                           //                           "alert(ctl); "+
+
+                           "var evt = document.createEvent('HTMLEvents'); " +
+                           $"evt.initEvent('{sEvent}', false, true); " +
+                           "ctl.dispatchEvent(evt);"
+
+                           + "}} ";
+            head.AppendChild(scriptEl);
+
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.AxWeb.Document.InvokeScript("triggerOnChange");
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.ReportNavState("After FireEvent");
+            awc.WaitForBrowserReady();
+            awc.WaitDoLog(500);
+
+        }
+        static void DispatchChangeEventTry2(ArbWebControl awc, int iIndex, string sControl, IHTMLSelectElement ihie, IHTMLOptionElement ihoe, IHTMLDocument2 oDoc2)
+        {
+            object dummy = null;
+            IHTMLDocument4 oDoc4 = (IHTMLDocument4) oDoc2;
+            object eventObj = oDoc4.CreateEventObject(ref dummy);
+            IHTMLEventObj2 obj2 = (IHTMLEventObj2) eventObj;
+
+            IHTMLElement3 ihe3 = (IHTMLElement3) ihie;
+            awc.ResetNav();
+            awc.ReportNavState("Before FireEvent");
+//            ihe3.FireEvent("onchange", ref eventObj);
+
+            HtmlElement head = awc.AxWeb.Document.GetElementsByTagName("head")[0];
+            HtmlElement scriptEl = awc.AxWeb.Document.CreateElement("script");
+            IHTMLScriptElement element = (IHTMLScriptElement) scriptEl.DomElement;
+
+            // element.text = $"function changeSelect() {{ $'({sControl}').trigger('change'); }}";
+            element.text = "function triggerOnChange() " +
+                           "{{ " +
+//                           "alert('im here'); " +
+                           $"var ctl = document.getElementById('{sControl}'); " +
+//                           "alert(ctl); "+
+    
+                            "var evt = document.createEvent('HTMLEvents'); " +
+                            "evt.initEvent('change', false, true); " +
+                            "ctl.dispatchEvent(evt);"
+
+                            +"}} ";
+            // element.text = $"function triggerOnChange() {{ alert('{sControl}');}}";
+            head.AppendChild(scriptEl);
+
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.AxWeb.Document.InvokeScript("triggerOnChange");
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.ReportNavState("After FireEvent");
+            awc.WaitForBrowserReady();
+            awc.WaitDoLog(500);
+
+        }
+        static void DispatchChangeEvent(ArbWebControl awc, int iIndex, string sControl, IHTMLSelectElement ihie, IHTMLOptionElement ihoe, IHTMLDocument2 oDoc2)
+        {
+            ihoe.selected = true;
+            object dummy = null;
+            IHTMLDocument4 oDoc4 = (IHTMLDocument4)oDoc2;
+            object eventObj = oDoc4.CreateEventObject(ref dummy);
+            IHTMLEventObj2 obj2 = (IHTMLEventObj2)eventObj;
+
+            HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
+            awc.ReportNavState("Before FireEvent");
+            hsec.FireEvent("onchange", ref eventObj);
+            awc.ReportNavState("After FireEvent");
+        }
         /* F  S E T  S E L E C T  C O N T R O L  T E X T */
         /*----------------------------------------------------------------------------
         	%%Function: FSetSelectControlText
@@ -590,31 +701,35 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        static public bool FSetSelectControlTextFromDoc(ArbWebControl awc, IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        static public bool FSetSelectControlTextFromDoc(ArbWebControl awc, IHTMLDocument2 oDoc2, string sName, string sid, string sValue, bool fCheck)
         {
             IHTMLElementCollection hec;
 
             hec = (IHTMLElementCollection)oDoc2.all.tags("select");
             bool fNeedSave = false;
+
             foreach (IHTMLSelectElement ihie in hec)
                 {
                 if (String.Compare(ihie.name, sName, true) == 0)
                     {
-                    foreach(IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
+                    int iIndex;
+
+                    IHTMLElementCollection ihecOptions = (IHTMLElementCollection) ihie.tags("option");
+                    for (iIndex = 0; iIndex < ihecOptions.length; iIndex++)
+
+                        //foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
                         {
+                        IHTMLOptionElement ihoe = (IHTMLOptionElement)ihecOptions.item(iIndex);
+
                         if (ihoe.text == sValue)
                             {
                             // value is already set...
                             if (ihie.value == ihoe.value)
                                 return false;
+
                             ihoe.selected = true;
-                            object dummy = null;
-                            IHTMLDocument4 oDoc4 = (IHTMLDocument4)oDoc2;
-                            object eventObj = oDoc4.CreateEventObject(ref dummy);
-                            HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
-                            awc.ReportNavState("Before FireEvent");
-                            hsec.FireEvent("onchange", ref eventObj);
-                            awc.ReportNavState("After FireEvent");
+                            DispatchChangeEventCore(awc, sid, "change");
+                            // DispatchChangeEventTry2(awc, iIndex, sid, ihie, ihoe, oDoc2);
                             return true;
                             }
                         }

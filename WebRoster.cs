@@ -62,7 +62,7 @@ namespace ArbWeb
             m_awc.ResetNav();
             IHTMLDocument2 oDoc2 = m_awc.Document2;
 
-            m_awc.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, "All Officials", true);
+            m_awc.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, WebCore._sid_OfficialsView_Select_Filter, "All Officials", true);
             m_awc.FWaitForNavFinish();
         }
 
@@ -831,7 +831,7 @@ namespace ArbWeb
             ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, WebCore._s_RanksEdit_Checkbox_Rank);
 
             m_awc.ResetNav();
-            m_awc.FSetSelectControlText(m_awc.Document2, WebCore._s_RanksEdit_Select_PosNames, sRankPosition, false);
+            m_awc.FSetSelectControlText(m_awc.Document2, WebCore._s_RanksEdit_Select_PosNames, WebCore._sid_RanksEdit_Select_PosNames, sRankPosition, false);
             m_awc.FWaitForNavFinish();
             return true;
         }

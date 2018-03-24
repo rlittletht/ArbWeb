@@ -153,6 +153,19 @@ namespace ArbWeb
                 m_srpt.AddMessage("Completed login.");
             }
         }
+
+        /*----------------------------------------------------------------------------
+        	%%Function: DebugModelessWait
+        	%%Qualified: ArbWeb.AwMainForm.DebugModelessWait
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public static void DebugModelessWait()
+        {
+            string s;
+
+            TCore.UI.InputBox.ShowInputBoxModelessWait("DEBUG PAUSE", "Press OK or Cancel to continue", "String?", out s);
+        }
         #endregion
 
     }

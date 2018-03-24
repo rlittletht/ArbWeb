@@ -154,10 +154,9 @@ namespace ArbWeb
 
                 m_awc.FWaitForNavFinish();
 
-                IHTMLDocument2 oDoc2;
+                IHTMLDocument2 oDoc2 = m_awc.Document2;
 
-                oDoc2 = m_awc.Document2;
-
+                // Set the basic user info + email address
                 ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_FirstName, rste.m_sFirst, false /*fCheck*/), "Failed to find first name control");
                 ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_LastName, rste.m_sLast, false /*fCheck*/), "Failed to find last name control");
                 ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Email, rste.m_sEmail, false /*fCheck*/), "Failed to find email control");
@@ -181,7 +180,15 @@ namespace ArbWeb
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.m_sAddress2, false /*fCheck*/), "Failed to find address2 control");
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_City, rste.m_sCity, false /*fCheck*/), "Failed to find city control");
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_State, rste.m_sState, false /*fCheck*/), "Failed to find state control");
+
+                    // DebugModelessWait();
+                    // once we set the country, we will be able to set the zip code
+                    ThrowIfNot(ArbWebControl.FSetSelectControlTextFromDoc(m_awc, oDoc2, WebCore._s_AddUser_Input_Country, WebCore._sid_AddUser_Input_Country, "United States", true), "Failed to set country control");
+                    // DebugModelessWait();
+
                     ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Zip, rste.m_sZip, false /*fCheck*/), "Failed to find zip control");
+                    ArbWebControl.DispatchChangeEventCore(m_awc, WebCore._sid_AddUser_Input_Zip, "keyup");
+
 
                     string[] rgsPhoneNums = new string[] {WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2, WebCore._s_AddUser_Input_PhoneNum3};
                     string[] rgsPhoneTypes = new string[] {WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2, WebCore._s_AddUser_Input_PhoneType3};
@@ -203,7 +210,10 @@ namespace ArbWeb
                         }
 
                     m_awc.ResetNav();
+                    // DebugModelessWait();
+
                     ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+                    // DebugModelessWait();
                     m_awc.FWaitForNavFinish();
 
                     // fallthrough to the common handling below
@@ -325,7 +335,7 @@ namespace ArbWeb
             Roster rstServer = null;
 
             if (m_pr.DownloadRosterOnUpload)
-            {
+                {
                 // first thing to do is download a new (temporary) roster copy
                 Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterOfficialsOnlyWork);
 
