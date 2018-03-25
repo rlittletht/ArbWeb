@@ -270,19 +270,25 @@ namespace ArbWeb
 
         public class ControlSetting<T>
         {
-            private string m_sSelectControlName;
-            private string m_sidChoiceControl;
-            private T m_tSelectValue;
+            private string m_sControlName;
+            private string m_sidControlExtra;   // this is usually something like the Choice element ID
+            private T m_tControlValue;
 
-            public string SelectControlName => m_sSelectControlName;
-            public string ChoiceControl => m_sidChoiceControl;
-            public T SelectValue => m_tSelectValue;
+            public string ControlName => m_sControlName;
+            public string IdControlExtra => m_sidControlExtra;
+            public T ControlValue => m_tControlValue;
 
             public ControlSetting(string sSelectControlName, string sidChoiceControl, T sSelectValue)
             {
-                m_sSelectControlName = sSelectControlName;
-                m_sidChoiceControl = sidChoiceControl;
-                m_tSelectValue = sSelectValue;
+                m_sControlName = sSelectControlName;
+                m_sidControlExtra = sidChoiceControl;
+                m_tControlValue = sSelectValue;
+            }
+
+            public ControlSetting(string sControlName, T sControlValue)
+            {
+                m_sControlName = sControlName;
+                m_tControlValue = sControlValue;
             }
         }
 
@@ -314,21 +320,30 @@ namespace ArbWeb
             m_rgSelectSettings = rgSelectSettings;
         }
 
-#if notyet
         // this version does not set a filter, it just goes to the start page, clicks a link, then sets the report params
-        public DownloadGenericExcelReport(string sDescription, string sReportPage, string sidReportPageLink, string sReportPrintSelectFormatControlName, string sidReportPrintSelectFormat, string sReportPrintSubmitPrintControlName, string sFullExpectedName, string sExpectedName, ControlSetting<string>[] iac)
+        // this version selects a filter
+        public DownloadGenericExcelReport(
+            string sDescription,
+            string sReportPage,
+            string sidReportPageLink,
+            string sReportPrintSubmitPrintControlName,
+            string sFullExpectedName,
+            string sExpectedName,
+            ControlSetting<string>[] rgSelectSettings,
+            ControlSetting<bool>[] rgCheckedSettings,
+            IAppContext iac)
         {
             m_sDescription = sDescription;
             m_iac = iac;
             m_sReportPage = sReportPage;
             m_sidReportPageLink = sidReportPageLink;
-            m_sReportPrintSelectFormatControlName = sReportPrintSelectFormatControlName;
-            m_sidReportPrintSelectFormat = sidReportPrintSelectFormat;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
             m_sFullExpectedName = sFullExpectedName;
             m_sExpectedName = sExpectedName;
+            m_rgSelectSettings = rgSelectSettings;
+            m_rgCheckedSettings = rgCheckedSettings;
         }
-#endif
+
         public DownloadGenericExcelReport(string sDescription, IAppContext iac)
         {
             m_sFilterReq = null;
@@ -519,7 +534,15 @@ namespace ArbWeb
                 {
                 foreach (ControlSetting<string> cs in m_rgSelectSettings)
                     {
-                    m_iac.WebControl.FSetSelectControlText(oDoc2, cs.SelectControlName, cs.ChoiceControl, cs.SelectValue, false);
+                    m_iac.WebControl.FSetSelectControlText(oDoc2, cs.ControlName, cs.IdControlExtra, cs.ControlValue, false);
+                    }
+                }
+
+            if (m_rgCheckedSettings != null)
+                {
+                foreach (ControlSetting<bool> cs in m_rgCheckedSettings)
+                    {
+                    ArbWebControl.FSetCheckboxControlVal(oDoc2, cs.ControlValue, cs.ControlName);
                     }
                 }
 
