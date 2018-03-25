@@ -262,14 +262,22 @@ namespace ArbWeb
         private readonly IAppContext m_iac;
         private readonly string m_sReportPage;
         private readonly string m_sSelectFilterControlName;
+        private readonly string m_sReportPrintPagePrefix;
+        private readonly string m_sReportPrintSelectFormatControlName;
+        private readonly string m_sidReportPrintSelectFormat;
+        private readonly string m_sReportPrintSubmitPrintControlName;
 
-        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, string sSelectFilterControlName, IAppContext iac)
+        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, string sSelectFilterControlName, string sReportPrintPagePrefix, string sReportPrintSelectFormatControlName, string sidReportPrintSelectFormat, string sReportPrintSubmitPrintControlName, IAppContext iac)
         {
             m_sFilterReq = sFilterReq;
             m_sDescription = sDescription;
             m_iac = iac;
             m_sReportPage = sidReportStartPage;
             m_sSelectFilterControlName = sSelectFilterControlName;
+            m_sReportPrintPagePrefix = sReportPrintPagePrefix;
+            m_sReportPrintSelectFormatControlName = sReportPrintSelectFormatControlName;
+            m_sidReportPrintSelectFormat = sidReportPrintSelectFormat;
+            m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
         }
 
         public DownloadGenericExcelReport(string sDescription, IAppContext iac)
@@ -420,21 +428,21 @@ namespace ArbWeb
             }
 
             if (sFilter == null)
-                throw (new Exception("there is no 'all games' filter"));
+                throw (new Exception($"there is no '{m_sFilterReq}' filter"));
 
             // now set that filter
 
             m_iac.WebControl.ResetNav();
-            m_iac.WebControl.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Select_Filters, null, m_sFilterReq, false);
+            m_iac.WebControl.FSetSelectControlText(oDoc2, m_sSelectFilterControlName, null, m_sFilterReq, false);
             m_iac.WebControl.FWaitForNavFinish();
 
-            if (!m_iac.WebControl.FNavToPage(WebCore._s_Assigning_PrintAddress + sFilter))
+            if (!m_iac.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilter))
                 throw (new Exception("could not navigate to the reports page!"));
 
             // setup the file formats and go!
 
             oDoc2 = m_iac.WebControl.Document2;
-            m_iac.WebControl.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Reports_Select_Format, WebCore._sid_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
+            m_iac.WebControl.FSetSelectControlText(oDoc2, m_sReportPrintSelectFormatControlName, m_sidReportPrintSelectFormat, "Excel Worksheet Format (.xls)", false);
 
             m_iac.StatusReport.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sTempFile);
@@ -446,7 +454,7 @@ namespace ArbWeb
 
             m_iac.StatusReport.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
             Win32Win.TrapFileDownload aww = new TrapFileDownload(m_iac.StatusReport, "Schedule.xls", "Schedule", sTempFile, null, evtDownload);
-            m_iac.WebControl.FClickControlNoWait(oDoc2, WebCore._s_Assigning_Reports_Submit_Print);
+            m_iac.WebControl.FClickControlNoWait(oDoc2, m_sReportPrintSubmitPrintControlName);
             return evtDownload;
         }
 
