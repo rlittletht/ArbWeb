@@ -257,10 +257,10 @@ namespace ArbWeb
 
     public class DownloadGenericExcelReport
     {
-        private string m_sFilterReq;
-        private string m_sDescription;
-        private IAppContext m_iac;
-        private string m_sReportPage;
+        private readonly string m_sFilterReq;
+        private readonly string m_sDescription;
+        private readonly IAppContext m_iac;
+        private readonly string m_sReportPage;
 
 
         public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, IAppContext iac)
