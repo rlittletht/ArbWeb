@@ -22,7 +22,31 @@ namespace ArbWeb
 
             m_srpt.LogData("Starting DoDownloadContacts", 3, StatusRpt.MSGT.Header);
 
-            DownloadGenericExcelReport dg = new DownloadGenericExcelReport("Contacts", this);
+            DownloadGenericExcelReport dg =
+                new DownloadGenericExcelReport(
+                    "contacts",
+                    WebCore._s_ContactsView,
+                    WebCore._sid_Contacts_Anchor_ContactsReport,
+                    WebCore._s_Contacts_Roster_Submit_Print,
+                    "Roster.xls",
+                    "Roster",
+                    new[]
+                        {
+                        new DownloadGenericExcelReport.ControlSetting<string>(WebCore._s_Contacts_Roster_Select_Format,
+                                                                              WebCore._sid_Contacts_Roster_Select_Format,
+                                                                              "Excel Worksheet Format (.xls)")
+                        },
+                    new[]
+                        {
+                        new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_Address, true),
+                        new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_Email, true),
+                        new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_PageHeader, false),
+                        new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_Phone, true),
+                        new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_Team, true),
+                        new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_Site, true)
+                        },
+                    this
+                );
             Task tskDownloadContacts = new Task(() =>
                 {
                 dg.DownloadGeneric();

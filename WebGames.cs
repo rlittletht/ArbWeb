@@ -163,7 +163,7 @@ namespace ArbWeb
         void DoDownloadGames()
         {
             var x = m_awc.Handle;
-            string sFilterReq = (string)m_cbxGameFilter.SelectedItem;
+            string sFilterReq = (string) m_cbxGameFilter.SelectedItem;
             if (sFilterReq == null)
                 sFilterReq = "All Games";
 
@@ -171,19 +171,23 @@ namespace ArbWeb
 
             m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
 
-            DownloadGenericExcelReport dg = new DownloadGenericExcelReport(sFilterReq,
-                                                                           "games", 
-                                                                           WebCore._s_Assigning, 
-                                                                           WebCore._s_Assigning_Select_Filters, 
-                                                                           WebCore._s_Assigning_PrintAddress,
-                                                                           WebCore._s_Assigning_Reports_Submit_Print,
-                                                                           "Schedule.xls", 
-                                                                           "Schedule",
-                                                                           new[]
-                                                                               {
-                                                                               new DownloadGenericExcelReport.ControlSetting<string>(WebCore._s_Assigning_Reports_Select_Format, WebCore._sid_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)")
-                                                                               },
-                                                                           this);
+            DownloadGenericExcelReport dg =
+                new DownloadGenericExcelReport(
+                    sFilterReq,
+                    "games",
+                    WebCore._s_Assigning,
+                    WebCore._s_Assigning_Select_Filters,
+                    WebCore._s_Assigning_PrintAddress,
+                    WebCore._s_Assigning_Reports_Submit_Print,
+                    "Schedule.xls",
+                    "Schedule",
+                    new[]
+                        {
+                        new DownloadGenericExcelReport.ControlSetting<string>(WebCore._s_Assigning_Reports_Select_Format,
+                                                                              WebCore._sid_Assigning_Reports_Select_Format,
+                                                                              "Excel Worksheet Format (.xls)")
+                        },
+                    this);
 
             Task tskDownloadGames = new Task(() =>
                 {
