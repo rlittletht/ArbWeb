@@ -261,14 +261,15 @@ namespace ArbWeb
         private readonly string m_sDescription;
         private readonly IAppContext m_iac;
         private readonly string m_sReportPage;
+        private readonly string m_sSelectFilterControlName;
 
-
-        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, IAppContext iac)
+        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, string sSelectFilterControlName, IAppContext iac)
         {
             m_sFilterReq = sFilterReq;
             m_sDescription = sDescription;
             m_iac = iac;
             m_sReportPage = sidReportStartPage;
+            m_sSelectFilterControlName = sSelectFilterControlName;
         }
 
         public DownloadGenericExcelReport(string sDescription, IAppContext iac)
@@ -411,7 +412,7 @@ namespace ArbWeb
                     throw (new Exception("could not navigate to games view"));
 
                 oDoc2 = m_iac.WebControl.Document2;
-                sFilter = m_iac.WebControl.SGetFilterID(oDoc2, WebCore._s_Assigning_Select_Filters, m_sFilterReq);
+                sFilter = m_iac.WebControl.SGetFilterID(oDoc2, m_sSelectFilterControlName, m_sFilterReq);
                 if (sFilter != null)
                     break;
 

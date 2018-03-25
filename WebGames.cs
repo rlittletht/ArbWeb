@@ -171,7 +171,7 @@ namespace ArbWeb
 
             m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
 
-            DownloadGenericExcelReport dg = new DownloadGenericExcelReport(sFilterReq, "games", WebCore._s_Assigning, this);
+            DownloadGenericExcelReport dg = new DownloadGenericExcelReport(sFilterReq, "games", WebCore._s_Assigning, WebCore._s_Assigning_Select_Filters, this);
 
             Task tskDownloadGames = new Task(() =>
                 {
