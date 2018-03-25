@@ -69,7 +69,7 @@ namespace ArbWeb
             foreach (RosterEntry rste in rstFiltered.Plrste)
                 {
                 if (m_ebFilter.Text == "" || rste.FMatchAnyMisc(m_ebFilter.Text))
-                    sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.m_sLast);
+                    sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.Last);
                 }
             sw.Flush();
             sw.Close();

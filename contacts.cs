@@ -36,6 +36,7 @@ namespace ArbWeb
         string m_sZip;
         string m_sTitle;
         string m_sLastSignin;
+        private List<TeamRelationship> m_plTeamRelationships;
 
         public string Email { get { return m_sEmail; } set { m_sEmail = value; } } 
         public string First { get { return m_sFirst; } set { m_sFirst = value; } }
@@ -47,9 +48,35 @@ namespace ArbWeb
         public string Zip { get { return m_sZip; } set { m_sZip = value; } }
         public string Title { get { return m_sTitle; } set { m_sTitle = value; } }
         public string LastSignin { get { return m_sLastSignin; } set { m_sLastSignin = value; } }
+        public List<TeamRelationship> TeamRelationships => m_plTeamRelationships;
 
-        #region Phone Numbers
+        public ContactEntry()
+        {
+            m_plTeamRelationships = new List<TeamRelationship>();
+        }
+        public bool FEquals(ContactEntry rste)
+        {
+            if (String.Compare(First, rste.First) != 0)
+                return false;
+            if (String.Compare(Last, rste.Last) != 0)
+                return false;
+            if (String.Compare(Address1, rste.m_sAddress1) != 0)
+                return false;
+            if (String.Compare(Address2, rste.m_sAddress2) != 0)
+                return false;
+            if (String.Compare(City, rste.m_sCity) != 0)
+                return false;
+            if (String.Compare(State, rste.m_sState) != 0)
+                return false;
+            if (String.Compare(Zip, rste.m_sZip) != 0)
+                return false;
+            if (String.Compare(Title, rste.Title) != 0)
+                return false;
 
-        #endregion
+            if (!FEqualsPhones(rste))
+                return false;
+
+            return true;
+        }
     }
 }

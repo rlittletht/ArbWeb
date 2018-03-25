@@ -342,9 +342,12 @@ namespace ArbWeb
             sNewValue is not null and does not match the controls value, then
             set the control to sNewValue (which will strangely leave sAssign
             set to the OLD value)
+
+            return true if we found the control, false if we didn't
         ----------------------------------------------------------------------------*/
-        private void MatchAssignText(IHTMLInputElement ihie, string sMatch, string sNewValue, ref string sAssign, ref bool fNeedSave, ref bool fFailAssign)
+        private bool MatchAssignText(IHTMLInputElement ihie, string sMatch, string sNewValue, out string sAssign, ref bool fNeedSave, ref bool fFailAssign)
         {
+            sAssign = null;
             if (ihie.name.Contains(sMatch))
                 {
                 sAssign = ihie.value;
@@ -370,7 +373,11 @@ namespace ArbWeb
                             }
                         }
                     }
+
+                return true;
                 }
+
+            return false;
         }
 
 
@@ -459,33 +466,51 @@ namespace ArbWeb
 //						if (ihie.value == null && rsteOut.m_sEmail != null && rsteOut.m_sEmail != "")
                         // continue;
 
-                        if (ihie.value != null && rsteOut.m_sEmail != null)
+                        if (ihie.value != null && rsteOut.Email != null)
                             {
-                            if (String.Compare(ihie.value, rsteOut.m_sEmail, true) != 0)
+                            if (String.Compare(ihie.value, rsteOut.Email, true) != 0)
                                 throw new Exception("email addresses don't match!");
                             }
                         else
                             {
-                            m_srpt.AddMessage(String.Format("NULL Email address for {0},{1}", rsteOut.m_sFirst, rsteOut.m_sLast), StatusBox.StatusRpt.MSGT.Error);
+                            m_srpt.AddMessage(String.Format("NULL Email address for {0},{1}", rsteOut.First, rsteOut.Last), StatusBox.StatusRpt.MSGT.Error);
                             }
                         }
 
-                    MatchAssignText(ihie, WebCore._s_EditUser_FirstName, rsteNew?.m_sFirst, ref rsteOut.m_sFirst, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_LastName, rsteNew?.m_sLast, ref rsteOut.m_sLast, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_Address1, rsteNew?.m_sAddress1, ref rsteOut.m_sAddress1, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_Address2, rsteNew?.m_sAddress2, ref rsteOut.m_sAddress2, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_City, rsteNew?.m_sCity, ref rsteOut.m_sCity, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_State, rsteNew?.m_sState, ref rsteOut.m_sState, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_PostalCode, rsteNew?.m_sZip, ref rsteOut.m_sZip, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_OfficialNumber, rsteNew?.m_sOfficialNumber, ref rsteOut.m_sOfficialNumber, ref fNeedSave, ref fFailUpdate);
-                    MatchAssignText(ihie, WebCore._s_EditUser_DateJoined, rsteNew?.m_sDateJoined, ref rsteOut.m_sDateJoined, ref fNeedSave, ref fFailUpdate);
+                    string s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_FirstName, rsteNew?.First, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.First = s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_LastName, rsteNew?.Last, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.Last = s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_Address1, rsteNew?.Address1, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.Address1 = s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_Address2, rsteNew?.Address2, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.Address2 = s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_City, rsteNew?.City, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.City = s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_State, rsteNew?.State, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.State = s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_PostalCode, rsteNew?.Zip, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.Zip = s;
+
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_OfficialNumber, rsteNew?.m_sOfficialNumber, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.m_sOfficialNumber = s;
+                    if (MatchAssignText(ihie, WebCore._s_EditUser_DateJoined, rsteNew?.m_sDateJoined, out s, ref fNeedSave, ref fFailUpdate))
+                        rsteOut.m_sDateJoined = s;
+
+
                     if (rsteNew == null || rsteNew.IsUploadableQuickroster)
                         {
-                        MatchAssignText(ihie, WebCore._s_EditUser_DateOfBirth, rsteNew?.m_sDateOfBirth, ref rsteOut.m_sDateOfBirth, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, WebCore._s_EditUser_GamesPerDay, rsteNew?.m_sGamesPerDay, ref rsteOut.m_sGamesPerDay, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, WebCore._s_EditUser_GamesPerWeek, rsteNew?.m_sGamesPerWeek, ref rsteOut.m_sGamesPerWeek, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, WebCore._s_EditUser_GamesTotal, rsteNew?.m_sTotalGames, ref rsteOut.m_sTotalGames, ref fNeedSave, ref fFailUpdate);
-                        MatchAssignText(ihie, WebCore._s_EditUser_WaitMinutes, rsteNew?.m_sWaitMinutes, ref rsteOut.m_sWaitMinutes, ref fNeedSave, ref fFailUpdate);
+                        if (MatchAssignText(ihie, WebCore._s_EditUser_DateOfBirth, rsteNew?.m_sDateOfBirth, out s, ref fNeedSave, ref fFailUpdate))
+                            rsteOut.m_sDateOfBirth = s;
+                        if (MatchAssignText(ihie, WebCore._s_EditUser_GamesPerDay, rsteNew?.m_sGamesPerDay, out s, ref fNeedSave, ref fFailUpdate))
+                            rsteOut.m_sGamesPerDay = s;
+                        if (MatchAssignText(ihie, WebCore._s_EditUser_GamesPerWeek, rsteNew?.m_sGamesPerWeek, out s, ref fNeedSave, ref fFailUpdate))
+                            rsteOut.m_sGamesPerWeek = s;
+                        if (MatchAssignText(ihie, WebCore._s_EditUser_GamesTotal, rsteNew?.m_sTotalGames, out s, ref fNeedSave, ref fFailUpdate))
+                            rsteOut.m_sTotalGames = s;
+                        if (MatchAssignText(ihie, WebCore._s_EditUser_WaitMinutes, rsteNew?.m_sWaitMinutes, out s, ref fNeedSave, ref fFailUpdate))
+                            rsteOut.m_sWaitMinutes = s;
                         }
 
                     if (ihie.name.Contains(sPhoneNumberNext))
@@ -632,7 +657,7 @@ namespace ArbWeb
             // first, unrank any officials that should now become unranked
             foreach (RosterEntry rste in plrste)
                 {
-                string sReversed = String.Format("{0}, {1}", rste.m_sLast, rste.m_sFirst);
+                string sReversed = String.Format("{0}, {1}", rste.Last, rste.First);
 
                 if (!rste.FRanked(sRankPosition))
                     {
@@ -1008,7 +1033,7 @@ namespace ArbWeb
             if (plrsteLimit != null)
                 {
                 foreach (RosterEntry rsteCheck in plrsteLimit)
-                    mpOfficials.Add("MAILTO:" + rsteCheck.m_sEmail.ToUpper(), true);
+                    mpOfficials.Add("MAILTO:" + rsteCheck.Email.ToUpper(), true);
                 }
 
             while (pgl.iCur < pgl.plofi.Count && (rst == null || m_cbRankOnly.Checked == false) && pgl.iCur < pgl.plofi.Count)

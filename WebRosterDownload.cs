@@ -25,11 +25,11 @@ namespace ArbWeb
         {
             SyncRsteWithServer(m_awc.Document2, sOfficialID, rste, null);
 
-            if (rste.m_sAddress1 == null || rste.m_sAddress2 == null || rste.m_sCity == null || rste.m_sDateJoined == null
-                || rste.m_sDateOfBirth == null || rste.m_sEmail == null || rste.m_sFirst == null || rste.m_sGamesPerDay == null
-                || rste.m_sGamesPerWeek == null || rste.m_sLast == null || rste.m_sOfficialNumber == null
-                || rste.m_sState == null || rste.m_sTotalGames == null || rste.m_sWaitMinutes == null
-                || rste.m_sZip == null)
+            if (rste.Address1 == null || rste.Address2 == null || rste.City == null || rste.m_sDateJoined == null
+                || rste.m_sDateOfBirth == null || rste.Email == null || rste.First == null || rste.m_sGamesPerDay == null
+                || rste.m_sGamesPerWeek == null || rste.Last == null || rste.m_sOfficialNumber == null
+                || rste.State == null || rste.m_sTotalGames == null || rste.m_sWaitMinutes == null
+                || rste.Zip == null)
                 {
                 throw new Exception("couldn't extract one more more fields from official info");
                 }

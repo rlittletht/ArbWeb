@@ -82,7 +82,7 @@ namespace ArbWeb
 
         bool FConfirmExistingArbiterUserAdd(IHTMLDocument2 oDoc2, RosterEntry rsteNewUser)
         {
-            m_srpt.AddMessage(String.Format("Email {0} already in use", rsteNewUser.m_sEmail), StatusBox.StatusRpt.MSGT.Warning);
+            m_srpt.AddMessage(String.Format("Email {0} already in use", rsteNewUser.Email), StatusBox.StatusRpt.MSGT.Warning);
 
             // this email is member of another group.  we can't change their personal info
             // do a quick sanity match to make sure this is the same user
@@ -100,7 +100,7 @@ namespace ArbWeb
             if (String.Compare(sName, rsteNewUser.Name, true /*ignoreCase*/) != 0)
                 {
                 if (MessageBox.Show(
-                        String.Format("Trying to add office {0} and found a mismatch with existing official {1}, with email {2}", rsteNewUser.Name, sName, rsteNewUser.m_sEmail),
+                        String.Format("Trying to add office {0} and found a mismatch with existing official {1}, with email {2}", rsteNewUser.Name, sName, rsteNewUser.Email),
                         "ArbWeb", MessageBoxButtons.YesNo) != DialogResult.Yes)
                     {
                     // ok, then just cancel...
@@ -142,7 +142,7 @@ namespace ArbWeb
             foreach (RosterEntry rste in plrsteNew)
                 {
                 // add the official rste
-                m_srpt.AddMessage(String.Format("Adding official '{0}', {1}", rste.Name, rste.m_sEmail), StatusBox.StatusRpt.MSGT.Body);
+                m_srpt.AddMessage(String.Format("Adding official '{0}', {1}", rste.Name, rste.Email), StatusBox.StatusRpt.MSGT.Body);
                 m_srpt.PushLevel();
 
                 // go to the add user page
@@ -157,9 +157,9 @@ namespace ArbWeb
                 IHTMLDocument2 oDoc2 = m_awc.Document2;
 
                 // Set the basic user info + email address
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_FirstName, rste.m_sFirst, false /*fCheck*/), "Failed to find first name control");
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_LastName, rste.m_sLast, false /*fCheck*/), "Failed to find last name control");
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Email, rste.m_sEmail, false /*fCheck*/), "Failed to find email control");
+                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_FirstName, rste.First, false /*fCheck*/), "Failed to find first name control");
+                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_LastName, rste.Last, false /*fCheck*/), "Failed to find last name control");
+                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Email, rste.Email, false /*fCheck*/), "Failed to find email control");
 
                 m_awc.ResetNav();
                 ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
@@ -176,17 +176,17 @@ namespace ArbWeb
                 else
                     {
                     // if there's an address control, then this is a brand new official
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.m_sAddress1, false /*fCheck*/), "Failed to find address1 control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.m_sAddress2, false /*fCheck*/), "Failed to find address2 control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_City, rste.m_sCity, false /*fCheck*/), "Failed to find city control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_State, rste.m_sState, false /*fCheck*/), "Failed to find state control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.Address1, false /*fCheck*/), "Failed to find address1 control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.Address2, false /*fCheck*/), "Failed to find address2 control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_City, rste.City, false /*fCheck*/), "Failed to find city control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_State, rste.State, false /*fCheck*/), "Failed to find state control");
 
                     // DebugModelessWait();
                     // once we set the country, we will be able to set the zip code
                     ThrowIfNot(ArbWebControl.FSetSelectControlTextFromDoc(m_awc, oDoc2, WebCore._s_AddUser_Input_Country, WebCore._sid_AddUser_Input_Country, "United States", true), "Failed to set country control");
                     // DebugModelessWait();
 
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Zip, rste.m_sZip, false /*fCheck*/), "Failed to find zip control");
+                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Zip, rste.Zip, false /*fCheck*/), "Failed to find zip control");
                     ArbWebControl.DispatchChangeEventCore(m_awc, WebCore._sid_AddUser_Input_Zip, "keyup");
 
 

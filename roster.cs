@@ -11,16 +11,8 @@ namespace ArbWeb
     // ================================================================================
     //  R O S T E R     E N T R Y 
     // ================================================================================
-    public class RosterEntry : RosterEntryPhones // RSTE
+    public class RosterEntry : RosterEntryNameAddress // RSTE
     {
-        public string m_sEmail;
-        public string m_sFirst;
-        public string m_sLast;
-        public string m_sAddress1;
-        public string m_sAddress2;
-        public string m_sCity;
-        public string m_sState;
-        public string m_sZip;
         public string m_sOfficialNumber;
         public string m_sDateOfBirth;
         public string m_sDateJoined;
@@ -41,7 +33,6 @@ namespace ArbWeb
         public List<string> m_plsMisc;
 
         public bool m_fMarked;
-
 
         public Roster.RSTT m_rstt;
 
@@ -83,19 +74,19 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public bool FEquals(RosterEntry rste)
         {
-            if (String.Compare(m_sFirst, rste.m_sFirst) != 0)
+            if (String.Compare(First, rste.First) != 0)
                 return false;
-            if (String.Compare(m_sLast, rste.m_sLast) != 0)
+            if (String.Compare(Last, rste.Last) != 0)
                 return false;
-            if (String.Compare(m_sAddress1, rste.m_sAddress1) != 0)
+            if (String.Compare(Address1, rste.Address1) != 0)
                 return false;
-            if (String.Compare(m_sAddress2, rste.m_sAddress2) != 0)
+            if (String.Compare(Address2, rste.Address2) != 0)
                 return false;
-            if (String.Compare(m_sCity, rste.m_sCity) != 0)
+            if (String.Compare(City, rste.City) != 0)
                 return false;
-            if (String.Compare(m_sState, rste.m_sState) != 0)
+            if (String.Compare(State, rste.State) != 0)
                 return false;
-            if (String.Compare(m_sZip, rste.m_sZip) != 0)
+            if (String.Compare(Zip, rste.Zip) != 0)
                 return false;
             if (String.Compare(m_sOfficialNumber, rste.m_sOfficialNumber) != 0)
                 return false;
@@ -111,11 +102,8 @@ namespace ArbWeb
                 return false;
             if (String.Compare(m_sWaitMinutes, rste.m_sWaitMinutes) != 0)
                 return false;
-            if (!(String.IsNullOrEmpty(Phone1) && String.IsNullOrEmpty(rste.Phone1)) && String.Compare(Phone1, rste.Phone1) != 0)
-                return false;
-            if (!(String.IsNullOrEmpty(Phone2) && String.IsNullOrEmpty(rste.Phone2)) && String.Compare(Phone2, rste.Phone2) != 0)
-                return false;
-            if (!(String.IsNullOrEmpty(Phone3) && String.IsNullOrEmpty(rste.Phone3)) && String.Compare(Phone3, rste.Phone3) != 0)
+
+            if (!FEqualsPhones(rste))
                 return false;
 
             return true;
@@ -243,14 +231,14 @@ namespace ArbWeb
                 if (rgs.Length < 13)
                     throw new Exception("input line too short -- not enough fields");
 
-                m_sFirst = rgs[(int)QuickShortColumns.FirstName];
-                m_sLast = rgs[(int)QuickShortColumns.LastName];
-                m_sEmail = rgs[(int)QuickShortColumns.Email];
-                m_sAddress1 = rgs[(int)QuickShortColumns.Address1];
-                m_sAddress2 = rgs[(int)QuickShortColumns.Address2];
-                m_sCity = rgs[(int)QuickShortColumns.City];
-                m_sState = rgs[(int)QuickShortColumns.State];
-                m_sZip = rgs[(int)QuickShortColumns.PostalCode];
+                First = rgs[(int)QuickShortColumns.FirstName];
+                Last = rgs[(int)QuickShortColumns.LastName];
+                Email = rgs[(int)QuickShortColumns.Email];
+                Address1 = rgs[(int)QuickShortColumns.Address1];
+                Address2 = rgs[(int)QuickShortColumns.Address2];
+                City = rgs[(int)QuickShortColumns.City];
+                State = rgs[(int)QuickShortColumns.State];
+                Zip = rgs[(int)QuickShortColumns.PostalCode];
 
                 SetNextPhoneNumber(rgs[(int)QuickShortColumns.HomePhone], "H");
                 SetNextPhoneNumber(rgs[(int)QuickShortColumns.WorkPhone], "W");
@@ -280,14 +268,14 @@ namespace ArbWeb
                         throw new Exception("input line too short -- not enough fields");
                     }
 
-                m_sFirst = rgs[0];
-                m_sLast = rgs[1];
-                m_sEmail = rgs[2];
-                m_sAddress1 = rgs[3];
-                m_sAddress2 = rgs[4];
-                m_sCity = rgs[5];
-                m_sState = rgs[6];
-                m_sZip = rgs[7];
+                First = rgs[0];
+                Last = rgs[1];
+                Email = rgs[2];
+                Address1 = rgs[3];
+                Address2 = rgs[4];
+                City = rgs[5];
+                State = rgs[6];
+                Zip = rgs[7];
                 SetNextPhoneNumber(rgs[8], "H");
                 SetNextPhoneNumber(rgs[9], "W");
                 SetNextPhoneNumber(rgs[10], "C");
@@ -366,10 +354,6 @@ namespace ArbWeb
                 }
         }
 
-        public string Name { get { return String.Format("{0} {1}", m_sFirst, m_sLast); } }
-        public string First { get { return m_sFirst; } }
-        public string Last { get { return m_sLast; } }
-        public string Email { get { return m_sEmail; } }
         public bool Marked { get { return m_fMarked; } set { m_fMarked = value; } }
         public List<string> Misc {  get { return m_plsMisc; } }
 
@@ -403,17 +387,7 @@ namespace ArbWeb
 
             return m_mpRanking[s] > 0;
         }
-        /* S E T  E M A I L */
-        /*----------------------------------------------------------------------------
-			%%Function: SetEmail
-			%%Qualified: ArbWeb.RSTE.SetEmail
-			%%Contact: rlittle
-			
-		----------------------------------------------------------------------------*/
-        public void SetEmail(string s)
-        {
-            m_sEmail = s.Substring(s.IndexOf(":") + 1);
-        }
+
 
         /* P L S  M I S C  F R O M  H E A D I N G  L I N E */
         /*----------------------------------------------------------------------------
@@ -615,12 +589,12 @@ namespace ArbWeb
             if (m_rstt != Roster.RSTT.Full)
                 {
                 sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\"",
-                         m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, Phone1, Phone2, Phone3, m_sOfficialNumber);
+                         First, Last, Email, Address1, Address2, City, State, Zip, Phone1, Phone2, Phone3, m_sOfficialNumber);
                 }
             else
                 {
                 sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",\"{14}\",\"{15}\",\"{16}\",\"{17}\",\"{18}\",\"{19}\",\"{20}\"",
-                         m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, Phone1, Phone2, Phone3, m_sOfficialNumber, m_sDateOfBirth, m_sDateJoined, m_sLastSignin,
+                         First, Last, Email, Address1, Address2, City, State, Zip, Phone1, Phone2, Phone3, m_sOfficialNumber, m_sDateOfBirth, m_sDateJoined, m_sLastSignin,
                          m_sGamesPerDay, m_sGamesPerWeek, m_sTotalGames, m_sWaitMinutes, m_fReady ? "1" : "0", m_fActive ? "1" : "0");
                 }
 
@@ -838,8 +812,8 @@ namespace ArbWeb
 
             foreach (RosterEntry rste in m_plrste)
                 {
-                if (String.Compare(rste.m_sFirst, sFirst, true) == 0
-                    && String.Compare(rste.m_sLast, sLast, true) == 0)
+                if (String.Compare(rste.First, sFirst, true) == 0
+                    && String.Compare(rste.Last, sLast, true) == 0)
                     {
                     return rste;
                     }
@@ -927,7 +901,7 @@ namespace ArbWeb
 
             foreach (RosterEntry rste in m_plrste)
                 {
-                if (string.Compare(rste.m_sEmail, sEmail, true /*ignoreCase*/) == 0)
+                if (string.Compare(rste.Email, sEmail, true /*ignoreCase*/) == 0)
                     return rste;
                 }
             return null;
@@ -975,7 +949,7 @@ namespace ArbWeb
                 if (!fFirst)
                     s += ";";
                 fFirst = false;
-                s += rste.m_sEmail;
+                s += rste.Email;
                 }
             return s;
         }

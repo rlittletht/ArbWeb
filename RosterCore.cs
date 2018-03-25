@@ -6,6 +6,40 @@ using NUnit.Framework;
 
 namespace ArbWeb
 {
+    public class RosterEntryNameAddress : RosterEntryPhones
+    {
+        private string m_sEmail;
+        private string m_sFirst;
+        private string m_sLast;
+        private string m_sAddress1;
+        private string m_sAddress2;
+        private string m_sCity;
+        private string m_sState;
+        private string m_sZip;
+
+        public string Name { get { return String.Format("{0} {1}", First, Last); } }
+
+        public string Email { get { return m_sEmail; } set { m_sEmail = value; } }
+        public string First { get { return m_sFirst; } set { m_sFirst = value; } }
+        public string Last { get { return m_sLast; } set { m_sLast = value; } }
+        public string Address1 { get { return m_sAddress1; } set { m_sAddress1 = value; } }
+        public string Address2 { get { return m_sAddress2; } set { m_sAddress2 = value; } }
+        public string City { get { return m_sCity; } set { m_sCity = value; } }
+        public string State { get { return m_sState; } set { m_sState = value; } }
+        public string Zip { get { return m_sZip; } set { m_sZip = value; } }
+
+        /* S E T  E M A I L */
+        /*----------------------------------------------------------------------------
+			%%Function: SetEmail
+			%%Qualified: ArbWeb.RSTE.SetEmail
+			%%Contact: rlittle
+			
+		----------------------------------------------------------------------------*/
+        public void SetEmail(string s)
+        {
+            Email = s.Substring(s.IndexOf(":") + 1);
+        }
+    }
     public class RosterEntryPhones
     {
         private string m_sPhone1;
@@ -148,6 +182,19 @@ namespace ArbWeb
                 return;
 
             SetPhoneNumber(iPhone, sPhoneNumber, sTypeDefault);
+        }
+
+
+        public bool FEqualsPhones(RosterEntryPhones rstep)
+        {
+            if (!(String.IsNullOrEmpty(Phone1) && String.IsNullOrEmpty(rstep.Phone1)) && String.Compare(Phone1, rstep.Phone1) != 0)
+                return false;
+            if (!(String.IsNullOrEmpty(Phone2) && String.IsNullOrEmpty(rstep.Phone2)) && String.Compare(Phone2, rstep.Phone2) != 0)
+                return false;
+            if (!(String.IsNullOrEmpty(Phone3) && String.IsNullOrEmpty(rstep.Phone3)) && String.Compare(Phone3, rstep.Phone3) != 0)
+                return false;
+
+            return true;
         }
     }
 }

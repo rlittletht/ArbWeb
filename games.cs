@@ -46,7 +46,7 @@ namespace ArbWeb
                 m_rst.ReadRoster(sRoster);
                 foreach (RosterEntry rste in m_rst.Plrste)
                     {
-                    Umpire ump = new Umpire(rste.m_sFirst, rste.m_sLast, rste.m_plsMisc[iMiscAffiliation], rste.m_sEmail, rste.m_plsMisc);
+                    Umpire ump = new Umpire(rste.First, rste.Last, rste.m_plsMisc[iMiscAffiliation], rste.Email, rste.m_plsMisc);
 
                     m_mpNameUmpire.Add(ump.Name, ump);
                     }
