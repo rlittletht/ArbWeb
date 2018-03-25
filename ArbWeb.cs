@@ -1245,6 +1245,7 @@ namespace ArbWeb
             this.Name = "AwMainForm";
             this.Text = "AwMainForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DoSaveState);
+            this.Move += new System.EventHandler(this.AwMainForm_Move);
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1678,9 +1679,18 @@ namespace ArbWeb
 	        m_cbLaunch.Checked = pr.Launch;
 	        m_cbSetArbiterAnnounce.Checked = pr.SetArbiterAnnounce;
 	        SetGameFiltersFromEnumerable(m_cbxGameFilter, pr.GameFilters, pr.GameFilter);
-	    }
+            if (pr.IsWindowPosSet(pr.MainWindow))
+                {
+                this.StartPosition = FormStartPosition.Manual;
+                this.Bounds = pr.MainWindow;
+                }
+            else
+                {
+                this.StartPosition = FormStartPosition.WindowsDefaultLocation;
+                }
+        }
 
-	    void UpdateProfileFromUI(Profile pr)
+        void UpdateProfileFromUI(Profile pr)
 	    {
 	        pr.GameOutput = m_ebGameOutput.Text;
 	        pr.OutputFile = m_ebOutputFile.Text;
@@ -1701,7 +1711,8 @@ namespace ArbWeb
 	        pr.SetArbiterAnnounce = m_cbSetArbiterAnnounce.Checked;
 	        pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
             // don't worry about setting GameFilters -- we already set that when we populated it.
-	    }
+            pr.MainWindow = this.Bounds;
+        }
 
 
         /* C H A N G E  P R O F I L E */
@@ -1798,6 +1809,10 @@ namespace ArbWeb
             // DownloadGames();
         }
 
+        private void AwMainForm_Move(object sender, EventArgs e)
+        {
+            m_srpt.LogData("Moving",10,StatusRpt.MSGT.Body);
+        }
     }
 
 }

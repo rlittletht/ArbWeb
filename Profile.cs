@@ -55,9 +55,24 @@ namespace ArbWeb
         private int m_nLogLevel;
         private string m_sContacts;
         private string m_sContactsWorking;
+        private Rectangle m_rectMainWindow;
+        private Rectangle m_rectDiagWindow;
+        private Rectangle m_rectProfileWindow;
+
+        public Rectangle MainWindow
+        {
+            get => m_rectMainWindow;
+            set { m_rectMainWindow = value; }
+        }
+        public Rectangle DiagWindow => m_rectDiagWindow;
+        public Rectangle ProfileWindow => m_rectProfileWindow;
+
+        public bool IsWindowPosSet(Rectangle rect)
+        {
+            return rect.Width != 0;
+        }
 
         public int LogLevel {  get { return m_nLogLevel;} set { m_nLogLevel = value; } }
-
         public string[] GameFilters { get { return m_rgsGameFilters; } set { m_rgsGameFilters = value; } }
         public string GameFilter { get { return m_sGameFilter; } set { m_sGameFilter = value; } }
         public string UserID { get { return m_sUserID; } set { m_sUserID = value; } } 
@@ -127,6 +142,10 @@ namespace ArbWeb
                                   new Settings.SettingsElt("GameFiltersCache", Settings.Type.StrArray, new string[] { }, new string[] { }),
                                   new Settings.SettingsElt("LastGameFilter", Settings.Type.Str, "", "All Games"),
                                   new Settings.SettingsElt("LastLogLevel", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastMainWindowPos.Top", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastMainWindowPos.Left", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastMainWindowPos.Width", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastMainWindowPos.Height", Settings.Type.Int, 0, 0),
                                   };
         }
 
@@ -164,6 +183,10 @@ namespace ArbWeb
             m_rgsGameFilters = m_ehProfile.RgsValue("GameFiltersCache");
             m_sGameFilter = m_ehProfile.SValue("LastGameFilter");
             m_nLogLevel = m_ehProfile.NValue("LastLogLevel");
+            m_rectMainWindow = new Rectangle(m_ehProfile.NValue("LastMainWindowPos.Left"),
+                                             m_ehProfile.NValue("LastMainWindowPos.Top"),
+                                             m_ehProfile.NValue("LastMainWindowPos.Width"),
+                                             m_ehProfile.NValue("LastMainWindowPos.Height"));
         }
 
         void SetSettingsFromData()
@@ -200,6 +223,10 @@ namespace ArbWeb
             m_ehProfile.SetRgsValue("GameFiltersCache", m_rgsGameFilters);
             m_ehProfile.SetSValue("LastGameFilter", m_sGameFilter);
             m_ehProfile.SetNValue("LastLogLevel", m_nLogLevel);
+            m_ehProfile.SetNValue("LastMainWindowPos.Left", m_rectMainWindow.Left);
+            m_ehProfile.SetNValue("LastMainWindowPos.Top", m_rectMainWindow.Top);
+            m_ehProfile.SetNValue("LastMainWindowPos.Width", m_rectMainWindow.Width);
+            m_ehProfile.SetNValue("LastMainWindowPos.Height", m_rectMainWindow.Height);
         }
 
         public void Load(string sProfileName)
