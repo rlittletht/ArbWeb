@@ -597,8 +597,8 @@ namespace ArbWeb
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(110, 24);
             this.button1.TabIndex = 26;
-            this.button1.Text = "Get FULL Roster";
-            this.button1.Click += new System.EventHandler(this.HandleDownloadRosterClick);
+            this.button1.Text = "Get Contacts";
+            this.button1.Click += new System.EventHandler(this.HandleDownloadContactsClick);
             // 
             // groupBox2
             // 
@@ -1250,6 +1250,12 @@ namespace ArbWeb
             DoDownloadGames();
         }
 
+
+        private void HandleDownloadContactsClick(object sender, EventArgs e)
+        {
+            DoDownloadContacts();
+        }
+
         /* D O  D O W N L O A D  R O S T E R */
         /*----------------------------------------------------------------------------
 	    	%%Function: DoDownloadRoster
@@ -1764,6 +1770,7 @@ namespace ArbWeb
             tskDownloadTest.Start();
             // DownloadGames();
         }
+
     }
 
 }
