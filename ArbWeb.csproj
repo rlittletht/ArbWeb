@@ -164,6 +164,7 @@
     <Compile Include="ArbWebControl.Designer.cs">
       <DependentUpon>ArbWebControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="contacts.cs" />
     <Compile Include="EditProfile.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -177,6 +178,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="roster.cs" />
+    <Compile Include="RosterCore.cs" />
     <Compile Include="slots.cs" />
     <Compile Include="umpire.cs" />
     <Compile Include="Utils.cs" />
