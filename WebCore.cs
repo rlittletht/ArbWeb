@@ -266,8 +266,10 @@ namespace ArbWeb
         private readonly string m_sReportPrintSelectFormatControlName;
         private readonly string m_sidReportPrintSelectFormat;
         private readonly string m_sReportPrintSubmitPrintControlName;
+        private readonly string m_sFullExpectedName;
+        private readonly string m_sExpectedName;
 
-        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, string sSelectFilterControlName, string sReportPrintPagePrefix, string sReportPrintSelectFormatControlName, string sidReportPrintSelectFormat, string sReportPrintSubmitPrintControlName, IAppContext iac)
+        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, string sSelectFilterControlName, string sReportPrintPagePrefix, string sReportPrintSelectFormatControlName, string sidReportPrintSelectFormat, string sReportPrintSubmitPrintControlName, string sFullExpectedName, string sExpectedName, IAppContext iac)
         {
             m_sFilterReq = sFilterReq;
             m_sDescription = sDescription;
@@ -278,6 +280,8 @@ namespace ArbWeb
             m_sReportPrintSelectFormatControlName = sReportPrintSelectFormatControlName;
             m_sidReportPrintSelectFormat = sidReportPrintSelectFormat;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
+            m_sFullExpectedName = sFullExpectedName;
+            m_sExpectedName = sExpectedName;
         }
 
         public DownloadGenericExcelReport(string sDescription, IAppContext iac)
@@ -453,7 +457,7 @@ namespace ArbWeb
             AutoResetEvent evtDownload = new AutoResetEvent(false);
 
             m_iac.StatusReport.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
-            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_iac.StatusReport, "Schedule.xls", "Schedule", sTempFile, null, evtDownload);
+            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_iac.StatusReport, m_sFullExpectedName, m_sExpectedName, sTempFile, null, evtDownload);
             m_iac.WebControl.FClickControlNoWait(oDoc2, m_sReportPrintSubmitPrintControlName);
             return evtDownload;
         }

@@ -179,6 +179,8 @@ namespace ArbWeb
                                                                            WebCore._s_Assigning_Reports_Select_Format,
                                                                            WebCore._sid_Assigning_Reports_Select_Format,
                                                                            WebCore._s_Assigning_Reports_Submit_Print,
+                                                                           "Schedule.xls", 
+                                                                           "Schedule",
                                                                            this);
 
             Task tskDownloadGames = new Task(() =>
