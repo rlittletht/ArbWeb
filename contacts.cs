@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace ArbWeb
 {
-    public class ContactEntry
+    public class ContactEntry : RosterEntryPhones
     {
         public class TeamRelationship
         {
@@ -36,9 +36,6 @@ namespace ArbWeb
         string m_sZip;
         string m_sTitle;
         string m_sLastSignin;
-        string m_sPhone1;
-        string m_sPhone2;
-        string m_sPhone3;
 
         public string Email { get { return m_sEmail; } set { m_sEmail = value; } } 
         public string First { get { return m_sFirst; } set { m_sFirst = value; } }
@@ -50,9 +47,6 @@ namespace ArbWeb
         public string Zip { get { return m_sZip; } set { m_sZip = value; } }
         public string Title { get { return m_sTitle; } set { m_sTitle = value; } }
         public string LastSignin { get { return m_sLastSignin; } set { m_sLastSignin = value; } }
-        public string Phone1 { get { return m_sPhone1; } set { m_sPhone1 = value; } }
-        public string Phone2 { get { return m_sPhone2; } set { m_sPhone2 = value; } }
-        public string Phone3 { get { return m_sPhone3; } set { m_sPhone3 = value; } }
 
         #region Phone Numbers
 

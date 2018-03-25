@@ -7,6 +7,7 @@ using NUnit.Framework;
 namespace ArbWeb
 {
 
+
     // ================================================================================
     //  R O S T E R     E N T R Y 
     // ================================================================================
@@ -110,11 +111,11 @@ namespace ArbWeb
                 return false;
             if (String.Compare(m_sWaitMinutes, rste.m_sWaitMinutes) != 0)
                 return false;
-            if (!(String.IsNullOrEmpty(m_sPhone1) && String.IsNullOrEmpty(rste.m_sPhone1)) && String.Compare(m_sPhone1, rste.m_sPhone1) != 0)
+            if (!(String.IsNullOrEmpty(Phone1) && String.IsNullOrEmpty(rste.Phone1)) && String.Compare(Phone1, rste.Phone1) != 0)
                 return false;
-            if (!(String.IsNullOrEmpty(m_sPhone2) && String.IsNullOrEmpty(rste.m_sPhone2)) && String.Compare(m_sPhone2, rste.m_sPhone2) != 0)
+            if (!(String.IsNullOrEmpty(Phone2) && String.IsNullOrEmpty(rste.Phone2)) && String.Compare(Phone2, rste.Phone2) != 0)
                 return false;
-            if (!(String.IsNullOrEmpty(m_sPhone3) && String.IsNullOrEmpty(rste.m_sPhone3)) && String.Compare(m_sPhone3, rste.m_sPhone3) != 0)
+            if (!(String.IsNullOrEmpty(Phone3) && String.IsNullOrEmpty(rste.Phone3)) && String.Compare(Phone3, rste.Phone3) != 0)
                 return false;
 
             return true;
@@ -614,12 +615,12 @@ namespace ArbWeb
             if (m_rstt != Roster.RSTT.Full)
                 {
                 sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\"",
-                         m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, m_sPhone1, m_sPhone2, m_sPhone3, m_sOfficialNumber);
+                         m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, Phone1, Phone2, Phone3, m_sOfficialNumber);
                 }
             else
                 {
                 sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",\"{14}\",\"{15}\",\"{16}\",\"{17}\",\"{18}\",\"{19}\",\"{20}\"",
-                         m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, m_sPhone1, m_sPhone2, m_sPhone3, m_sOfficialNumber, m_sDateOfBirth, m_sDateJoined, m_sLastSignin,
+                         m_sFirst, m_sLast, m_sEmail, m_sAddress1, m_sAddress2, m_sCity, m_sState, m_sZip, Phone1, Phone2, Phone3, m_sOfficialNumber, m_sDateOfBirth, m_sDateJoined, m_sLastSignin,
                          m_sGamesPerDay, m_sGamesPerWeek, m_sTotalGames, m_sWaitMinutes, m_fReady ? "1" : "0", m_fActive ? "1" : "0");
                 }
 

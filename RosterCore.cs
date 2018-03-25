@@ -8,22 +8,26 @@ namespace ArbWeb
 {
     public class RosterEntryPhones
     {
-        public string m_sPhone1;
-        public string m_sPhone2;
-        public string m_sPhone3;
+        private string m_sPhone1;
+        private string m_sPhone2;
+        private string m_sPhone3;
+
+        public string Phone1 { get { return m_sPhone1; } set { m_sPhone1 = value; } }
+        public string Phone2 { get { return m_sPhone2; } set { m_sPhone2 = value; } }
+        public string Phone3 { get { return m_sPhone3; } set { m_sPhone3 = value; } }
 
         public string CellPhone
         {
             get
             {
-                if (m_sPhone1 != null && m_sPhone1.Contains("C:"))
-                    return m_sPhone1;
-                else if (m_sPhone2 != null && m_sPhone2.Contains("C:"))
-                    return m_sPhone2;
-                else if (m_sPhone3 != null && m_sPhone3.Contains("C:"))
-                    return m_sPhone3;
+                if (Phone1 != null && Phone1.Contains("C:"))
+                    return Phone1;
+                else if (Phone2 != null && Phone2.Contains("C:"))
+                    return Phone2;
+                else if (Phone3 != null && Phone3.Contains("C:"))
+                    return Phone3;
                 else
-                    return m_sPhone1;
+                    return Phone1;
             }
         }
 
@@ -94,13 +98,13 @@ namespace ArbWeb
             switch (iPhone)
                 {
                 case 1:
-                    sNumberRaw = m_sPhone1;
+                    sNumberRaw = Phone1;
                     break;
                 case 2:
-                    sNumberRaw = m_sPhone2;
+                    sNumberRaw = Phone2;
                     break;
                 case 3:
-                    sNumberRaw = m_sPhone3;
+                    sNumberRaw = Phone3;
                     break;
                 }
 
@@ -119,13 +123,13 @@ namespace ArbWeb
             switch (iPhone)
                 {
                 case 1:
-                    m_sPhone1 = sNumberRaw;
+                    Phone1 = sNumberRaw;
                     break;
                 case 2:
-                    m_sPhone2 = sNumberRaw;
+                    Phone2 = sNumberRaw;
                     break;
                 case 3:
-                    m_sPhone3 = sNumberRaw;
+                    Phone3 = sNumberRaw;
                     break;
                 }
         }
@@ -134,11 +138,11 @@ namespace ArbWeb
         {
             int iPhone = 1;
 
-            if (String.IsNullOrEmpty(m_sPhone1))
+            if (String.IsNullOrEmpty(Phone1))
                 iPhone = 1;
-            else if (String.IsNullOrEmpty(m_sPhone2))
+            else if (String.IsNullOrEmpty(Phone2))
                 iPhone = 2;
-            else if (String.IsNullOrEmpty(m_sPhone3))
+            else if (String.IsNullOrEmpty(Phone3))
                 iPhone = 3;
             else
                 return;
