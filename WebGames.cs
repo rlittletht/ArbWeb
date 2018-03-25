@@ -176,11 +176,13 @@ namespace ArbWeb
                                                                            WebCore._s_Assigning, 
                                                                            WebCore._s_Assigning_Select_Filters, 
                                                                            WebCore._s_Assigning_PrintAddress,
-                                                                           WebCore._s_Assigning_Reports_Select_Format,
-                                                                           WebCore._sid_Assigning_Reports_Select_Format,
                                                                            WebCore._s_Assigning_Reports_Submit_Print,
                                                                            "Schedule.xls", 
                                                                            "Schedule",
+                                                                           new[]
+                                                                               {
+                                                                               new DownloadGenericExcelReport.ControlSetting<string>(WebCore._s_Assigning_Reports_Select_Format, WebCore._sid_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)")
+                                                                               },
                                                                            this);
 
             Task tskDownloadGames = new Task(() =>

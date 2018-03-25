@@ -263,27 +263,72 @@ namespace ArbWeb
         private readonly string m_sReportPage;
         private readonly string m_sSelectFilterControlName;
         private readonly string m_sReportPrintPagePrefix;
-        private readonly string m_sReportPrintSelectFormatControlName;
-        private readonly string m_sidReportPrintSelectFormat;
         private readonly string m_sReportPrintSubmitPrintControlName;
         private readonly string m_sFullExpectedName;
         private readonly string m_sExpectedName;
+        private readonly string m_sidReportPageLink;
 
-        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, string sSelectFilterControlName, string sReportPrintPagePrefix, string sReportPrintSelectFormatControlName, string sidReportPrintSelectFormat, string sReportPrintSubmitPrintControlName, string sFullExpectedName, string sExpectedName, IAppContext iac)
+        public class ControlSetting<T>
+        {
+            private string m_sSelectControlName;
+            private string m_sidChoiceControl;
+            private T m_tSelectValue;
+
+            public string SelectControlName => m_sSelectControlName;
+            public string ChoiceControl => m_sidChoiceControl;
+            public T SelectValue => m_tSelectValue;
+
+            public ControlSetting(string sSelectControlName, string sidChoiceControl, T sSelectValue)
+            {
+                m_sSelectControlName = sSelectControlName;
+                m_sidChoiceControl = sidChoiceControl;
+                m_tSelectValue = sSelectValue;
+            }
+        }
+
+        private readonly ControlSetting<bool>[] m_rgCheckedSettings;
+        private readonly ControlSetting<string>[] m_rgSelectSettings;
+
+        // this version selects a filter
+        public DownloadGenericExcelReport(
+            string sFilterReq, 
+            string sDescription, 
+            string sReportPage, 
+            string sSelectFilterControlName, 
+            string sReportPrintPagePrefix, 
+            string sReportPrintSubmitPrintControlName, 
+            string sFullExpectedName, 
+            string sExpectedName, 
+            ControlSetting<string>[] rgSelectSettings,
+            IAppContext iac)
         {
             m_sFilterReq = sFilterReq;
             m_sDescription = sDescription;
             m_iac = iac;
-            m_sReportPage = sidReportStartPage;
+            m_sReportPage = sReportPage;
             m_sSelectFilterControlName = sSelectFilterControlName;
             m_sReportPrintPagePrefix = sReportPrintPagePrefix;
+            m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
+            m_sFullExpectedName = sFullExpectedName;
+            m_sExpectedName = sExpectedName;
+            m_rgSelectSettings = rgSelectSettings;
+        }
+
+#if notyet
+        // this version does not set a filter, it just goes to the start page, clicks a link, then sets the report params
+        public DownloadGenericExcelReport(string sDescription, string sReportPage, string sidReportPageLink, string sReportPrintSelectFormatControlName, string sidReportPrintSelectFormat, string sReportPrintSubmitPrintControlName, string sFullExpectedName, string sExpectedName, ControlSetting<string>[] iac)
+        {
+            m_sDescription = sDescription;
+            m_iac = iac;
+            m_sReportPage = sReportPage;
+            m_sidReportPageLink = sidReportPageLink;
             m_sReportPrintSelectFormatControlName = sReportPrintSelectFormatControlName;
             m_sidReportPrintSelectFormat = sidReportPrintSelectFormat;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
             m_sFullExpectedName = sFullExpectedName;
             m_sExpectedName = sExpectedName;
         }
-
+#endif
         public DownloadGenericExcelReport(string sDescription, IAppContext iac)
         {
             m_sFilterReq = null;
@@ -405,11 +450,19 @@ namespace ArbWeb
             }
         }
 
+        bool FNeedSelectReportFilter()
+        {
+            return m_sSelectFilterControlName != null;
+        }
+
         /*----------------------------------------------------------------------------
         	%%Function: DoLaunchDownloadGames
         	%%Qualified: ArbWeb.AwMainForm.DoLaunchDownloadGames
         	%%Contact: rlittle
-        	
+
+            This will optionally select a filter dropdown item from the starting 
+            page. if not requested, this will just navigate to the start page and
+            invoke the link to the report page.
         ----------------------------------------------------------------------------*/
         private AutoResetEvent DoLaunchDownloadGeneric(string sTempFile)
         {
@@ -418,35 +471,57 @@ namespace ArbWeb
             string sFilter = null;
 
             while (count < 2)
-            {
+                {
                 // ok, now we're at the main assigner page...
                 if (!m_iac.WebControl.FNavToPage(m_sReportPage))
                     throw (new Exception("could not navigate to games view"));
 
                 oDoc2 = m_iac.WebControl.Document2;
-                sFilter = m_iac.WebControl.SGetFilterID(oDoc2, m_sSelectFilterControlName, m_sFilterReq);
-                if (sFilter != null)
+                if (FNeedSelectReportFilter())
+                    {
+                    sFilter = m_iac.WebControl.SGetFilterID(oDoc2, m_sSelectFilterControlName, m_sFilterReq);
+                    if (sFilter != null)
+                        break;
+                    }
+                else
+                    {
                     break;
+                    }
 
                 count++;
-            }
+                }
 
-            if (sFilter == null)
-                throw (new Exception($"there is no '{m_sFilterReq}' filter"));
+            if (FNeedSelectReportFilter())
+                {
+                if (sFilter == null)
+                    throw (new Exception($"there is no '{m_sFilterReq}' filter"));
 
-            // now set that filter
+                // now set that filter
 
-            m_iac.WebControl.ResetNav();
-            m_iac.WebControl.FSetSelectControlText(oDoc2, m_sSelectFilterControlName, null, m_sFilterReq, false);
-            m_iac.WebControl.FWaitForNavFinish();
+                m_iac.WebControl.ResetNav();
+                m_iac.WebControl.FSetSelectControlText(oDoc2, m_sSelectFilterControlName, null, m_sFilterReq, false);
+                m_iac.WebControl.FWaitForNavFinish();
 
-            if (!m_iac.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilter))
-                throw (new Exception("could not navigate to the reports page!"));
-
-            // setup the file formats and go!
+                if (!m_iac.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilter))
+                    throw (new Exception("could not navigate to the reports page!"));
+                }
+            else
+                {
+                m_iac.WebControl.ResetNav();
+                m_iac.ThrowIfNot(m_iac.WebControl.FClickControl(oDoc2, m_sidReportPageLink), "could not click on report link");
+                m_iac.WebControl.FWaitForNavFinish();
+                }
 
             oDoc2 = m_iac.WebControl.Document2;
-            m_iac.WebControl.FSetSelectControlText(oDoc2, m_sReportPrintSelectFormatControlName, m_sidReportPrintSelectFormat, "Excel Worksheet Format (.xls)", false);
+
+            // loop through the Select controls we have to set (typically, this will include the file format)
+            if (m_rgSelectSettings != null)
+                {
+                foreach (ControlSetting<string> cs in m_rgSelectSettings)
+                    {
+                    m_iac.WebControl.FSetSelectControlText(oDoc2, cs.SelectControlName, cs.ChoiceControl, cs.SelectValue, false);
+                    }
+                }
 
             m_iac.StatusReport.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sTempFile);

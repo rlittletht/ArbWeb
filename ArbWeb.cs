@@ -25,6 +25,7 @@ namespace ArbWeb
         ArbWebControl WebControl { get; }
         void EnsureLoggedIn();
         Profile Profile { get; }
+        void ThrowIfNot(bool f, string s);
     }
     /// <summary>
     /// Summary description for AwMainForm.
@@ -110,7 +111,7 @@ namespace ArbWeb
 
         public StatusRpt StatusReport => m_srpt;
 
-        private void ThrowIfNot(bool f, string s)
+        public void ThrowIfNot(bool f, string s)
         {
             if (!f)
                 throw new Exception(s);
