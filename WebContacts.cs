@@ -45,11 +45,16 @@ namespace ArbWeb
                         new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_Team, true),
                         new DownloadGenericExcelReport.ControlSetting<bool>(WebCore._s_Contacts_Roster_Check_Site, true)
                         },
+                    Profile.Contacts,
+                    Profile.ContactsWorking,
                     this
                 );
+
+            string sContactsNew;
             Task tskDownloadContacts = new Task(() =>
                 {
-                dg.DownloadGeneric();
+                dg.DownloadGeneric(out sContactsNew);
+                Profile.Contacts = sContactsNew;
                 DoPendingQueueUIOp();
                 });
 

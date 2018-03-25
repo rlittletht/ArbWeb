@@ -187,11 +187,16 @@ namespace ArbWeb
                                                                               WebCore._sid_Assigning_Reports_Select_Format,
                                                                               "Excel Worksheet Format (.xls)")
                         },
+                    Profile.GameFile,
+                    Profile.GameCopy,
                     this);
 
             Task tskDownloadGames = new Task(() =>
                 {
-                dg.DownloadGeneric();
+                string sGameFileNew;
+
+                dg.DownloadGeneric(out sGameFileNew);
+                Profile.GameFile = sGameFileNew;
                 DoPendingQueueUIOp();
                 });
 

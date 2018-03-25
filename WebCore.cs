@@ -267,6 +267,8 @@ namespace ArbWeb
         private readonly string m_sFullExpectedName;
         private readonly string m_sExpectedName;
         private readonly string m_sidReportPageLink;
+        private string m_sGameFile;
+        private readonly string m_sGameCopy;
 
         public class ControlSetting<T>
         {
@@ -306,6 +308,8 @@ namespace ArbWeb
             string sFullExpectedName, 
             string sExpectedName, 
             ControlSetting<string>[] rgSelectSettings,
+            string sGameFile,
+            string sGameCopy,
             IAppContext iac)
         {
             m_sFilterReq = sFilterReq;
@@ -318,6 +322,8 @@ namespace ArbWeb
             m_sFullExpectedName = sFullExpectedName;
             m_sExpectedName = sExpectedName;
             m_rgSelectSettings = rgSelectSettings;
+            m_sGameFile = sGameFile;
+            m_sGameCopy = sGameCopy;
         }
 
         // this version does not set a filter, it just goes to the start page, clicks a link, then sets the report params
@@ -331,6 +337,8 @@ namespace ArbWeb
             string sExpectedName,
             ControlSetting<string>[] rgSelectSettings,
             ControlSetting<bool>[] rgCheckedSettings,
+            string sGameFile,
+            string sGameCopy,
             IAppContext iac)
         {
             m_sDescription = sDescription;
@@ -342,21 +350,17 @@ namespace ArbWeb
             m_sExpectedName = sExpectedName;
             m_rgSelectSettings = rgSelectSettings;
             m_rgCheckedSettings = rgCheckedSettings;
+            m_sGameFile = sGameFile;
+            m_sGameCopy = sGameCopy;
         }
 
-        public DownloadGenericExcelReport(string sDescription, IAppContext iac)
-        {
-            m_sFilterReq = null;
-            m_sDescription = sDescription;
-            m_iac = iac;
-        }
         /*----------------------------------------------------------------------------
         	%%Function: DownloadGames
         	%%Qualified: ArbWeb.AwMainForm.DownloadGames
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public void DownloadGeneric()
+        public void DownloadGeneric(out string sGameFileNew)
         {
             m_iac.StatusReport.AddMessage($"Starting {m_sDescription} download...");
             m_iac.StatusReport.PushLevel();
@@ -370,7 +374,8 @@ namespace ArbWeb
             // ok, now we have all games selected...
             // time to try to download a report
             m_iac.StatusReport.PopLevel();
-            m_iac.StatusReport.AddMessage("Completed downloading games.");
+            m_iac.StatusReport.AddMessage($"Completed downloading {m_sDescription}.");
+            sGameFileNew = m_sGameFile;
         }
 
         /*----------------------------------------------------------------------------
@@ -391,17 +396,17 @@ namespace ArbWeb
             string sOutFile = "";
             string sPrefix = "";
 
-            if (m_iac.Profile.GameFile.Length < 1)
+            if (m_sGameFile.Length < 1)
             {
                 sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
             }
             else
             {
-                sOutFile = System.IO.Path.GetDirectoryName(m_iac.Profile.GameFile);
+                sOutFile = System.IO.Path.GetDirectoryName(m_sGameFile);
                 string[] rgs;
-                if (m_iac.Profile.GameFile.Length > 5 && sOutFile.Length > 0)
+                if (m_sGameFile.Length > 5 && sOutFile.Length > 0)
                 {
-                    rgs = CountsData.RexHelper.RgsMatch(m_iac.Profile.GameFile.Substring(sOutFile.Length + 1), "([.*])games");
+                    rgs = CountsData.RexHelper.RgsMatch(m_sGameFile.Substring(sOutFile.Length + 1), "([.*])games");
                     if (rgs != null && rgs.Length > 0 && rgs[0] != null)
                         sPrefix = rgs[0];
                 }
@@ -417,9 +422,9 @@ namespace ArbWeb
             }
             app.Quit();
             app = null;
-            m_iac.Profile.GameFile = sOutFile;
-            System.IO.File.Delete(m_iac.Profile.GameCopy);
-            System.IO.File.Copy(sOutFile, m_iac.Profile.GameCopy);
+            m_sGameFile = sOutFile;
+            System.IO.File.Delete(m_sGameCopy);
+            System.IO.File.Copy(sOutFile, m_sGameCopy);
         }
 
         /*----------------------------------------------------------------------------

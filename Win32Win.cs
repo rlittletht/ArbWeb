@@ -167,6 +167,8 @@ namespace Win32Win
                 Win32.PostMessage(m_hwndFound, Win32.WM_CHAR, (IntPtr)ch, IntPtr.Zero);
 
             m_srpt.LogData(String.Format("Posted message WM_CHARs "), 3, StatusRpt.MSGT.Body);
+            Thread.Sleep(150);
+
             sActual = GetControlText(m_hwndFound);
             m_srpt.LogData(String.Format("Actual text after first: {0}", sActual), 3, StatusRpt.MSGT.Body);
 #if no
@@ -196,7 +198,6 @@ namespace Win32Win
                 return false;
                 }
 #endif
-            Thread.Sleep(100);
             return true;
         }
 

@@ -24,7 +24,7 @@ namespace ArbWeb
         StatusRpt StatusReport { get; }
         ArbWebControl WebControl { get; }
         void EnsureLoggedIn();
-        Profile Profile { get; }
+        //Profile Profile { get; }
         void ThrowIfNot(bool f, string s);
     }
     /// <summary>
