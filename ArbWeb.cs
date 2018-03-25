@@ -19,10 +19,17 @@ using TCore.Util;
 
 namespace ArbWeb
 {
+    public interface IAppContext
+    {
+        StatusRpt StatusReport { get; }
+        ArbWebControl WebControl { get; }
+        void EnsureLoggedIn();
+        Profile Profile { get; }
+    }
     /// <summary>
     /// Summary description for AwMainForm.
     /// </summary>
-    public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch
+    public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch, IAppContext
     {
         public AwMainForm() {} // for unit tests only
 
@@ -101,6 +108,8 @@ namespace ArbWeb
 
         #endregion
 
+        public StatusRpt StatusReport => m_srpt;
+
         private void ThrowIfNot(bool f, string s)
         {
             if (!f)
@@ -113,10 +122,14 @@ namespace ArbWeb
         private string m_sAutomateDateEnd = null;
         private bool m_fForceFutureGames = false;
 
+        public Profile Profile => m_pr;
+
         private Settings.SettingsElt[] m_rgrehe;
         private Settings m_reh;
 
         ArbWebControl m_awc;
+        public ArbWebControl WebControl => m_awc;
+
         bool m_fDontUpdateProfile;
         bool m_fLoggedIn;
         Roster m_rst;

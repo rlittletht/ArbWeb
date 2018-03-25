@@ -62,7 +62,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void EnsureLoggedIn()
+        public void EnsureLoggedIn()
         {
             if (m_awc.InvokeRequired)
             {

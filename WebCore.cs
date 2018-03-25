@@ -2,7 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using mshtml;
+using StatusBox;
+using TCore.Util;
+using Win32Win;
 
 namespace ArbWeb
 {
@@ -248,5 +253,201 @@ namespace ArbWeb
         public const string _sid_Contacts_Roster_Submit_Print = "ctl00_ContentHolder_pgeContactsView_navContactsView_btnPrint"; // ok2018
 
         #endregion
+    }
+
+    public class DownloadGenericExcelReport
+    {
+        private string m_sFilterReq;
+        private string m_sDescription;
+        private IAppContext m_iac;
+        private string m_sReportPage;
+
+
+        public DownloadGenericExcelReport(string sFilterReq, string sDescription, string sidReportStartPage, IAppContext iac)
+        {
+            m_sFilterReq = sFilterReq;
+            m_sDescription = sDescription;
+            m_iac = iac;
+            m_sReportPage = sidReportStartPage;
+        }
+
+        public DownloadGenericExcelReport(string sDescription, IAppContext iac)
+        {
+            m_sFilterReq = null;
+            m_sDescription = sDescription;
+            m_iac = iac;
+        }
+        /*----------------------------------------------------------------------------
+        	%%Function: DownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.DownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public void DownloadGeneric()
+        {
+            m_iac.StatusReport.AddMessage($"Starting {m_sDescription} download...");
+            m_iac.StatusReport.PushLevel();
+            string sTempFile = Filename.SBuildTempFilename("temp", "xls");
+
+            sTempFile = DownloadGenericToFile(sTempFile);
+            HandleDownloadGames(sTempFile);
+
+            System.IO.File.Delete(sTempFile);
+
+            // ok, now we have all games selected...
+            // time to try to download a report
+            m_iac.StatusReport.PopLevel();
+            m_iac.StatusReport.AddMessage("Completed downloading games.");
+        }
+
+        /*----------------------------------------------------------------------------
+            %%Function: HandleDownloadGames
+            %%Qualified: ArbWeb.AwMainForm.HandleDownloadGames
+            %%Contact: rlittle
+        
+        ----------------------------------------------------------------------------*/
+        private void HandleDownloadGames(string sFile)
+        {
+            object missing = System.Type.Missing;
+            Microsoft.Office.Interop.Excel.Application app = new Microsoft.Office.Interop.Excel.Application();
+
+            Microsoft.Office.Interop.Excel.Workbook wkb;
+
+            wkb = app.Workbooks.Open(sFile, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing);
+
+            string sOutFile = "";
+            string sPrefix = "";
+
+            if (m_iac.Profile.GameFile.Length < 1)
+            {
+                sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
+            }
+            else
+            {
+                sOutFile = System.IO.Path.GetDirectoryName(m_iac.Profile.GameFile);
+                string[] rgs;
+                if (m_iac.Profile.GameFile.Length > 5 && sOutFile.Length > 0)
+                {
+                    rgs = CountsData.RexHelper.RgsMatch(m_iac.Profile.GameFile.Substring(sOutFile.Length + 1), "([.*])games");
+                    if (rgs != null && rgs.Length > 0 && rgs[0] != null)
+                        sPrefix = rgs[0];
+                }
+            }
+
+
+            sOutFile = String.Format("{0}\\{2}games_{1:MM}{1:dd}{1:yy}_{1:HH}{1:mm}.csv", sOutFile, DateTime.Now, sPrefix);
+
+            if (wkb != null)
+            {
+                wkb.SaveAs(sOutFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlCSV, missing, missing, missing, missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, missing, missing, missing, missing, missing);
+                wkb.Close(0, missing, missing);
+            }
+            app.Quit();
+            app = null;
+            m_iac.Profile.GameFile = sOutFile;
+            System.IO.File.Delete(m_iac.Profile.GameCopy);
+            System.IO.File.Copy(sOutFile, m_iac.Profile.GameCopy);
+        }
+
+        /*----------------------------------------------------------------------------
+        	%%Function: DownloadGamesToFile
+        	%%Qualified: ArbWeb.AwMainForm.DownloadGamesToFile
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private string DownloadGenericToFile(string sTempFile)
+        {
+            m_iac.EnsureLoggedIn();
+
+            m_iac.StatusReport.LogData("LaunchDownloadGeneric async task launched", 3, StatusRpt.MSGT.Body);
+            var evtDownload = LaunchDownloadGeneric(sTempFile);
+            m_iac.StatusReport.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
+            evtDownload.WaitOne();
+            m_iac.StatusReport.LogData("evtDownload.WaitOne() complete", 3, StatusRpt.MSGT.Body);
+
+            return sTempFile;
+        }
+
+        private delegate AutoResetEvent LaunchDownloadGenericDel(string sTempFile);
+
+        /*----------------------------------------------------------------------------
+        	%%Function: LaunchDownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.LaunchDownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        AutoResetEvent LaunchDownloadGeneric(string sTempFile)
+        {
+            if (m_iac.WebControl.InvokeRequired)
+            {
+            m_iac.StatusReport.LogData("InvokeRequired true for LaunchDownloadGeneric", 3, StatusRpt.MSGT.Body);
+
+                IAsyncResult rsl = m_iac.WebControl.BeginInvoke(new LaunchDownloadGenericDel(DoLaunchDownloadGeneric), sTempFile);
+                return (AutoResetEvent)m_iac.WebControl.EndInvoke(rsl);
+            }
+            else
+            {
+            m_iac.StatusReport.LogData("InvokeRequired false for DoLaunchDownloadGames", 3, StatusRpt.MSGT.Body);
+                return DoLaunchDownloadGeneric(sTempFile);
+            }
+        }
+
+        /*----------------------------------------------------------------------------
+        	%%Function: DoLaunchDownloadGames
+        	%%Qualified: ArbWeb.AwMainForm.DoLaunchDownloadGames
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        private AutoResetEvent DoLaunchDownloadGeneric(string sTempFile)
+        {
+            IHTMLDocument2 oDoc2 = m_iac.WebControl.Document2;
+            int count = 0;
+            string sFilter = null;
+
+            while (count < 2)
+            {
+                // ok, now we're at the main assigner page...
+                if (!m_iac.WebControl.FNavToPage(m_sReportPage))
+                    throw (new Exception("could not navigate to games view"));
+
+                oDoc2 = m_iac.WebControl.Document2;
+                sFilter = m_iac.WebControl.SGetFilterID(oDoc2, WebCore._s_Assigning_Select_Filters, m_sFilterReq);
+                if (sFilter != null)
+                    break;
+
+                count++;
+            }
+
+            if (sFilter == null)
+                throw (new Exception("there is no 'all games' filter"));
+
+            // now set that filter
+
+            m_iac.WebControl.ResetNav();
+            m_iac.WebControl.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Select_Filters, null, m_sFilterReq, false);
+            m_iac.WebControl.FWaitForNavFinish();
+
+            if (!m_iac.WebControl.FNavToPage(WebCore._s_Assigning_PrintAddress + sFilter))
+                throw (new Exception("could not navigate to the reports page!"));
+
+            // setup the file formats and go!
+
+            oDoc2 = m_iac.WebControl.Document2;
+            m_iac.WebControl.FSetSelectControlText(oDoc2, WebCore._s_Assigning_Reports_Select_Format, WebCore._sid_Assigning_Reports_Select_Format, "Excel Worksheet Format (.xls)", false);
+
+            m_iac.StatusReport.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
+            System.Windows.Forms.Clipboard.SetText(sTempFile);
+
+            m_iac.WebControl.ResetNav();
+            //          m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadGamesNewWindowDelegate));
+
+            AutoResetEvent evtDownload = new AutoResetEvent(false);
+
+            m_iac.StatusReport.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
+            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_iac.StatusReport, "Schedule.xls", "Schedule", sTempFile, null, evtDownload);
+            m_iac.WebControl.FClickControlNoWait(oDoc2, WebCore._s_Assigning_Reports_Submit_Print);
+            return evtDownload;
+        }
+
     }
 }

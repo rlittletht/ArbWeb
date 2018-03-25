@@ -19,18 +19,17 @@ namespace ArbWeb
         void DoDownloadContacts()
         {
             var x = m_awc.Handle; // let's make sure the webbrowser handle is created
-            string sFilterReq = (string)m_cbxGameFilter.SelectedItem;
-            if (sFilterReq == null)
-                sFilterReq = "All Games";
 
-            // let's make sure the webbrowser handle is created
+            m_srpt.LogData("Starting DoDownloadContacts", 3, StatusRpt.MSGT.Header);
 
-            m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
+            DownloadGenericExcelReport dg = new DownloadGenericExcelReport("Contacts", this);
+            Task tskDownloadContacts = new Task(() =>
+                {
+                dg.DownloadGeneric();
+                DoPendingQueueUIOp();
+                });
 
-            Task tskDownloadGames = new Task(() => DownloadGames(sFilterReq));
-
-            tskDownloadGames.Start();
+            tskDownloadContacts.Start();
         }
-
     }
 }
