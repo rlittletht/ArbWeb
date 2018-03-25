@@ -25,8 +25,10 @@ namespace ArbWeb
             pr.Password = ep.m_ebPassword.Text;
             pr.GameFile = ep.m_ebGameFile.Text;
             pr.Roster = ep.m_ebRoster.Text;
+            pr.Contacts = ep.m_ebContacts.Text;
             pr.GameCopy = ep.m_ebGameCopy.Text;
             pr.RosterWorking = ep.m_ebRosterWorking.Text;
+            pr.ContactsWorking = ep.m_ebContactsWorking.Text;
             pr.LogToFile = ep.m_cbLogToFile.Checked;
             pr.TestOnly = ep.m_cbTestOnly.Checked;
             pr.SkipZ = ep.m_cbIgnoreZSports.Checked;
@@ -42,9 +44,11 @@ namespace ArbWeb
             ep.m_ebPassword.Text = pr.Password;
             ep.m_ebProfileName.Text = pr.ProfileName;
     	    ep.m_ebGameFile.Text = pr.GameFile;
-	        ep.m_ebRoster.Text = pr.Roster;
+            ep.m_ebRoster.Text = pr.Roster;
+            ep.m_ebContacts.Text = pr.Contacts;
 	        ep.m_ebGameCopy.Text = pr.GameCopy;
 	        ep.m_ebRosterWorking.Text = pr.RosterWorking;
+            ep.m_ebContactsWorking.Text = pr.ContactsWorking;
             ep.m_ebProfileName.Enabled = false;
             ep.m_cbLogToFile.Checked = pr.LogToFile;
             ep.m_cbTestOnly.Checked = pr.TestOnly;

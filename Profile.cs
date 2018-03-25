@@ -53,6 +53,8 @@ namespace ArbWeb
         private string[] m_rgsGameFilters;
         private string m_sGameFilter;
         private int m_nLogLevel;
+        private string m_sContacts;
+        private string m_sContactsWorking;
 
         public int LogLevel {  get { return m_nLogLevel;} set { m_nLogLevel = value; } }
 
@@ -61,6 +63,8 @@ namespace ArbWeb
         public string UserID { get { return m_sUserID; } set { m_sUserID = value; } } 
         public string Password  { get { return m_sPassword; } set { m_sPassword = value; } }
         public string GameFile { get { return m_sGameFile; }  set { m_sGameFile = value; } }
+        public string Contacts { get { return m_sContacts; } set { m_sContacts = value; } }
+        public string ContactsWorking { get { return m_sContactsWorking; } set { m_sContactsWorking = value; } }
         public string Roster  { get { return m_sRoster; } set { m_sRoster = value; } }
         public string GameCopy { get { return m_sGameCopy; } set { m_sGameCopy = value; } } 
         public string RosterWorking { get { return m_sRosterWorking; } set { m_sRosterWorking = value; } } 
@@ -91,36 +95,38 @@ namespace ArbWeb
         {
             m_rgreheProfile = new[]
                                   {
-                                      new Settings.SettingsElt("Login", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("Password", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("GameFile", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("Roster", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("GameFileCopy", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("RosterCopy", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("GameOutput", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("OutputFile", Settings.Type.Str, "", ""),
-                                      new Settings.SettingsElt("IncludeCanceled", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("ShowBrowser", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("LastSlotStartDate", Settings.Type.Dttm, "", ""),
-                                      new Settings.SettingsElt("LastSlotEndDate", Settings.Type.Dttm, "", ""),
-                                      new Settings.SettingsElt("LastOpenSlotDetail", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("LastGroupTimeSlots", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("LastTestEmail", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("AddOfficialsOnly", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("AfiliationIndex", Settings.Type.Int, 0, 0),
-                                      new Settings.SettingsElt("LastSplitSports", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("LastPivotDate", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("LastLogToFile", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("FilterMailMergeByRank", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("DownloadOnlyFutureGames", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("LaunchMailMergeDoc", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("SetArbiterAnnouncement", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("TestOnly", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("SkipZSports", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("DownloadRosterOnUpload", Settings.Type.Bool, false, 0),
-                                      new Settings.SettingsElt("GameFiltersCache", Settings.Type.StrArray, new string[] {}, new string[] {}),
-                                      new Settings.SettingsElt("LastGameFilter", Settings.Type.Str, "", "All Games"),
-                                      new Settings.SettingsElt("LastLogLevel", Settings.Type.Int, 0, 0), 
+                                  new Settings.SettingsElt("Login", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("Password", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("GameFile", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("Contacts", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("Roster", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("GameFileCopy", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("RosterCopy", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("ContactsCopy", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("GameOutput", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("OutputFile", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("IncludeCanceled", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("ShowBrowser", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("LastSlotStartDate", Settings.Type.Dttm, "", ""),
+                                  new Settings.SettingsElt("LastSlotEndDate", Settings.Type.Dttm, "", ""),
+                                  new Settings.SettingsElt("LastOpenSlotDetail", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("LastGroupTimeSlots", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("LastTestEmail", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("AddOfficialsOnly", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("AfiliationIndex", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastSplitSports", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("LastPivotDate", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("LastLogToFile", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("FilterMailMergeByRank", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("DownloadOnlyFutureGames", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("LaunchMailMergeDoc", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("SetArbiterAnnouncement", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("TestOnly", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("SkipZSports", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("DownloadRosterOnUpload", Settings.Type.Bool, false, 0),
+                                  new Settings.SettingsElt("GameFiltersCache", Settings.Type.StrArray, new string[] { }, new string[] { }),
+                                  new Settings.SettingsElt("LastGameFilter", Settings.Type.Str, "", "All Games"),
+                                  new Settings.SettingsElt("LastLogLevel", Settings.Type.Int, 0, 0),
                                   };
         }
 
@@ -130,8 +136,10 @@ namespace ArbWeb
             m_sPassword = m_ehProfile.SValue("Password");
             m_sGameFile = m_ehProfile.SValue("GameFile");
             m_sRoster = m_ehProfile.SValue("Roster");
+            m_sContacts = m_ehProfile.SValue("Contacts");
             m_sGameCopy = m_ehProfile.SValue("GameFileCopy");
             m_sRosterWorking = m_ehProfile.SValue("RosterCopy");
+            m_sContactsWorking = m_ehProfile.SValue("ContactsCopy");
             m_sGameOutput = m_ehProfile.SValue("GameOutput");
             m_sOutputFile = m_ehProfile.SValue("OutputFile");
             m_fIncludeCanceled = m_ehProfile.FValue("IncludeCanceled");
@@ -164,8 +172,10 @@ namespace ArbWeb
             m_ehProfile.SetSValue("Password", m_sPassword);
             m_ehProfile.SetSValue("GameFile", m_sGameFile);
             m_ehProfile.SetSValue("Roster", m_sRoster);
+            m_ehProfile.SetSValue("Contacts", m_sContacts);
             m_ehProfile.SetSValue("GameFileCopy", m_sGameCopy);
             m_ehProfile.SetSValue("RosterCopy", m_sRosterWorking);
+            m_ehProfile.SetSValue("ContactsCopy", m_sContactsWorking);
             m_ehProfile.SetSValue("GameOutput", m_sGameOutput);
             m_ehProfile.SetSValue("OutputFile", m_sOutputFile);
             m_ehProfile.SetFValue("IncludeCanceled", m_fIncludeCanceled);
