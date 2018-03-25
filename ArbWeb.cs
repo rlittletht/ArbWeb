@@ -105,6 +105,7 @@ namespace ArbWeb
         private ComboBox m_cbxGameFilter;
         private Button m_pbRefreshGameFilters;
         private Button pbTestDownload;
+        private CheckBox m_cbSkipContactDownload;
         private StatusBox.StatusRpt m_srpt;
 
         #endregion
@@ -570,6 +571,7 @@ namespace ArbWeb
             this.m_cbxGameFilter = new System.Windows.Forms.ComboBox();
             this.m_pbRefreshGameFilters = new System.Windows.Forms.Button();
             this.pbTestDownload = new System.Windows.Forms.Button();
+            this.m_cbSkipContactDownload = new System.Windows.Forms.CheckBox();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -1167,10 +1169,21 @@ namespace ArbWeb
             this.pbTestDownload.Text = "Test Download";
             this.pbTestDownload.Click += new System.EventHandler(this.DoTestDownload);
             // 
+            // m_cbSkipContactDownload
+            // 
+            this.m_cbSkipContactDownload.AutoSize = true;
+            this.m_cbSkipContactDownload.Location = new System.Drawing.Point(516, 106);
+            this.m_cbSkipContactDownload.Name = "m_cbSkipContactDownload";
+            this.m_cbSkipContactDownload.Size = new System.Drawing.Size(104, 17);
+            this.m_cbSkipContactDownload.TabIndex = 96;
+            this.m_cbSkipContactDownload.Text = "Skip Contact DL";
+            this.m_cbSkipContactDownload.UseVisualStyleBackColor = true;
+            // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
             this.ClientSize = new System.Drawing.Size(707, 806);
+            this.Controls.Add(this.m_cbSkipContactDownload);
             this.Controls.Add(this.pbTestDownload);
             this.Controls.Add(this.m_pbRefreshGameFilters);
             this.Controls.Add(this.m_cbxGameFilter);

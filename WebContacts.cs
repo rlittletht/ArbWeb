@@ -53,8 +53,12 @@ namespace ArbWeb
             string sContactsNew;
             Task tskDownloadContacts = new Task(() =>
                 {
-                dg.DownloadGeneric(out sContactsNew);
-                Profile.Contacts = sContactsNew;
+                if (!m_cbSkipContactDownload.Checked)
+                    {
+                    dg.DownloadGeneric(out sContactsNew);
+                    Profile.Contacts = sContactsNew;
+                    }
+
                 DoPendingQueueUIOp();
                 });
 
