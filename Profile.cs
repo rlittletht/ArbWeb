@@ -59,13 +59,9 @@ namespace ArbWeb
         private Rectangle m_rectDiagWindow;
         private Rectangle m_rectProfileWindow;
 
-        public Rectangle MainWindow
-        {
-            get => m_rectMainWindow;
-            set { m_rectMainWindow = value; }
-        }
-        public Rectangle DiagWindow => m_rectDiagWindow;
-        public Rectangle ProfileWindow => m_rectProfileWindow;
+        public Rectangle MainWindow { get { return m_rectMainWindow; } set { m_rectMainWindow = value; } }
+        public Rectangle DiagWindow { get { return m_rectDiagWindow; } set { m_rectDiagWindow = value; } }
+        public Rectangle ProfileWindow { get { return m_rectProfileWindow; } set { m_rectProfileWindow = value; } }
 
         public bool IsWindowPosSet(Rectangle rect)
         {
@@ -146,6 +142,14 @@ namespace ArbWeb
                                   new Settings.SettingsElt("LastMainWindowPos.Left", Settings.Type.Int, 0, 0),
                                   new Settings.SettingsElt("LastMainWindowPos.Width", Settings.Type.Int, 0, 0),
                                   new Settings.SettingsElt("LastMainWindowPos.Height", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastDiagWindowPos.Top", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastDiagWindowPos.Left", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastDiagWindowPos.Width", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastDiagWindowPos.Height", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastProfileWindowPos.Top", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastProfileWindowPos.Left", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastProfileWindowPos.Width", Settings.Type.Int, 0, 0),
+                                  new Settings.SettingsElt("LastProfileWindowPos.Height", Settings.Type.Int, 0, 0),
                                   };
         }
 
@@ -187,6 +191,14 @@ namespace ArbWeb
                                              m_ehProfile.NValue("LastMainWindowPos.Top"),
                                              m_ehProfile.NValue("LastMainWindowPos.Width"),
                                              m_ehProfile.NValue("LastMainWindowPos.Height"));
+            m_rectDiagWindow = new Rectangle(m_ehProfile.NValue("LastDiagWindowPos.Left"),
+                                             m_ehProfile.NValue("LastDiagWindowPos.Top"),
+                                             m_ehProfile.NValue("LastDiagWindowPos.Width"),
+                                             m_ehProfile.NValue("LastDiagWindowPos.Height"));
+            m_rectProfileWindow = new Rectangle(m_ehProfile.NValue("LastProfileWindowPos.Left"),
+                                             m_ehProfile.NValue("LastProfileWindowPos.Top"),
+                                             m_ehProfile.NValue("LastProfileWindowPos.Width"),
+                                             m_ehProfile.NValue("LastProfileWindowPos.Height"));
         }
 
         void SetSettingsFromData()
@@ -227,6 +239,14 @@ namespace ArbWeb
             m_ehProfile.SetNValue("LastMainWindowPos.Top", m_rectMainWindow.Top);
             m_ehProfile.SetNValue("LastMainWindowPos.Width", m_rectMainWindow.Width);
             m_ehProfile.SetNValue("LastMainWindowPos.Height", m_rectMainWindow.Height);
+            m_ehProfile.SetNValue("LastDiagWindowPos.Left", m_rectDiagWindow.Left);
+            m_ehProfile.SetNValue("LastDiagWindowPos.Top", m_rectDiagWindow.Top);
+            m_ehProfile.SetNValue("LastDiagWindowPos.Width", m_rectDiagWindow.Width);
+            m_ehProfile.SetNValue("LastDiagWindowPos.Height", m_rectDiagWindow.Height);
+            m_ehProfile.SetNValue("LastProfileWindowPos.Left", m_rectProfileWindow.Left);
+            m_ehProfile.SetNValue("LastProfileWindowPos.Top", m_rectProfileWindow.Top);
+            m_ehProfile.SetNValue("LastProfileWindowPos.Width", m_rectProfileWindow.Width);
+            m_ehProfile.SetNValue("LastProfileWindowPos.Height", m_rectProfileWindow.Height);
         }
 
         public void Load(string sProfileName)
