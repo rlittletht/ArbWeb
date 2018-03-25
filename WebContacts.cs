@@ -18,7 +18,7 @@ namespace ArbWeb
     {
         void DoDownloadContacts()
         {
-            var x = m_awc.Handle;
+            var x = m_awc.Handle; // let's make sure the webbrowser handle is created
             string sFilterReq = (string)m_cbxGameFilter.SelectedItem;
             if (sFilterReq == null)
                 sFilterReq = "All Games";

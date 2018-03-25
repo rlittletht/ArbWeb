@@ -180,6 +180,9 @@
     <Compile Include="slots.cs" />
     <Compile Include="umpire.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="WebContacts.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="WebCore.cs" />
     <Compile Include="WebGames.cs">
       <SubType>Form</SubType>
