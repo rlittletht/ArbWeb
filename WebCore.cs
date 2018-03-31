@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using mshtml;
 using StatusBox;
 using TCore.Util;
@@ -565,5 +567,442 @@ namespace ArbWeb
             return evtDownload;
         }
 
+    }
+
+    public class HandleGenericRoster
+    {
+        private IAppContext m_iac;
+        private bool m_fAddOfficialsOnly;
+        private delDoPass1Visit m_delDoPass1Visit;
+        private delAddOfficials m_delAddOfficials;
+        private delDoPostHandleRoster m_delDoPostHandleRoster;
+
+        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, Roster rstBuilding, bool fJustAdded, bool fMarkOnly);
+        public delegate void delAddOfficials(List<RosterEntry> plrste);
+        public delegate void delDoPostHandleRoster(Roster rstUpload, ref Roster rstBuilding);
+
+        public HandleGenericRoster(IAppContext iac, bool fNeedPass1OnUpload, bool fAddOfficialsOnly, delDoPass1Visit doPass1Visit, delAddOfficials doAddOfficials, delDoPostHandleRoster doPostHandleRoster)
+        {
+            m_iac = iac;
+            m_fNeedPass1OnUpload = fNeedPass1OnUpload;
+            m_fAddOfficialsOnly = fAddOfficialsOnly;
+            m_delDoPass1Visit = doPass1Visit;
+            m_delAddOfficials = doAddOfficials;
+            m_delDoPostHandleRoster = doPostHandleRoster;
+        }
+
+        public class PGL
+        {
+            public class OFI
+            {
+                public string sOfficialID;
+                public string sEmail;
+
+                public OFI()
+                {
+                    sOfficialID = null;
+                    sEmail = null;
+                }
+            };
+
+            public PGL()
+            {
+                plofi = new List<OFI>();
+            }
+
+            public List<OFI> plofi;
+
+            //	        public List<string> rgsLinks;
+            //	        public List<string> rgsData;
+            public int iCur;
+        };
+
+        /* P O P U L A T E  P G L  F R O M  P A G E  C O R E */
+        /*----------------------------------------------------------------------------
+			%%Function: PopulatePglFromPageCore
+			%%Qualified: ArbWeb.AwMainForm.PopulatePglFromPageCore
+			%%Contact: rlittle
+
+			Return a PGL (page of links) from the give sUrl.  
+
+				rx3 is a match for either the link name or the link text
+				rx4 is a match for the link name always (will supercede rx3)
+				rxData, if set, is the match that will be used to populat the rgsData
+
+			on exit, rgsLinkNames, rgsLinks, and (optionally) rgsData will be
+			populated in the pglLinks
+
+            we need to collect information from two separate places in the DOM --
+            the Official Name (Last, First) will be in an anchor linking to the
+            offical page (which we can get the official ID from).  Then we have the
+            email address from which we can get the actual email address.
+         
+            because of this, we collect the email first, then note that we
+            are looking for the official ID.  essentially, a state machine.. (albeit 2 
+            states)
+		----------------------------------------------------------------------------*/
+        private void PopulatePglOfficialsFromPageCore(PGL pgl, IHTMLDocument2 oDoc)
+        {
+            IHTMLElementCollection links = oDoc.links;
+            Regex rx3 = new Regex("OfficialEdit.aspx\\?userID=.*");
+            Regex rxData = new Regex("mailto:.*");
+
+            bool fLookingForEmail = false;
+
+            // build up a list of probable index links
+            foreach (HTMLAnchorElementClass link in links)
+            {
+                string sLinkName = link.nameProp;
+                string sLinkText = link.innerText;
+                string sLinkTarget = link.href;
+
+                if (sLinkText == null)
+                    sLinkText = "";
+
+                if (sLinkName == null)
+                    sLinkName = link.innerText.Substring(1, link.innerText.Length - 1);
+
+                if (rxData != null && sLinkTarget != null && rxData.IsMatch(sLinkTarget))
+                {
+                    if (fLookingForEmail)
+                    {
+                        // adjust the top item in plofi...
+                        pgl.plofi[pgl.plofi.Count - 1].sEmail = sLinkTarget;
+                        fLookingForEmail = false;
+                    }
+                    else
+                    {
+                        m_iac.StatusReport.AddMessage("Found (" + sLinkTarget + ") when not looking for email!", StatusRpt.MSGT.Error);
+                    }
+                }
+
+                if (rx3.IsMatch(sLinkName))
+                {
+                    PGL.OFI ofi = new PGL.OFI();
+
+                    ofi.sEmail = "";
+                    ofi.sOfficialID = link.href;
+                    pgl.plofi.Add(ofi);
+
+                    fLookingForEmail = true;
+                }
+
+            }
+
+            pgl.iCur = 0;
+        }
+
+        private bool m_fNeedPass1OnUpload;
+        /*----------------------------------------------------------------------------
+            %%Function: DoCoreRosterSync
+            %%Qualified: ArbWeb.AwMainForm.DoCoreRosterSync
+            %%Contact: rlittle
+
+            Do the core roster syncing. 
+
+            We are either syncing server->local (download) 
+            or local->server (upload).
+
+            We are being given the list of links on
+            the official's edit page, the roster that we are uploading (if any),
+            and a list of officials to limit our handling to (this is used when 
+            we just added new officials and we just want to update their info/misc
+            fields...)
+
+            rstServer is the latest roster from the server -- useful for quickly
+            determining what we need to update (without having to check the 
+            server again)
+        ----------------------------------------------------------------------------*/
+        private void DoCoreRosterSync(PGL pgl, Roster rst, Roster rstBuilding, Roster rstServer, List<RosterEntry> plrsteLimit)
+        {
+            pgl.iCur = 0;
+            Dictionary<string, bool> mpOfficials = new Dictionary<string, bool>();
+
+            if (plrsteLimit != null)
+                {
+                foreach (RosterEntry rsteCheck in plrsteLimit)
+                    mpOfficials.Add("MAILTO:" + rsteCheck.Email.ToUpper(), true);
+                }
+
+            while (pgl.iCur < pgl.plofi.Count // we have links left to visit
+                   && (rst == null
+                       || m_fNeedPass1OnUpload) // why is this condition part of the while?! rst and cbRankOnly never changes in the loop
+                   && pgl.iCur < pgl.plofi.Count)
+                {
+                if (rst == null
+                    || (rst.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
+                        && pgl.plofi[pgl.iCur].sEmail.Length != 0))
+                    {
+                    RosterEntry rste = new RosterEntry();
+                    bool fMarkOnly = false;
+
+                    rste.SetEmail((string) pgl.plofi[pgl.iCur].sEmail);
+                    m_iac.StatusReport.AddMessage(String.Format("Processing roster info for {0}...", pgl.plofi[pgl.iCur].sEmail));
+
+                    if (m_fAddOfficialsOnly && plrsteLimit == null)
+                        fMarkOnly = true;
+
+                    if (plrsteLimit != null)
+                        {
+                        if (!mpOfficials.ContainsKey(((string) pgl.plofi[pgl.iCur].sEmail.ToUpper())))
+                            {
+                            pgl.iCur++;
+                            continue; // it doesn't match an official in the "limit-to" list.
+                            }
+
+                        fMarkOnly = false; // we want to process this one.
+                        }
+
+                    bool fJustAdded = plrsteLimit == null && (rst == null || !rst.IsQuick || rst.IsUploadableQuickroster);
+                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, rst, rstServer, ref rste, rstBuilding, fJustAdded, fMarkOnly);
+
+                    if (rst == null && !String.IsNullOrEmpty(rste.Email))
+                        {
+                        rstBuilding.Add(rste);
+                        //                        rste.AppendToFile(sOutFile, m_rgsRankings);
+                        // at this point, we have the name and the affiliation
+                        //						if (!FAppendToFile(sOutFile, sName, (string)pgl.rgsData[pgl.iCur], plsValue))
+                        //							throw new Exception("couldn't append to the file!");
+                        }
+                    else
+                        {
+                        if (!String.IsNullOrEmpty(pgl.plofi[pgl.iCur].sEmail))
+                            {
+                            RosterEntry rsteT = rst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
+
+                            if (rsteT != null)
+                                rsteT.Marked = true;
+                            }
+                        }
+
+                    if (m_iac.Profile.TestOnly)
+                        {
+                        break;
+                        }
+                    }
+
+                pgl.iCur++;
+                }
+        }
+
+        private void VOPC_PopulatePgl(IHTMLDocument2 oDoc2, Object o)
+        {
+            PopulatePglOfficialsFromPageCore((PGL)o, oDoc2);
+        }
+
+
+        /* N A V I G A T E  O F F I C I A L S  P A G E  A L L  O F F I C I A L S */
+        /*----------------------------------------------------------------------------
+	    	%%Function: NavigateOfficialsPageAllOfficials
+	    	%%Qualified: ArbWeb.AwMainForm.NavigateOfficialsPageAllOfficials
+	    	%%Contact: rlittle
+	    	
+	    ----------------------------------------------------------------------------*/
+        public void NavigateOfficialsPageAllOfficials()
+        {
+            m_iac.EnsureLoggedIn();
+
+            m_iac.ThrowIfNot(m_iac.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            m_iac.WebControl.FWaitForNavFinish();
+
+            // from the officials view, make sure we are looking at active officials
+            m_iac.WebControl.ResetNav();
+            IHTMLDocument2 oDoc2 = m_iac.WebControl.Document2;
+
+            m_iac.WebControl.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, WebCore._sid_OfficialsView_Select_Filter, "All Officials", true);
+            m_iac.WebControl.FWaitForNavFinish();
+        }
+
+        // object could be RST or PGL
+        public delegate void VisitOfficialsPageCallback(IHTMLDocument2 oDoc2, Object o);
+
+        /*----------------------------------------------------------------------------
+        	%%Function: ProcessAllOfficialPages
+        	%%Qualified: ArbWeb.HandleGenericRoster.ProcessAllOfficialPages
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public void ProcessAllOfficialPages(VisitOfficialsPageCallback vopc, Object o)
+        {
+            NavigateOfficialsPageAllOfficials();
+
+            IHTMLDocument2 oDoc2 = m_iac.WebControl.Document2;
+
+            // first, get the first pages and callback
+
+            vopc(oDoc2, o);
+
+            // figure out how many pages we have
+            // find all of the <a> tags with an href that targets a pagination postback
+            IHTMLElementCollection ihec = (IHTMLElementCollection) oDoc2.all.tags("a");
+            List<string> plsHrefs = new List<string>();
+
+            foreach (IHTMLAnchorElement iha in ihec)
+                {
+                if (iha.href != null && iha.href.Contains(WebCore._s_OfficialsView_PaginationHrefPostbackSubstr))
+                    {
+                    // we can't just remember this element because we will be navigating around.  instead we will
+                    // just remember the entire target so we can find it again
+                    plsHrefs.Add(iha.href);
+                    }
+                }
+
+            // now, we are going to navigate to each page by finding and clicking each pagination link in turn
+            foreach (string sHref in plsHrefs)
+                {
+                ihec = (IHTMLElementCollection) oDoc2.all.tags("a");
+                foreach (IHTMLAnchorElement iha in ihec)
+                    {
+                    if (String.Compare(iha.href, sHref, true /*ignoreCase*/) == 0)
+                        {
+                        // now we need to click on the navigation
+                        ((IHTMLElement) iha).click();
+                        m_iac.WebControl.FWaitForNavFinish();
+                        oDoc2 = m_iac.WebControl.Document2;
+
+                        vopc(oDoc2, o);
+                        break; // done processing the element collection -- have to process the next one for the next doc
+                        }
+                    }
+
+                }
+        }
+
+        private PGL PglGetOfficialsFromWeb()
+        {
+            m_iac.EnsureLoggedIn();
+            int i;
+
+            PGL pgl = new PGL();
+
+            ProcessAllOfficialPages(VOPC_PopulatePgl, pgl);
+
+            //            NavigateOfficialsPageAllOfficials();
+
+            //            IHTMLDocument2 oDoc = m_awc.Document2;
+
+            //			PopulatePglFromPageCore(pgl, oDoc);
+            // for now, assume that all the officials fit on the same screen!!
+
+            // if there are no links, then we aren't logged in yet
+            if (pgl.plofi.Count == 0)
+                {
+                throw (new Exception("Not logged in after EnsureLoggedIn()!!"));
+                }
+
+            // ok, now grab the userIDs and put those in the pgl
+            i = 0;
+            while (i < pgl.plofi.Count)
+                {
+                string s = (string)pgl.plofi[i].sOfficialID;
+
+                string sID = s.Substring(s.IndexOf("=") + 1);
+                pgl.plofi[i].sOfficialID = sID;
+                i++;
+                }
+
+            return pgl;
+        }
+
+
+        public delegate void HandleRosterPostUpdateDelegate(HandleGenericRoster gr, Roster rst);
+
+        /* H A N D L E  R O S T E R */
+        /*----------------------------------------------------------------------------
+			%%Function: HandleRoster
+			%%Qualified: ArbWeb.AwMainForm.HandleRoster
+			%%Contact: rlittle
+
+			If rst == null, then we're downloading the roster.  Otherwise, we are
+			uploading
+
+            FUTURE: Make this a generic "VisitRoster" with callbacks or methods
+            specific to upload or download (i.e. core out the code shared by 
+            upload and download, then make separate upload and download functions
+            with no duplication)
+		----------------------------------------------------------------------------*/
+        public void HandleRoster(Roster rst, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
+        {
+            Roster rstBuilding = null;
+            PGL pgl;
+
+            // we're not going to write the roster out until the end now...
+
+            if (rst == null)
+                rstBuilding = new Roster();
+
+            pgl = PglGetOfficialsFromWeb();
+            DoCoreRosterSync(pgl, rst, rstBuilding, rstServer, null /*plrsteLimit*/);
+
+            handleRosterPostUpdate?.Invoke(this, rstBuilding);
+
+            if (rst != null)
+            {
+                List<RosterEntry> plrsteUnmarked = rst.PlrsteUnmarked();
+
+                // we might have some officials left "unmarked".  These need to be added
+
+                // at this point, all the officials have either been marked or need to 
+                // be added
+
+                if (plrsteUnmarked.Count > 0)
+                {
+                    if (MessageBox.Show(String.Format("There are {0} new officials.  Add these officials?", plrsteUnmarked.Count), "ArbWeb", MessageBoxButtons.YesNo) ==
+                        DialogResult.Yes)
+                    {
+                        m_delAddOfficials?.Invoke(plrsteUnmarked);
+                        // now we have to reload the page of links and do the whole thing again (updating info, etc)
+                        // so we get the misc fields updated.  Then fall through to the rankings and do everyone at
+                        // once
+                        pgl = PglGetOfficialsFromWeb(); // refresh to get new officials
+                        DoCoreRosterSync(pgl, rst, null /*rstBuilding*/, rstServer, plrsteUnmarked);
+                        // now we can fall through to our core ranking handling...
+                    }
+                }
+            }
+
+            // now, do the rankings.  this is easiest done in the bulk rankings tool...
+            m_delDoPostHandleRoster?.Invoke(rst, ref rstBuilding);
+            // lastly, if we're downloading, then output the roster
+
+            if (rst == null)
+                rstBuilding.WriteRoster(sOutFile);
+
+            if (m_iac.Profile.TestOnly)
+            {
+                MessageBox.Show("Stopping after 1 roster item");
+            }
+        }
+
+        /*----------------------------------------------------------------------------
+        	%%Function: SBuildRosterFilename
+        	%%Qualified: ArbWeb.AwMainForm.SBuildRosterFilename
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+        public static string SBuildRosterFilename(string sRosterName)
+        {
+            string sOutFile;
+            string sPrefix = "";
+
+            if (sRosterName.Length < 1)
+                {
+                sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
+                }
+            else
+                {
+                sOutFile = System.IO.Path.GetDirectoryName(sRosterName);
+                string[] rgs;
+                if (sRosterName.Length > 5 && sOutFile.Length > 0)
+                    {
+                    rgs = CountsData.RexHelper.RgsMatch(sRosterName.Substring(sOutFile.Length + 1), "([.*])roster");
+                    if (rgs != null && rgs.Length > 0 && rgs[0] != null)
+                        sPrefix = rgs[0];
+                    }
+                }
+
+            sOutFile = String.Format("{0}{2}\\roster_{1:MM}{1:dd}{1:yy}_{1:HH}{1:mm}.csv", sOutFile, DateTime.Now, sPrefix);
+            return sOutFile;
+        }
     }
 }

@@ -167,10 +167,18 @@ namespace Win32Win
                 Win32.PostMessage(m_hwndFound, Win32.WM_CHAR, (IntPtr)ch, IntPtr.Zero);
 
             m_srpt.LogData(String.Format("Posted message WM_CHARs "), 3, StatusRpt.MSGT.Body);
-            Thread.Sleep(150);
 
-            sActual = GetControlText(m_hwndFound);
-            m_srpt.LogData(String.Format("Actual text after first: {0}", sActual), 3, StatusRpt.MSGT.Body);
+            int cRetryForTypingLag = 30;
+            while (cRetryForTypingLag-- > 0)
+                {
+                Thread.Sleep(10);
+
+                sActual = GetControlText(m_hwndFound);
+                if (String.Compare(sActual, sReplaceText, true) == 0)
+                    break;
+                }
+
+            m_srpt.LogData(String.Format("Actual text after first: {0} [{1}msec]", sActual, 10 * (30 - cRetryForTypingLag)), 3, StatusRpt.MSGT.Body);
 #if no
             Win32.PostMessage(m_hwndFound, Win32.WM_SETTEXT, IntPtr.Zero, Marshal.StringToCoTaskMemUni(sReplaceText));
             m_srpt.AddMessage(String.Format("Posted message SETTEXT"));

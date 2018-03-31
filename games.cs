@@ -1587,12 +1587,12 @@ namespace ArbWeb
 
             /* F  L O A D  G A M E S */
             /*----------------------------------------------------------------------------
-					%%Function: FLoadGames
-					%%Qualified: ArbWeb.CountsData:GameData:Games.FLoadGames
-					%%Contact: rlittle
+				%%Function: FLoadGames
+				%%Qualified: ArbWeb.CountsData:GameData:Games.FLoadGames
+				%%Contact: rlittle
 
-					Loading the games needs a state machine -- this is a multi line report
-				----------------------------------------------------------------------------*/
+				Loading the games needs a state machine -- this is a multi line report
+			----------------------------------------------------------------------------*/
             public bool FLoadGames(string sGamesReport, Roster rst, bool fIncludeCanceled)
             {
                 TextReader tr = new StreamReader(sGamesReport);

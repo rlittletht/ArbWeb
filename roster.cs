@@ -682,7 +682,6 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
         public void ReadRoster(string sFile)
         {
-
             TextReader tr = new StreamReader(sFile);
             string sLine;
             string[] rgs;

@@ -16,6 +16,27 @@ namespace ArbWeb
     /// </summary>
     public partial class AwMainForm : System.Windows.Forms.Form
     {
+        void DoDownloadFullContacts()
+        {
+            m_srpt.AddMessage("Starting FULL Contact download...");
+            m_srpt.PushLevel();
+
+            PushCursor(Cursors.WaitCursor);
+            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_pr.Contacts);
+
+            m_pr.Contacts = sOutFile;
+#if no
+            HandleGenericRoster gr = new HandleGenericRoster(this,);
+
+            gr.HandleRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
+            PopCursor();
+            m_srpt.PopLevel();
+            System.IO.File.Delete(m_pr.RosterWorking);
+            System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
+            m_srpt.AddMessage("Completed FULL Roster download.");
+#endif // no
+        }
+
         void DoDownloadContacts()
         {
             var x = m_awc.Handle; // let's make sure the webbrowser handle is created

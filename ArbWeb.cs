@@ -24,7 +24,7 @@ namespace ArbWeb
         StatusRpt StatusReport { get; }
         ArbWebControl WebControl { get; }
         void EnsureLoggedIn();
-        //Profile Profile { get; }
+        Profile Profile { get; }
         void ThrowIfNot(bool f, string s);
     }
 
@@ -1321,7 +1321,7 @@ namespace ArbWeb
         }
 
 
-        delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer, HandleRosterPostUpdateDelegate hrpu);
+        delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer, HandleGenericRoster.HandleRosterPostUpdateDelegate hrpu);
 
 
         /* D O  U P L O A D  R O S T E R */

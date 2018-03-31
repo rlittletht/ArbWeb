@@ -322,6 +322,20 @@ namespace ArbWeb
             }
         }
 
+        void InvokeHandleRoster(Roster rstBuilding, string sInFile, Roster rstServer, HandleGenericRoster.HandleRosterPostUpdateDelegate hrpu)
+        {
+            HandleGenericRoster gr = new HandleGenericRoster(
+                this,
+                !m_cbRankOnly.Checked, // fNeedPass1OnUpload
+                m_cbAddOfficialsOnly.Checked, // only add officials
+                new HandleGenericRoster.delDoPass1Visit(HandleRosterPass1VisitForDownload),
+                new HandleGenericRoster.delAddOfficials(AddOfficials),
+                new HandleGenericRoster.delDoPostHandleRoster(HandleRankings)
+            );
+
+            gr.HandleRoster(rstBuilding, sInFile, rstServer, hrpu);
+        }
+
         /*----------------------------------------------------------------------------
         	%%Function: DoUploadRosterWork
         	%%Qualified: ArbWeb.AwMainForm.DoUploadRosterWork
@@ -360,14 +374,15 @@ namespace ArbWeb
             // compare the two rosters to find differences
 
             if (m_awc.InvokeRequired)
-            {
-                IAsyncResult rslt = m_awc.BeginInvoke(new AwMainForm.HandleRosterDel(HandleRoster), new object[] { rst, sInFile, rstServer, null });
+                {
+                IAsyncResult rslt = m_awc.BeginInvoke(new AwMainForm.HandleRosterDel(InvokeHandleRoster), new object[] {rst, sInFile, rstServer, null});
                 m_awc.EndInvoke(rslt);
-            }
+                }
             else
-            {
-                HandleRoster(rst, null, rstServer, null);
-            }
+                {
+                InvokeHandleRoster(rst, null, rstServer, null);
+                }
+
             m_srpt.PopLevel();
             m_srpt.AddMessage("Completed Roster upload.");
         }

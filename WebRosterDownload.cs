@@ -42,11 +42,11 @@ namespace ArbWeb
         	
             Update the "last login" value.  since we are scraping the screen for this, we have to deal with pagination
         ----------------------------------------------------------------------------*/
-        private static void VOPC_UpdateLastAccess(AwMainForm awf, IHTMLDocument2 oDoc2, Object o)
+        private void VOPC_UpdateLastAccess(IHTMLDocument2 oDoc2, Object o)
         {
             Roster rstBuilding = (Roster)o;
 
-            awf.UpdateLastAccessFromCoreOfficialsPage(rstBuilding, oDoc2);
+            UpdateLastAccessFromCoreOfficialsPage(rstBuilding, oDoc2);
         }
 
         /*----------------------------------------------------------------------------
@@ -98,7 +98,16 @@ namespace ArbWeb
             rstBuilding.ReadRoster(sDownloadedRoster);
 
             if (fIncludeLastAccess)
-                ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+                {
+                HandleGenericRoster gr = new HandleGenericRoster(
+                    this,
+                    !m_cbRankOnly.Checked,
+                    m_cbAddOfficialsOnly.Checked,
+                    null,
+                    null,
+                    null);
+                gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+                }
 
             if (fIncludeRankings)
                 HandleRankings(null, ref rstBuilding);
@@ -122,36 +131,6 @@ namespace ArbWeb
             return rst;
         }
 
-        /*----------------------------------------------------------------------------
-        	%%Function: SBuildRosterFilename
-        	%%Qualified: ArbWeb.AwMainForm.SBuildRosterFilename
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        string SBuildRosterFilename()
-        {
-            string sOutFile;
-            string sPrefix = "";
-
-            if (m_pr.Roster.Length < 1)
-                {
-                sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
-                }
-            else
-                {
-                sOutFile = System.IO.Path.GetDirectoryName(m_pr.Roster);
-                string[] rgs;
-                if (m_pr.Roster.Length > 5 && sOutFile.Length > 0)
-                    {
-                    rgs = CountsData.RexHelper.RgsMatch(m_pr.Roster.Substring(sOutFile.Length + 1), "([.*])roster");
-                    if (rgs != null && rgs.Length > 0 && rgs[0] != null)
-                        sPrefix = rgs[0];
-                    }
-                }
-
-            sOutFile = String.Format("{0}{2}\\roster_{1:MM}{1:dd}{1:yy}_{1:HH}{1:mm}.csv", sOutFile, DateTime.Now, sPrefix);
-            return sOutFile;
-        }
 
         /*----------------------------------------------------------------------------
         	%%Function: DownloadQuickRosterToFile
@@ -304,11 +283,28 @@ namespace ArbWeb
         }
 
 
-        private void HandleRosterPostUpdateForDownload(Roster rstBuilding)
+        private void HandleRosterPostUpdateForDownload(HandleGenericRoster gr, Roster rstBuilding)
         {
             // get the last login date from the officials main page
-            NavigateOfficialsPageAllOfficials();
-            ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+            gr.NavigateOfficialsPageAllOfficials();
+            gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+        }
+
+        void HandleRosterPass1VisitForDownload(
+            string sEmail,
+            string sOfficialID,
+            Roster rstUploading,
+            Roster rstServer,
+            ref RosterEntry rste,
+            Roster rstBuilding,
+            bool fJustAdded,
+            bool fMarkOnly)
+        {
+            if (!fMarkOnly)
+                UpdateMisc(sEmail, sOfficialID, rstUploading, rstServer, ref rste, rstBuilding);
+
+            if (!fJustAdded)
+                UpdateInfo(sEmail, sOfficialID, rstUploading, rstServer, ref rste, fMarkOnly);
         }
 
         /*----------------------------------------------------------------------------
@@ -323,11 +319,19 @@ namespace ArbWeb
             m_srpt.PushLevel();
 
             PushCursor(Cursors.WaitCursor);
-            string sOutFile = SBuildRosterFilename();
+            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_pr.Roster);
 
             m_pr.Roster = sOutFile;
+            HandleGenericRoster gr = new HandleGenericRoster(
+                this, 
+                !m_cbRankOnly.Checked, // fNeedPass1OnUpload
+                m_cbAddOfficialsOnly.Checked, // only add officials
+                new HandleGenericRoster.delDoPass1Visit(HandleRosterPass1VisitForDownload), 
+                new HandleGenericRoster.delAddOfficials(AddOfficials),
+                new HandleGenericRoster.delDoPostHandleRoster(HandleRankings)
+                );
 
-            HandleRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
+            gr.HandleRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
             PopCursor();
             m_srpt.PopLevel();
             System.IO.File.Delete(m_pr.RosterWorking);
@@ -349,7 +353,7 @@ namespace ArbWeb
 
             tsk.Start();
 
-            string sOutFile = SBuildRosterFilename();
+            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_pr.Roster);
             m_pr.Roster = sOutFile;
 
             Roster rst = await tsk;
