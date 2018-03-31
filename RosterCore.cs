@@ -200,7 +200,10 @@ namespace ArbWeb
 
     public interface IRosterEntry
     {
-
+        void SetEmail(string sEmail);
+        string Email { get; set; }
+        bool FEqualsMisc(IRosterEntry irste);
+        bool Marked { get; set; }
     }
 
     public interface IRoster
@@ -208,14 +211,14 @@ namespace ArbWeb
         List<string> PlsMiscLookupEmail(string sEmail);
         bool IsQuick { get; }
         bool IsUploadableQuickroster { get; }
-        void Add(RosterEntry rste);
-        RosterEntry RsteLookupEmail(string sEmail);
-        List<RosterEntry> PlrsteUnmarked();
-        List<RosterEntry> Plrste { get; }
+        void Add(IRosterEntry rste);
+        IRosterEntry IrsteLookupEmail(string sEmail);
+        List<IRosterEntry> PlirsteUnmarked();
+        List<IRosterEntry> Plirste { get; }
         void WriteRoster(string sOutFile);
         List<string> PlsMisc { get; set; }
         List<string> PlsRankings { get; set; }
         bool FAddRanking(string sName, string sPosition, int nRank);
-        RosterEntry CreateRosterEntry();
+        IRosterEntry CreateRosterEntry();
     }
 }

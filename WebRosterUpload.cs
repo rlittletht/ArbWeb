@@ -23,8 +23,8 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void SetServerMiscFields(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste)
         {
-            RosterEntry rsteNew = irst.RsteLookupEmail(rste.Email);
-            RosterEntry rsteServer = irstServer?.RsteLookupEmail(rste.Email);
+            RosterEntry rsteNew = (RosterEntry)irst.IrsteLookupEmail(rste.Email);
+            RosterEntry rsteServer = (RosterEntry)irstServer?.IrsteLookupEmail(rste.Email);
 
             if (rsteNew.FEqualsMisc(rsteServer))
                 return;
@@ -54,7 +54,7 @@ namespace ArbWeb
             RosterEntry rsteServer = null;
 
             if (irst != null)
-                rsteNew = irst.RsteLookupEmail(sEmail);
+                rsteNew = (RosterEntry)irst.IrsteLookupEmail(sEmail);
 
             if (rsteNew == null)
                 rsteNew = new RosterEntry(); // just to get nulls filled in to the member variables
@@ -66,7 +66,7 @@ namespace ArbWeb
 
             if (irstServer != null)
                 {
-                rsteServer = irstServer.RsteLookupEmail(sEmail);
+                rsteServer = (RosterEntry) irstServer.IrsteLookupEmail(sEmail);
                 if (rsteServer == null)
                     {
                     m_srpt.AddMessage(String.Format("NULL Server entry for {0}, SKIPPING", sEmail), StatusBox.StatusRpt.MSGT.Error);
@@ -137,10 +137,11 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void AddOfficials(List<RosterEntry> plrsteNew)
+        private void AddOfficials(List<IRosterEntry> plirsteNew)
         {
-            foreach (RosterEntry rste in plrsteNew)
+            foreach (IRosterEntry irste in plirsteNew)
                 {
+                RosterEntry rste = (RosterEntry)irste;
                 // add the official rste
                 m_srpt.AddMessage(String.Format("Adding official '{0}', {1}", rste.Name, rste.Email), StatusBox.StatusRpt.MSGT.Body);
                 m_srpt.PushLevel();

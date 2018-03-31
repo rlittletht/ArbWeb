@@ -295,16 +295,16 @@ namespace ArbWeb
             string sOfficialID,
             IRoster irstUploading,
             IRoster irstServer,
-            RosterEntry rste,
+            IRosterEntry irste,
             IRoster irstBuilding,
             bool fJustAdded,
             bool fMarkOnly)
         {
             if (!fMarkOnly)
-                UpdateMisc(sEmail, sOfficialID, irstUploading, irstServer, rste, irstBuilding);
+                UpdateMisc(sEmail, sOfficialID, irstUploading, irstServer, (RosterEntry)irste, irstBuilding);
 
             if (!fJustAdded)
-                UpdateInfo(sEmail, sOfficialID, irstUploading, irstServer, rste, fMarkOnly);
+                UpdateInfo(sEmail, sOfficialID, irstUploading, irstServer, (RosterEntry)irste, fMarkOnly);
         }
 
         /*----------------------------------------------------------------------------

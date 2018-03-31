@@ -577,8 +577,8 @@ namespace ArbWeb
         private delAddOfficials m_delAddOfficials;
         private delDoPostHandleRoster m_delDoPostHandleRoster;
 
-        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, IRoster irstBuilding, bool fJustAdded, bool fMarkOnly);
-        public delegate void delAddOfficials(List<RosterEntry> plrste);
+        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, IRosterEntry irste, IRoster irstBuilding, bool fJustAdded, bool fMarkOnly);
+        public delegate void delAddOfficials(List<IRosterEntry> plirste);
         public delegate void delDoPostHandleRoster(IRoster irstUpload, IRoster irstBuilding);
 
         public HandleGenericRoster(IAppContext iac, bool fNeedPass1OnUpload, bool fAddOfficialsOnly, delDoPass1Visit doPass1Visit, delAddOfficials doAddOfficials, delDoPostHandleRoster doPostHandleRoster)
@@ -713,15 +713,15 @@ namespace ArbWeb
             determining what we need to update (without having to check the 
             server again)
         ----------------------------------------------------------------------------*/
-        private void DoCoreRosterSync(PGL pgl, IRoster irst, IRoster irstBuilding, IRoster irstServer, List<RosterEntry> plrsteLimit)
+        private void DoCoreRosterSync(PGL pgl, IRoster irst, IRoster irstBuilding, IRoster irstServer, List<IRosterEntry> plirsteLimit)
         {
             pgl.iCur = 0;
             Dictionary<string, bool> mpOfficials = new Dictionary<string, bool>();
 
-            if (plrsteLimit != null)
+            if (plirsteLimit != null)
                 {
-                foreach (RosterEntry rsteCheck in plrsteLimit)
-                    mpOfficials.Add("MAILTO:" + rsteCheck.Email.ToUpper(), true);
+                foreach (IRosterEntry irsteCheck in plirsteLimit)
+                    mpOfficials.Add("MAILTO:" + irsteCheck.Email.ToUpper(), true);
                 }
 
             while (pgl.iCur < pgl.plofi.Count // we have links left to visit
@@ -733,16 +733,16 @@ namespace ArbWeb
                     || (irst.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
                         && pgl.plofi[pgl.iCur].sEmail.Length != 0))
                     {
-                    RosterEntry rste = irstBuilding.CreateRosterEntry();
+                    IRosterEntry irste = irstBuilding.CreateRosterEntry();
                     bool fMarkOnly = false;
 
-                    rste.SetEmail((string) pgl.plofi[pgl.iCur].sEmail);
+                    irste.SetEmail((string) pgl.plofi[pgl.iCur].sEmail);
                     m_iac.StatusReport.AddMessage(String.Format("Processing roster info for {0}...", pgl.plofi[pgl.iCur].sEmail));
 
-                    if (m_fAddOfficialsOnly && plrsteLimit == null)
+                    if (m_fAddOfficialsOnly && plirsteLimit == null)
                         fMarkOnly = true;
 
-                    if (plrsteLimit != null)
+                    if (plirsteLimit != null)
                         {
                         if (!mpOfficials.ContainsKey(((string) pgl.plofi[pgl.iCur].sEmail.ToUpper())))
                             {
@@ -753,12 +753,12 @@ namespace ArbWeb
                         fMarkOnly = false; // we want to process this one.
                         }
 
-                    bool fJustAdded = plrsteLimit == null && (irst == null || !irst.IsQuick || irst.IsUploadableQuickroster);
-                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irst, irstServer, rste, irstBuilding, fJustAdded, fMarkOnly);
+                    bool fJustAdded = plirsteLimit == null && (irst == null || !irst.IsQuick || irst.IsUploadableQuickroster);
+                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irst, irstServer, irste, irstBuilding, fJustAdded, fMarkOnly);
 
-                    if (irst == null && !String.IsNullOrEmpty(rste.Email))
+                    if (irst == null && !String.IsNullOrEmpty(irste.Email))
                         {
-                        irstBuilding.Add(rste);
+                        irstBuilding.Add(irste);
                         //                        rste.AppendToFile(sOutFile, m_rgsRankings);
                         // at this point, we have the name and the affiliation
                         //						if (!FAppendToFile(sOutFile, sName, (string)pgl.rgsData[pgl.iCur], plsValue))
@@ -768,10 +768,10 @@ namespace ArbWeb
                         {
                         if (!String.IsNullOrEmpty(pgl.plofi[pgl.iCur].sEmail))
                             {
-                            RosterEntry rsteT = irst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
+                            IRosterEntry irsteT = irst.IrsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
 
-                            if (rsteT != null)
-                                rsteT.Marked = true;
+                            if (irsteT != null)
+                                irsteT.Marked = true;
                             }
                         }
 
@@ -940,24 +940,24 @@ namespace ArbWeb
 
             if (irstUpload != null)
             {
-                List<RosterEntry> plrsteUnmarked = irstUpload.PlrsteUnmarked();
+                List<IRosterEntry> plirsteUnmarked = irstUpload.PlirsteUnmarked();
 
                 // we might have some officials left "unmarked".  These need to be added
 
                 // at this point, all the officials have either been marked or need to 
                 // be added
 
-                if (plrsteUnmarked.Count > 0)
+                if (plirsteUnmarked.Count > 0)
                 {
-                    if (MessageBox.Show(String.Format("There are {0} new officials.  Add these officials?", plrsteUnmarked.Count), "ArbWeb", MessageBoxButtons.YesNo) ==
+                    if (MessageBox.Show(String.Format("There are {0} new officials.  Add these officials?", plirsteUnmarked.Count), "ArbWeb", MessageBoxButtons.YesNo) ==
                         DialogResult.Yes)
                     {
-                        m_delAddOfficials?.Invoke(plrsteUnmarked);
+                        m_delAddOfficials?.Invoke(plirsteUnmarked);
                         // now we have to reload the page of links and do the whole thing again (updating info, etc)
                         // so we get the misc fields updated.  Then fall through to the rankings and do everyone at
                         // once
                         pgl = PglGetOfficialsFromWeb(); // refresh to get new officials
-                        DoCoreRosterSync(pgl, irstUpload, null /*rstBuilding*/, irstServer, plrsteUnmarked);
+                        DoCoreRosterSync(pgl, irstUpload, null /*rstBuilding*/, irstServer, plirsteUnmarked);
                         // now we can fall through to our core ranking handling...
                     }
                 }

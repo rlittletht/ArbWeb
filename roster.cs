@@ -11,7 +11,7 @@ namespace ArbWeb
     // ================================================================================
     //  R O S T E R     E N T R Y 
     // ================================================================================
-    public class RosterEntry : RosterEntryNameAddress // RSTE
+    public class RosterEntry : RosterEntryNameAddress, IRosterEntry // RSTE
     {
         public string m_sOfficialNumber;
         public string m_sDateOfBirth;
@@ -48,8 +48,10 @@ namespace ArbWeb
             return false;
         }
 
-        public bool FEqualsMisc(RosterEntry rste)
+        public bool FEqualsMisc(IRosterEntry irste)
         {
+            RosterEntry rste = (RosterEntry) irste; // if they call us, we better be backed by a real RosterEntry
+
             if (m_plsMisc?.Count != rste?.m_plsMisc?.Count)
                 return false;
 
@@ -654,7 +656,19 @@ namespace ArbWeb
 //    		QuickShort2,	// this includes LastSignin
             QuickFull,
             QuickFull2 // this includes LastSignin
-        };
+        }
+
+        public List<IRosterEntry> Plirste
+        {
+            get
+            {
+                List<IRosterEntry> plirste = new List<IRosterEntry>();
+                foreach (RosterEntry rste in m_plrste)
+                    plirste.Add(rste);
+
+                return plirste;
+            }
+        }
 
         public Roster()
         {
@@ -755,16 +769,16 @@ namespace ArbWeb
 			%%Contact: rlittle
 			
 		----------------------------------------------------------------------------*/
-        public List<RosterEntry> PlrsteUnmarked()
+        public List<IRosterEntry> PlirsteUnmarked()
         {
-            List<RosterEntry> plrste = new List<RosterEntry>();
+            List<IRosterEntry> plirste = new List<IRosterEntry>();
 
             foreach (RosterEntry rste in m_plrste)
                 {
                 if (!rste.Marked && !String.IsNullOrEmpty(rste.Email))
-                    plrste.Add(rste);
+                    plirste.Add(rste);
                 }
-            return plrste;
+            return plirste;
         }
 
         public List<RosterEntry> Plrste { get { return m_plrste; } }
@@ -833,7 +847,12 @@ namespace ArbWeb
             m_plrste.Add(rste);
         }
 
-        public RosterEntry CreateRosterEntry()
+        public void Add(IRosterEntry irste)
+        {
+            m_plrste.Add((RosterEntry)irste);
+        }
+
+        public IRosterEntry CreateRosterEntry()
         {
             return new RosterEntry();
         }
@@ -909,6 +928,11 @@ namespace ArbWeb
                     return rste;
                 }
             return null;
+        }
+
+        public IRosterEntry IrsteLookupEmail(string sEmail)
+        {
+            return RsteLookupEmail(sEmail);
         }
 
         /* P L S  L O O K U P  E M A I L */

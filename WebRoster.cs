@@ -512,7 +512,7 @@ namespace ArbWeb
             out Dictionary<int, List<string>> mpRank, // officials that need to be ranked
             out Dictionary<int, List<string>> mpRerank) // officials that need to be re-ranked
         {
-            List<RosterEntry> plrste = irst.Plrste;
+            List<IRosterEntry> plirste = irst.Plirste;
 
             // there are 3 things we can potentially do-
             //  1) unrank
@@ -532,7 +532,7 @@ namespace ArbWeb
             mpRerank = new Dictionary<int, List<string>>();
 
             // first, unrank any officials that should now become unranked
-            foreach (RosterEntry rste in plrste)
+            foreach (RosterEntry rste in plirste)
                 {
                 string sReversed = String.Format("{0}, {1}", rste.Last, rste.First);
 
