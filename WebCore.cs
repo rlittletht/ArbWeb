@@ -713,7 +713,7 @@ namespace ArbWeb
             determining what we need to update (without having to check the 
             server again)
         ----------------------------------------------------------------------------*/
-        private void DoCoreRosterSync(PGL pgl, IRoster irst, IRoster irstBuilding, IRoster irstServer, List<IRosterEntry> plirsteLimit)
+        private void DoCoreRosterSync(PGL pgl, IRoster irstUpload, IRoster irstBuilding, IRoster irstServer, List<IRosterEntry> plirsteLimit)
         {
             pgl.iCur = 0;
             Dictionary<string, bool> mpOfficials = new Dictionary<string, bool>();
@@ -725,12 +725,12 @@ namespace ArbWeb
                 }
 
             while (pgl.iCur < pgl.plofi.Count // we have links left to visit
-                   && (irst == null
+                   && (irstUpload == null
                        || m_fNeedPass1OnUpload) // why is this condition part of the while?! rst and cbRankOnly never changes in the loop
                    && pgl.iCur < pgl.plofi.Count)
                 {
-                if (irst == null
-                    || (irst.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
+                if (irstUpload == null
+                    || (irstUpload.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
                         && pgl.plofi[pgl.iCur].sEmail.Length != 0))
                     {
                     IRosterEntry irste = irstBuilding.CreateRosterEntry();
@@ -753,10 +753,10 @@ namespace ArbWeb
                         fMarkOnly = false; // we want to process this one.
                         }
 
-                    bool fJustAdded = plirsteLimit == null && (irst == null || !irst.IsQuick || irst.IsUploadableQuickroster);
-                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irst, irstServer, irste, irstBuilding, fJustAdded, fMarkOnly);
+                    bool fJustAdded = plirsteLimit == null && (irstUpload == null || !irstUpload.IsQuick || irstUpload.IsUploadableQuickroster);
+                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irstUpload, irstServer, irste, irstBuilding, fJustAdded, fMarkOnly);
 
-                    if (irst == null && !String.IsNullOrEmpty(irste.Email))
+                    if (irstUpload == null && !String.IsNullOrEmpty(irste.Email))
                         {
                         irstBuilding.Add(irste);
                         //                        rste.AppendToFile(sOutFile, m_rgsRankings);
@@ -768,7 +768,7 @@ namespace ArbWeb
                         {
                         if (!String.IsNullOrEmpty(pgl.plofi[pgl.iCur].sEmail))
                             {
-                            IRosterEntry irsteT = irst.IrsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
+                            IRosterEntry irsteT = irstUpload.IrsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
 
                             if (irsteT != null)
                                 irsteT.Marked = true;
