@@ -731,8 +731,7 @@ namespace ArbWeb
                 {
                 // if we aren't uploading, or if we are uploading and we have misc values AND the current link has an email address
                 if (irstUpload == null
-                    || (irstUpload.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
-                        && pgl.plofi[pgl.iCur].sEmail.Length != 0))
+                    || (irstUpload.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null && pgl.plofi[pgl.iCur].sEmail.Length != 0))
                     {
                     IRosterEntry irste;
 
@@ -769,10 +768,6 @@ namespace ArbWeb
                     if (irstUpload == null && !String.IsNullOrEmpty(irste.Email))
                         {
                         irstBuilding.Add(irste);
-                        //                        rste.AppendToFile(sOutFile, m_rgsRankings);
-                        // at this point, we have the name and the affiliation
-                        //						if (!FAppendToFile(sOutFile, sName, (string)pgl.rgsData[pgl.iCur], plsValue))
-                        //							throw new Exception("couldn't append to the file!");
                         }
                     else
                         {

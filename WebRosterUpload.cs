@@ -329,7 +329,7 @@ namespace ArbWeb
                 this,
                 !m_cbRankOnly.Checked, // fNeedPass1OnUpload
                 m_cbAddOfficialsOnly.Checked, // only add officials
-                new HandleGenericRoster.delDoPass1Visit(HandleRosterPass1VisitForDownload),
+                new HandleGenericRoster.delDoPass1Visit(HandleRosterPass1VisitForUploadDownload),
                 new HandleGenericRoster.delAddOfficials(AddOfficials),
                 new HandleGenericRoster.delDoPostHandleRoster(HandleRankings)
             );
