@@ -200,6 +200,16 @@ namespace ArbWeb
 
     public interface IRoster
     {
-
+        List<string> PlsMiscLookupEmail(string sEmail);
+        bool IsQuick { get; }
+        bool IsUploadableQuickroster { get; }
+        void Add(RosterEntry rste);
+        RosterEntry RsteLookupEmail(string sEmail);
+        List<RosterEntry> PlrsteUnmarked();
+        List<RosterEntry> Plrste { get; }
+        void WriteRoster(string sOutFile);
+        List<string> PlsMisc { get; set; }
+        List<string> PlsRankings { get; set; }
+        bool FAddRanking(string sName, string sPosition, int nRank);
     }
 }

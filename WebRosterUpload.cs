@@ -21,19 +21,19 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void SetServerMiscFields(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste)
+        void SetServerMiscFields(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste)
         {
-            RosterEntry rsteNew = rst.RsteLookupEmail(rste.Email);
-            RosterEntry rsteServer = rstServer?.RsteLookupEmail(rste.Email);
+            RosterEntry rsteNew = irst.RsteLookupEmail(rste.Email);
+            RosterEntry rsteServer = irstServer?.RsteLookupEmail(rste.Email);
 
             if (rsteNew.FEqualsMisc(rsteServer))
                 return;
 
-            List<string> plsMiscServer = rstServer.PlsMisc;
+            List<string> plsMiscServer = irstServer.PlsMisc;
 
-            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc, rst.PlsMisc, ref plsMiscServer);
+            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc, irst.PlsMisc, ref plsMiscServer);
 
-            rstServer.PlsMisc = plsMiscServer;
+            irstServer.PlsMisc = plsMiscServer;
 
             if (plsValue.Count == 0)
                 throw new Exception("couldn't extract misc field for official");
@@ -48,13 +48,13 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void SetServerRosterInfo(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, bool fMarkOnly)
+        void SetServerRosterInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, bool fMarkOnly)
         {
             RosterEntry rsteNew = null;
             RosterEntry rsteServer = null;
 
-            if (rst != null)
-                rsteNew = rst.RsteLookupEmail(sEmail);
+            if (irst != null)
+                rsteNew = irst.RsteLookupEmail(sEmail);
 
             if (rsteNew == null)
                 rsteNew = new RosterEntry(); // just to get nulls filled in to the member variables
@@ -64,9 +64,9 @@ namespace ArbWeb
             if (fMarkOnly)
                 return;
 
-            if (rstServer != null)
+            if (irstServer != null)
                 {
-                rsteServer = rstServer.RsteLookupEmail(sEmail);
+                rsteServer = irstServer.RsteLookupEmail(sEmail);
                 if (rsteServer == null)
                     {
                     m_srpt.AddMessage(String.Format("NULL Server entry for {0}, SKIPPING", sEmail), StatusBox.StatusRpt.MSGT.Error);
@@ -250,7 +250,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private static void VisitRankCallbackUpload(Roster rst, string sRankPosition, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc, StatusBox.StatusRpt srpt)
+        private static void VisitRankCallbackUpload(IRoster irst, string sRankPosition, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc, StatusBox.StatusRpt srpt)
         {
             IHTMLDocument2 oDoc2;
             oDoc2 = awc.Document2;
@@ -259,7 +259,7 @@ namespace ArbWeb
             Dictionary<int, List<string>> mpRank;
             Dictionary<int, List<string>> mpRerank;
 
-            BuildRankingJobs(rst, sRankPosition, mpRanked, out plsUnrank, out mpRank, out mpRerank);
+            BuildRankingJobs(irst, sRankPosition, mpRanked, out plsUnrank, out mpRank, out mpRerank);
 
             // at this point, we have a list of jobs to do.
 

@@ -110,7 +110,7 @@ namespace ArbWeb
                 }
 
             if (fIncludeRankings)
-                HandleRankings(null, ref rstBuilding);
+                HandleRankings(null, rstBuilding);
 
             return rstBuilding;
         }
@@ -283,28 +283,28 @@ namespace ArbWeb
         }
 
 
-        private void HandleRosterPostUpdateForDownload(HandleGenericRoster gr, Roster rstBuilding)
+        private void HandleRosterPostUpdateForDownload(HandleGenericRoster gr, IRoster irstBuilding)
         {
             // get the last login date from the officials main page
             gr.NavigateOfficialsPageAllOfficials();
-            gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+            gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, irstBuilding);
         }
 
         void HandleRosterPass1VisitForDownload(
             string sEmail,
             string sOfficialID,
-            Roster rstUploading,
-            Roster rstServer,
+            IRoster irstUploading,
+            IRoster irstServer,
             ref RosterEntry rste,
-            Roster rstBuilding,
+            IRoster irstBuilding,
             bool fJustAdded,
             bool fMarkOnly)
         {
             if (!fMarkOnly)
-                UpdateMisc(sEmail, sOfficialID, rstUploading, rstServer, ref rste, rstBuilding);
+                UpdateMisc(sEmail, sOfficialID, irstUploading, irstServer, ref rste, irstBuilding);
 
             if (!fJustAdded)
-                UpdateInfo(sEmail, sOfficialID, rstUploading, rstServer, ref rste, fMarkOnly);
+                UpdateInfo(sEmail, sOfficialID, irstUploading, irstServer, ref rste, fMarkOnly);
         }
 
         /*----------------------------------------------------------------------------

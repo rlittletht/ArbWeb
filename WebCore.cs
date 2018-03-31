@@ -577,9 +577,9 @@ namespace ArbWeb
         private delAddOfficials m_delAddOfficials;
         private delDoPostHandleRoster m_delDoPostHandleRoster;
 
-        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, Roster rstBuilding, bool fJustAdded, bool fMarkOnly);
+        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, IRoster irstBuilding, bool fJustAdded, bool fMarkOnly);
         public delegate void delAddOfficials(List<RosterEntry> plrste);
-        public delegate void delDoPostHandleRoster(Roster rstUpload, ref Roster rstBuilding);
+        public delegate void delDoPostHandleRoster(IRoster irstUpload, IRoster irstBuilding);
 
         public HandleGenericRoster(IAppContext iac, bool fNeedPass1OnUpload, bool fAddOfficialsOnly, delDoPass1Visit doPass1Visit, delAddOfficials doAddOfficials, delDoPostHandleRoster doPostHandleRoster)
         {
@@ -713,7 +713,7 @@ namespace ArbWeb
             determining what we need to update (without having to check the 
             server again)
         ----------------------------------------------------------------------------*/
-        private void DoCoreRosterSync(PGL pgl, Roster rst, Roster rstBuilding, Roster rstServer, List<RosterEntry> plrsteLimit)
+        private void DoCoreRosterSync(PGL pgl, IRoster irst, IRoster irstBuilding, IRoster irstServer, List<RosterEntry> plrsteLimit)
         {
             pgl.iCur = 0;
             Dictionary<string, bool> mpOfficials = new Dictionary<string, bool>();
@@ -725,12 +725,12 @@ namespace ArbWeb
                 }
 
             while (pgl.iCur < pgl.plofi.Count // we have links left to visit
-                   && (rst == null
+                   && (irst == null
                        || m_fNeedPass1OnUpload) // why is this condition part of the while?! rst and cbRankOnly never changes in the loop
                    && pgl.iCur < pgl.plofi.Count)
                 {
-                if (rst == null
-                    || (rst.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
+                if (irst == null
+                    || (irst.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
                         && pgl.plofi[pgl.iCur].sEmail.Length != 0))
                     {
                     RosterEntry rste = new RosterEntry();
@@ -753,12 +753,12 @@ namespace ArbWeb
                         fMarkOnly = false; // we want to process this one.
                         }
 
-                    bool fJustAdded = plrsteLimit == null && (rst == null || !rst.IsQuick || rst.IsUploadableQuickroster);
-                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, rst, rstServer, ref rste, rstBuilding, fJustAdded, fMarkOnly);
+                    bool fJustAdded = plrsteLimit == null && (irst == null || !irst.IsQuick || irst.IsUploadableQuickroster);
+                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irst, irstServer, ref rste, irstBuilding, fJustAdded, fMarkOnly);
 
-                    if (rst == null && !String.IsNullOrEmpty(rste.Email))
+                    if (irst == null && !String.IsNullOrEmpty(rste.Email))
                         {
-                        rstBuilding.Add(rste);
+                        irstBuilding.Add(rste);
                         //                        rste.AppendToFile(sOutFile, m_rgsRankings);
                         // at this point, we have the name and the affiliation
                         //						if (!FAppendToFile(sOutFile, sName, (string)pgl.rgsData[pgl.iCur], plsValue))
@@ -768,7 +768,7 @@ namespace ArbWeb
                         {
                         if (!String.IsNullOrEmpty(pgl.plofi[pgl.iCur].sEmail))
                             {
-                            RosterEntry rsteT = rst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
+                            RosterEntry rsteT = irst.RsteLookupEmail(pgl.plofi[pgl.iCur].sEmail);
 
                             if (rsteT != null)
                                 rsteT.Marked = true;
@@ -905,7 +905,7 @@ namespace ArbWeb
         }
 
 
-        public delegate void HandleRosterPostUpdateDelegate(HandleGenericRoster gr, Roster rst);
+        public delegate void HandleRosterPostUpdateDelegate(HandleGenericRoster gr, IRoster irst);
 
         /*----------------------------------------------------------------------------
         	%%Function: GenericVisitRoster
@@ -920,12 +920,12 @@ namespace ArbWeb
             upload and download, then make separate upload and download functions
             with no duplication)
         ----------------------------------------------------------------------------*/
-        public void GenericVisitRoster(Roster rstUpload, Roster rstBuilding, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
+        public void GenericVisitRoster(IRoster irstUpload, IRoster irstBuilding, string sOutFile, IRoster irstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
         {
             //Roster rstBuilding = null;
             PGL pgl;
 
-            if (rstUpload != null && rstBuilding != null)
+            if (irstUpload != null && irstBuilding != null)
                 throw new Exception("cannot upload AND download at the same time");
 
             // we're not going to write the roster out until the end now...
@@ -934,13 +934,13 @@ namespace ArbWeb
                 //rstBuilding = new Roster();
 
             pgl = PglGetOfficialsFromWeb();
-            DoCoreRosterSync(pgl, rstUpload, rstBuilding, rstServer, null /*plrsteLimit*/);
+            DoCoreRosterSync(pgl, irstUpload, irstBuilding, irstServer, null /*plrsteLimit*/);
 
-            handleRosterPostUpdate?.Invoke(this, rstBuilding);
+            handleRosterPostUpdate?.Invoke(this, irstBuilding);
 
-            if (rstUpload != null)
+            if (irstUpload != null)
             {
-                List<RosterEntry> plrsteUnmarked = rstUpload.PlrsteUnmarked();
+                List<RosterEntry> plrsteUnmarked = irstUpload.PlrsteUnmarked();
 
                 // we might have some officials left "unmarked".  These need to be added
 
@@ -957,18 +957,18 @@ namespace ArbWeb
                         // so we get the misc fields updated.  Then fall through to the rankings and do everyone at
                         // once
                         pgl = PglGetOfficialsFromWeb(); // refresh to get new officials
-                        DoCoreRosterSync(pgl, rstUpload, null /*rstBuilding*/, rstServer, plrsteUnmarked);
+                        DoCoreRosterSync(pgl, irstUpload, null /*rstBuilding*/, irstServer, plrsteUnmarked);
                         // now we can fall through to our core ranking handling...
                     }
                 }
             }
 
             // now, do the rankings.  this is easiest done in the bulk rankings tool...
-            m_delDoPostHandleRoster?.Invoke(rstUpload, ref rstBuilding);
+            m_delDoPostHandleRoster?.Invoke(irstUpload, irstBuilding);
             // lastly, if we're downloading, then output the roster
 
-            if (rstUpload == null)
-                rstBuilding.WriteRoster(sOutFile);
+            if (irstUpload == null)
+                irstBuilding.WriteRoster(sOutFile);
 
             if (m_iac.Profile.TestOnly)
             {

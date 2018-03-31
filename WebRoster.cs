@@ -24,12 +24,12 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, ref RosterEntry rste, Roster rstBuilding)
+        void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, ref RosterEntry rste, IRoster irstBuilding)
         {
-            List<string> plsMiscBuilding = rstBuilding.PlsMisc;
+            List<string> plsMiscBuilding = irstBuilding.PlsMisc;
 
             rste.m_plsMisc = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, null, null, ref plsMiscBuilding);
-            rstBuilding.PlsMisc = plsMiscBuilding;
+            irstBuilding.PlsMisc = plsMiscBuilding;
 
             if (rste.m_plsMisc.Count == 0)
                 throw new Exception("couldn't extract misc field for official");
@@ -42,12 +42,12 @@ namespace ArbWeb
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
-        private void UpdateMisc(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, Roster rstBuilding)
+        private void UpdateMisc(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, IRoster irstBuilding)
         {
-            if (rst == null)
-                FetchMiscFieldsFromServer(sEmail, sOfficialID, ref rste, rstBuilding);
+            if (irst == null)
+                FetchMiscFieldsFromServer(sEmail, sOfficialID, ref rste, irstBuilding);
             else
-                SetServerMiscFields(sEmail, sOfficialID, rst, rstServer, ref rste);
+                SetServerMiscFields(sEmail, sOfficialID, irst, irstServer, ref rste);
         }
 
         /*----------------------------------------------------------------------------
@@ -269,12 +269,12 @@ namespace ArbWeb
 
             rstServer UNUSED right now
 		----------------------------------------------------------------------------*/
-        private void UpdateInfo(string sEmail, string sOfficialID, Roster rst, Roster rstServer, ref RosterEntry rste, bool fMarkOnly)
+        private void UpdateInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, bool fMarkOnly)
         {
-            if (rst == null)
+            if (irst == null)
                 GetRosterInfoFromServer(sEmail, sOfficialID, ref rste);
             else
-                SetServerRosterInfo(sEmail, sOfficialID, rst, rstServer, ref rste, fMarkOnly);
+                SetServerRosterInfo(sEmail, sOfficialID, irst, irstServer, ref rste, fMarkOnly);
         }
 
         /*----------------------------------------------------------------------------
@@ -505,14 +505,14 @@ namespace ArbWeb
         	
         ----------------------------------------------------------------------------*/
         private static void BuildRankingJobs(
-            Roster rst,
+            IRoster irst,
             string sRankPosition,
             Dictionary<string, int> mpRanked,
             out List<string> plsUnrank, // officials that need to be unranked
             out Dictionary<int, List<string>> mpRank, // officials that need to be ranked
             out Dictionary<int, List<string>> mpRerank) // officials that need to be re-ranked
         {
-            List<RosterEntry> plrste = rst.Plrste;
+            List<RosterEntry> plrste = irst.Plrste;
 
             // there are 3 things we can potentially do-
             //  1) unrank
@@ -581,16 +581,16 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private static void VisitRankCallbackDownload(Roster rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc,
+        private static void VisitRankCallbackDownload(IRoster irst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc,
             StatusBox.StatusRpt srpt)
         {
             // don't do anything with unranked
             // just add the rankings
             foreach (string s in mpRanked.Keys)
-                rst.FAddRanking(s, sRank, mpRanked[s]);
+                irst.FAddRanking(s, sRank, mpRanked[s]);
         }
 
-        private delegate void VisitRankCallback(Roster rst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc,
+        private delegate void VisitRankCallback(IRoster irst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc,
             StatusBox.StatusRpt srpt);
 
         /*----------------------------------------------------------------------------
@@ -599,9 +599,9 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void HandleRankings(Roster rst, ref Roster rstBuilding)
+        private void HandleRankings(IRoster irst, IRoster irstBuilding)
         {
-            if (rst != null && rst.PlsRankings == null)
+            if (irst != null && irst.PlsRankings == null)
                 return;
 
             NavigateArbiterRankings();
@@ -611,7 +611,7 @@ namespace ArbWeb
             oDoc2 = m_awc.Document2;
 
             Dictionary<string, string> mpRankFilter = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, WebCore._s_RanksEdit_Select_PosNames);
-            List<string> plsRankings = PlsRankingsBuildFromRst(rst, rstBuilding, mpRankFilter);
+            List<string> plsRankings = PlsRankingsBuildFromRst(irst, irstBuilding, mpRankFilter);
 
             if (m_pr.SkipZ)
                 {
@@ -636,10 +636,10 @@ namespace ArbWeb
                     }
                 }
 
-            if (rst == null)
-                VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackDownload, rstBuilding, false /*fVerbose*/);
+            if (irst == null)
+                VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackDownload, irstBuilding, false /*fVerbose*/);
             else
-                VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackUpload, rst, false /*fVerbose*/); // true
+                VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackUpload, irst, false /*fVerbose*/); // true
         }
 
         /* V I S I T  R A N K I N G S */
@@ -651,7 +651,7 @@ namespace ArbWeb
             Visit a rankings page. Used for both upload and download, with the
             callback interface used to differentiate up/down.
 	    ----------------------------------------------------------------------------*/
-        private void VisitRankings(List<string> plsRankedPositions, IDictionary<string, string> mpRankFilter, VisitRankCallback pfnVrc, Roster rstParam, bool fVerboseLog)
+        private void VisitRankings(List<string> plsRankedPositions, IDictionary<string, string> mpRankFilter, VisitRankCallback pfnVrc, IRoster irstParam, bool fVerboseLog)
         {
             // now, navigate to every ranked positions' page and either fetch or sync every
             // official
@@ -680,7 +680,7 @@ namespace ArbWeb
                 m_srpt.LogData("Rankings built: mpRanked:", 4, StatusRpt.MSGT.Body, mpRanked);
                 m_srpt.LogData("Rankings built: mpRankedId:", 4, StatusRpt.MSGT.Body, mpRankedId);
 
-                pfnVrc(rstParam, sRankPosition, mpRanked, mpRankedId, m_awc, m_srpt);
+                pfnVrc(irstParam, sRankPosition, mpRanked, mpRankedId, m_awc, m_srpt);
 
                 if (fVerboseLog)
                     {
@@ -694,7 +694,7 @@ namespace ArbWeb
                     List<string> plsUnrank;
                     Dictionary<int, List<string>> mpRank;
                     Dictionary<int, List<string>> mpRerank;
-                    BuildRankingJobs(rstParam, sRankPosition, mpRankedCheck, out plsUnrank, out mpRank, out mpRerank);
+                    BuildRankingJobs(irstParam, sRankPosition, mpRankedCheck, out plsUnrank, out mpRank, out mpRerank);
 
                     if (plsUnrank.Count != 0)
                         m_srpt.LogData("plsUnrank not empty: ", 1, StatusRpt.MSGT.Error, plsUnrank);
@@ -800,10 +800,10 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private static List<string> PlsRankingsBuildFromRst(Roster rst, Roster rstBuilding, Dictionary<string, string> mpRankFilter)
+        private static List<string> PlsRankingsBuildFromRst(IRoster irst, IRoster irstBuilding, Dictionary<string, string> mpRankFilter)
         {
             List<string> plsRankings;
-            if (rst == null)
+            if (irst == null)
                 {
                 // now, build up our plsRankedPositions
                 plsRankings = new List<string>();
@@ -811,10 +811,10 @@ namespace ArbWeb
                 foreach (string s in mpRankFilter.Keys)
                     plsRankings.Add(s);
 
-                rstBuilding.PlsRankings = plsRankings;
+                irstBuilding.PlsRankings = plsRankings;
                 }
             else
-                plsRankings = rst.PlsRankings;
+                plsRankings = irst.PlsRankings;
 
             return plsRankings;
         }

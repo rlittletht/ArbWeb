@@ -639,7 +639,7 @@ namespace ArbWeb
     // ================================================================================
     //  R O S T E R 
     // ================================================================================
-    public class Roster // RST
+    public class Roster : IRoster // RST
     {
         private List<RosterEntry> m_plrste;
         private List<string> m_plsRankings;
