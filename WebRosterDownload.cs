@@ -331,7 +331,7 @@ namespace ArbWeb
                 new HandleGenericRoster.delDoPostHandleRoster(HandleRankings)
                 );
 
-            gr.HandleRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
+            gr.GenericVisitRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
             PopCursor();
             m_srpt.PopLevel();
             System.IO.File.Delete(m_pr.RosterWorking);

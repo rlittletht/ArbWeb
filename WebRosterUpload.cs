@@ -333,7 +333,7 @@ namespace ArbWeb
                 new HandleGenericRoster.delDoPostHandleRoster(HandleRankings)
             );
 
-            gr.HandleRoster(rstBuilding, sInFile, rstServer, hrpu);
+            gr.GenericVisitRoster(rstBuilding, sInFile, rstServer, hrpu);
         }
 
         /*----------------------------------------------------------------------------

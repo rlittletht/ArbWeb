@@ -907,11 +907,11 @@ namespace ArbWeb
 
         public delegate void HandleRosterPostUpdateDelegate(HandleGenericRoster gr, Roster rst);
 
-        /* H A N D L E  R O S T E R */
         /*----------------------------------------------------------------------------
-			%%Function: HandleRoster
-			%%Qualified: ArbWeb.AwMainForm.HandleRoster
-			%%Contact: rlittle
+        	%%Function: HandleRoster
+        	%%Qualified: ArbWeb.HandleGenericRoster.HandleRoster
+        	%%Contact: rlittle
+        	
 
 			If rst == null, then we're downloading the roster.  Otherwise, we are
 			uploading
@@ -920,8 +920,8 @@ namespace ArbWeb
             specific to upload or download (i.e. core out the code shared by 
             upload and download, then make separate upload and download functions
             with no duplication)
-		----------------------------------------------------------------------------*/
-        public void HandleRoster(Roster rst, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
+        ----------------------------------------------------------------------------*/
+        public void GenericVisitRoster(Roster rst, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
         {
             Roster rstBuilding = null;
             PGL pgl;

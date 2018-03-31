@@ -197,4 +197,9 @@ namespace ArbWeb
             return true;
         }
     }
+
+    public interface IRoster
+    {
+
+    }
 }
