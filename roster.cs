@@ -833,6 +833,11 @@ namespace ArbWeb
             m_plrste.Add(rste);
         }
 
+        public RosterEntry CreateRosterEntry()
+        {
+            return new RosterEntry();
+        }
+
         public Roster FilterByRanks(List<string> plsRequiredRanks)
         {
             Roster rst = new Roster();

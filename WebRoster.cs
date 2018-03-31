@@ -24,7 +24,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, ref RosterEntry rste, IRoster irstBuilding)
+        void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, RosterEntry rste, IRoster irstBuilding)
         {
             List<string> plsMiscBuilding = irstBuilding.PlsMisc;
 
@@ -42,12 +42,12 @@ namespace ArbWeb
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
-        private void UpdateMisc(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, IRoster irstBuilding)
+        private void UpdateMisc(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, IRoster irstBuilding)
         {
             if (irst == null)
-                FetchMiscFieldsFromServer(sEmail, sOfficialID, ref rste, irstBuilding);
+                FetchMiscFieldsFromServer(sEmail, sOfficialID, rste, irstBuilding);
             else
-                SetServerMiscFields(sEmail, sOfficialID, irst, irstServer, ref rste);
+                SetServerMiscFields(sEmail, sOfficialID, irst, irstServer, rste);
         }
 
         /*----------------------------------------------------------------------------
@@ -269,12 +269,12 @@ namespace ArbWeb
 
             rstServer UNUSED right now
 		----------------------------------------------------------------------------*/
-        private void UpdateInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, bool fMarkOnly)
+        private void UpdateInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, bool fMarkOnly)
         {
             if (irst == null)
-                GetRosterInfoFromServer(sEmail, sOfficialID, ref rste);
+                GetRosterInfoFromServer(sEmail, sOfficialID, rste);
             else
-                SetServerRosterInfo(sEmail, sOfficialID, irst, irstServer, ref rste, fMarkOnly);
+                SetServerRosterInfo(sEmail, sOfficialID, irst, irstServer, rste, fMarkOnly);
         }
 
         /*----------------------------------------------------------------------------

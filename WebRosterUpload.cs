@@ -21,7 +21,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void SetServerMiscFields(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste)
+        void SetServerMiscFields(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste)
         {
             RosterEntry rsteNew = irst.RsteLookupEmail(rste.Email);
             RosterEntry rsteServer = irstServer?.RsteLookupEmail(rste.Email);
@@ -48,7 +48,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void SetServerRosterInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, bool fMarkOnly)
+        void SetServerRosterInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, bool fMarkOnly)
         {
             RosterEntry rsteNew = null;
             RosterEntry rsteServer = null;

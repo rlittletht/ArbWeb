@@ -577,7 +577,7 @@ namespace ArbWeb
         private delAddOfficials m_delAddOfficials;
         private delDoPostHandleRoster m_delDoPostHandleRoster;
 
-        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, ref RosterEntry rste, IRoster irstBuilding, bool fJustAdded, bool fMarkOnly);
+        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, IRoster irstBuilding, bool fJustAdded, bool fMarkOnly);
         public delegate void delAddOfficials(List<RosterEntry> plrste);
         public delegate void delDoPostHandleRoster(IRoster irstUpload, IRoster irstBuilding);
 
@@ -733,7 +733,7 @@ namespace ArbWeb
                     || (irst.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null
                         && pgl.plofi[pgl.iCur].sEmail.Length != 0))
                     {
-                    RosterEntry rste = new RosterEntry();
+                    RosterEntry rste = irstBuilding.CreateRosterEntry();
                     bool fMarkOnly = false;
 
                     rste.SetEmail((string) pgl.plofi[pgl.iCur].sEmail);
@@ -754,7 +754,7 @@ namespace ArbWeb
                         }
 
                     bool fJustAdded = plrsteLimit == null && (irst == null || !irst.IsQuick || irst.IsUploadableQuickroster);
-                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irst, irstServer, ref rste, irstBuilding, fJustAdded, fMarkOnly);
+                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irst, irstServer, rste, irstBuilding, fJustAdded, fMarkOnly);
 
                     if (irst == null && !String.IsNullOrEmpty(rste.Email))
                         {

@@ -198,6 +198,11 @@ namespace ArbWeb
         }
     }
 
+    public interface IRosterEntry
+    {
+
+    }
+
     public interface IRoster
     {
         List<string> PlsMiscLookupEmail(string sEmail);
@@ -211,5 +216,6 @@ namespace ArbWeb
         List<string> PlsMisc { get; set; }
         List<string> PlsRankings { get; set; }
         bool FAddRanking(string sName, string sPosition, int nRank);
+        RosterEntry CreateRosterEntry();
     }
 }

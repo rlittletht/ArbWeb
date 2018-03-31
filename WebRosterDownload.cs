@@ -21,7 +21,7 @@ namespace ArbWeb
         	
             Get the roster information from the server.
         ----------------------------------------------------------------------------*/
-        void GetRosterInfoFromServer(string sEmail, string sOfficialID, ref RosterEntry rste)
+        void GetRosterInfoFromServer(string sEmail, string sOfficialID, RosterEntry rste)
         {
             SyncRsteWithServer(m_awc.Document2, sOfficialID, rste, null);
 
@@ -295,16 +295,16 @@ namespace ArbWeb
             string sOfficialID,
             IRoster irstUploading,
             IRoster irstServer,
-            ref RosterEntry rste,
+            RosterEntry rste,
             IRoster irstBuilding,
             bool fJustAdded,
             bool fMarkOnly)
         {
             if (!fMarkOnly)
-                UpdateMisc(sEmail, sOfficialID, irstUploading, irstServer, ref rste, irstBuilding);
+                UpdateMisc(sEmail, sOfficialID, irstUploading, irstServer, rste, irstBuilding);
 
             if (!fJustAdded)
-                UpdateInfo(sEmail, sOfficialID, irstUploading, irstServer, ref rste, fMarkOnly);
+                UpdateInfo(sEmail, sOfficialID, irstUploading, irstServer, rste, fMarkOnly);
         }
 
         /*----------------------------------------------------------------------------
