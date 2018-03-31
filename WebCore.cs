@@ -912,7 +912,6 @@ namespace ArbWeb
         	%%Qualified: ArbWeb.HandleGenericRoster.HandleRoster
         	%%Contact: rlittle
         	
-
 			If rst == null, then we're downloading the roster.  Otherwise, we are
 			uploading
 
@@ -921,24 +920,24 @@ namespace ArbWeb
             upload and download, then make separate upload and download functions
             with no duplication)
         ----------------------------------------------------------------------------*/
-        public void GenericVisitRoster(Roster rst, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
+        public void GenericVisitRoster(Roster rstUpload, Roster rstBuilding, string sOutFile, Roster rstServer, HandleRosterPostUpdateDelegate handleRosterPostUpdate)
         {
-            Roster rstBuilding = null;
+            //Roster rstBuilding = null;
             PGL pgl;
 
             // we're not going to write the roster out until the end now...
 
-            if (rst == null)
-                rstBuilding = new Roster();
+            //if (rstUpload == null)
+                //rstBuilding = new Roster();
 
             pgl = PglGetOfficialsFromWeb();
-            DoCoreRosterSync(pgl, rst, rstBuilding, rstServer, null /*plrsteLimit*/);
+            DoCoreRosterSync(pgl, rstUpload, rstBuilding, rstServer, null /*plrsteLimit*/);
 
             handleRosterPostUpdate?.Invoke(this, rstBuilding);
 
-            if (rst != null)
+            if (rstUpload != null)
             {
-                List<RosterEntry> plrsteUnmarked = rst.PlrsteUnmarked();
+                List<RosterEntry> plrsteUnmarked = rstUpload.PlrsteUnmarked();
 
                 // we might have some officials left "unmarked".  These need to be added
 
@@ -955,17 +954,17 @@ namespace ArbWeb
                         // so we get the misc fields updated.  Then fall through to the rankings and do everyone at
                         // once
                         pgl = PglGetOfficialsFromWeb(); // refresh to get new officials
-                        DoCoreRosterSync(pgl, rst, null /*rstBuilding*/, rstServer, plrsteUnmarked);
+                        DoCoreRosterSync(pgl, rstUpload, null /*rstBuilding*/, rstServer, plrsteUnmarked);
                         // now we can fall through to our core ranking handling...
                     }
                 }
             }
 
             // now, do the rankings.  this is easiest done in the bulk rankings tool...
-            m_delDoPostHandleRoster?.Invoke(rst, ref rstBuilding);
+            m_delDoPostHandleRoster?.Invoke(rstUpload, ref rstBuilding);
             // lastly, if we're downloading, then output the roster
 
-            if (rst == null)
+            if (rstUpload == null)
                 rstBuilding.WriteRoster(sOutFile);
 
             if (m_iac.Profile.TestOnly)

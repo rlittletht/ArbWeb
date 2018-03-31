@@ -322,7 +322,7 @@ namespace ArbWeb
             }
         }
 
-        void InvokeHandleRoster(Roster rstBuilding, string sInFile, Roster rstServer, HandleGenericRoster.HandleRosterPostUpdateDelegate hrpu)
+        void InvokeHandleRoster(Roster rstUpload, string sInFile, Roster rstServer, HandleGenericRoster.HandleRosterPostUpdateDelegate hrpu)
         {
             HandleGenericRoster gr = new HandleGenericRoster(
                 this,
@@ -333,7 +333,7 @@ namespace ArbWeb
                 new HandleGenericRoster.delDoPostHandleRoster(HandleRankings)
             );
 
-            gr.GenericVisitRoster(rstBuilding, sInFile, rstServer, hrpu);
+            gr.GenericVisitRoster(rstUpload, null, sInFile, rstServer, hrpu);
         }
 
         /*----------------------------------------------------------------------------
