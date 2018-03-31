@@ -908,8 +908,8 @@ namespace ArbWeb
         public delegate void HandleRosterPostUpdateDelegate(HandleGenericRoster gr, Roster rst);
 
         /*----------------------------------------------------------------------------
-        	%%Function: HandleRoster
-        	%%Qualified: ArbWeb.HandleGenericRoster.HandleRoster
+        	%%Function: GenericVisitRoster
+        	%%Qualified: ArbWeb.HandleGenericRoster.GenericVisitRoster
         	%%Contact: rlittle
         	
 			If rst == null, then we're downloading the roster.  Otherwise, we are
@@ -924,6 +924,9 @@ namespace ArbWeb
         {
             //Roster rstBuilding = null;
             PGL pgl;
+
+            if (rstUpload != null && rstBuilding != null)
+                throw new Exception("cannot upload AND download at the same time");
 
             // we're not going to write the roster out until the end now...
 
