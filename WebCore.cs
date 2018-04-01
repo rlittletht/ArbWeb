@@ -765,7 +765,7 @@ namespace ArbWeb
 
                     // if we don't have a limit list, then we aren't in pass right after adding officials
                     // (we build the limit list when we actually add officials)
-                    bool fNotJustAdded = plirsteLimit == null && (irstUpload == null || !irstUpload.IsQuick || irstUpload.IsUploadableQuickroster);
+                    bool fNotJustAdded = plirsteLimit == null && (irstUpload == null || irstUpload.IsUploadableRoster);
                     m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irstUpload, irstServer, irste, irstBuilding, fNotJustAdded, fMarkOnly);
 
                     if (irstUpload == null && !String.IsNullOrEmpty(irste.Email))

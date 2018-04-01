@@ -676,6 +676,11 @@ namespace ArbWeb
             m_plsRankings = new List<string>();
         }
 
+        public bool IsUploadableRoster
+        {
+            get { return !IsQuick || IsUploadableQuickroster; }
+        }
+
         public bool IsQuick { get { return m_rstt != RSTT.Full; } }
         public bool IsUploadableQuickroster {  get { return m_rstt == RSTT.QuickFull || m_rstt == RSTT.QuickFull2; } }
         public RSTT Rstt { get { return m_rstt; } }
