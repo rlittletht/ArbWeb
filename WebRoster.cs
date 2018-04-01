@@ -588,7 +588,7 @@ namespace ArbWeb
             // don't do anything with unranked
             // just add the rankings
             foreach (string s in mpRanked.Keys)
-                irst.FAddRanking(s, sRank, mpRanked[s]);
+                ((Roster)irst).FAddRanking(s, sRank, mpRanked[s]);
         }
 
         private delegate void VisitRankCallback(IRoster irst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc,
@@ -602,7 +602,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void HandleRankings(IRoster irst, IRoster irstBuilding)
         {
-            if (irst != null && irst.PlsRankings == null)
+            if (irst != null && ((Roster)irst).PlsRankings == null)
                 return;
 
             NavigateArbiterRankings();
@@ -812,10 +812,10 @@ namespace ArbWeb
                 foreach (string s in mpRankFilter.Keys)
                     plsRankings.Add(s);
 
-                irstBuilding.PlsRankings = plsRankings;
+                ((Roster)irstBuilding).PlsRankings = plsRankings;
                 }
             else
-                plsRankings = irst.PlsRankings;
+                plsRankings = ((Roster)irst).PlsRankings;
 
             return plsRankings;
         }

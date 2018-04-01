@@ -216,8 +216,6 @@ namespace ArbWeb
         List<IRosterEntry> PlirsteUnmarked();
         List<IRosterEntry> Plirste { get; }
         void WriteRoster(string sOutFile);
-        List<string> PlsRankings { get; set; }
-        bool FAddRanking(string sName, string sPosition, int nRank);
         IRosterEntry CreateRosterEntry();
     }
 }
