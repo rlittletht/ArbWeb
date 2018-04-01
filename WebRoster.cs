@@ -26,10 +26,11 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, RosterEntry rste, IRoster irstBuilding)
         {
-            List<string> plsMiscBuilding = irstBuilding.PlsMisc;
+            Roster rstBuilding = (Roster) irstBuilding;
+            List<string> plsMiscBuilding = rstBuilding.PlsMisc;
 
             rste.m_plsMisc = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, null, null, ref plsMiscBuilding);
-            irstBuilding.PlsMisc = plsMiscBuilding;
+            rstBuilding.PlsMisc = plsMiscBuilding;
 
             if (rste.m_plsMisc.Count == 0)
                 throw new Exception("couldn't extract misc field for official");

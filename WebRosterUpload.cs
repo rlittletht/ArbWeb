@@ -21,19 +21,22 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void SetServerMiscFields(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste)
+        void SetServerMiscFields(string sEmail, string sOfficialID, IRoster irstUploading, IRoster irstServer, RosterEntry rste)
         {
-            RosterEntry rsteNew = (RosterEntry)irst.IrsteLookupEmail(rste.Email);
+            Roster rstServer = (Roster) irstServer;
+            Roster rstUploading = (Roster) irstUploading;
+
+            RosterEntry rsteNew = (RosterEntry)irstUploading.IrsteLookupEmail(rste.Email);
             RosterEntry rsteServer = (RosterEntry)irstServer?.IrsteLookupEmail(rste.Email);
 
             if (rsteNew.FEqualsMisc(rsteServer))
                 return;
 
-            List<string> plsMiscServer = irstServer.PlsMisc;
+            List<string> plsMiscServer = rstServer.PlsMisc;
 
-            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc, irst.PlsMisc, ref plsMiscServer);
+            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc, rstUploading.PlsMisc, ref plsMiscServer);
 
-            irstServer.PlsMisc = plsMiscServer;
+            rstServer.PlsMisc = plsMiscServer;
 
             if (plsValue.Count == 0)
                 throw new Exception("couldn't extract misc field for official");

@@ -729,9 +729,10 @@ namespace ArbWeb
                        || m_fNeedPass1OnUpload) // why is this condition part of the while?! rst and cbRankOnly never changes in the loop
                    && pgl.iCur < pgl.plofi.Count)
                 {
-                // if we aren't uploading, or if we are uploading and we have misc values AND the current link has an email address
+                // if we aren't uploading, or if we are uploading and we values for this email address AND the current link has an email address
                 if (irstUpload == null
-                    || (irstUpload.PlsMiscLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null && pgl.plofi[pgl.iCur].sEmail.Length != 0))
+                    || (!String.IsNullOrEmpty(pgl.plofi[pgl.iCur].sEmail)
+                        && irstUpload.IrsteLookupEmail(pgl.plofi[pgl.iCur].sEmail) != null))
                     {
                     IRosterEntry irste;
 
