@@ -577,7 +577,7 @@ namespace ArbWeb
         private delAddOfficials m_delAddOfficials;
         private delDoPostHandleRoster m_delDoPostHandleRoster;
 
-        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, IRosterEntry irste, IRoster irstBuilding, bool fJustAdded, bool fMarkOnly);
+        public delegate void delDoPass1Visit(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, IRosterEntry irste, IRoster irstBuilding, bool fNotJustAdded, bool fMarkOnly);
         public delegate void delAddOfficials(List<IRosterEntry> plirste);
         public delegate void delDoPostHandleRoster(IRoster irstUpload, IRoster irstBuilding);
 
@@ -763,8 +763,10 @@ namespace ArbWeb
                         fMarkOnly = false; // we want to process this one.
                         }
 
-                    bool fJustAdded = plirsteLimit == null && (irstUpload == null || !irstUpload.IsQuick || irstUpload.IsUploadableQuickroster);
-                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irstUpload, irstServer, irste, irstBuilding, fJustAdded, fMarkOnly);
+                    // if we don't have a limit list, then we aren't in pass right after adding officials
+                    // (we build the limit list when we actually add officials)
+                    bool fNotJustAdded = plirsteLimit == null && (irstUpload == null || !irstUpload.IsQuick || irstUpload.IsUploadableQuickroster);
+                    m_delDoPass1Visit(pgl.plofi[pgl.iCur].sEmail, pgl.plofi[pgl.iCur].sOfficialID, irstUpload, irstServer, irste, irstBuilding, fNotJustAdded, fMarkOnly);
 
                     if (irstUpload == null && !String.IsNullOrEmpty(irste.Email))
                         {

@@ -297,13 +297,15 @@ namespace ArbWeb
             IRoster irstServer,
             IRosterEntry irste,
             IRoster irstBuilding,
-            bool fJustAdded,
+            bool fNotJustAdded,
             bool fMarkOnly)
         {
+            // if we're just marking officials, don't update the misc fields
             if (!fMarkOnly)
                 UpdateMisc(sEmail, sOfficialID, irstUploading, irstServer, (RosterEntry)irste, irstBuilding);
 
-            if (!fJustAdded)
+            // if we just added the official, then we already entered all of their information, don't do it again
+            if (fNotJustAdded)
                 UpdateInfo(sEmail, sOfficialID, irstUploading, irstServer, (RosterEntry)irste, fMarkOnly);
         }
 
