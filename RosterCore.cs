@@ -208,7 +208,6 @@ namespace ArbWeb
 
     public interface IRoster
     {
-        List<string> PlsMiscLookupEmail(string sEmail);
         bool IsUploadableRoster { get; }
         void Add(IRosterEntry rste);
         IRosterEntry IrsteLookupEmail(string sEmail);
