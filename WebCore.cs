@@ -51,6 +51,7 @@ namespace ArbWeb
         // ============================================================================
         // (games view) links
         public const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2010
+        public const string _sid_Assigning_Select_Filters = "ctl00_ContentHolder_pgeGamesView_conGamesView_ddlSavedFilters"; // ok2010
         public const string _s_Assigning_Reports_Select_Format = "ctl00$ContentHolder$pgePrint$conPrint$ddlFormat"; // ok2010
         public const string _s_Assigning_Reports_Submit_Print = "ctl00$ContentHolder$pgePrint$navPrint$btnBeginPrint"; // ok2010
 
@@ -299,12 +300,15 @@ namespace ArbWeb
         private readonly ControlSetting<bool>[] m_rgCheckedSettings;
         private readonly ControlSetting<string>[] m_rgSelectSettings;
 
+        private string m_sidSelectFilterControl;
+
         // this version selects a filter
         public DownloadGenericExcelReport(
             string sFilterReq, 
             string sDescription, 
             string sReportPage, 
             string sSelectFilterControlName, 
+            string sidSelectFilterControl,
             string sReportPrintPagePrefix, 
             string sReportPrintSubmitPrintControlName, 
             string sFullExpectedName, 
@@ -319,6 +323,7 @@ namespace ArbWeb
             m_iac = iac;
             m_sReportPage = sReportPage;
             m_sSelectFilterControlName = sSelectFilterControlName;
+            m_sidSelectFilterControl = sidSelectFilterControl;
             m_sReportPrintPagePrefix = sReportPrintPagePrefix;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
             m_sFullExpectedName = sFullExpectedName;
@@ -521,7 +526,7 @@ namespace ArbWeb
                 // now set that filter
 
                 m_iac.WebControl.ResetNav();
-                m_iac.WebControl.FSetSelectControlText(oDoc2, m_sSelectFilterControlName, null, m_sFilterReq, false);
+                m_iac.WebControl.FSetSelectControlText(oDoc2, m_sSelectFilterControlName, m_sidSelectFilterControl, m_sFilterReq, false);
                 m_iac.WebControl.FWaitForNavFinish();
 
                 if (!m_iac.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilter))

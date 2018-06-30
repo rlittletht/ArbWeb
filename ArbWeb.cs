@@ -212,7 +212,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void EnableAdminFunctions()
         {
-            bool fAdmin = (String.Compare(System.Environment.MachineName, "majestix", true) == 0);
+            bool fAdmin = (String.Compare(System.Environment.MachineName, "dogmatix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
         /* A W  M A I N  F O R M */

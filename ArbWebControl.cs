@@ -611,6 +611,40 @@ namespace ArbWeb
         }
 #endif
 
+        public static void DispatchClickEventOnParentElement(ArbWebControl awc, string sidControl, string sEvent, string sParentElementToFind)
+        {
+            awc.ResetNav();
+            awc.ReportNavState("Before FireEvent");
+            //            ihe3.FireEvent("onchange", ref eventObj);
+
+            HtmlElement head = awc.AxWeb.Document.GetElementsByTagName("head")[0];
+            HtmlElement scriptEl = awc.AxWeb.Document.CreateElement("script");
+            IHTMLScriptElement element = (IHTMLScriptElement)scriptEl.DomElement;
+
+            element.text = "function triggerOnClick() " +
+                           "{{ " +
+                                                      "alert('im here'); " +
+                           $"var ctl = document.getElementById('{sidControl}'); " +
+                           " var elt = ctl;" +
+                           " while (elt.tagName.toUpperCase() != \"TR\") " +
+                           "     elt = elt.parentElement;" +
+
+                                                      "alert(elt); "+
+
+                           "var evt = document.createEvent('HTMLEvents'); " +
+                           $"evt.initEvent('{sEvent}', false, true); " +
+                           "elt.dispatchEvent(evt);"
+                           + "}} ";
+            head.AppendChild(scriptEl);
+
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.AxWeb.Document.InvokeScript("triggerOnClick");
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.ReportNavState("After FireEvent");
+            awc.WaitForBrowserReady();
+            awc.WaitDoLog(500);
+        }
+
         public static void DispatchChangeEventCore(ArbWebControl awc, string sidControl, string sEvent)
         {
             awc.ResetNav();
@@ -762,7 +796,13 @@ namespace ArbWeb
         public bool FClickControl(IHTMLDocument2 oDoc2, string sId, string sidWaitFor = null)
         {
             m_srpt.LogData(String.Format("FClickControl {0}", sId), 3, StatusRpt.MSGT.Body);
-            ((IHTMLElement)(oDoc2.all.item(sId, 0))).click();
+            IHTMLElement ihe = ((IHTMLElement)(oDoc2.all.item(sId, 0)));
+
+            if (ihe != null)
+            {
+                ihe.click();
+            }
+
 //			m_srpt.AddMessage("After clickcontrol");
             return FWaitForNavFinish(sidWaitFor);
         }

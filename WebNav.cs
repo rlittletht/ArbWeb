@@ -38,7 +38,7 @@ namespace ArbWeb
                     int ich = he.id.IndexOf(WebCore._sid_Login_Span_Type_Prefix);
                     if (ich >= 0)
                     {
-                        sCtl = he.id.Substring(ich + WebCore._sid_Login_Span_Type_Prefix.Length, 5);
+                        sCtl = he.id; // .Substring(ich + WebCore._sid_Login_Span_Type_Prefix.Length, 5);
                     }
                     break;
                 }
@@ -47,9 +47,10 @@ namespace ArbWeb
             ThrowIfNot(sCtl != null, "Can't find Admin account link");
 
             m_awc.ResetNav();
-            string sControl = BuildAnnName(WebCore._sid_Login_Anchor_TypeLink_Prefix, WebCore._sid_Login_Anchor_TypeLink_Suffix, sCtl);
+            ArbWebControl.DispatchClickEventOnParentElement(m_awc, sCtl, "click", "TR");
+//            string sControl = BuildAnnName(WebCore._sid_Login_Anchor_TypeLink_Prefix, WebCore._sid_Login_Anchor_TypeLink_Suffix, sCtl);
 
-            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't admin link");
+//            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't admin link");
             m_awc.FWaitForNavFinish();
         }
 

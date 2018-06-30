@@ -247,7 +247,7 @@ namespace ArbWeb
             taskCalc.Start();
 
             CountsData cd = await taskCalc;
-
+            
             m_srpt.PopLevel();
             m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
             // update regenerate the listboxes...

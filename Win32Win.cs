@@ -215,7 +215,7 @@ namespace Win32Win
         bool FHandleDialogAndClickButton(string sDlgClass, string sCaption, string sValidateText, string sValidateTextShort, string sValidateTextClassName, string sReplaceText, string sButtonToPress, bool fWaitForDialog)
         {
             IntPtr hWnd;
-            int n = fWaitForDialog ? 400 : 1;
+            int n = fWaitForDialog ? 1100 : 1;
 
             m_srpt.LogData(String.Format("FHandleDialogAndClickButton before FindWindow loop (Class={0}, Caption={1}) (WAIT_FOR_DIALOG={2}, VALIDATE_TEXT={3}, REPLACE_TEXT={4}, BUTTON_TO_PRESS={5})", sDlgClass, sCaption, fWaitForDialog, sValidateText ?? "null", sReplaceText ?? "null", sButtonToPress ?? "null"), 3, StatusRpt.MSGT.Body);
 

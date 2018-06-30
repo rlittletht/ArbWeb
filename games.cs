@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-
+using System.Windows.Forms.VisualStyles;
 using mshtml;
 using NUnit.Framework;
 using StatusBox;
@@ -253,12 +254,12 @@ namespace ArbWeb
         // ================================================================================
         public class GameSlots // GMSS
         {
-            private const int icolGameAway = 18;
-            private const int icolGameHome = 13;
-            private const int icolGameSite = 10;
+            private const int icolGameAway = 19;
+            private const int icolGameHome = 14;
+            private const int icolGameSite = 11;
             private const int icolGameGame = 0;
-            private const int icolOfficial = 4;
-            private const int icolSlotStatus = 16;
+            private const int icolOfficial = 5;
+            private const int icolSlotStatus = 17;
 
             public GameSlots() {} // just for unit tests
 
@@ -1296,9 +1297,15 @@ namespace ArbWeb
             private int icolGameLevel;
             private int icolGameDateTime;
 
-            private void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, ArbWeb.Roster rst)
+            private void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst)
             {
-                sw.WriteLine("<tr>");
+                string sBackground = "";
+
+                if (fHeader)
+                {
+                    sBackground = " style='background: #c0c0c0'";
+                }
+                sw.WriteLine($"<tr{sBackground}>");
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].GameNum));
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("ddd M/dd")));
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("h:mm tt")));
@@ -1306,8 +1313,8 @@ namespace ArbWeb
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Site));
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Home));
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Away));
-                sw.WriteLine("<tr><td colspan='7' class='rosterOuter'>");
-                sw.WriteLine("<table class='rosterInner'>");
+                sw.WriteLine($"<tr{sBackground}><td colspan='7' class='rosterOuter'>");
+                sw.WriteLine($"<table {sBackground} class='rosterInner'>");
                 foreach (GameSlot gm in plgm)
                     {
                     sw.WriteLine("<tr>");
@@ -1352,6 +1359,106 @@ namespace ArbWeb
                 sw.WriteLine("</table>");
             }
 
+            static int CchCommonRoot(string sLeft, string sRight)
+            {
+                if (sLeft == null || sRight == null)
+                    return 0;
+
+                int ichMac = Math.Min(sLeft.Length, sRight.Length);
+                int ich = 0;
+
+                while (ich < ichMac && sLeft[ich] == sRight[ich])
+                    ich++;
+
+                return ich;
+            }
+
+            [Test]
+            [TestCase("foo", "foo", 3)]
+            [TestCase("foo", "foobar", 3)]
+            [TestCase("foo ", "foo bar", 4)]
+            [TestCase("foo", "bar", 0)]
+            [TestCase("foo", "ffoo", 1)]
+            [TestCase("foo", "bfoo", 0)]
+            [TestCase("foo", "fan", 1)]
+            [TestCase("", "bfoo", 0)]
+            [TestCase(null, "bfoo", 0)]
+            public static void TestCchCommonRoot(string sLeft, string sRight, int cchExpected)
+            {
+                Assert.AreEqual(cchExpected, CchCommonRoot(sLeft, sRight));
+            }
+
+            static Dictionary<string, string> MapCommonRootsFromList(SortedSet<string> sset)
+            {
+                Dictionary<string, string> mpRoots = new Dictionary<string, string>();
+                List<string> plsPending = new List<string>();
+
+                string sLast = null;
+                int cchRootCur = 0;
+
+                foreach (string s in sset)
+                {
+                    int cch = CchCommonRoot(sLast, s);
+
+                    if (cch == 0 || cch < Math.Min(sLast.Length, s.Length) / 3 + 1) // we require the root to be at least 1/3 of the name...
+                    {
+                        // start building a new root
+                        if (cchRootCur > 0)
+                        {
+                            string sRoot = sLast.Substring(0, cchRootCur);
+
+                            foreach (string sToMap in plsPending)
+                                mpRoots.Add(sToMap, sRoot);
+                        }
+
+                        cchRootCur = 0;
+                        sLast = s;
+                        plsPending.Clear();
+                        plsPending.Add(s);
+                    }
+                    else
+                    {
+                        if (cch < cchRootCur || cchRootCur == 0)
+                            cchRootCur = cch;
+                        plsPending.Add(s);
+                        sLast = s;
+                    }
+                }
+
+                // and finally, do one last check
+                if (cchRootCur > 0)
+                {
+                    string sRoot = sLast.Substring(0, cchRootCur);
+
+                    foreach (string sToMap in plsPending)
+                        mpRoots.Add(sToMap, sRoot);
+                }
+
+                return mpRoots;
+            }
+
+            [Test]
+            [TestCase(new String[] { "foo"}, new string[] {})]
+            [TestCase(new String[] { "foo", "bar" }, new string[] { })]
+            [TestCase(new String[] { "foo", "foo2", "bar" }, new string[] { "foo|foo", "foo2|foo"})]
+            [TestCase(new String[] { "foo", "foo2", "bar2", "bar3", "bar4", "boo"}, new string[] { "foo|foo", "foo2|foo", "bar2|bar", "bar3|bar", "bar4|bar" })]
+            public static void TestCommonRootsFromList(string[] rgs, string[] rgmapExpected)
+            {
+                SortedSet<string> sset = new SortedSet<string>(rgs);
+                Dictionary<string, string> mpExpected = new Dictionary<string, string>();
+
+                foreach (string s in rgmapExpected)
+                {
+                    string[] rgsMap = s.Split('|');
+
+                    mpExpected.Add(rgsMap[0], rgsMap[1]);
+                }
+
+                Dictionary<string, string> mpActual = MapCommonRootsFromList(sset);
+
+                Assert.AreEqual(mpExpected, mpActual);
+            }
+
             public void GenSiteRosterReport(string sReportFile, ArbWeb.Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
             {
                 StreamWriter sw = new StreamWriter(sReportFile, false, Encoding.Default);
@@ -1369,9 +1476,66 @@ namespace ArbWeb
                 sw.WriteLine("</style></head>");
 
                 sw.WriteLine("<div class='sec1'><table class='rosterOuter'>");
-                // at this point we are ready to generate the report
+
+                // now we want to create a custom sort, so consultants sort to the top of the time slot/game site
+
+                // first, figure out the site name key
+                //   We have to deal with:
+                //     DateTime/Foo Field #1/Game 1
+                //     DateTime/Foo Field, Foo Field/ Consultants
+                //     DateTime/Bar Field, Bar Field/Consultants
+                //     DateTime/Bar Field, North Field/Game 1
+
+                // (note how #1 sorts before Foo Field, but North Field sorts after Bar Field. This gives us an inconsistent
+                // consultant sort order.
+
+                // we want these to become (not new sort order).
+                //     DateTime/Foo Field Consult/Foo Field, Foo Field/ Consultants
+                //     DateTime/Foo Field Game/Foo Field #1/Game 1
+                //     DateTime/Bar Field Consult/Bar Field, Bar Field/Consultants
+                //     DateTime/Bar Field Game/Bar Field, North Field/Game 1
+
+                // we need to figure out the common root between fields (and we can't rely on punctuation...)
+                SortedList<string, GameSlot> mpgames = new SortedList<string, GameSlot>();
+                SortedSet<string> plsSites = new SortedSet<string>();
+
                 foreach (GameSlot gm in m_plgmsSortedGameNum.Values)
+                {
+                    if (!plsSites.Contains(gm.Site))
+                        plsSites.Add(gm.Site);
+                }
+
+                Dictionary<string, string> mpSiteRoot = MapCommonRootsFromList(plsSites);
+
+                // now, build a new game list
+                foreach (GameSlot gm in m_plgmsSortedGameNum.Values)
+                {
+                    string sType;
+                    string sSite;
+
+                    if (mpSiteRoot.ContainsKey(gm.Site))
                     {
+                        sSite = mpSiteRoot[gm.Site];
+                    }
+                    else
+                    {
+                        sSite = gm.Site;
+                    }
+
+                    if (gm.SportLevel.ToUpper().Contains("CONSULTANT"))
+                        sType = $"{sSite}Consult";
+                    else
+                        sType = $"{sSite}Game";
+
+                    mpgames.Add(
+                        String.Format("{0}_{1}_{2}_{3}_{4}_{5}_{6}", gm.Dttm.ToString("yyyyMMdd:HH:mm"), sType, gm.Site,
+                            gm.Sport, gm.Level, gm.GameNum, mpgames.Count), gm);
+                }
+                // at this point we are ready to generate the report
+
+                bool fHeader = false;
+                foreach (GameSlot gm in mpgames.Values)
+                {
                     if (gm.Dttm < dttmStart || gm.Dttm > dttmEnd)
                         continue;
 
@@ -1380,14 +1544,19 @@ namespace ArbWeb
                             continue;
 
                     if (plgm.Count > 0 && plgm[0].GameNum != gm.GameNum)
-                        {
-                        WriteGameRoster(sw, plgm, rst);
+                    {
+                        WriteGameRoster(sw, plgm, fHeader, rst);
                         plgm.Clear();
-                        }
-                    plgm.Add(gm);
+                        fHeader = false;
                     }
+
+                    plgm.Add(gm);
+                    if (gm.SportLevel.ToUpper().Contains("CONSULTANT"))
+                        fHeader = true;
+                }
+
                 if (plgm.Count > 0)
-                    WriteGameRoster(sw, plgm, rst);
+                    WriteGameRoster(sw, plgm, fHeader, rst);
 
                 sw.WriteLine("</table></div></html>");
                 sw.Close();
@@ -1595,112 +1764,124 @@ namespace ArbWeb
 			----------------------------------------------------------------------------*/
             public bool FLoadGames(string sGamesReport, Roster rst, bool fIncludeCanceled)
             {
-                TextReader tr = new StreamReader(sGamesReport);
-                string sLine;
-                string[] rgsFields;
-                ReadState rs = ReadState.ScanForHeader;
-                bool fCanceled = false;
-                bool fOpenSlot = false;
-                bool fIgnore = false;
-                string sGame = "";
-                string sDateTime = "";
-                string sSport = "";
-                string sLevel = "";
-                string sSite = "";
-                string sHome = "";
-                string sAway = "";
-                string sPosLast = "";
-                string sNameLast = "";
-                string sStatusLast = "";
+                using (TextReader tr = new StreamReader(sGamesReport))
+                {
+                    string sLine;
+                    string[] rgsFields;
+                    ReadState rs = ReadState.ScanForHeader;
+                    bool fCanceled = false;
+                    bool fOpenSlot = false;
+                    bool fIgnore = false;
+                    string sGame = "";
+                    string sDateTime = "";
+                    string sSport = "";
+                    string sLevel = "";
+                    string sSite = "";
+                    string sHome = "";
+                    string sAway = "";
+                    string sPosLast = "";
+                    string sNameLast = "";
+                    string sStatusLast = "";
 
-                Dictionary<string, string> mpNameStatus = new Dictionary<string, string>();
-                Dictionary<string, string> mpNamePos = new Dictionary<string, string>();
-                // m_mpNameSportLevelCount = new Dictionary<string, Dictionary<string, int>>();
-                Umpire ump = null;
+                    Dictionary<string, string> mpNameStatus = new Dictionary<string, string>();
+                    Dictionary<string, string> mpNamePos = new Dictionary<string, string>();
+                    // m_mpNameSportLevelCount = new Dictionary<string, Dictionary<string, int>>();
+                    Umpire ump = null;
 
-                while ((sLine = tr.ReadLine()) != null)
+                    while ((sLine = tr.ReadLine()) != null)
                     {
-                    // first, change "foo, bar" into "foo bar" (get rid of quotes and the comma)
-                    sLine = Regex.Replace(sLine, "\"([^\",]*),([^\",]*)\"", "$1$2");
+                        // first, change "foo, bar" into "foo bar" (get rid of quotes and the comma)
+                        sLine = Regex.Replace(sLine, "\"([^\",]*),([^\",]*)\"", "$1$2");
 
-                    icolGameDateTime = 2;
-                    if (sLine.Length < icolGameDateTime)
-                        continue;
-
-                    Regex rex = new Regex(",");
-                    rgsFields = rex.Split(sLine);
-
-                    // check for rainouts and cancellations
-                    if (FMatchGameCancelled(sLine))
-                        {
-                        fCanceled = true;
-                        // drop us back to reading officials
-                        rs = ReadState.ReadingOfficials1;
-                        continue;
-                        }
-                    // look for comments
-                    if (FMatchGameComment(sLine))
-                        {
-                        rs = RsHandleGameComment(rs, sLine);
-                        continue;
-                        }
-
-                    if (FMatchGameEmpty(sLine))
-                        continue;
-
-                    if (FMatchGameTotalLine(rgsFields))
-                        {
-                        // this is the final "total" line.  the only thing that should follow this is
-                        // the final page break
-                        // just leave the rs alone for now...
-                        continue;
-                        }
-
-                    icolGameLevel = 5;
-                    if (rs == ReadState.ScanForHeader)
-                        {
-                        rs = RsHandleScanForHeader(sLine, rgsFields, rs);
-                        continue;
-                        }
-
-                    if (rs == ReadState.ReadingComments)
-                        {
-                        // when reading comments, we can get text in column 1; if the line ends with commas, then this is just
-                        // a continuation of the comment (also be careful to look for another comment starting right after ours
-                        // ends
-                        if (FMatchGameCommentContinuation(sLine))
-                            {
+                        icolGameDateTime = 2;
+                        if (sLine.Length < icolGameDateTime)
                             continue;
+
+                        Regex rex = new Regex(",");
+                        rgsFields = rex.Split(sLine);
+
+                        // check for rainouts and cancellations
+                        if (FMatchGameCancelled(sLine))
+                        {
+                            fCanceled = true;
+                            // drop us back to reading officials
+                            rs = ReadState.ReadingOfficials1;
+                            continue;
+                        }
+
+                        // look for comments
+                        if (FMatchGameComment(sLine))
+                        {
+                            rs = RsHandleGameComment(rs, sLine);
+                            continue;
+                        }
+
+                        if (FMatchGameEmpty(sLine))
+                            continue;
+
+                        if (FMatchGameTotalLine(rgsFields))
+                        {
+                            // this is the final "total" line.  the only thing that should follow this is
+                            // the final page break
+                            // just leave the rs alone for now...
+                            continue;
+                        }
+
+                        icolGameLevel = 6;
+                        if (rs == ReadState.ScanForHeader)
+                        {
+                            rs = RsHandleScanForHeader(sLine, rgsFields, rs);
+                            continue;
+                        }
+
+                        if (rs == ReadState.ReadingComments)
+                        {
+                            // when reading comments, we can get text in column 1; if the line ends with commas, then this is just
+                            // a continuation of the comment (also be careful to look for another comment starting right after ours
+                            // ends
+                            if (FMatchGameCommentContinuation(sLine))
+                            {
+                                continue;
                             }
 
-                        rs = ReadState.ReadingOfficials1;
-                        // drop back to reading officials
+                            rs = ReadState.ReadingOfficials1;
+                            // drop back to reading officials
                         }
 
-                    if (rs == ReadState.ReadingGame2)
-                        rs = RsHandleReadingGame2(rgsFields, ref sGame, ref sDateTime, ref sLevel, ref sSite, ref sHome, ref sAway, rs);
+                        if (rs == ReadState.ReadingGame2)
+                            rs = RsHandleReadingGame2(rgsFields, ref sGame, ref sDateTime, ref sLevel, ref sSite,
+                                ref sHome, ref sAway, rs);
 
-                    if (rs == ReadState.ReadingOfficials2)
-                        rs = RsHandleReadingOfficials2(rst, rgsFields, mpNamePos, mpNameStatus, sNameLast, sPosLast, sStatusLast, rs);
+                        if (rs == ReadState.ReadingOfficials2)
+                            rs = RsHandleReadingOfficials2(rst, rgsFields, mpNamePos, mpNameStatus, sNameLast, sPosLast,
+                                sStatusLast, rs);
 
-                    if (rs == ReadState.ReadingOfficials1)
-                        rs = RsHandleReadingOfficials1(rst, fIncludeCanceled, sLine, rgsFields, mpNamePos, mpNameStatus, fCanceled, sSite, sGame,
-                                                       sHome, sAway, sLevel, sSport, rs, ref sPosLast, ref sNameLast, ref sStatusLast, ref sDateTime, ref fOpenSlot, ref ump);
+                        if (rs == ReadState.ReadingOfficials1)
+                            rs = RsHandleReadingOfficials1(rst, fIncludeCanceled, sLine, rgsFields, mpNamePos,
+                                mpNameStatus, fCanceled, sSite, sGame,
+                                sHome, sAway, sLevel, sSport, rs, ref sPosLast, ref sNameLast, ref sStatusLast,
+                                ref sDateTime, ref fOpenSlot, ref ump);
 
-                    if (FMatchGameArbiterFooter(sLine))
+                        if (FMatchGameArbiterFooter(sLine))
                         {
-                        Debug.Assert(rs == ReadState.ReadingComments || rs == ReadState.ScanForHeader || rs == ReadState.ScanForGame, String.Format("Page break at illegal position: state = {0}", rs));
-                        rs = ReadState.ScanForHeader;
-                        continue;
+                            Debug.Assert(
+                                rs == ReadState.ReadingComments || rs == ReadState.ScanForHeader ||
+                                rs == ReadState.ScanForGame,
+                                String.Format("Page break at illegal position: state = {0}", rs));
+                            rs = ReadState.ScanForHeader;
+                            continue;
                         }
 
-                    if (rs == ReadState.ScanForGame)
-                        rs = RsHandleScanForGame(ref sGame, mpNamePos, mpNameStatus, sLine, ref sDateTime, ref sSport, ref sLevel, ref sSite,
-                                                 ref sHome, ref sAway, ref fCanceled, ref fIgnore, rs);
+                        if (rs == ReadState.ScanForGame)
+                            rs = RsHandleScanForGame(ref sGame, mpNamePos, mpNameStatus, sLine, ref sDateTime,
+                                ref sSport, ref sLevel, ref sSite,
+                                ref sHome, ref sAway, ref fCanceled, ref fIgnore, rs);
 
-                    if (rs == ReadState.ReadingGame1)
-                        rs = RsHandleReadingGame1(ref sGame, rgsFields, ref sDateTime, ref sSport, ref sSite, ref sHome, ref sAway, rs);
+                        if (rs == ReadState.ReadingGame1)
+                            rs = RsHandleReadingGame1(ref sGame, rgsFields, ref sDateTime, ref sSport, ref sSite,
+                                ref sHome, ref sAway, rs);
                     }
+                }
 
                 return true;
             }
@@ -1998,7 +2179,9 @@ namespace ArbWeb
 			    ----------------------------------------------------------------------------*/
             private static bool FMatchGameTotalLine(string[] rgsFields)
             {
-                return Regex.Match(rgsFields[13], "Total:").Success || Regex.Match(rgsFields[14], "Total:").Success;
+                return Regex.Match(rgsFields[13], "Total:").Success
+                       || Regex.Match(rgsFields[14], "Total:").Success
+                       || Regex.Match(rgsFields[15], "Total:").Success;
             }
 
             /* F  M A T C H  G A M E  E M P T Y */
@@ -2024,7 +2207,8 @@ namespace ArbWeb
             private static bool FMatchGameComment(string sLine)
             {
                 return Regex.Match(sLine, "^\"*\\[.*by.*\\]").Success
-                       || Regex.Match(sLine, "^[ \t]*\\[.*/.*/.*by.*\\]").Success;
+                       || Regex.Match(sLine, "^[ \t]*\\[.*/.*/.*by.*\\]").Success
+                       || Regex.Match(sLine, "^Comments: ").Success;
             }
 
             /* F  M A T C H  G A M E  C A N C E L L E D */
