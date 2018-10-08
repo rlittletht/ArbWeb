@@ -623,13 +623,13 @@ namespace ArbWeb
 
             element.text = "function triggerOnClick() " +
                            "{{ " +
-                                                      "alert('im here'); " +
+//                                                      "alert('im here'); " +
                            $"var ctl = document.getElementById('{sidControl}'); " +
                            " var elt = ctl;" +
                            " while (elt.tagName.toUpperCase() != \"TR\") " +
                            "     elt = elt.parentElement;" +
 
-                                                      "alert(elt); "+
+                                                      //"alert(elt); "+
 
                            "var evt = document.createEvent('HTMLEvents'); " +
                            $"evt.initEvent('{sEvent}', false, true); " +
