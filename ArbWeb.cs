@@ -597,7 +597,7 @@ namespace ArbWeb
             // 
             // m_pbDownloadGames
             // 
-            this.m_pbDownloadGames.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbDownloadGames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbDownloadGames.Location = new System.Drawing.Point(589, 77);
             this.m_pbDownloadGames.Name = "m_pbDownloadGames";
             this.m_pbDownloadGames.Size = new System.Drawing.Size(110, 24);
@@ -607,10 +607,8 @@ namespace ArbWeb
             // 
             // contextMenu1
             // 
-            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-                                                     {
-                                                     this.menuItem1
-                                                     });
+            this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.menuItem1});
             this.contextMenu1.Popup += new System.EventHandler(this.contextMenu1_Popup);
             // 
             // menuItem1
@@ -620,7 +618,7 @@ namespace ArbWeb
             // 
             // button1
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.Location = new System.Drawing.Point(589, 26);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(110, 24);
@@ -630,8 +628,8 @@ namespace ArbWeb
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                                                                           | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.m_recStatus);
             this.groupBox2.Location = new System.Drawing.Point(8, 637);
             this.groupBox2.Name = "groupBox2";
@@ -642,8 +640,8 @@ namespace ArbWeb
             // 
             // m_recStatus
             // 
-            this.m_recStatus.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                                                                             | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_recStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.m_recStatus.Location = new System.Drawing.Point(6, 19);
             this.m_recStatus.Name = "m_recStatus";
             this.m_recStatus.Size = new System.Drawing.Size(679, 132);
@@ -652,7 +650,7 @@ namespace ArbWeb
             // 
             // m_pbGenCounts
             // 
-            this.m_pbGenCounts.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbGenCounts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbGenCounts.Location = new System.Drawing.Point(589, 215);
             this.m_pbGenCounts.Name = "m_pbGenCounts";
             this.m_pbGenCounts.Size = new System.Drawing.Size(110, 27);
@@ -689,7 +687,7 @@ namespace ArbWeb
             // 
             // m_pbUploadRoster
             // 
-            this.m_pbUploadRoster.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbUploadRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbUploadRoster.Location = new System.Drawing.Point(476, 607);
             this.m_pbUploadRoster.Name = "m_pbUploadRoster";
             this.m_pbUploadRoster.Size = new System.Drawing.Size(110, 24);
@@ -699,7 +697,7 @@ namespace ArbWeb
             // 
             // m_pbOpenSlots
             // 
-            this.m_pbOpenSlots.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbOpenSlots.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbOpenSlots.Location = new System.Drawing.Point(589, 264);
             this.m_pbOpenSlots.Name = "m_pbOpenSlots";
             this.m_pbOpenSlots.Size = new System.Drawing.Size(110, 27);
@@ -709,8 +707,8 @@ namespace ArbWeb
             // 
             // m_lblSearchCriteria
             // 
-            this.m_lblSearchCriteria.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                                                                                     | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_lblSearchCriteria.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.m_lblSearchCriteria.Location = new System.Drawing.Point(5, 9);
             this.m_lblSearchCriteria.Name = "m_lblSearchCriteria";
             this.m_lblSearchCriteria.Size = new System.Drawing.Size(688, 16);
@@ -730,8 +728,8 @@ namespace ArbWeb
             // 
             // label6
             // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                                                                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.Location = new System.Drawing.Point(5, 190);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(688, 19);
@@ -740,8 +738,8 @@ namespace ArbWeb
             // 
             // label7
             // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                                                                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label7.Location = new System.Drawing.Point(5, 242);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(688, 19);
@@ -832,7 +830,7 @@ namespace ArbWeb
             // 
             // button2
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.Location = new System.Drawing.Point(576, 354);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(110, 27);
@@ -842,8 +840,8 @@ namespace ArbWeb
             // 
             // label12
             // 
-            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                                                                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label12.Location = new System.Drawing.Point(31, 294);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(662, 19);
@@ -903,7 +901,7 @@ namespace ArbWeb
             // 
             // m_pbReload
             // 
-            this.m_pbReload.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbReload.Location = new System.Drawing.Point(589, 607);
             this.m_pbReload.Name = "m_pbReload";
             this.m_pbReload.Size = new System.Drawing.Size(110, 24);
@@ -923,8 +921,8 @@ namespace ArbWeb
             // 
             // label15
             // 
-            this.label15.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                                                                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label15.Location = new System.Drawing.Point(5, 141);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(688, 19);
@@ -949,7 +947,7 @@ namespace ArbWeb
             // 
             // m_pbGenGames
             // 
-            this.m_pbGenGames.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbGenGames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbGenGames.Location = new System.Drawing.Point(589, 163);
             this.m_pbGenGames.Name = "m_pbGenGames";
             this.m_pbGenGames.Size = new System.Drawing.Size(110, 27);
@@ -969,8 +967,8 @@ namespace ArbWeb
             // 
             // m_pbBrowseGamesReport
             // 
-            this.m_pbBrowseGamesReport.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbBrowseGamesReport.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.m_pbBrowseGamesReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbBrowseGamesReport.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.m_pbBrowseGamesReport.Location = new System.Drawing.Point(258, 169);
             this.m_pbBrowseGamesReport.Name = "m_pbBrowseGamesReport";
             this.m_pbBrowseGamesReport.Size = new System.Drawing.Size(23, 15);
@@ -981,8 +979,8 @@ namespace ArbWeb
             // 
             // m_pbBrowseAnalysis
             // 
-            this.m_pbBrowseAnalysis.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbBrowseAnalysis.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.m_pbBrowseAnalysis.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbBrowseAnalysis.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.m_pbBrowseAnalysis.Location = new System.Drawing.Point(258, 215);
             this.m_pbBrowseAnalysis.Name = "m_pbBrowseAnalysis";
             this.m_pbBrowseAnalysis.Size = new System.Drawing.Size(23, 15);
@@ -993,7 +991,7 @@ namespace ArbWeb
             // 
             // button3
             // 
-            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button3.Location = new System.Drawing.Point(589, 51);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(110, 24);
@@ -1042,8 +1040,8 @@ namespace ArbWeb
             // 
             // label18
             // 
-            this.label18.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                                                                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label18.Location = new System.Drawing.Point(31, 490);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(662, 19);
@@ -1061,7 +1059,7 @@ namespace ArbWeb
             // 
             // m_pbCreateRosterReport
             // 
-            this.m_pbCreateRosterReport.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbCreateRosterReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbCreateRosterReport.Location = new System.Drawing.Point(589, 542);
             this.m_pbCreateRosterReport.Name = "m_pbCreateRosterReport";
             this.m_pbCreateRosterReport.Size = new System.Drawing.Size(110, 27);
@@ -1081,7 +1079,7 @@ namespace ArbWeb
             // 
             // m_pbMailMerge
             // 
-            this.m_pbMailMerge.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbMailMerge.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbMailMerge.Location = new System.Drawing.Point(583, 464);
             this.m_pbMailMerge.Name = "m_pbMailMerge";
             this.m_pbMailMerge.Size = new System.Drawing.Size(110, 27);
@@ -1101,8 +1099,8 @@ namespace ArbWeb
             // 
             // label19
             // 
-            this.label19.Anchor = ((System.Windows.Forms.AnchorStyles) (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                                                                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label19.Location = new System.Drawing.Point(31, 585);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(662, 19);
@@ -1131,7 +1129,7 @@ namespace ArbWeb
             // 
             // m_pbEditProfile
             // 
-            this.m_pbEditProfile.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbEditProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbEditProfile.Location = new System.Drawing.Point(217, 25);
             this.m_pbEditProfile.Name = "m_pbEditProfile";
             this.m_pbEditProfile.Size = new System.Drawing.Size(110, 24);
@@ -1141,7 +1139,7 @@ namespace ArbWeb
             // 
             // m_pbAddProfile
             // 
-            this.m_pbAddProfile.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbAddProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbAddProfile.Location = new System.Drawing.Point(334, 26);
             this.m_pbAddProfile.Name = "m_pbAddProfile";
             this.m_pbAddProfile.Size = new System.Drawing.Size(110, 24);
@@ -1159,7 +1157,7 @@ namespace ArbWeb
             // 
             // m_pbRefreshGameFilters
             // 
-            this.m_pbRefreshGameFilters.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.m_pbRefreshGameFilters.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.m_pbRefreshGameFilters.Location = new System.Drawing.Point(554, 73);
             this.m_pbRefreshGameFilters.Margin = new System.Windows.Forms.Padding(0);
             this.m_pbRefreshGameFilters.Name = "m_pbRefreshGameFilters";
@@ -1173,7 +1171,7 @@ namespace ArbWeb
             // 
             // pbTestDownload
             // 
-            this.pbTestDownload.Anchor = ((System.Windows.Forms.AnchorStyles) ((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbTestDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pbTestDownload.Location = new System.Drawing.Point(56, 55);
             this.pbTestDownload.Name = "pbTestDownload";
             this.pbTestDownload.Size = new System.Drawing.Size(110, 24);
@@ -1257,6 +1255,7 @@ namespace ArbWeb
             this.Name = "AwMainForm";
             this.Text = "AwMainForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DoSaveState);
+            this.Load += new System.EventHandler(this.AwMainForm_Load);
             this.Move += new System.EventHandler(this.AwMainForm_Move);
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -1842,6 +1841,11 @@ namespace ArbWeb
         private void AwMainForm_Move(object sender, EventArgs e)
         {
             m_srpt.LogData("Moving",10,StatusRpt.MSGT.Body);
+        }
+
+        private void AwMainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 
