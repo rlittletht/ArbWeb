@@ -89,6 +89,9 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="cmdline, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\TCore.CmdLine.1.0.0\lib\net40\cmdline.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.mshtml">
       <Name>Microsoft.mshtml</Name>
@@ -103,6 +106,7 @@
     <Reference Include="System.Data">
       <Name>System.Data</Name>
     </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
@@ -155,6 +159,7 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -259,10 +264,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\liblet\cs\TCore.CmdLine\cmdline.csproj">
-      <Project>{b83640e8-72f6-4f92-93fd-7ff7cec3535e}</Project>
-      <Name>cmdline</Name>
-    </ProjectReference>
     <ProjectReference Include="..\liblet\cs\TCore.Settings\TCore.Settings.csproj">
       <Project>{cf92fd1e-ce88-492e-a7c6-c4d29d908a22}</Project>
       <Name>TCore.Settings</Name>
