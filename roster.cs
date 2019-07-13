@@ -111,6 +111,14 @@ namespace ArbWeb
             return true;
         }
 
+        private readonly List<string> m_plsConsultantPositions = new List<string>
+            {"Tournament Admin, Consultant", "Tournament Admin, Aunt/Uncle", "Tournament Admin, Observer", "Tournament Admin, 50/50 Raffle"};
+
+        bool FConsultantPosition(string sKey)
+        {
+            return m_plsConsultantPositions.Contains(sKey);
+        }
+
         public string OtherRanks(string sSport, string sPos, int nBase)
         {
             string sOther = "";
@@ -119,6 +127,9 @@ namespace ArbWeb
                 if (sKey.StartsWith(sSport) && !sKey.EndsWith(sPos))
                     {
                     if (m_mpRanking[sKey] == nBase || m_mpRanking[sKey] == 1)
+                        continue;
+
+                    if (FConsultantPosition(sKey) && nBase < m_mpRanking[sKey])
                         continue;
 
                     if (sOther.Length > 0)

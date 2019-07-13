@@ -243,6 +243,7 @@ namespace ArbWeb
             // clicking on the Merge Style control will cause a page refresh
             m_awc.ResetNav();
             ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_RosterPrint_MergeStyle), "Can't click on roster control");
+            Thread.Sleep(500);
             m_awc.FWaitForNavFinish();
 
             oDoc2 = m_awc.Document2;

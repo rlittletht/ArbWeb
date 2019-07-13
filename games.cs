@@ -1297,7 +1297,7 @@ namespace ArbWeb
             private int icolGameLevel;
             private int icolGameDateTime;
 
-            private void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst)
+            private void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst, Dictionary<string, string> mpSiteRoot)
             {
                 string sBackground = "";
 
@@ -1310,7 +1310,15 @@ namespace ArbWeb
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("ddd M/dd")));
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("h:mm tt")));
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].SportLevel));
-                sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Site));
+                if (fHeader)
+                {
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", mpSiteRoot[plgm[0].Site]));
+                }
+                else
+                {
+                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Site));
+                }
+
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Home));
                 sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Away));
                 sw.WriteLine($"<tr{sBackground}><td colspan='7' class='rosterOuter'>");
@@ -1545,7 +1553,7 @@ namespace ArbWeb
 
                     if (plgm.Count > 0 && plgm[0].GameNum != gm.GameNum)
                     {
-                        WriteGameRoster(sw, plgm, fHeader, rst);
+                        WriteGameRoster(sw, plgm, fHeader, rst, mpSiteRoot);
                         plgm.Clear();
                         fHeader = false;
                     }
@@ -1556,7 +1564,7 @@ namespace ArbWeb
                 }
 
                 if (plgm.Count > 0)
-                    WriteGameRoster(sw, plgm, fHeader, rst);
+                    WriteGameRoster(sw, plgm, fHeader, rst, mpSiteRoot);
 
                 sw.WriteLine("</table></div></html>");
                 sw.Close();
@@ -2087,7 +2095,7 @@ namespace ArbWeb
                         if (sPos != "Training")
                             {
                             if (sDateTime.EndsWith("TBA"))
-                                sDateTime = sDateTime.Substring(0, sDateTime.Length - icolOfficial) + "00:00";
+                                sDateTime = sDateTime.Substring(0, sDateTime.Length - 4) + "00:00";
                             AddGame(DateTime.Parse(sDateTime), sSite, sNameUse, sTeam, sEmail, sGame, sHome, sAway, sLevel, sSport,
                                     sPos, sStatus, fCanceled, plsMisc);
                             }
