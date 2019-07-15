@@ -919,6 +919,29 @@ namespace ArbWeb
             return true;
         }
 
+        /*----------------------------------------------------------------------------
+        	%%Function: RsteLookupFullNameNoEmail
+        	%%Qualified: ArbWeb.Roster.RsteLookupFullNameNoEmail
+        	
+            Lookup the given roster name (Last, First) and see if we have a roster
+            entry for it that has no email address
+        ----------------------------------------------------------------------------*/
+        public RosterEntry RsteLookupRosterNameNoEmail(string sRosterName)
+        {
+            if (string.IsNullOrEmpty(sRosterName))
+                return null;
+
+            foreach (RosterEntry rste in m_plrste)
+            {
+                if (!string.IsNullOrEmpty(rste.Email))
+                    continue;
+
+                if (string.Compare(rste.NameRoster, sRosterName, true) == 0)
+                    return rste;
+            }
+
+            return null;
+        }
 
         /* R S T E  L O O K U P  E M A I L */
         /*----------------------------------------------------------------------------

@@ -50,6 +50,64 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
+        	%%Function: FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
+        	%%Qualified: ArbWeb.AwMainForm.FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
+        	
+            non-joined officials won't get an email address in the downloaded
+            quickroster. we can fix this up as we visit the officials page by matching
+            the full name of the official.
+
+            this is n^2 for now (every non-joined official searches every roster
+            entry to try to fixup)
+        ----------------------------------------------------------------------------*/
+        private void FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(Roster rstBuilding,
+            IHTMLDocument2 oDoc2)
+        {
+            IHTMLTable ihtbl;
+
+            ihtbl = (IHTMLTable)oDoc2.all.item(WebCore._sid_OfficialsView_ContentTable, 0);
+
+            foreach (IHTMLTableRow ihtr in ihtbl.rows)
+            {
+                IHTMLElement iheRow = (IHTMLElement) ihtr;
+
+                if (iheRow.className == null || !iheRow.className.Contains("notJoinedItems"))
+                    continue;
+
+                IHTMLElement iheFullName = (IHTMLElement)ihtr.cells.item(2);
+                IHTMLElement iheEmail = (IHTMLElement)ihtr.cells.item(3);
+
+                if (iheEmail == null || iheFullName == null)
+                    continue;
+
+                string sEmail = iheEmail.innerText;
+                string sRosterName = iheFullName.innerText.Trim();
+                
+                RosterEntry rste = rstBuilding.RsteLookupRosterNameNoEmail(sRosterName);
+                if (rste == null)
+                {
+                    m_srpt.AddMessage(
+                        $"Could not find no email entry for nonJoinedOfficial {sRosterName} with email {sEmail}",
+                        StatusBox.StatusRpt.MSGT.Error);
+
+                    continue;
+                }
+
+                m_srpt.AddMessage($"Updating email address for {sRosterName} to {sEmail}",
+                                  StatusBox.StatusRpt.MSGT.Body);
+
+                rste.Email = sEmail;
+            }
+        }
+
+        private void VOPC_FixupNonJoinedEmailAddress(IHTMLDocument2 oDoc2, Object o)
+        {
+            Roster rstBuilding = (Roster)o;
+
+            FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(rstBuilding, oDoc2);
+        }
+
+        /*----------------------------------------------------------------------------
         	%%Function: UpdateLastAccessFromCoreOfficialsPage
         	%%Qualified: ArbWeb.AwMainForm.UpdateLastAccessFromCoreOfficialsPage
         	%%Contact: rlittle
@@ -96,6 +154,18 @@ namespace ArbWeb
             Roster rstBuilding = new Roster();
 
             rstBuilding.ReadRoster(sDownloadedRoster);
+
+            // always fixup the email addresses for non-joined officials
+            {
+                HandleGenericRoster gr = new HandleGenericRoster(
+                    this,
+                    !m_cbRankOnly.Checked,
+                    m_cbAddOfficialsOnly.Checked,
+                    null,
+                    null,
+                    null);
+                gr.ProcessAllOfficialPages(VOPC_FixupNonJoinedEmailAddress, rstBuilding);
+            }
 
             if (fIncludeLastAccess)
                 {

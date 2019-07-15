@@ -18,7 +18,7 @@ namespace ArbWeb
         private string m_sZip;
 
         public string Name { get { return String.Format("{0} {1}", First, Last); } }
-
+        public string NameRoster {  get {  return $"{Last}, {First}"; } }
         public string Email { get { return m_sEmail; } set { m_sEmail = value; } }
         public string First { get { return m_sFirst; } set { m_sFirst = value; } }
         public string Last { get { return m_sLast; } set { m_sLast = value; } }
