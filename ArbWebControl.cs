@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using mshtml;
+using Microsoft.SqlServer.Server;
 using StatusBox;
 
 namespace ArbWeb
@@ -25,7 +27,34 @@ namespace ArbWeb
         public IHTMLDocument4 Document4     {  get { return (IHTMLDocument4)m_wbc.Document.DomDocument; } }
         public IHTMLDocument5 Document5     {  get { return (IHTMLDocument5)m_wbc.Document.DomDocument; } }
 
-       public ArbWebControl(StatusRpt srpt)
+        private async Task<bool> PageLoad(int TimeOut)
+        {
+            TaskCompletionSource<bool> PageLoaded = null;
+            PageLoaded = new TaskCompletionSource<bool>();
+            int TimeElapsed = 0;
+            m_wbc.DocumentCompleted += (s, e) =>
+                {
+                if (m_wbc.ReadyState != WebBrowserReadyState.Complete)
+                        return;
+                if (PageLoaded.Task.IsCompleted)
+                        return;
+                PageLoaded.SetResult(true);
+                };
+            //
+            while (PageLoaded.Task.Status != TaskStatus.RanToCompletion)
+                {
+                await Task.Delay(10); //interval of 10 ms worked good for me
+                TimeElapsed++;
+                if (TimeElapsed >= TimeOut*100)
+                    {
+                    PageLoaded.TrySetResult(true);
+                    return false;
+                    //This prevents your method or thread from waiting forever
+                    }
+                }
+            return true;
+        }
+        public ArbWebControl(StatusRpt srpt)
         {
 #if notused
             m_plNewWindow3 = new List<DWebBrowserEvents2_NewWindow3EventHandler>();
@@ -34,14 +63,23 @@ namespace ArbWeb
             m_srpt = srpt;
 
             InitializeComponent();
+            m_wbc.ScriptErrorsSuppressed = true;
+            // m_wbc
         }
 
         bool m_fNavDone;
-       public void ResetNav()
+        private string m_sUrlExpected;
+        public void ResetNav()
         {
             m_fNavDone = false;
+            m_sUrlExpected = null;
         }
 
+
+        async void WaitForBrowserReadyNew()
+        {
+            await PageLoad(10000);
+        }
 
         void WaitForBrowserReady()
         {
@@ -74,7 +112,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void ReportNavState(string sTag)
         {
-            m_srpt.LogData(String.Format("{0}: Busy: {1}, State: {2}, m_fNavDone: {3}", sTag, m_wbc.IsBusy, m_fNavDone, m_wbc.ReadyState), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData(String.Format("{0}: Busy: {1}, State: {3}, m_fNavDone: {2}", sTag, m_wbc.IsBusy, m_fNavDone, m_wbc.ReadyState), 3, StatusRpt.MSGT.Body);
         }
 
         public delegate bool FNavToPageDel(WebBrowser wbc, string sUrl);
@@ -94,6 +132,7 @@ namespace ArbWeb
             // m_wbc.Stop();
             WaitForBrowserReady();
             m_fNavDone = false;
+            m_sUrlExpected = sUrl;
 
             wbc.Navigate(sUrl);
             wbc.Visible = true;
@@ -119,6 +158,14 @@ namespace ArbWeb
                 return DoNavToPage(m_wbc, sUrl);
         }
 
+        public bool FWaitForNavFinishNew()
+        {
+            Task<bool> t = PageLoad(10000);
+
+            t.Wait();
+            return t.Result;
+        }
+
         /* F  W A I T  F O R  N A V  F I N I S H */
         /*----------------------------------------------------------------------------
         	%%Function: FWaitForNavFinish
@@ -126,10 +173,10 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public bool FWaitForNavFinish()
+        public bool FWaitForNavFinish(string sidWaitFor = null)
         {
             long s = 0;
-
+            
             // ok, always yield and allow it to run first (so things can get pumping)
             Application.DoEvents();
             Thread.Sleep(50);
@@ -138,15 +185,26 @@ namespace ArbWeb
             ReportNavState("Entering WaitForNavFinish: ");
             WaitForBrowserReady();
             while (s < 200 && !m_fNavDone)
-            {
+                {
                 Application.DoEvents();
-                if (m_wbc.ReadyState == WebBrowserReadyState.Complete) // m_fNavDone || 
-                    break;
+                if (m_wbc.ReadyState == WebBrowserReadyState.Complete)
+                    {
+                    if (sidWaitFor != null)
+                        {
+                        // we are being asked to wait for an element to exist
+                        if (FCheckForControl((IHTMLDocument2) m_wbc.Document.DomDocument, sidWaitFor))
+                            break;
+                        }
+                    else
+                        {
+                        break;
+                        }
+                    }
                 Thread.Sleep(50);
                 s++;
-            }
+                }
 
-            ReportNavState("After NavDone Loop: ");
+            ReportNavState(String.Format("After NavDone Loop: {0}", s >= 200 ? "TIMEOUT" : "Completed"));
 
 #if notused
             if (m_fNavIntercept)
@@ -203,8 +261,15 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void TriggerDocumentDone(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
-            m_fNavDone = true;
-            // m_srpt.AddMessage("TriggerDocumentDone raised");
+            if (m_sUrlExpected == null || String.Compare(e.Url.ToString(), m_sUrlExpected, true) == 0)
+                {
+                ReportNavState(String.Format("TriggerDocumentDone MATCH: {0}", e.Url));
+                m_fNavDone = true;
+                }
+            else
+                {
+                ReportNavState(String.Format("TriggerDocumentDone NO MATCH: {0} {1}", e.Url, m_sUrlExpected));
+                }
         }
         /* F  S E T  C H E C K B O X  C O N T R O L  V A L */
         /*----------------------------------------------------------------------------
@@ -312,6 +377,35 @@ namespace ArbWeb
                 }
             return fNeedSave;
         }
+
+        public static bool FSetSelectControlValue(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        {
+            IHTMLElementCollection hec;
+
+            hec = (IHTMLElementCollection)oDoc2.all.tags("select");
+            string sT = null;
+            bool fNeedSave = false;
+            foreach (IHTMLSelectElement ihie in hec)
+                {
+                if (String.Compare(ihie.name, sName, true) == 0)
+                    {
+                    if (fCheck)
+                        {
+                        sT = ihie.value;
+                        if (sT == null)
+                            sT = "";
+                        if (String.Compare(sValue, sT) != 0)
+                            fNeedSave = true;
+                        }
+                    else
+                        {
+                        fNeedSave = true;
+                        }
+                    ihie.value = sValue;
+                    }
+                }
+            return fNeedSave;
+        }
         /* M P  G E T  S E L E C T  V A L U E S */
 		/*----------------------------------------------------------------------------
 			%%Function: MpGetSelectValues
@@ -367,7 +461,7 @@ namespace ArbWeb
                     foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
                         {
                         if ((fValueIsValue && ihoe.value == sValue) ||
-                            (!fValueIsValue && ihoe.text == sValue))
+                            (!fValueIsValue && String.Compare(ihoe.text, sValue, true) == 0))
                             {
                             ihoe.selected = true;
                             return true;
@@ -412,9 +506,9 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public string SGetFilterID(IHTMLDocument2 oDoc2, string sName, string sValue)
         {
-            m_srpt.LogData(String.Format("SGetFilterIDFromDoc for id {0}", sName), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData(String.Format("SGetSelectIDFromDoc for id {0}", sName), 3, StatusRpt.MSGT.Body);
 
-            string s = SGetFilterIDFromDoc(oDoc2, sName, sValue);
+            string s = SGetSelectIDFromDoc(oDoc2, sName, sValue);
 
             m_srpt.LogData(String.Format("Return: {0}", s), 3, StatusRpt.MSGT.Body);
             return s;
@@ -428,7 +522,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public static string SGetFilterIDFromDoc(IHTMLDocument2 oDoc2, string sName, string sValue)
+        public static string SGetSelectIDFromDoc(IHTMLDocument2 oDoc2, string sName, string sOptionName)
         {
             IHTMLElementCollection hec;
 
@@ -439,7 +533,7 @@ namespace ArbWeb
                     {
                     foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
                         {
-                        if (ihoe.text == sValue)
+                        if (ihoe.text == sOptionName)
                             {
                             return ihoe.value;
                             }
@@ -449,15 +543,190 @@ namespace ArbWeb
             return null;
         }
 
-       public bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        public static string SGetSelectValFromDoc(IHTMLDocument2 oDoc2, string sName, string sValue)
         {
-             m_srpt.LogData(String.Format("FSetSelectControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
+            IHTMLElementCollection hec;
 
-           bool f = FSetSelectControlTextFromDoc(oDoc2, sName, sValue, fCheck);
+            hec = (IHTMLElementCollection)oDoc2.all.tags("select");
+            foreach (HTMLSelectElementClass ihie in hec)
+                {
+                if (String.Compare(ihie.name, sName, true) == 0)
+                    {
+                    foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
+                        {
+                        if (ihoe.value == sValue)
+                            {
+                            return ihoe.text;
+                            }
+                        }
+                    }
+                }
+            return null;
+        }
+        public bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sid, string sValue, bool fCheck)
+        {
+            m_srpt.LogData(String.Format("FSetSelectControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
+
+            bool f = FSetSelectControlTextFromDoc(this, oDoc2, sName, sid, sValue, fCheck);
 
             m_srpt.LogData(String.Format("Return: {0}", f), 3, StatusRpt.MSGT.Body);
             return f;
+        }
 
+        public void WaitDoLog(int msec)
+        {
+            while (msec > 0)
+                {
+                ReportNavState(String.Format("WaitDoLog {0}", msec));
+                Thread.Sleep(50);
+                msec -= 50;
+                Application.DoEvents();
+                }
+        }
+
+#if no
+        static void DispatchEventNew(ArbWebControl awc, int iIndex, string sControl, IHTMLSelectElement ihie, IHTMLOptionElement ihoe, IHTMLDocument2 oDoc2)
+        {
+            ihoe.selected = true;
+            object dummy = null;
+            IHTMLDocument4 oDoc4 = awc.Document4;
+            object eventObj = oDoc4.CreateEventObject(ref dummy);
+            var obj = eventObj;
+            obj.initEvent("onchange", true, true);
+
+            IHTMLEventObj2 obj2 = (IHTMLEventObj2)eventObj;
+
+            HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
+            awc.ReportNavState("Before FireEvent");
+            hsec.selectedIndex = iIndex;
+            
+            obj2.fromElement = hsec;
+            obj2.srcElement = hsec;
+            obj2.propertyName = sControl;
+
+            bool f;
+            oDoc4.FireEvent("change", ref eventObj);
+
+            awc.ReportNavState("After FireEvent");
+        }
+#endif
+
+        public static void DispatchClickEventOnParentElement(ArbWebControl awc, string sidControl, string sEvent, string sParentElementToFind)
+        {
+            awc.ResetNav();
+            awc.ReportNavState("Before FireEvent");
+            //            ihe3.FireEvent("onchange", ref eventObj);
+
+            HtmlElement head = awc.AxWeb.Document.GetElementsByTagName("head")[0];
+            HtmlElement scriptEl = awc.AxWeb.Document.CreateElement("script");
+            IHTMLScriptElement element = (IHTMLScriptElement)scriptEl.DomElement;
+
+            element.text = "function triggerOnClick() " +
+                           "{{ " +
+//                                                      "alert('im here'); " +
+                           $"var ctl = document.getElementById('{sidControl}'); " +
+                           " var elt = ctl;" +
+                           " while (elt.tagName.toUpperCase() != \"TR\") " +
+                           "     elt = elt.parentElement;" +
+
+                                                      //"alert(elt); "+
+
+                           "var evt = document.createEvent('HTMLEvents'); " +
+                           $"evt.initEvent('{sEvent}', false, true); " +
+                           "elt.dispatchEvent(evt);"
+                           + "}} ";
+            head.AppendChild(scriptEl);
+
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.AxWeb.Document.InvokeScript("triggerOnClick");
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.ReportNavState("After FireEvent");
+            awc.WaitForBrowserReady();
+            awc.WaitDoLog(500);
+        }
+
+        public static void DispatchChangeEventCore(ArbWebControl awc, string sidControl, string sEvent)
+        {
+            awc.ResetNav();
+            awc.ReportNavState("Before FireEvent");
+            //            ihe3.FireEvent("onchange", ref eventObj);
+
+            HtmlElement head = awc.AxWeb.Document.GetElementsByTagName("head")[0];
+            HtmlElement scriptEl = awc.AxWeb.Document.CreateElement("script");
+            IHTMLScriptElement element = (IHTMLScriptElement)scriptEl.DomElement;
+
+            element.text = "function triggerOnChange() " +
+                           "{{ " +
+                           //                           "alert('im here'); " +
+                           $"var ctl = document.getElementById('{sidControl}'); " +
+                           //                           "alert(ctl); "+
+
+                           "var evt = document.createEvent('HTMLEvents'); " +
+                           $"evt.initEvent('{sEvent}', false, true); " +
+                           "ctl.dispatchEvent(evt);"
+
+                           + "}} ";
+            head.AppendChild(scriptEl);
+
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.AxWeb.Document.InvokeScript("triggerOnChange");
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.ReportNavState("After FireEvent");
+            awc.WaitForBrowserReady();
+            awc.WaitDoLog(500);
+
+        }
+        static void DispatchChangeEventTry2(ArbWebControl awc, int iIndex, string sControl, IHTMLSelectElement ihie, IHTMLOptionElement ihoe, IHTMLDocument2 oDoc2)
+        {
+            object dummy = null;
+            IHTMLDocument4 oDoc4 = (IHTMLDocument4) oDoc2;
+            object eventObj = oDoc4.CreateEventObject(ref dummy);
+            IHTMLEventObj2 obj2 = (IHTMLEventObj2) eventObj;
+
+            IHTMLElement3 ihe3 = (IHTMLElement3) ihie;
+            awc.ResetNav();
+            awc.ReportNavState("Before FireEvent");
+//            ihe3.FireEvent("onchange", ref eventObj);
+
+            HtmlElement head = awc.AxWeb.Document.GetElementsByTagName("head")[0];
+            HtmlElement scriptEl = awc.AxWeb.Document.CreateElement("script");
+            IHTMLScriptElement element = (IHTMLScriptElement) scriptEl.DomElement;
+
+            // element.text = $"function changeSelect() {{ $'({sControl}').trigger('change'); }}";
+            element.text = "function triggerOnChange() " +
+                           "{{ " +
+//                           "alert('im here'); " +
+                           $"var ctl = document.getElementById('{sControl}'); " +
+//                           "alert(ctl); "+
+    
+                            "var evt = document.createEvent('HTMLEvents'); " +
+                            "evt.initEvent('change', false, true); " +
+                            "ctl.dispatchEvent(evt);"
+
+                            +"}} ";
+            // element.text = $"function triggerOnChange() {{ alert('{sControl}');}}";
+            head.AppendChild(scriptEl);
+
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.AxWeb.Document.InvokeScript("triggerOnChange");
+            // ArbWeb.AwMainForm.DebugModelessWait();
+            awc.ReportNavState("After FireEvent");
+            awc.WaitForBrowserReady();
+            awc.WaitDoLog(500);
+
+        }
+        static void DispatchChangeEvent(ArbWebControl awc, int iIndex, string sControl, IHTMLSelectElement ihie, IHTMLOptionElement ihoe, IHTMLDocument2 oDoc2)
+        {
+            ihoe.selected = true;
+            object dummy = null;
+            IHTMLDocument4 oDoc4 = (IHTMLDocument4)oDoc2;
+            object eventObj = oDoc4.CreateEventObject(ref dummy);
+            IHTMLEventObj2 obj2 = (IHTMLEventObj2)eventObj;
+
+            HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
+            awc.ReportNavState("Before FireEvent");
+            hsec.FireEvent("onchange", ref eventObj);
+            awc.ReportNavState("After FireEvent");
         }
         /* F  S E T  S E L E C T  C O N T R O L  T E X T */
         /*----------------------------------------------------------------------------
@@ -466,34 +735,41 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        static public bool FSetSelectControlTextFromDoc(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
+        static public bool FSetSelectControlTextFromDoc(ArbWebControl awc, IHTMLDocument2 oDoc2, string sName, string sid, string sValue, bool fCheck)
         {
             IHTMLElementCollection hec;
 
             hec = (IHTMLElementCollection)oDoc2.all.tags("select");
             bool fNeedSave = false;
+
             foreach (IHTMLSelectElement ihie in hec)
                 {
                 if (String.Compare(ihie.name, sName, true) == 0)
                     {
-                    foreach(IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
+                    int iIndex;
+
+                    IHTMLElementCollection ihecOptions = (IHTMLElementCollection) ihie.tags("option");
+                    for (iIndex = 0; iIndex < ihecOptions.length; iIndex++)
+
+                        //foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
                         {
+                        IHTMLOptionElement ihoe = (IHTMLOptionElement)ihecOptions.item(iIndex);
+
                         if (ihoe.text == sValue)
                             {
                             // value is already set...
                             if (ihie.value == ihoe.value)
                                 return false;
+
                             ihoe.selected = true;
-                            object dummy = null;
-                            IHTMLDocument4 oDoc4 = (IHTMLDocument4)oDoc2;
-                            object eventObj = oDoc4.CreateEventObject(ref dummy);
-                            HTMLSelectElementClass hsec = ihie as HTMLSelectElementClass;
-                            hsec.FireEvent("onchange", ref eventObj);
+                            DispatchChangeEventCore(awc, sid, "change");
+                            // DispatchChangeEventTry2(awc, iIndex, sid, ihie, ihoe, oDoc2);
                             return true;
                             }
                         }
                     }
                 }
+            awc.ReportNavState("never found control for set");
             return fNeedSave;
         }
 #if no
@@ -517,12 +793,18 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public bool FClickControl(IHTMLDocument2 oDoc2, string sId)
+        public bool FClickControl(IHTMLDocument2 oDoc2, string sId, string sidWaitFor = null)
         {
             m_srpt.LogData(String.Format("FClickControl {0}", sId), 3, StatusRpt.MSGT.Body);
-            ((IHTMLElement)(oDoc2.all.item(sId, 0))).click();
+            IHTMLElement ihe = ((IHTMLElement)(oDoc2.all.item(sId, 0)));
+
+            if (ihe != null)
+            {
+                ihe.click();
+            }
+
 //			m_srpt.AddMessage("After clickcontrol");
-            return FWaitForNavFinish();
+            return FWaitForNavFinish(sidWaitFor);
         }
 
 
@@ -573,6 +855,15 @@ namespace ArbWeb
                 return (string)((IHTMLInputElement)oDoc2.all.item(sId, 0)).value;
             return null;
         }
+
+        public static string SGetSelectSelectedValue(IHTMLDocument2 oDoc2, string sId)
+        {
+            if (FCheckForControl(oDoc2, sId))
+                return (string)((HTMLSelectElementClass)oDoc2.all.item(sId, 0)).value;
+            return null;
+        }
+
+
         /* R G S  F R O M  C H L B X */
         /*----------------------------------------------------------------------------
         	%%Function: RgsFromChlbx

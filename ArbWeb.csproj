@@ -27,7 +27,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -89,14 +89,16 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="cmdline, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\TCore.CmdLine.1.0.0\lib\net40\cmdline.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.mshtml">
       <Name>Microsoft.mshtml</Name>
       <HintPath>C:\Program Files\Microsoft.NET\Primary Interop Assemblies\Microsoft.mshtml.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -104,6 +106,7 @@
     <Reference Include="System.Data">
       <Name>System.Data</Name>
     </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
@@ -156,6 +159,10 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="TCore.Settings, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\TCore.Settings.1.0.0\lib\net45\TCore.Settings.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -165,19 +172,41 @@
     <Compile Include="ArbWebControl.Designer.cs">
       <DependentUpon>ArbWebControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="contacts.cs" />
+    <Compile Include="EditProfile.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditProfile.Designer.cs">
+      <DependentUpon>EditProfile.cs</DependentUpon>
+    </Compile>
     <Compile Include="games.cs" />
     <Compile Include="ooxml.cs" />
+    <Compile Include="Profile.cs" />
     <Compile Include="reports.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="roster.cs" />
+    <Compile Include="RosterCore.cs" />
     <Compile Include="slots.cs" />
     <Compile Include="umpire.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="WebContacts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebCore.cs" />
     <Compile Include="WebGames.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="WebNav.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="WebRoster.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebRosterDownload.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebRosterUpload.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Win32Win.cs" />
@@ -198,6 +227,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ArbWebControl.resx">
       <DependentUpon>ArbWebControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EditProfile.resx">
+      <DependentUpon>EditProfile.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -235,14 +267,17 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\liblet\cs\TCore.CmdLine\cmdline.csproj">
-      <Project>{b83640e8-72f6-4f92-93fd-7ff7cec3535e}</Project>
-      <Name>cmdline</Name>
+    <ProjectReference Include="..\liblet\cs\TCore.UI\TCore.UI.csproj">
+      <Project>{9213a90f-a23f-4bc5-827c-164ecb6c6cc2}</Project>
+      <Name>TCore.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\liblet\cs\TCore.Settings\TCore.Settings.csproj">
-      <Project>{cf92fd1e-ce88-492e-a7c6-c4d29d908a22}</Project>
-      <Name>TCore.Settings</Name>
+    <ProjectReference Include="..\liblet\cs\TCore.Util\TCore.Util.csproj">
+      <Project>{59868345-bc40-4771-a4d7-7c6a763663f0}</Project>
+      <Name>TCore.Util</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -8,9 +8,8 @@ namespace ArbWeb
     {
         /* P L S  U N I Q U E  F R O M  R G S */
         /*----------------------------------------------------------------------------
-					%%Function: PlsUniqueFromRgs
-					%%Qualified: ArbWeb.CountsData:GameData:Games.PlsUniqueFromRgs
-					%%Contact: rlittle
+			%%Function: PlsUniqueFromRgs
+			%%Qualified: ArbWeb.CountsData:GameData:Games.PlsUniqueFromRgs
 
 		----------------------------------------------------------------------------*/
         public static SortedList<string, int> PlsUniqueFromRgs(string[] rgs)
