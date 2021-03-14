@@ -9,6 +9,7 @@ using StatusBox;
 using mshtml;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using OpenQA.Selenium;
 using Win32Win;
 
 namespace ArbWeb
@@ -582,16 +583,33 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private static void VisitRankCallbackDownload(IRoster irst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc,
+        private static void VisitRankCallbackDownload(
+	        IRoster irst, 
+	        string sRank, 
+	        Dictionary<string, int> mpRanked, 
+	        Dictionary<string, string> mpRankedId, 
+	        ArbWebControl_Selenium webControl,
             StatusBox.StatusRpt srpt)
         {
+	        MicroTimer timer = new MicroTimer();
+	        
             // don't do anything with unranked
             // just add the rankings
             foreach (string s in mpRanked.Keys)
-                ((Roster)irst).FAddRanking(s, sRank, mpRanked[s]);
+            {
+	            ((Roster)irst).FAddRanking(s, sRank, mpRanked[s]);
+            }
+            
+            timer.Stop();
+            srpt.LogData($"VisitRankingDownload({sRank}: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
         }
 
-        private delegate void VisitRankCallback(IRoster irst, string sRank, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc,
+        private delegate void VisitRankCallback(
+	        IRoster irst, 
+	        string sRank, 
+	        Dictionary<string, int> mpRanked, 
+	        Dictionary<string, string> mpRankedId, 
+	        ArbWebControl_Selenium webControl,
             StatusBox.StatusRpt srpt);
 
         /*----------------------------------------------------------------------------
@@ -607,11 +625,7 @@ namespace ArbWeb
 
             NavigateArbiterRankings();
 
-            IHTMLDocument2 oDoc2;
-
-            oDoc2 = m_awc.Document2;
-
-            Dictionary<string, string> mpRankFilter = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, WebCore._s_RanksEdit_Select_PosNames);
+            Dictionary<string, string> mpRankFilter = m_webControl.MpGetSelectValues(WebCore._sid_RanksEdit_Select_PosNames);
             List<string> plsRankings = PlsRankingsBuildFromRst(irst, irstBuilding, mpRankFilter);
 
             if (m_pr.SkipZ)
@@ -638,9 +652,10 @@ namespace ArbWeb
                 }
 
             if (irst == null)
-                VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackDownload, irstBuilding, false /*fVerbose*/);
+	            VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackDownload, irstBuilding, false /*fVerbose*/);
             else
-                VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackUpload, irst, false /*fVerbose*/); // true
+	            throw new Exception("NYI");
+            //VisitRankings(plsRankings, mpRankFilter, VisitRankCallbackUpload, irst, false /*fVerbose*/); // true
         }
 
         /* V I S I T  R A N K I N G S */
@@ -652,12 +667,12 @@ namespace ArbWeb
             Visit a rankings page. Used for both upload and download, with the
             callback interface used to differentiate up/down.
 	    ----------------------------------------------------------------------------*/
-        private void VisitRankings(List<string> plsRankedPositions, IDictionary<string, string> mpRankFilter, VisitRankCallback pfnVrc, IRoster irstParam, bool fVerboseLog)
+        private void VisitRankings(List<string> plsRankedPositions, IDictionary<string, string> mpRankFilter, VisitRankCallback visit, IRoster irstParam, bool fVerboseLog)
         {
             // now, navigate to every ranked positions' page and either fetch or sync every
             // official
-            m_srpt.LogData("Visit Rankings", 1, StatusRpt.MSGT.Header);
-            m_srpt.LogData("plsRankedPositions:", 2, StatusRpt.MSGT.Body, plsRankedPositions);
+            m_srpt.LogData("Visit Rankings", 3, StatusRpt.MSGT.Header);
+            m_srpt.LogData("plsRankedPositions:", 3, StatusRpt.MSGT.Body, plsRankedPositions);
 
             foreach (string sRankPosition in plsRankedPositions)
                 {
@@ -670,18 +685,15 @@ namespace ArbWeb
                     continue;
                     }
 
-                IHTMLDocument2 oDoc2 = m_awc.Document2;
-                // m_awc.RefreshPage();
-
                 Dictionary<string, int> mpRanked;
                 Dictionary<string, string> mpRankedId;
 
-                BuildRankingMapFromPage(oDoc2, sRankPosition, out mpRanked, out mpRankedId);
+                BuildRankingMapFromPage(sRankPosition, out mpRanked, out mpRankedId);
 
-                m_srpt.LogData("Rankings built: mpRanked:", 4, StatusRpt.MSGT.Body, mpRanked);
-                m_srpt.LogData("Rankings built: mpRankedId:", 4, StatusRpt.MSGT.Body, mpRankedId);
+                m_srpt.LogData("Rankings built: mpRanked:", 5, StatusRpt.MSGT.Body, mpRanked);
+                m_srpt.LogData("Rankings built: mpRankedId:", 5, StatusRpt.MSGT.Body, mpRankedId);
 
-                pfnVrc(irstParam, sRankPosition, mpRanked, mpRankedId, m_awc, m_srpt);
+                visit(irstParam, sRankPosition, mpRanked, mpRankedId, m_webControl, m_srpt);
 
                 if (fVerboseLog)
                     {
@@ -690,7 +702,7 @@ namespace ArbWeb
                     Dictionary<string, int> mpRankedCheck;
                     Dictionary<string, string> mpRankedIdCheck;
 
-                    BuildRankingMapFromPage(oDoc2, sRankPosition, out mpRankedCheck, out mpRankedIdCheck);
+                    BuildRankingMapFromPage(sRankPosition, out mpRankedCheck, out mpRankedIdCheck);
 
                     List<string> plsUnrank;
                     Dictionary<int, List<string>> mpRank;
@@ -698,18 +710,18 @@ namespace ArbWeb
                     BuildRankingJobs(irstParam, sRankPosition, mpRankedCheck, out plsUnrank, out mpRank, out mpRerank);
 
                     if (plsUnrank.Count != 0)
-                        m_srpt.LogData("plsUnrank not empty: ", 1, StatusRpt.MSGT.Error, plsUnrank);
+                        m_srpt.LogData("plsUnrank not empty: ", 3, StatusRpt.MSGT.Error, plsUnrank);
                     else
-                        m_srpt.LogData("plsUnrank empty after upload", 4, StatusRpt.MSGT.Header);
+                        m_srpt.LogData("plsUnrank empty after upload", 5, StatusRpt.MSGT.Header);
 
                     if (mpRank.Count != 0)
-                        m_srpt.LogData("mpRank not empty: ", 1, StatusRpt.MSGT.Error, mpRank);
+                        m_srpt.LogData("mpRank not empty: ", 3, StatusRpt.MSGT.Error, mpRank);
                     else
-                        m_srpt.LogData("mpRank empty after upload", 4, StatusRpt.MSGT.Header);
+                        m_srpt.LogData("mpRank empty after upload", 5, StatusRpt.MSGT.Header);
                     if (mpRerank.Count != 0)
-                        m_srpt.LogData("mpRerank not empty: ", 1, StatusRpt.MSGT.Error, mpRerank);
+                        m_srpt.LogData("mpRerank not empty: ", 3, StatusRpt.MSGT.Error, mpRerank);
                     else
-                        m_srpt.LogData("mpRerank empty after upload", 4, StatusRpt.MSGT.Header);
+                        m_srpt.LogData("mpRerank empty after upload", 5, StatusRpt.MSGT.Header);
 
 
                     }
@@ -730,12 +742,11 @@ namespace ArbWeb
 
             // make sure we have the right checkbox states 
             // (Show unranked only = false, Show Active only = false)
-            ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, WebCore._s_RanksEdit_Checkbox_Active);
-            ArbWebControl.FSetCheckboxControlVal(m_awc.Document2, false, WebCore._s_RanksEdit_Checkbox_Rank);
+            
+            m_webControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Active);
+            m_webControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Rank);
 
-            m_awc.ResetNav();
-            m_awc.FSetSelectControlText(m_awc.Document2, WebCore._s_RanksEdit_Select_PosNames, WebCore._sid_RanksEdit_Select_PosNames, sRankPosition, false);
-            m_awc.FWaitForNavFinish();
+            m_webControl.FSetSelectControlText(WebCore._sid_RanksEdit_Select_PosNames, sRankPosition);
             return true;
         }
 
@@ -745,7 +756,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void BuildRankingMapFromPage(IHTMLDocument2 oDoc2, string sRankPosition, out Dictionary<string, int> mpRanked, out Dictionary<string, string> mpRankedId)
+        private void BuildRankingMapFromPage(string sRankPosition, out Dictionary<string, int> mpRanked, out Dictionary<string, string> mpRankedId)
         {
             List<string> plsUnranked = new List<string>();
             mpRanked = new Dictionary<string, int>();
@@ -754,13 +765,13 @@ namespace ArbWeb
             Dictionary<string, string> mpT;
 
             // unranked officials
-            mpT = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, WebCore._s_RanksEdit_Select_NotRanked);
+            mpT = m_webControl.MpGetSelectValues(WebCore._sid_RanksEdit_Select_NotRanked);
 
             foreach (string s in mpT.Keys)
                 plsUnranked.Add(s);
 
             // ranked officials
-            mpT = ArbWebControl.MpGetSelectValues(m_srpt, oDoc2, WebCore._s_RanksEdit_Select_Ranked);
+            mpT = m_webControl.MpGetSelectValues(WebCore._sid_RanksEdit_Select_Ranked);
 
             foreach (string s in mpT.Keys)
                 {
@@ -828,10 +839,8 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void NavigateArbiterRankings()
         {
-            m_awc.ResetNav();
-            if (!m_awc.FNavToPage(WebCore._s_RanksEdit))
+            if (!m_webControl.FNavToPage(WebCore._s_RanksEdit))
                 throw (new Exception("could not navigate to the bulk rankings page"));
-            m_awc.FWaitForNavFinish();
         }
 
         /*----------------------------------------------------------------------------

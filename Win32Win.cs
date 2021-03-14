@@ -276,13 +276,13 @@ namespace Win32Win
         {
             m_srpt.LogData("TrapFileDownloadWork top of loop", 3, StatusRpt.MSGT.Body);
 
-            if (FHandleDialogAndClickButton("#32770", "File Download", m_sName, null, null, null, "&Save", true))
+            if (FHandleDialogAndClickButton("#32770", "Save As", m_sName, null, null, null, "&Save", true))
                 {
                 int c = 0;
 
                 // do it again in case the first button click didn't work, go figure?
                 m_srpt.LogData("TrapFileDownloadWork before repeat for click", 3, StatusRpt.MSGT.Body);
-                while (FHandleDialogAndClickButton("#32770", "File Download", m_sName, null, null, null, "&Save", false))
+                while (FHandleDialogAndClickButton("#32770", "Save As", m_sName, null, null, null, "&Save", false))
                     {
                     m_srpt.LogData(String.Format("Had to click the button again ({0} times)...", ++c), 3, StatusRpt.MSGT.Body);
                     Thread.Sleep(700);

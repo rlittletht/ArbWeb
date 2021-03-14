@@ -16,11 +16,13 @@ namespace ArbWeb
         private string m_sCity;
         private string m_sState;
         private string m_sZip;
-
-        public string Name { get { return String.Format("{0} {1}", First, Last); } }
-        public string NameRoster {  get {  return $"{Last}, {First}"; } }
+        private string m_sMiddle;
+        
+        public string Name => String.IsNullOrEmpty(Middle) ? $"{First} {Last}" : $"{First} {Middle} {Last}";
+        public string NameRoster => String.IsNullOrEmpty(Middle) ? $"{Last}, {First}" : $"{Last}, {First} {Middle}";
         public string Email { get { return m_sEmail; } set { m_sEmail = value; } }
         public string First { get { return m_sFirst; } set { m_sFirst = value; } }
+        public string Middle { get { return m_sMiddle; } set { m_sMiddle = value; } }
         public string Last { get { return m_sLast; } set { m_sLast = value; } }
         public string Address1 { get { return m_sAddress1; } set { m_sAddress1 = value; } }
         public string Address2 { get { return m_sAddress2; } set { m_sAddress2 = value; } }

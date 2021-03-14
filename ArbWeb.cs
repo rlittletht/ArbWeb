@@ -23,6 +23,7 @@ namespace ArbWeb
     {
         StatusRpt StatusReport { get; }
         ArbWebControl WebControl { get; }
+        ArbWebControl_Selenium WebControlNew { get; }
         void EnsureLoggedIn();
         Profile Profile { get; }
         void ThrowIfNot(bool f, string s);
@@ -131,8 +132,11 @@ namespace ArbWeb
         private Settings m_reh;
 
         ArbWebControl m_awc;
+        private ArbWebControl_Selenium m_webControl;
+        
         public ArbWebControl WebControl => m_awc;
-
+        public ArbWebControl_Selenium WebControlNew => m_webControl;
+        
         bool m_fDontUpdateProfile;
         bool m_fLoggedIn;
         Roster m_rst;
@@ -1631,7 +1635,7 @@ namespace ArbWeb
             if (m_pr.LogToFile)
                 {
                 m_srpt.AttachLogfile(Filename.SBuildTempFilename("arblog", "log"));
-                m_srpt.SetLogLevel(5);
+                m_srpt.SetLogLevel(1);
                 m_srpt.SetFilter(StatusRpt.MSGT.Body);
                 }
             else

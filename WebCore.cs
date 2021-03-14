@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using mshtml;
+using OpenQA.Selenium;
 using StatusBox;
 using TCore.Util;
 using Win32Win;
@@ -139,14 +141,17 @@ namespace ArbWeb
         // ============================================================================
         // O F F I C I A L S  V I E W
         // ============================================================================
-        public const string _s_Page_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010
+        public const string _s_Page_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2021
         public const string _s_OfficialsView_Select_Filter = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$ddlFilter"; // ok2010
-        public const string _sid_OfficialsView_Select_Filter = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_ddlFilter"; // ok2010
+        public const string _sid_OfficialsView_Select_Filter = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_ddlFilter"; // ok2021
         
         public const string _sid_OfficialsView_PrintRoster = "ctl00_ContentHolder_pgeOfficialsView_sbrReports_tskPrint"; // ok2010u
+        public const string _sid_OfficialsView_PrintCustomRoster = "ctl00_ContentHolder_pgeOfficialsView_sbrReports_showCustomRoster"; // ok2021
+        
         public const string _sid_OfficialsView_ContentTable = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_dgOfficials"; // ok2013
 
-        public const string _s_OfficialsView_PaginationHrefPostbackSubstr = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$dgOfficials$ctl204$ctl"; // ok2014
+//        public const string _s_OfficialsView_PaginationHrefPostbackSubstr = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$dgOfficials$ctl204$ctl"; // ok2014
+        public const string _s_OfficialsView_PaginationHrefPostbackSubstr = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$dgOfficials$ctl"; // ok2021
 
         // ============================================================================
         // O F F I C I A L S  E D I T
@@ -173,11 +178,24 @@ namespace ArbWeb
 
         public const string _sid_RosterPrint_BeginPrint = "ctl00_ContentHolder_pgeOfficialsView_navOfficialsView_btnBeginPrint"; // ok2010
 
+        public const string _sid_CustomRosterPrint_UserFilter = "OfficialFilterId"; // ok2021
+        public const string _s_CustomRosterPrint_UserFilter = "OfficialFilterId"; // ok2021
+        public const string _sid_CustomRosterPrint_DateOfBirth = "DateOfBirth"; // ok2021
+        public const string _sid_CustomRosterPrint_OfficialNumber = "OfficialNumber"; // ok2021
+        public const string _sid_CustomRosterPrint_DateJoined = "DateJoined"; // ok2021
+        public const string _sid_CustomRosterPrint_UserID = "UserId"; // ok2021
+        public const string _sid_CustomRosterPrint_MiddleName = "MiddleName"; // ok2021
+
+        public const string _sid_CustomRosterPrint_SelectAllCustomFields = "selectAllCustomFields"; // ok2021
+        public const string _sid_CustomRosterPrint_GenerateRosterReport = "generateRosterReport"; // ok2021
+
+        public const string _sid_CustomRosterPrint_CustomFieldListDropdown = "CustomFieldList"; // ok2021
+
         // ============================================================================
         // R A N K S
         // ============================================================================
         public const string _s_RanksEdit_Select_PosNames = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$ddlPosNames"; // ok2010
-        public const string _sid_RanksEdit_Select_PosNames = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_ddlPosNames"; // ok2010
+        public const string _sid_RanksEdit_Select_PosNames = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_ddlPosNames"; // ok2021
 
         
         public const string _s_RanksEdit_Checkbox_Active = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$chkActive"; // ok2010
@@ -185,10 +203,20 @@ namespace ArbWeb
         public const string _s_RanksEdit_Select_NotRanked = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$lstNotRanked"; // ok2010
         public const string _s_RanksEdit_Select_Ranked = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$lstRanked"; // ok2010
 
+        public const string _sid_RanksEdit_Checkbox_Active = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_chkActive"; // ok2021
+        public const string _sid_RanksEdit_Checkbox_Rank = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_chkRank"; // ok2021
+        public const string _sid_RanksEdit_Select_NotRanked = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_lstNotRanked"; // ok2021
+        public const string _sid_RanksEdit_Select_Ranked = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_lstRanked"; // ok2021
+
         public const string _s_RanksEdit_Button_Unrank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnUnrank"; // ok2010
         public const string _s_RanksEdit_Button_ReRank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnReRank"; // ok2010
         public const string _s_RanksEdit_Button_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$btnRank"; // ok2010
         public const string _s_RanksEdit_Input_Rank = "ctl00$ContentHolder$pgeRanksEdit$conRanksEdit$txtRank"; // ok2010
+
+        public const string _sid_RanksEdit_Button_Unrank = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_btnUnrank"; // ok2021
+        public const string _sid_RanksEdit_Button_ReRank = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_btnReRank"; // ok2021
+        public const string _sid_RanksEdit_Button_Rank = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_btnRank"; // ok2021
+        public const string _sid_RanksEdit_Input_Rank = "ctl00_ContentHolder_pgeRanksEdit_conRanksEdit_txtRank"; // ok2021
 
         // ============================================================================
         // A N N O U N C E M E N T S
@@ -385,6 +413,29 @@ namespace ArbWeb
             sGameFileNew = m_sGameFile;
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:ConvertExcelFileToCsv
+			%%Qualified:ArbWeb.DownloadGenericExcelReport.ConvertExcelFileToCsv
+
+        ----------------------------------------------------------------------------*/
+        public static void ConvertExcelFileToCsv(string sExcelFile, string sTargetCsvFile)
+        {
+	        object missing = System.Type.Missing;
+	        Microsoft.Office.Interop.Excel.Application app = new Microsoft.Office.Interop.Excel.Application();
+
+	        Microsoft.Office.Interop.Excel.Workbook wkb;
+
+	        wkb = app.Workbooks.Open(sExcelFile, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing, missing);
+
+	        if (wkb != null)
+	        {
+		        wkb.SaveAs(sTargetCsvFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlCSV, missing, missing, missing, missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, missing, missing, missing, missing, missing);
+		        wkb.Close(0, missing, missing);
+	        }
+	        app.Quit();
+	        app = null;
+        }
+        
         /*----------------------------------------------------------------------------
             %%Function: HandleDownloadGames
             %%Qualified: ArbWeb.AwMainForm.HandleDownloadGames
@@ -815,70 +866,109 @@ namespace ArbWeb
         {
             m_iac.EnsureLoggedIn();
 
-            m_iac.ThrowIfNot(m_iac.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
-            m_iac.WebControl.FWaitForNavFinish();
+            m_iac.ThrowIfNot(m_iac.WebControlNew.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
 
-            // from the officials view, make sure we are looking at active officials
-            m_iac.WebControl.ResetNav();
-            IHTMLDocument2 oDoc2 = m_iac.WebControl.Document2;
-
-            m_iac.WebControl.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, WebCore._sid_OfficialsView_Select_Filter, "All Officials", true);
-            m_iac.WebControl.FWaitForNavFinish();
+            m_iac.WebControlNew.FSetSelectControlText(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
         }
 
         // object could be RST or PGL
-        public delegate void VisitOfficialsPageCallback(IHTMLDocument2 oDoc2, Object o);
+        public delegate void VisitOfficialsPageCallback(Object o);
 
+        public static string ToXPath(string value)
+        {
+	        const string apostrophe = "'";
+	        const string quote = "\"";
+
+	        if (value.Contains(quote))
+	        {
+		        if (value.Contains(apostrophe))
+		        {
+			        throw new Exception("Illegal XPath string literal.");
+		        }
+		        else
+		        {
+			        return apostrophe + value + apostrophe;
+		        }
+	        }
+	        else
+	        {
+		        return quote + value + quote;
+	        }
+        }
+        
         /*----------------------------------------------------------------------------
         	%%Function: ProcessAllOfficialPages
         	%%Qualified: ArbWeb.HandleGenericRoster.ProcessAllOfficialPages
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public void ProcessAllOfficialPages(VisitOfficialsPageCallback vopc, Object o)
+        public void ProcessAllOfficialPages(VisitOfficialsPageCallback visit, Object o)
         {
+	        MicroTimer timer = new MicroTimer();
+
             NavigateOfficialsPageAllOfficials();
 
-            IHTMLDocument2 oDoc2 = m_iac.WebControl.Document2;
-
             // first, get the first pages and callback
+            timer.Stop();
+            m_iac.StatusReport.LogData($"Process All Officials(NavigateAtStart) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
 
-            vopc(oDoc2, o);
+            visit(o);
 
-            // figure out how many pages we have
-            // find all of the <a> tags with an href that targets a pagination postback
-            IHTMLElementCollection ihec = (IHTMLElementCollection) oDoc2.all.tags("a");
-            List<string> plsHrefs = new List<string>();
+	        timer.Reset();
+	        timer.Start();
+	        
+	        // figure out how many pages we have
+	        // find all of the <a> tags with an href that targets a pagination postback
+	        IList<IWebElement> anchors = m_iac.WebControlNew.Driver.FindElements(By.XPath($"//tr[@class='numericPaging']//a[contains(@href, '{WebCore._s_OfficialsView_PaginationHrefPostbackSubstr}')]"));
+	        List<string> plsHrefs = new List<string>();
 
-            foreach (IHTMLAnchorElement iha in ihec)
+	        foreach (IWebElement anchor in anchors)
+	        {
+		        string href = anchor.GetAttribute("href");
+
+		        if (href != null && href.Contains(WebCore._s_OfficialsView_PaginationHrefPostbackSubstr))
+		        {
+			        // we can't just remember this element because we will be navigating around.  instead we will
+			        // just remember the entire target so we can find it again
+			        plsHrefs.Add(href);
+		        }
+	        }
+
+	        timer.Stop();
+	        m_iac.StatusReport.LogData($"Process All Officials(buildAnchorList) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+	        
+	        // now, we are going to navigate to each page by finding and clicking each pagination link in turn
+	        foreach (string sHref in plsHrefs)
+	        {
+		        timer.Reset();
+		        timer.Start();
+		        
+		        string sXpath = $"//a[@href={ToXPath(sHref)}]";
+
+                IWebElement anchor;
+
+                try
                 {
-                if (iha.href != null && iha.href.Contains(WebCore._s_OfficialsView_PaginationHrefPostbackSubstr))
-                    {
-                    // we can't just remember this element because we will be navigating around.  instead we will
-                    // just remember the entire target so we can find it again
-                    plsHrefs.Add(iha.href);
-                    }
+	                anchor = m_iac.WebControlNew.Driver.FindElement(By.XPath(sXpath));
                 }
-
-            // now, we are going to navigate to each page by finding and clicking each pagination link in turn
-            foreach (string sHref in plsHrefs)
+                catch
                 {
-                ihec = (IHTMLElementCollection) oDoc2.all.tags("a");
-                foreach (IHTMLAnchorElement iha in ihec)
-                    {
-                    if (String.Compare(iha.href, sHref, true /*ignoreCase*/) == 0)
-                        {
-                        // now we need to click on the navigation
-                        ((IHTMLElement) iha).click();
-                        m_iac.WebControl.FWaitForNavFinish();
-                        oDoc2 = m_iac.WebControl.Document2;
-
-                        vopc(oDoc2, o);
-                        break; // done processing the element collection -- have to process the next one for the next doc
-                        }
-                    }
-
+                    anchor = null;
                 }
+                
+                timer.Stop();
+                m_iac.StatusReport.LogData($"Process All Officials(find item by xpath) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+
+                timer.Reset();
+                timer.Start();
+                
+                anchor.Click();
+
+                timer.Stop();
+                m_iac.StatusReport.LogData($"Process All Officials(anchor click) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+
+                visit(o);
+	        }
         }
 
         private PGL PglGetOfficialsFromWeb()
@@ -888,7 +978,8 @@ namespace ArbWeb
 
             PGL pgl = new PGL();
 
-            ProcessAllOfficialPages(VOPC_PopulatePgl, pgl);
+            throw new Exception("NYI");
+            // ProcessAllOfficialPages(VOPC_PopulatePgl, pgl);
 
             //            NavigateOfficialsPageAllOfficials();
 
