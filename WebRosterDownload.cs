@@ -252,8 +252,9 @@ namespace ArbWeb
             m_srpt.PushLevel();
 
             PushCursor(Cursors.WaitCursor);
-            string sTempFile = @"C:\Users\rlittle\AppData\Local\Temp\tempcd316a92-2120-4234-9427-7d3965076999.csv";
-            // SRosterFileDownload();
+            string sTempFile = SRosterFileDownload();
+            // @"C:\Users\rlittle\AppData\Local\Temp\tempcd316a92-2120-4234-9427-7d3965076999.csv";
+             
 
             PopCursor();
             m_srpt.PopLevel();
@@ -327,28 +328,16 @@ namespace ArbWeb
             ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
             m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dismiss the menu
 
-            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_GenerateRosterReport);
-            
-            // now wait for the file to be available and non-zero
-            string sExpectedFile = Path.Combine(m_webControl.DownloadPath, "RosterReport.xlsx");
-            int cRetry = 100;
-            while (--cRetry > 0)
-            {
-	            Thread.Sleep(100);
-	            if (File.Exists(sExpectedFile))
-	            {
-		            FileInfo info = new FileInfo(sExpectedFile);
+            ArbWebControl_Selenium.FileDownloader downloader = new ArbWebControl_Selenium.FileDownloader(
+	            m_webControl,
+	            "RosterReport.xlsx",
+	            null,
+	            () => m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_GenerateRosterReport));
 
-		            if (info.Length > 0)
-			            break;
-	            }
-            }
-
-            if (cRetry <= 0)
-	            throw new Exception("file never downloaded?");
+            string sDownloadedFile = downloader.GetDownloadedFile();
             
-            DownloadGenericExcelReport.ConvertExcelFileToCsv(sExpectedFile, sTempFile);
-            File.Delete(sExpectedFile);
+            DownloadGenericExcelReport.ConvertExcelFileToCsv(sDownloadedFile, sTempFile);
+            File.Delete(sDownloadedFile);
         }
 
         AutoResetEvent DoLaunchRosterFileDownload(string sTempFile)

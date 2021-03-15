@@ -254,12 +254,24 @@ namespace ArbWeb
         // ================================================================================
         public class GameSlots // GMSS
         {
-            private const int icolGameAway = 19;
-            private const int icolGameHome = 14;
-            private const int icolGameSite = 11;
-            private const int icolGameGame = 0;
-            private const int icolOfficial = 5;
-            private const int icolSlotStatus = 17;
+            private const int icolGameLevelDefault = 6;
+            private const int icolGameDateTimeDefault = 2;
+            private const int icolGameHomeColumnDeltaFromSportLevel = 14 - icolGameLevelDefault;
+            private const int icolGameSiteDeltaFromSportLevel = 11 - icolGameLevelDefault;
+            private const int icolGameAwayDeltaFromSportLevel = 19 - icolGameLevelDefault;
+            private const int icolOfficialDeltaFromSportLevel = 5 - icolGameLevelDefault; // yes this is a negative delta
+            private const int icolSlotStatusDeltaFromSportLevel = 17 - icolGameLevelDefault; // THIS IS UNVERIFIED!
+            private const int icolGameGameBase = 0;
+            
+            private int GameGameColumn => icolGameGameBase;
+            private int GameSiteColumn => icolGameSiteDeltaFromSportLevel + GameLevelColumn;
+            private int GameHomeColumn => icolGameHomeColumnDeltaFromSportLevel + GameLevelColumn;
+            private int GameAwayColumn => icolGameAwayDeltaFromSportLevel + GameLevelColumn;
+            private int OfficialColumn => icolOfficialDeltaFromSportLevel + GameLevelColumn;
+            private int SlotStatusColumn => icolSlotStatusDeltaFromSportLevel + GameLevelColumn;
+
+            private int GameLevelColumn { get; set; }
+            private int GameDateTimeColumn { get; set; }
 
             public GameSlots() {} // just for unit tests
 
@@ -475,9 +487,8 @@ namespace ArbWeb
                         m_mpTeamCount[sTeamSport]++;
                     else
                         m_mpTeamCount.Add(sTeamSport, 1);
-
-                    EnsureSportLevelPos(gms.Sport, gms.Level, gms.Pos);
                     }
+                EnsureSportLevelPos(gms.Sport, gms.Level, gms.Pos);
             }
 
             private string[] SplitTeams(string s)
@@ -1293,10 +1304,6 @@ namespace ArbWeb
             }
 
 
-
-            private int icolGameLevel;
-            private int icolGameDateTime;
-
             private void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst, Dictionary<string, string> mpSiteRoot)
             {
                 string sBackground = "";
@@ -1801,8 +1808,7 @@ namespace ArbWeb
                         // first, change "foo, bar" into "foo bar" (get rid of quotes and the comma)
                         sLine = Regex.Replace(sLine, "\"([^\",]*),([^\",]*)\"", "$1$2");
 
-                        icolGameDateTime = 2;
-                        if (sLine.Length < icolGameDateTime)
+                        if (sLine.Length < GameDateTimeColumn)
                             continue;
 
                         Regex rex = new Regex(",");
@@ -1835,7 +1841,6 @@ namespace ArbWeb
                             continue;
                         }
 
-                        icolGameLevel = 6;
                         if (rs == ReadState.ScanForHeader)
                         {
                             rs = RsHandleScanForHeader(sLine, rgsFields, rs);
@@ -1906,7 +1911,30 @@ namespace ArbWeb
                 if (Regex.Match(sLine, "Game.*Date.*Sport.*Level").Success == false)
                     return rs;
 
-                Debug.Assert(Regex.Match(rgsFields[icolGameLevel], "Sport.*Level").Success, "Sport & level not where expected!!");
+                // always start looking here, and adjust
+                GameDateTimeColumn = icolGameDateTimeDefault;
+                GameLevelColumn = icolGameLevelDefault;
+
+                if (!Regex.Match(rgsFields[GameLevelColumn], "Sport.*Level").Success)
+                {
+                    // check to see if the previous column is Sport/Level, and if so, automagically adjust
+                    if (Regex.Match(rgsFields[GameLevelColumn - 1], "Sport.*Level").Success)
+	                    GameLevelColumn--;
+                    else if (Regex.Match(rgsFields[GameLevelColumn + 1], "Sport.*Level").Success)
+	                    GameLevelColumn++;
+                }
+
+                if (!Regex.Match(rgsFields[GameDateTimeColumn], "Date.*Time").Success)
+                {
+	                // check to see if the previous column is Sport/Level, and if so, automagically adjust
+	                if (Regex.Match(rgsFields[GameDateTimeColumn - 1], "Date.*Time").Success)
+		                GameDateTimeColumn--;
+	                else if (Regex.Match(rgsFields[GameDateTimeColumn + 1], "Date.*Time").Success)
+		                GameDateTimeColumn++;
+                }
+
+                Debug.Assert(Regex.Match(rgsFields[GameDateTimeColumn], "Date.*Time").Success, "Date & time not where expected!!");
+                Debug.Assert(Regex.Match(rgsFields[GameLevelColumn], "Sport.*Level").Success, "Sport & level not where expected!!");
                 rs = ReadState.ScanForGame;
                 return rs;
             }
@@ -1937,12 +1965,12 @@ namespace ArbWeb
                 ref string sSite, ref string sHome, ref string sAway, ReadState rs)
             {
 // reading the first line of the game.  We should always get the sport and the first part of the team names here
-                sGame = AppendCheck(sGame, rgsFields[icolGameGame]);
-                sDateTime = AppendCheck(sDateTime, rgsFields[icolGameDateTime]);
-                sSport = AppendCheck(sSport, rgsFields[icolGameLevel]);
-                sSite = AppendCheck(sSite, rgsFields[icolGameSite]);
-                sHome = AppendCheck(sHome, rgsFields[icolGameHome]);
-                sAway = AppendCheck(sAway, rgsFields[icolGameAway]);
+                sGame = AppendCheck(sGame, rgsFields[GameGameColumn]);
+                sDateTime = AppendCheck(sDateTime, rgsFields[GameDateTimeColumn]);
+                sSport = AppendCheck(sSport, rgsFields[GameLevelColumn]);
+                sSite = AppendCheck(sSite, rgsFields[GameSiteColumn]);
+                sHome = AppendCheck(sHome, rgsFields[GameHomeColumn]);
+                sAway = AppendCheck(sAway, rgsFields[GameAwayColumn]);
 
                 rs = ReadState.ReadingGame2;
                 return rs;
@@ -2029,21 +2057,21 @@ namespace ArbWeb
                     // to ReadingOfficials1
                     rs = ReadState.ReadingOfficials2;
                     sPosLast = rgsFields[1];
-                    sNameLast = rgsFields[icolOfficial];
-                    sStatusLast = rgsFields[icolSlotStatus];
+                    sNameLast = rgsFields[OfficialColumn];
+                    sStatusLast = rgsFields[SlotStatusColumn];
 
-                    if (Regex.Match(rgsFields[icolOfficial], "_____").Success)
+                    if (Regex.Match(rgsFields[OfficialColumn], "_____").Success)
                         {
                         fOpenSlot = true;
                         mpNamePos.Add(String.Format("!!OPEN{0}", mpNamePos.Count), rgsFields[1]);
-                        mpNameStatus.Add(String.Format("!!OPEN{0}", mpNameStatus.Count), rgsFields[icolSlotStatus]);
+                        mpNameStatus.Add(String.Format("!!OPEN{0}", mpNameStatus.Count), rgsFields[SlotStatusColumn]);
                         return rs;
                         }
                     else
                         {
-                        string sName = ReverseName(rst, rgsFields[icolOfficial]);
+                        string sName = ReverseName(rst, rgsFields[OfficialColumn]);
                         mpNamePos.Add(sName, rgsFields[1]);
-                        mpNameStatus.Add(sName, rgsFields[icolSlotStatus]);
+                        mpNameStatus.Add(sName, rgsFields[SlotStatusColumn]);
                         return rs;
                         }
                     }
@@ -2149,15 +2177,15 @@ namespace ArbWeb
             {
 // we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
                 // overflows
-                if (FEmptyField(rgsFields[1]) && FEmptyField(rgsFields[icolGameGame]))
+                if (FEmptyField(rgsFields[1]) && FEmptyField(rgsFields[GameGameColumn]))
                     {
                     // nothing in that column means we have a continuation.  now lets concatenate all our stuff
-                    sGame = AppendCheck(sGame, rgsFields[icolGameGame]);
-                    sDateTime = AppendCheck(sDateTime, rgsFields[icolGameDateTime]);
-                    sLevel = AppendCheck(sLevel, rgsFields[icolGameLevel]);
-                    sSite = AppendCheck(sSite, rgsFields[icolGameSite]);
-                    sHome = AppendCheck(sHome, rgsFields[icolGameHome]);
-                    sAway = AppendCheck(sAway, rgsFields[icolGameAway]);
+                    sGame = AppendCheck(sGame, rgsFields[GameGameColumn]);
+                    sDateTime = AppendCheck(sDateTime, rgsFields[GameDateTimeColumn]);
+                    sLevel = AppendCheck(sLevel, rgsFields[GameLevelColumn]);
+                    sSite = AppendCheck(sSite, rgsFields[GameSiteColumn]);
+                    sHome = AppendCheck(sHome, rgsFields[GameHomeColumn]);
+                    sAway = AppendCheck(sAway, rgsFields[GameAwayColumn]);
                     return rs;
                     }
                 rs = ReadState.ReadingOfficials1;

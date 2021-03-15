@@ -35,7 +35,7 @@ namespace ArbWeb
         public string LastName { get { return m_sLast; } }
         public string Contact { get { return m_sContact; } }
         public string Misc { get { return m_sMisc; } }
-        public string Name { get { return String.Format("{0},{1}", m_sLast, m_sFirst); } }
+        public string Name { get { return $"{m_sLast},{m_sFirst}"; } }
         public List<string> PlsMisc { get { return m_plsMisc; } }
 
     } // END UMPIRE

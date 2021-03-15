@@ -6,6 +6,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using StatusBox;
 using System.Collections.Generic;
+using System.Threading;
 using HtmlAgilityPack;
 using OpenQA.Selenium.DevTools.V86.Input;
 
@@ -157,6 +158,30 @@ namespace ArbWeb
 			%%Function:FSetCheckboxControlIdVal
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetCheckboxControlIdVal
 		----------------------------------------------------------------------------*/
+		public static bool FSetCheckboxControlVal(IWebDriver driver, bool fChecked, string sName)
+		{
+			IWebElement element = driver.FindElement(By.Id(sName));
+			string sValue = fChecked ? "true" : "false";
+			string sActual = element.GetProperty("checked");
+
+			if (String.Compare(element.GetProperty("checked"), sValue, true) != 0)
+			{
+				element.Click();
+				return true;
+			}
+
+			return false;
+		}
+
+		public bool FSetCheckboxControlVal(bool fChecked, string sName)
+		{
+			return FSetCheckboxControlVal(m_driver, fChecked, sName);
+		}
+		
+		/*----------------------------------------------------------------------------
+			%%Function:FSetCheckboxControlIdVal
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetCheckboxControlIdVal
+		----------------------------------------------------------------------------*/
 		public static bool FSetCheckboxControlIdVal(IWebDriver driver, bool fChecked, string sid)
 		{
 			IWebElement element = driver.FindElement(By.Id(sid));
@@ -177,10 +202,47 @@ namespace ArbWeb
 			return FSetCheckboxControlIdVal(m_driver, fChecked, sid);
 		}
 
-		public bool FSetSelectControlText(string sid, string sValue)
+		/* S  G E T  F I L T E R  I  D */
+		/*----------------------------------------------------------------------------
+        	%%Function: SGetFilterID
+        	%%Qualified: ArbWeb.ArbWebControl.SGetFilterID
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+		public string SGetFilterID(string sName, string sValue)
 		{
-			return FSetSelectControlText(m_driver, m_appContext, sid, sValue);
+			m_appContext.StatusReport.LogData($"SGetSelectIDFromDoc for id {sName}", 3, StatusRpt.MSGT.Body);
+			
+			string s = SGetSelectIDFromDoc(sName, sValue);
+
+			m_appContext.StatusReport.LogData($"Return: {s}", 3, StatusRpt.MSGT.Body);
+			return s;
 		}
+
+
+		/* S  G E T  F I L T E R  I  D */
+		/*----------------------------------------------------------------------------
+        	%%Function: SGetFilterID
+        	%%Qualified: ArbWeb.ArbWebControl.SGetFilterID
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+		public static string SGetSelectIDFromDoc(IWebDriver driver, IAppContext context, string sName, string sOptionName)
+		{
+			IWebElement selectElement = driver.FindElement(By.Name(sName));
+			
+			Dictionary<string, string> mpSelectValues = MpGetSelectValuesFromControl(selectElement, context.StatusReport);
+			if (mpSelectValues.ContainsKey(sOptionName))
+				return mpSelectValues[sOptionName];
+
+			return null;
+		}
+
+		public string SGetSelectIDFromDoc(string sName, string sOptionName)
+		{
+			return SGetSelectIDFromDoc(m_driver, m_appContext, sName, sOptionName);
+		}
+		
 		/*----------------------------------------------------------------------------
 			%%Function:FSetSelectControlText
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetSelectControlText
@@ -203,7 +265,44 @@ namespace ArbWeb
 
 			return fChanged;
 		}
+		
+		public bool FSetSelectControlText(string sid, string sValue)
+		{
+			return FSetSelectControlText(m_driver, m_appContext, sid, sValue);
+		}
 
+		/*----------------------------------------------------------------------------
+			%%Function:MpGetSelectValuesFromControl
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.MpGetSelectValuesFromControl
+		----------------------------------------------------------------------------*/
+		public static Dictionary<string, string> MpGetSelectValuesFromControl(
+			IWebElement selectElement, 
+			StatusRpt srpt)
+		{
+			string sHtml = selectElement.GetAttribute("innerHTML");
+			
+			HtmlDocument html = new HtmlDocument();
+			html.LoadHtml(sHtml);
+
+			HtmlNodeCollection options = html.DocumentNode.SelectNodes("//option");
+			Dictionary<string, string> mp = new Dictionary<string, string>();
+
+			if (options != null)
+			{
+				foreach (HtmlNode option in options)
+				{
+					if (mp.ContainsKey(option.InnerText))
+						srpt.AddMessage(
+							$"How strange!  Option '{option.InnerText}' shows up more than once in the options list!",
+							StatusRpt.MSGT.Warning);
+					else
+						mp.Add(option.InnerText, option.SelectSingleNode("@value").InnerText);
+				}
+			}
+
+			return mp;
+		}
+		
 		/* M P  G E T  S E L E C T  V A L U E S */
 		/*----------------------------------------------------------------------------
 			%%Function: MpGetSelectValues
@@ -219,51 +318,11 @@ namespace ArbWeb
 		{
 			MicroTimer timer = new MicroTimer();
 			
-			IWebElement selectElement = driver.FindElement(By.Id(sid));
-
-			string sHtml = selectElement.GetAttribute("innerHTML");
-			HtmlDocument html = new HtmlDocument();
-			html.LoadHtml(sHtml);
-
-			// HtmlNode select = html.GetElementbyId(sid);
-
-			HtmlNodeCollection options = html.DocumentNode.SelectNodes("//option");
-			Dictionary<string, string> mp = new Dictionary<string, string>();
-
-			if (options != null)
-			{
-				foreach (HtmlNode option in options)
-				{
-					if (mp.ContainsKey(option.InnerText))
-						srpt.AddMessage(
-							String.Format("How strange!  '{0}' shows up more than once as a position", option.InnerText),
-							StatusRpt.MSGT.Warning);
-					else
-						mp.Add(option.InnerText, option.SelectSingleNode("@value").InnerText);
-				}
-			}
+			Dictionary<string, string> mp = MpGetSelectValuesFromControl(driver.FindElement(By.Id(sid)), srpt);
 
 			timer.Stop();
 			srpt.LogData($"MpGetSelectValues({sid}) elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
 			return mp;
-#if false
-			SelectElement select = new SelectElement(driver.FindElement(By.Id(sid)));
-			
-			Dictionary<string, string> mp = new Dictionary<string, string>();
-
-			
-			foreach (IWebElement option in select.Options)
-			{
-				if (mp.ContainsKey(option.Text))
-					srpt.AddMessage(
-						String.Format("How strange!  '{0}' shows up more than once as a position", option.Text),
-						StatusRpt.MSGT.Warning);
-				else
-					mp.Add(option.Text, option.GetAttribute("value"));
-			}
-			
-			return mp;
-#endif
 		}
 
 		public Dictionary<string, string> MpGetSelectValues(string sid)
@@ -333,5 +392,64 @@ namespace ArbWeb
 			timer.Stop();
 			m_appContext.StatusReport.LogData($"WaitForPageLoad elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
 		}
+
+		public class FileDownloader
+		{
+			public delegate void StartDownload();
+			
+			private readonly string m_sExpectedFullName;
+			private readonly string m_sTargetFile;
+			private StartDownload m_startDownload;
+			
+			public FileDownloader(ArbWebControl_Selenium webControl, string expectedFile, string targetFile, StartDownload startDownload)
+			{
+				m_sExpectedFullName = Path.Combine(webControl.DownloadPath, expectedFile);
+				if (targetFile == null)
+				{
+					m_sTargetFile = Path.Combine(
+						webControl.DownloadPath,
+						$"{System.Guid.NewGuid().ToString()}.{Path.GetExtension(expectedFile)}");
+				}
+				else
+				{
+					m_sTargetFile = targetFile;
+				}
+				
+				// make sure that file doesn't already exist
+				if (File.Exists(m_sExpectedFullName))
+				{
+					throw new Exception(
+						$"File {m_sExpectedFullName} already exists! our temp download directory should start out empty! Someone not cleaning up?");
+				}
+
+				m_startDownload = startDownload;
+			}
+			
+			public string GetDownloadedFile()
+			{
+				m_startDownload();
+				
+				// now wait for the file to be available and non-zero
+				int cRetry = 100;
+				while (--cRetry > 0)
+				{
+					Thread.Sleep(100);
+					if (File.Exists(m_sExpectedFullName))
+					{
+						FileInfo info = new FileInfo(m_sExpectedFullName);
+
+						if (info.Length > 0)
+							break;
+					}
+				}
+
+				if (cRetry <= 0)
+					throw new Exception("file never downloaded?");
+
+				File.Move(m_sExpectedFullName, m_sTargetFile);
+				return m_sTargetFile;
+			}
+		}
+		
 	}
 }

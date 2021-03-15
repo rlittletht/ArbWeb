@@ -495,15 +495,16 @@ namespace ArbWeb
         {
             m_iac.EnsureLoggedIn();
 
-            m_iac.StatusReport.LogData("LaunchDownloadGeneric async task launched", 3, StatusRpt.MSGT.Body);
-            var evtDownload = LaunchDownloadGeneric(sTempFile);
-            m_iac.StatusReport.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
-            evtDownload.WaitOne();
-            m_iac.StatusReport.LogData("evtDownload.WaitOne() complete", 3, StatusRpt.MSGT.Body);
+//            m_iac.StatusReport.LogData("LaunchDownloadGeneric async task launched", 3, StatusRpt.MSGT.Body);
+            DoLaunchDownloadGeneric(sTempFile);
+            //m_iac.StatusReport.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
+//            evtDownload.WaitOne();
+//            m_iac.StatusReport.LogData("evtDownload.WaitOne() complete", 3, StatusRpt.MSGT.Body);
 
             return sTempFile;
         }
 
+        #if false
         private delegate AutoResetEvent LaunchDownloadGenericDel(string sTempFile);
 
         /*----------------------------------------------------------------------------
@@ -527,7 +528,8 @@ namespace ArbWeb
                 return DoLaunchDownloadGeneric(sTempFile);
             }
         }
-
+        #endif
+	    
         bool FNeedSelectReportFilter()
         {
             return m_sSelectFilterControlName != null;
@@ -542,22 +544,20 @@ namespace ArbWeb
             page. if not requested, this will just navigate to the start page and
             invoke the link to the report page.
         ----------------------------------------------------------------------------*/
-        private AutoResetEvent DoLaunchDownloadGeneric(string sTempFile)
+        private void DoLaunchDownloadGeneric(string sTempFile)
         {
-            IHTMLDocument2 oDoc2 = m_iac.WebControl.Document2;
             int count = 0;
             string sFilter = null;
 
             while (count < 2)
                 {
                 // ok, now we're at the main assigner page...
-                if (!m_iac.WebControl.FNavToPage(m_sReportPage))
+                if (!m_iac.WebControlNew.FNavToPage(m_sReportPage))
                     throw (new Exception("could not navigate to games view"));
 
-                oDoc2 = m_iac.WebControl.Document2;
                 if (FNeedSelectReportFilter())
                     {
-                    sFilter = m_iac.WebControl.SGetFilterID(oDoc2, m_sSelectFilterControlName, m_sFilterReq);
+                    sFilter = m_iac.WebControlNew.SGetFilterID(m_sSelectFilterControlName, m_sFilterReq);
                     if (sFilter != null)
                         break;
                     }
@@ -566,6 +566,7 @@ namespace ArbWeb
                     break;
                     }
 
+                // throw new Exception("needed more than one iteration?");
                 count++;
                 }
 
@@ -576,53 +577,42 @@ namespace ArbWeb
 
                 // now set that filter
 
-                m_iac.WebControl.ResetNav();
-                m_iac.WebControl.FSetSelectControlText(oDoc2, m_sSelectFilterControlName, m_sidSelectFilterControl, m_sFilterReq, false);
-                m_iac.WebControl.FWaitForNavFinish();
+                m_iac.WebControlNew.FSetSelectControlText(m_sidSelectFilterControl, m_sFilterReq);
 
-                if (!m_iac.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilter))
+                if (!m_iac.WebControlNew.FNavToPage(m_sReportPrintPagePrefix + sFilter))
                     throw (new Exception("could not navigate to the reports page!"));
                 }
             else
                 {
-                m_iac.WebControl.ResetNav();
-                m_iac.ThrowIfNot(m_iac.WebControl.FClickControl(oDoc2, m_sidReportPageLink), "could not click on report link");
-                m_iac.WebControl.FWaitForNavFinish();
+                m_iac.ThrowIfNot(m_iac.WebControlNew.FClickControl(m_sidReportPageLink), "could not click on report link");
                 }
-
-            oDoc2 = m_iac.WebControl.Document2;
 
             // loop through the Select controls we have to set (typically, this will include the file format)
             if (m_rgSelectSettings != null)
                 {
                 foreach (ControlSetting<string> cs in m_rgSelectSettings)
                     {
-                    m_iac.WebControl.FSetSelectControlText(oDoc2, cs.ControlName, cs.IdControlExtra, cs.ControlValue, false);
+                    m_iac.WebControlNew.FSetSelectControlText(cs.IdControlExtra, cs.ControlValue);
                     }
                 }
 
             if (m_rgCheckedSettings != null)
                 {
                 foreach (ControlSetting<bool> cs in m_rgCheckedSettings)
-                    {
-                    ArbWebControl.FSetCheckboxControlVal(oDoc2, cs.ControlValue, cs.ControlName);
-                    }
+                    m_iac.WebControlNew.FSetCheckboxControlVal(cs.ControlValue, cs.ControlName);
                 }
 
-            m_iac.StatusReport.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
-            System.Windows.Forms.Clipboard.SetText(sTempFile);
+            // m_iac.StatusReport.LogData($"Setting clipboard data: {sTempFile}", 3, StatusRpt.MSGT.Body);
+            // System.Windows.Forms.Clipboard.SetText(sTempFile);
 
-            m_iac.WebControl.ResetNav();
-            //          m_awc.PushNewWindow3Delegate(new DWebBrowserEvents2_NewWindow3EventHandler(DownloadGamesNewWindowDelegate));
-
-            AutoResetEvent evtDownload = new AutoResetEvent(false);
-
-            m_iac.StatusReport.LogData("Setting up TrapFileDownload", 3, StatusRpt.MSGT.Body);
-            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_iac.StatusReport, m_sFullExpectedName, m_sExpectedName, sTempFile, null, evtDownload);
-            m_iac.WebControl.FClickControlNoWait(oDoc2, m_sReportPrintSubmitPrintControlName);
-            return evtDownload;
+            ArbWebControl_Selenium.FileDownloader downloader = new ArbWebControl_Selenium.FileDownloader(
+	            m_iac.WebControlNew,
+	            m_sFullExpectedName,
+	            sTempFile,
+	            () => m_iac.WebControlNew.FClickControl(m_sReportPrintSubmitPrintControlName));
+            
+            downloader.GetDownloadedFile();
         }
-
     }
 
     public class HandleGenericRoster
