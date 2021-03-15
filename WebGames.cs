@@ -39,10 +39,10 @@ namespace ArbWeb
 
         Dictionary<string, string> MpFetchGameFilters()
         {
-            if (!m_awc.FNavToPage(WebCore._s_Assigning))
+            if (!m_webControl.FNavToPage(WebCore._s_Assigning))
                 throw (new Exception("could not navigate to games view"));
 
-            return ArbWebControl.MpGetSelectValues(m_srpt, m_awc.Document2, WebCore._s_Assigning_Select_Filters);
+            return m_webControl.MpGetSelectValues(WebCore._sid_Assigning_Select_Filters);
         }
 
         /*----------------------------------------------------------------------------

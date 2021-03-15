@@ -1580,6 +1580,12 @@ namespace ArbWeb
                 }
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:RefreshGameFilters
+			%%Qualified:ArbWeb.AwMainForm.RefreshGameFilters
+
+			Get the latest game filter list from arbiter			
+        ----------------------------------------------------------------------------*/
         private void RefreshGameFilters(object sender, EventArgs e)
         {
             EnsureLoggedIn();

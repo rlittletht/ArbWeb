@@ -52,8 +52,8 @@ namespace ArbWeb
         // A S S I G N I N G
         // ============================================================================
         // (games view) links
-        public const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2010
-        public const string _sid_Assigning_Select_Filters = "ctl00_ContentHolder_pgeGamesView_conGamesView_ddlSavedFilters"; // ok2010
+        public const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2021
+        public const string _sid_Assigning_Select_Filters = "ctl00_ContentHolder_pgeGamesView_conGamesView_ddlSavedFilters"; // ok2021
         public const string _s_Assigning_Reports_Select_Format = "ctl00$ContentHolder$pgePrint$conPrint$ddlFormat"; // ok2010
         public const string _s_Assigning_Reports_Submit_Print = "ctl00$ContentHolder$pgePrint$navPrint$btnBeginPrint"; // ok2010
 
