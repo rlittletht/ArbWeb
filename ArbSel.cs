@@ -139,7 +139,7 @@ namespace ArbWeb
 			appContext.StatusReport.LogData($"WaitForPageLoad elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
 		}
 
-		public void WaitForPageLoad(IWebDriver driver, int maxWaitTimeInSeconds) => WaitForPageLoad(m_appContext, m_driver, maxWaitTimeInSeconds);
+		public void WaitForPageLoad(int maxWaitTimeInSeconds = 500) => WaitForPageLoad(m_appContext, m_driver, maxWaitTimeInSeconds);
 
 		public delegate bool WaitDelegate(IWebDriver driver);
 
@@ -307,6 +307,26 @@ namespace ArbWeb
 		}
 
 		public string GetValueForControlId(string sId) => GetValueForControlId(m_driver, sId);
+
+		public static bool FSetTextAreaTextForControlName(IWebDriver driver, string sName, string sValue, bool fCheck)
+		{
+			IWebElement element = driver.FindElement(By.Name(sName));
+
+			string sOriginal = null;
+
+			if (fCheck)
+				sOriginal = element.GetAttribute("value");
+
+			element.Clear();
+			element.SendKeys(sValue);
+
+			if (fCheck)
+				return String.Compare(sValue, sOriginal, true) != 0;
+
+			return true;
+		}
+		
+		public bool FSetTextAreaTextForControlName(string sName, string sValue, bool fCheck) => FSetTextAreaTextForControlName(m_driver, sName, sValue, fCheck);
 
 		#endregion
 

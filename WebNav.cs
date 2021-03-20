@@ -37,7 +37,7 @@ namespace ArbWeb
 	        }
 	        
             ThrowIfNot(fClickedAdmin, "Can't find Admin account link");
-            m_webControl.WaitForPageLoad(m_webControl.Driver, 200);
+            m_webControl.WaitForPageLoad(200);
         }
 
         public delegate void EnsureLoggedInDel();
@@ -137,7 +137,7 @@ namespace ArbWeb
                     m_fLoggedIn = true;
 
                 // and wait for nav to complete
-                m_webControl.WaitForPageLoad(m_webControl.Driver, 300);
+                m_webControl.WaitForPageLoad(300);
                 m_srpt.PopLevel();
                 m_srpt.AddMessage("Completed login.");
                 
