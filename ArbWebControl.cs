@@ -126,7 +126,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public bool DoNavToPage(WebBrowser wbc, string sUrl)
         {
-            ReportNavState(String.Format("Entering FNavToPage({0})", sUrl));
+            ReportNavState($"Entering FNavToPage({sUrl})");
             wbc.Stop();
 
             // m_wbc.Stop();
@@ -204,7 +204,7 @@ namespace ArbWeb
                 s++;
                 }
 
-            ReportNavState(String.Format("After NavDone Loop: {0}", s >= 200 ? "TIMEOUT" : "Completed"));
+            ReportNavState($"After NavDone Loop: {(s >= 200 ? "TIMEOUT" : "Completed")}");
 
 #if notused
             if (m_fNavIntercept)
@@ -263,12 +263,12 @@ namespace ArbWeb
         {
             if (m_sUrlExpected == null || String.Compare(e.Url.ToString(), m_sUrlExpected, true) == 0)
                 {
-                ReportNavState(String.Format("TriggerDocumentDone MATCH: {0}", e.Url));
+                ReportNavState($"TriggerDocumentDone MATCH: {e.Url}");
                 m_fNavDone = true;
                 }
             else
                 {
-                ReportNavState(String.Format("TriggerDocumentDone NO MATCH: {0} {1}", e.Url, m_sUrlExpected));
+                ReportNavState($"TriggerDocumentDone NO MATCH: {e.Url} {m_sUrlExpected}");
                 }
         }
         /* F  S E T  C H E C K B O X  C O N T R O L  V A L */
@@ -300,11 +300,11 @@ namespace ArbWeb
 
         public bool FSetTextareaControlText(IHTMLDocument2 oDoc2, string sName, string sValue, bool fCheck)
         {
-            m_srpt.LogData(String.Format("FSetTextareaControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FSetTextareaControlText for id {sName}", 3, StatusRpt.MSGT.Body);
 
             bool f = ArbWebControl.FSetTextareaControlTextForDoc(oDoc2, sName, sValue, fCheck);
 
-            m_srpt.LogData(String.Format("Return: {0}", f), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Return: {f}", 3, StatusRpt.MSGT.Body);
             return f;
         }
         /* F  S E T  T E X T A R E A  C O N T R O L  T E X T */
@@ -431,7 +431,7 @@ namespace ArbWeb
                     foreach (IHTMLOptionElement ihoe in (IHTMLElementCollection)ihie.tags("option"))
                         {
                         if (mp.ContainsKey(ihoe.text))
-                            srpt.AddMessage(String.Format("How strange!  '{0}' shows up more than once as a position", ihoe.text), StatusRpt.MSGT.Warning);
+                            srpt.AddMessage($"How strange!  '{ihoe.text}' shows up more than once as a position", StatusRpt.MSGT.Warning);
                         else
                             mp.Add(ihoe.text, ihoe.value);
                         }
@@ -506,11 +506,11 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public string SGetFilterID(IHTMLDocument2 oDoc2, string sName, string sValue)
         {
-            m_srpt.LogData(String.Format("SGetSelectIDFromDoc for id {0}", sName), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"SGetSelectIDFromDoc for id {sName}", 3, StatusRpt.MSGT.Body);
 
             string s = SGetSelectIDFromDoc(oDoc2, sName, sValue);
 
-            m_srpt.LogData(String.Format("Return: {0}", s), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Return: {s}", 3, StatusRpt.MSGT.Body);
             return s;
         }
 
@@ -565,11 +565,11 @@ namespace ArbWeb
         }
         public bool FSetSelectControlText(IHTMLDocument2 oDoc2, string sName, string sid, string sValue, bool fCheck)
         {
-            m_srpt.LogData(String.Format("FSetSelectControlText for id {0}", sName), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FSetSelectControlText for id {sName}", 3, StatusRpt.MSGT.Body);
 
             bool f = FSetSelectControlTextFromDoc(this, oDoc2, sName, sid, sValue, fCheck);
 
-            m_srpt.LogData(String.Format("Return: {0}", f), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Return: {f}", 3, StatusRpt.MSGT.Body);
             return f;
         }
 
@@ -577,7 +577,7 @@ namespace ArbWeb
         {
             while (msec > 0)
                 {
-                ReportNavState(String.Format("WaitDoLog {0}", msec));
+                ReportNavState($"WaitDoLog {msec}");
                 Thread.Sleep(50);
                 msec -= 50;
                 Application.DoEvents();
@@ -795,7 +795,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public bool FClickControl(IHTMLDocument2 oDoc2, string sId, string sidWaitFor = null)
         {
-            m_srpt.LogData(String.Format("FClickControl {0}", sId), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FClickControl {sId}", 3, StatusRpt.MSGT.Body);
             IHTMLElement ihe = ((IHTMLElement)(oDoc2.all.item(sId, 0)));
 
             if (ihe != null)
@@ -810,7 +810,7 @@ namespace ArbWeb
 
         public bool FClickControlNoWait(IHTMLDocument2 oDoc2, string sId)
         {
-            m_srpt.LogData(String.Format("FClickControlNoWait: {0}", sId), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FClickControlNoWait: {sId}", 3, StatusRpt.MSGT.Body);
             return FClickControlInDocNoWait(oDoc2, sId);
         }
 
@@ -1029,7 +1029,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void OnNavigating(object sender, WebBrowserNavigatingEventArgs e)
         {
-            m_srpt.AddMessage(String.Format("OnNavigating: {0}", e.Url));
+            m_srpt.AddMessage($"OnNavigating: {e.Url}");
 
         }
 
@@ -1042,7 +1042,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void OnNavigated(object sender, WebBrowserNavigatedEventArgs e)
         {
-            m_srpt.AddMessage(String.Format("OnNavigated: {0}", e.Url));
+            m_srpt.AddMessage($"OnNavigated: {e.Url}");
         }
 
         /* O N  N E W  W I N D O W */

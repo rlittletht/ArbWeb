@@ -110,7 +110,7 @@ namespace ArbWeb
             if (sPhoneNumber.StartsWith("C:") || sPhoneNumber.StartsWith("W:") || sPhoneNumber.StartsWith("H:"))
                 return sPhoneNumber;
 
-            return String.Format("{0}:{1}", sTypeDefault.Substring(0, 1), sPhoneNumber);
+            return $"{sTypeDefault.Substring(0, 1)}:{sPhoneNumber}";
         }
 
 

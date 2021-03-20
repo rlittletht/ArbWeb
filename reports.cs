@@ -30,7 +30,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private static string BuildAnnName(string sPrefix, string sSuffix, string sCtl)
         {
-            return String.Format("{0}{1}{2}", sPrefix, sCtl, sSuffix);
+            return $"{sPrefix}{sCtl}{sSuffix}";
         }
 
         /* D O  G E N  M A I L  M E R G E  A N D  A N N O U C E */
@@ -62,7 +62,7 @@ namespace ArbWeb
                 rstFiltered = rst;
 
             string sCsvTemp = Filename.SBuildTempFilename("MailMergeRoster", "csv");
-            m_srpt.LogData(String.Format("Writing filtered roster to {0}", sCsvTemp), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Writing filtered roster to {sCsvTemp}", 3, StatusRpt.MSGT.Body);
             StreamWriter sw = new StreamWriter(sCsvTemp, false, System.Text.Encoding.Default);
 
             sw.WriteLine("email,firstname,lastname");
@@ -83,10 +83,10 @@ namespace ArbWeb
             string sFile = Path.Combine(Path.GetPathRoot(sApp),Path.GetDirectoryName(sApp), "mailmergedoc.docx");
 
             sTempName = Filename.SBuildTempFilename("mailmergedoc", "docx");
-            m_srpt.LogData(String.Format("Writing mailmergedoc to {0} using template at {1}", sTempName, sFile), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Writing mailmergedoc to {sTempName} using template at {sFile}", 3, StatusRpt.MSGT.Body);
             OOXML.CreateMailMergeDoc(sFile, sTempName, sCsvTemp, gms, out sArbiterHelpNeeded);
 
-            m_srpt.LogData(String.Format("ArbiterHelp HTML created: {0}", sArbiterHelpNeeded), 5, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"ArbiterHelp HTML created: {sArbiterHelpNeeded}", 5, StatusRpt.MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
             if (m_cbLaunch.Checked)
                 {
@@ -142,7 +142,7 @@ namespace ArbWeb
                         {
                         sCtl = s.Substring(ich + WebCore._s_Announcements_Button_Edit_Prefix.Length, 5);
                         }
-                    m_srpt.LogData(String.Format("Extracted ID for announcment to set: {0}", sCtl), 3, StatusRpt.MSGT.Body);
+                    m_srpt.LogData($"Extracted ID for announcment to set: {sCtl}", 3, StatusRpt.MSGT.Body);
                     break;
                     }
                 }
@@ -182,7 +182,7 @@ namespace ArbWeb
         private void DoGenOpenSlotsMail()
         {
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
-            string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.htm";
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
             string sBcc = m_cbTestEmail.Checked ? "" : rst.SBuildAddressLine(m_ebFilter.Text);
@@ -295,8 +295,7 @@ namespace ArbWeb
         private void DoGenSiteRosterReport()
         {
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
-            string sTempFile = String.Format("{0}\\temp{1}.doc", Environment.GetEnvironmentVariable("Temp"),
-                                             System.Guid.NewGuid().ToString());
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
             gc.GenSiteRosterReport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);

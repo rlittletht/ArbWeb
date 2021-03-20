@@ -149,7 +149,7 @@ namespace ArbWeb
 
                     if (sOther.Length > 0)
                         sOther += ", ";
-                    sOther = String.Format("{0}{1} ({2})", sOther, sKey.Substring(sSport.Length + 2), m_mpRanking[sKey]);
+                    sOther = $"{sOther}{sKey.Substring(sSport.Length + 2)} ({m_mpRanking[sKey]})";
                     }
                 }
             return sOther;
@@ -961,7 +961,7 @@ namespace ArbWeb
 
                 for (int i = 0; i < cMiscMax; i++)
                     {
-                    m_plsMisc.Add(String.Format("Misc{0}", i));
+                    m_plsMisc.Add($"Misc{i}");
                     }
                 }
         }

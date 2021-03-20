@@ -98,7 +98,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private AutoResetEvent DoLaunchTestDownload(string sTempFile, string sTestAddress)
         {
-            m_srpt.LogData(String.Format("Setting clipboard data: {0}", sTempFile), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Setting clipboard data: {sTempFile}", 3, StatusRpt.MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sTempFile);
 
             m_awc.ResetNav();

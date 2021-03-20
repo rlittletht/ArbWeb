@@ -90,10 +90,10 @@ namespace Win32Win
             while ((hWnd = Win32.FindWindow(sDlgClass, sCaption)) == IntPtr.Zero && n-- > 0)
             {
                 Thread.Sleep(100);
-                m_srpt.LogData(String.Format("FindWindow: 0x{0:X8}, n={1} ({2}/{3})", (Int64)hWnd, n, sDlgClass, sCaption), 3, StatusRpt.MSGT.Body);
+                m_srpt.LogData($"FindWindow: 0x{(Int64) hWnd:X8}, n={n} ({sDlgClass}/{sCaption})", 3, StatusRpt.MSGT.Body);
             }
 
-            m_srpt.LogData(String.Format("FindWindow DONE: 0x{0:X8}, n={1}", (Int64)hWnd, n), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FindWindow DONE: 0x{(Int64) hWnd:X8}, n={n}", 3, StatusRpt.MSGT.Body);
             if (hWnd == IntPtr.Zero)
             {
                 m_srpt.LogData(String.Format("{0}{1}, n={1}", sErrorMsg, hWnd, n), 3, StatusRpt.MSGT.Body);
@@ -111,7 +111,7 @@ namespace Win32Win
                 if (FSearchForExpectedTextInControlsCore(sTextToFind, sAltTextToFind, sClassName, sPrologueMsg, hWnd))
                     return true;
 
-                m_srpt.LogData(String.Format("Retry {0}...", cRetry), 3, StatusRpt.MSGT.Body);
+                m_srpt.LogData($"Retry {cRetry}...", 3, StatusRpt.MSGT.Body);
 
                 Thread.Sleep(100);
                 cRetry--;
@@ -124,16 +124,16 @@ namespace Win32Win
             m_sChildFind = sTextToFind;
             m_sAltChildFind = sAltTextToFind;
 
-            m_srpt.LogData(String.Format("{0} {1}/{2}", sPrologueMsg, sTextToFind, sAltTextToFind), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"{sPrologueMsg} {sTextToFind}/{sAltTextToFind}", 3, StatusRpt.MSGT.Body);
             m_sClassNameFinding = sClassName;
             Win32.EnumChildWindows(hWnd, new Win32.EnumChildWindowCallback(EnumChildCallback), IntPtr.Zero);
             if (!m_fFound)
             {
-                m_srpt.LogData(String.Format("Couldn't find expected text: {0}/{1}", sTextToFind, sAltTextToFind), 3, StatusRpt.MSGT.Body);
+                m_srpt.LogData($"Couldn't find expected text: {sTextToFind}/{sAltTextToFind}", 3, StatusRpt.MSGT.Body);
                 return false;
             }
 
-            m_srpt.LogData(String.Format("Found expected text: {0}, {1}", m_sChildFound, m_fFound), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Found expected text: {m_sChildFound}, {m_fFound}", 3, StatusRpt.MSGT.Body);
             return true;
         }
 
@@ -156,9 +156,9 @@ namespace Win32Win
         }
         private bool FReplaceTextInControl(string sValidateText, string sReplaceText)
         {
-            m_srpt.LogData(String.Format("Replacing {0} with {1} (handle = 0x{2:X8}", sValidateText, sReplaceText, (Int64)m_hwndFound), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Replacing {sValidateText} with {sReplaceText} (handle = 0x{(Int64) m_hwndFound:X8}", 3, StatusRpt.MSGT.Body);
             string sActual = GetControlText(m_hwndFound);
-            m_srpt.LogData(String.Format("Actual text before: {0}", sActual), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Actual text before: {sActual}", 3, StatusRpt.MSGT.Body);
 
             Win32.PostMessage(m_hwndFound, Win32.WM_SETFOCUS, IntPtr.Zero, IntPtr.Zero);
             m_srpt.LogData(String.Format("Posted message SETFOCUS"), 3, StatusRpt.MSGT.Body);
@@ -178,7 +178,7 @@ namespace Win32Win
                     break;
                 }
 
-            m_srpt.LogData(String.Format("Actual text after first: {0} [{1}msec]", sActual, 10 * (30 - cRetryForTypingLag)), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Actual text after first: {sActual} [{10 * (30 - cRetryForTypingLag)}msec]", 3, StatusRpt.MSGT.Body);
 #if no
             Win32.PostMessage(m_hwndFound, Win32.WM_SETTEXT, IntPtr.Zero, Marshal.StringToCoTaskMemUni(sReplaceText));
             m_srpt.AddMessage(String.Format("Posted message SETTEXT"));
@@ -217,7 +217,8 @@ namespace Win32Win
             IntPtr hWnd;
             int n = fWaitForDialog ? 1100 : 1;
 
-            m_srpt.LogData(String.Format("FHandleDialogAndClickButton before FindWindow loop (Class={0}, Caption={1}) (WAIT_FOR_DIALOG={2}, VALIDATE_TEXT={3}, REPLACE_TEXT={4}, BUTTON_TO_PRESS={5})", sDlgClass, sCaption, fWaitForDialog, sValidateText ?? "null", sReplaceText ?? "null", sButtonToPress ?? "null"), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData(
+	            $"FHandleDialogAndClickButton before FindWindow loop (Class={sDlgClass}, Caption={sCaption}) (WAIT_FOR_DIALOG={fWaitForDialog}, VALIDATE_TEXT={sValidateText ?? "null"}, REPLACE_TEXT={sReplaceText ?? "null"}, BUTTON_TO_PRESS={sButtonToPress ?? "null"})", 3, StatusRpt.MSGT.Body);
 
             if (!FWaitForWindowToBePresent(sDlgClass, sCaption, n, "TrapFileDownloadWork failed to find first window: ", out hWnd))
                 return false;
@@ -239,16 +240,16 @@ namespace Win32Win
                 return false;
 
             // now click on the button...
-            m_srpt.LogData(String.Format("FHandleDialogAndClickButton SetActiveWindow({0})", hWnd), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FHandleDialogAndClickButton SetActiveWindow({hWnd})", 3, StatusRpt.MSGT.Body);
             Win32.SetActiveWindow(hWnd);
-            m_srpt.LogData(String.Format("FHandleDialogAndClickButton sending BM_CLICK to window {0}", m_hwndFound), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FHandleDialogAndClickButton sending BM_CLICK to window {m_hwndFound}", 3, StatusRpt.MSGT.Body);
             Win32.SendMessage(m_hwndFound, Win32.BM_CLICK, IntPtr.Zero, IntPtr.Zero);
 
             Thread.Sleep(50);
 
             if (m_sProgressWait != null)
                 {
-                m_srpt.LogData(String.Format("Waiting for progress dialog to not be present: {0}", m_sProgressWait), 3, StatusRpt.MSGT.Body);
+                m_srpt.LogData($"Waiting for progress dialog to not be present: {m_sProgressWait}", 3, StatusRpt.MSGT.Body);
                 n = 60;
 
                 m_sChildFind = m_sProgressWait;
@@ -256,10 +257,10 @@ namespace Win32Win
                     {
                     m_fFound = false;
                     Win32.EnumWindows(new Win32.EnumWindowCallback(EnumWndCallback), IntPtr.Zero);
-                    m_srpt.LogData(String.Format("EnumWindow found: {0} {1}", m_hwndFound, m_sChildFind), 3, StatusRpt.MSGT.Body);
+                    m_srpt.LogData($"EnumWindow found: {m_hwndFound} {m_sChildFind}", 3, StatusRpt.MSGT.Body);
                     Thread.Sleep(100);
                     } while (m_fFound && --n > 0);
-                m_srpt.LogData(String.Format("Stopped waiting for progress dialog to disappear (countEnd: {0}, fFound: {1})", n, m_fFound), 3, StatusRpt.MSGT.Body);
+                m_srpt.LogData($"Stopped waiting for progress dialog to disappear (countEnd: {n}, fFound: {m_fFound})", 3, StatusRpt.MSGT.Body);
                 }
             return true;
         }
@@ -284,7 +285,7 @@ namespace Win32Win
                 m_srpt.LogData("TrapFileDownloadWork before repeat for click", 3, StatusRpt.MSGT.Body);
                 while (FHandleDialogAndClickButton("#32770", "Save As", m_sName, null, null, null, "&Save", false))
                     {
-                    m_srpt.LogData(String.Format("Had to click the button again ({0} times)...", ++c), 3, StatusRpt.MSGT.Body);
+                    m_srpt.LogData($"Had to click the button again ({++c} times)...", 3, StatusRpt.MSGT.Body);
                     Thread.Sleep(700);
                     }
 
@@ -308,7 +309,7 @@ namespace Win32Win
             cch = (int)Win32.GetWindowText(hWnd, sb, (IntPtr)256);
             string s = sb.ToString().Trim();
 
-            m_srpt.LogData(String.Format("EnumWndCallback: {0} =? {1} (hwnd = 0x{2:X8}", s, m_sChildFind, (Int64)hWnd), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"EnumWndCallback: {s} =? {m_sChildFind} (hwnd = 0x{(Int64) hWnd:X8}", 3, StatusRpt.MSGT.Body);
 
             if (s.Contains(m_sChildFind) || (m_sAltChildFind != null && s.Contains(m_sAltChildFind)))
                 {
@@ -332,7 +333,7 @@ namespace Win32Win
             cch = (int)Win32.GetWindowText(hWnd, sb, (IntPtr)256);
             string s = sb.ToString().Trim();
 
-            m_srpt.LogData(String.Format("EnumChildCallback: {0} =? {1} (hwnd = 0x{2:X8}", s, m_sChildFind, (Int64)hWnd), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"EnumChildCallback: {s} =? {m_sChildFind} (hwnd = 0x{(Int64) hWnd:X8}", 3, StatusRpt.MSGT.Body);
 
             if (s == m_sChildFind)
                 {

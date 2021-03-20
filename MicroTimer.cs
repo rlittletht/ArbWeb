@@ -72,7 +72,7 @@ namespace ArbWeb
             //if (m_msecStop == -1)
             //Stop();
 
-            return String.Format("{0}", Seconds().ToString());
+            return $"{Seconds().ToString()}";
         }
 
         public string ElapsedMsec()

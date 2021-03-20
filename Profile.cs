@@ -251,7 +251,7 @@ namespace ArbWeb
 
         public void Load(string sProfileName)
         {
-            string sRoot = String.Format("Software\\Thetasoft\\ArbWeb\\{0}", sProfileName);
+            string sRoot = $"Software\\Thetasoft\\ArbWeb\\{sProfileName}";
             m_ehProfile = new Settings(m_rgreheProfile, sRoot, sRoot);
             m_sProfileName = sProfileName;
             m_ehProfile.Load();
@@ -268,7 +268,7 @@ namespace ArbWeb
             if (m_ehProfile == null)
                 {
                 // must be a new profile
-                string sRoot = String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_sProfileName);
+                string sRoot = $"Software\\Thetasoft\\ArbWeb\\{m_sProfileName}";
                 m_ehProfile = new Settings(m_rgreheProfile, sRoot, sRoot);
                 }
 

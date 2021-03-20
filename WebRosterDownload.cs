@@ -168,12 +168,12 @@ namespace ArbWeb
                 if (rste == null)
                     {
                     m_srpt.AddMessage(
-                        String.Format("Lookup failed during ProcessAllOfficialPages for official '{0}'({1})",
-                                      cells[2].InnerText.Trim(), sEmail), StatusBox.StatusRpt.MSGT.Error);
+	                    $"Lookup failed during ProcessAllOfficialPages for official '{cells[2].InnerText.Trim()}'({sEmail})", StatusBox.StatusRpt.MSGT.Error);
                     continue;
                     }
 
-                m_srpt.LogData(String.Format("Updating last access for official '{0}', {1}", rste.Name, sSignedIn), 5,
+                m_srpt.LogData(
+	                $"Updating last access for official '{rste.Name}', {sSignedIn}", 5,
                                   StatusBox.StatusRpt.MSGT.Body);
                 rste.m_sLastSignin = sSignedIn;
                 }
@@ -374,8 +374,7 @@ namespace ArbWeb
             // navigate to the officials page...
             EnsureLoggedIn();
 
-            string sTempFile = String.Format("{0}\\temp{1}.csv", Environment.GetEnvironmentVariable("Temp"),
-                                             System.Guid.NewGuid().ToString());
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
 
 
             DoRosterDownload(sTempFile);

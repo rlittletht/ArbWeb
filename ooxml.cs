@@ -82,9 +82,9 @@ namespace ArbWeb
             WriteElementFull(xw, "linkToQuery", (string[])null);
             WriteElementFull(xw, "dataType", new[] {"textFile"});
             WriteElementFull(xw, "connectString", new[] {""});
-            WriteElementFull(xw, "query", new[] {String.Format("SELECT * FROM {0}", sDataSource)});
+            WriteElementFull(xw, "query", new[] {$"SELECT * FROM {sDataSource}"});
             
-            PackageRelationship rel = prt.CreateRelationship( new System.Uri(String.Format("file:///{0}", sDataSource), UriKind.Absolute), TargetMode.External, s_sUriMailMergeRelType);
+            PackageRelationship rel = prt.CreateRelationship( new System.Uri($"file:///{sDataSource}", UriKind.Absolute), TargetMode.External, s_sUriMailMergeRelType);
             StartElement(xw, "dataSource");
             xw.WriteAttributeString("id", "http://schemas.openxmlformats.org/officeDocument/2006/relationships", rel.Id);
             EndElement(xw);
@@ -141,16 +141,16 @@ namespace ArbWeb
             string sCount = "";
 
             if (cGames > 1)
-                sCount = String.Format("{0} games, ", cGames);
+                sCount = $"{cGames} games, ";
             else
-                sCount = String.Format("{0} game, ", cGames);
+                sCount = $"{cGames} game, ";
 
             if (gm.TotalSlots - gm.OpenSlots == 0)
                 sDesc = "NO UMPIRES";
             else
-                sDesc = String.Format("{0} UMPIRE", gm.TotalSlots - gm.OpenSlots);
+                sDesc = $"{gm.TotalSlots - gm.OpenSlots} UMPIRE";
 
-            return String.Format("{0}{1}", sCount, sDesc);
+            return $"{sCount}{sDesc}";
         }
 
         static string FriendlySport(GameData.Game gm)
@@ -176,8 +176,8 @@ namespace ArbWeb
 
         static void AppendGameToSb(GameData.Game gm, int cGames, StringBuilder sb)
         {
-            sb.Append(String.Format("<tr><td>{0}<td>{1}", gm.Slots[0].Dttm.ToString("M/dd"), gm.Slots[0].Dttm.ToString("ddd h tt")));
-            sb.Append(String.Format("<td>{0}<td>{1}<td class='bold'>{2}", FriendlySport(gm), gm.Slots[0].SiteShort, DescribeGame(gm, cGames)));
+            sb.Append($"<tr><td>{gm.Slots[0].Dttm.ToString("M/dd")}<td>{gm.Slots[0].Dttm.ToString("ddd h tt")}");
+            sb.Append($"<td>{FriendlySport(gm)}<td>{gm.Slots[0].SiteShort}<td class='bold'>{DescribeGame(gm, cGames)}");
         }
 
         static void StartTable(XmlTextWriter xw, int cCols)
@@ -231,7 +231,7 @@ namespace ArbWeb
                 if (gm.TotalSlots - gm.OpenSlots > 1)
                     continue;
 
-                string s = String.Format("{0}-{1}-{2}", gm.Slots[0].Dttm.ToString("yyyyMMdd:HHmm"), gm.Slots[0].SiteShort, gm.TotalSlots - gm.OpenSlots);
+                string s = $"{gm.Slots[0].Dttm.ToString("yyyyMMdd:HHmm")}-{gm.Slots[0].SiteShort}-{gm.TotalSlots - gm.OpenSlots}";
                 if (!mpSlotGames.ContainsKey(s))
                     mpSlotGames.Add(s, new List<GameData.Game>());
 

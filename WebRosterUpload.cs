@@ -73,7 +73,7 @@ namespace ArbWeb
                 rsteServer = (RosterEntry) irstServer.IrsteLookupEmail(sEmail);
                 if (rsteServer == null)
                     {
-                    m_srpt.AddMessage(String.Format("NULL Server entry for {0}, SKIPPING", sEmail), StatusBox.StatusRpt.MSGT.Error);
+                    m_srpt.AddMessage($"NULL Server entry for {sEmail}, SKIPPING", StatusBox.StatusRpt.MSGT.Error);
                     return;
                     }
                 if (rsteNew.FEquals(rsteServer))
@@ -86,7 +86,7 @@ namespace ArbWeb
 
         bool FConfirmExistingArbiterUserAdd(IHTMLDocument2 oDoc2, RosterEntry rsteNewUser)
         {
-            m_srpt.AddMessage(String.Format("Email {0} already in use", rsteNewUser.Email), StatusBox.StatusRpt.MSGT.Warning);
+            m_srpt.AddMessage($"Email {rsteNewUser.Email} already in use", StatusBox.StatusRpt.MSGT.Warning);
 
             // this email is member of another group.  we can't change their personal info
             // do a quick sanity match to make sure this is the same user
@@ -104,7 +104,7 @@ namespace ArbWeb
             if (String.Compare(sName, rsteNewUser.Name, true /*ignoreCase*/) != 0)
                 {
                 if (MessageBox.Show(
-                        String.Format("Trying to add office {0} and found a mismatch with existing official {1}, with email {2}", rsteNewUser.Name, sName, rsteNewUser.Email),
+	                $"Trying to add office {rsteNewUser.Name} and found a mismatch with existing official {sName}, with email {rsteNewUser.Email}",
                         "ArbWeb", MessageBoxButtons.YesNo) != DialogResult.Yes)
                     {
                     // ok, then just cancel...
@@ -147,7 +147,7 @@ namespace ArbWeb
                 {
                 RosterEntry rste = (RosterEntry)irste;
                 // add the official rste
-                m_srpt.AddMessage(String.Format("Adding official '{0}', {1}", rste.Name, rste.Email), StatusBox.StatusRpt.MSGT.Body);
+                m_srpt.AddMessage($"Adding official '{rste.Name}', {rste.Email}", StatusBox.StatusRpt.MSGT.Body);
                 m_srpt.PushLevel();
 
                 // go to the add user page
@@ -308,7 +308,8 @@ namespace ArbWeb
                 foreach (string s in mpRankNames[nRank])
                 {
                     if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_NotRanked, mpNameOptionValueUnranked[s]))
-                        srpt.AddMessage(String.Format("Could not select an official for ranking: {0}", s),
+                        srpt.AddMessage(
+	                        $"Could not select an official for ranking: {s}",
                                         StatusRpt.MSGT.Error);
                     // throw new Exception("couldn't select an official for ranking!");
                 }

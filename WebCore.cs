@@ -460,7 +460,7 @@ namespace ArbWeb
 
             if (m_sGameFile.Length < 1)
             {
-                sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
+                sOutFile = $"{Environment.GetEnvironmentVariable("temp")}";
             }
             else
             {
@@ -802,7 +802,7 @@ namespace ArbWeb
                     bool fMarkOnly = false;
 
                     irste.SetEmail((string) pgl.plofi[pgl.iCur].sEmail);
-                    m_iac.StatusReport.AddMessage(String.Format("Processing roster info for {0}...", pgl.plofi[pgl.iCur].sEmail));
+                    m_iac.StatusReport.AddMessage($"Processing roster info for {pgl.plofi[pgl.iCur].sEmail}...");
 
                     if (m_fAddOfficialsOnly && plirsteLimit == null)
                         fMarkOnly = true;
@@ -1044,7 +1044,7 @@ namespace ArbWeb
 
                 if (plirsteUnmarked.Count > 0)
                 {
-                    if (MessageBox.Show(String.Format("There are {0} new officials.  Add these officials?", plirsteUnmarked.Count), "ArbWeb", MessageBoxButtons.YesNo) ==
+                    if (MessageBox.Show($"There are {plirsteUnmarked.Count} new officials.  Add these officials?", "ArbWeb", MessageBoxButtons.YesNo) ==
                         DialogResult.Yes)
                     {
                         m_delAddOfficials?.Invoke(plirsteUnmarked);
@@ -1084,7 +1084,7 @@ namespace ArbWeb
 
             if (sRosterName.Length < 1)
                 {
-                sOutFile = String.Format("{0}", Environment.GetEnvironmentVariable("temp"));
+                sOutFile = $"{Environment.GetEnvironmentVariable("temp")}";
                 }
             else
                 {

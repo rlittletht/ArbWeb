@@ -304,11 +304,11 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         static void SetPhoneNames(int iPhoneRow, out string sPhoneNum, out string sidPhoneNum, out string sPhoneType, out string sPhoneCarrier, out string sPhonePublicNext)
         {
-            sPhoneNum = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhoneNumber_Prefix, iPhoneRow, WebCore._s_EditUser_PhoneNumber_Suffix);
-            sidPhoneNum = String.Format("{0}ctl{1:00}{2}", WebCore._sid_EditUser_PhoneNumber_Prefix, iPhoneRow, WebCore._sid_EditUser_PhoneNumber_Suffix);
-            sPhoneType = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhoneType_Prefix, iPhoneRow, WebCore._s_EditUser_PhoneType_Suffix);
-            sPhoneCarrier = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhoneCarrier_Prefix, iPhoneRow, WebCore._s_EditUser_PhoneCarrier_Suffix);
-            sPhonePublicNext = String.Format("{0}ctl{1:00}{2}", WebCore._s_EditUser_PhonePublic_Prefix, iPhoneRow, WebCore._s_EditUser_PhonePublic_Suffix);
+            sPhoneNum = $"{WebCore._s_EditUser_PhoneNumber_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhoneNumber_Suffix}";
+            sidPhoneNum = $"{WebCore._sid_EditUser_PhoneNumber_Prefix}ctl{iPhoneRow:00}{WebCore._sid_EditUser_PhoneNumber_Suffix}";
+            sPhoneType = $"{WebCore._s_EditUser_PhoneType_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhoneType_Suffix}";
+            sPhoneCarrier = $"{WebCore._s_EditUser_PhoneCarrier_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhoneCarrier_Suffix}";
+            sPhonePublicNext = $"{WebCore._s_EditUser_PhonePublic_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhonePublic_Suffix}";
         }
 
         /* S Y N C  R S T E  W I T H  S E R V E R */
@@ -555,7 +555,7 @@ namespace ArbWeb
             // first, unrank any officials that should now become unranked
             foreach (RosterEntry rste in plirste)
                 {
-                string sReversed = String.Format("{0}, {1}", rste.Last, rste.First);
+                string sReversed = $"{rste.Last}, {rste.First}";
 
                 if (!rste.FRanked(sRankPosition))
                     {
@@ -815,7 +815,7 @@ namespace ArbWeb
 		        else
 		        {
 			        m_srpt.AddMessage(
-				        String.Format("Duplicate key {0} adding rank {1} to rank {2}", sName, nRank, sRankPosition),
+				        $"Duplicate key {sName} adding rank {nRank} to rank {sRankPosition}",
 				        StatusRpt.MSGT.Error);
 		        }
 
@@ -824,7 +824,7 @@ namespace ArbWeb
 		        else
 		        {
 			        m_srpt.AddMessage(
-				        String.Format("Duplicate key {0} adding rankid {1} to rank {2}", sName, mpT[sRankAndName], sRankPosition),
+				        $"Duplicate key {sName} adding rankid {mpT[sRankAndName]} to rank {sRankPosition}",
 				        StatusRpt.MSGT.Error);
 		        }
 	        }

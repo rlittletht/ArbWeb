@@ -169,7 +169,7 @@ namespace ArbWeb
                         m_fForceFutureGames = true;
                         break;
                     default:
-                        sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+                        sError = $"Unknown arg: '{cls.Switch}'";
                         return false;
                     }
 
@@ -182,7 +182,7 @@ namespace ArbWeb
                 m_sAutomateDateEnd = sParam;
             else
                 {
-                sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+                sError = $"Unknown arg: '{cls.Switch}'";
                 return false;
                 }
 
@@ -290,14 +290,14 @@ namespace ArbWeb
             string sError = null;
 
             if (rgsCmdLine != null && rgsCmdLine.Length > 0)
-                m_srpt.AddMessage(String.Format("Commandline args: {0} {1}", rgsCmdLine.Length, rgsCmdLine[0]));
+                m_srpt.AddMessage($"Commandline args: {rgsCmdLine.Length} {rgsCmdLine[0]}");
 
             if (!cl.FParse(rgsCmdLine, this, null, out sError) || (m_fAutomateUpdateHelp && (m_sAutomateDateEnd == null || m_sAutomateDateStart == null)))
                 {
                 m_sbUsage = new StringBuilder();
 
                 cl.Usage(AppendUsageString);
-                MessageBox.Show(String.Format("Command Line error: {0}\n{1}", sError, m_sbUsage.ToString()), "ArbWeb");
+                MessageBox.Show($"Command Line error: {sError}\n{m_sbUsage.ToString()}", "ArbWeb");
                 m_fAutomating = true;
                 Close();
                 }
@@ -1354,7 +1354,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoGenCounts(object sender, EventArgs e)
         {
-            m_srpt.AddMessage(String.Format("Generating analysis ({0})...", m_ebOutputFile.Text));
+            m_srpt.AddMessage($"Generating analysis ({m_ebOutputFile.Text})...");
             m_srpt.PushLevel();
 
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
@@ -1519,7 +1519,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoGamesReport(object sender, EventArgs e)
         {
-            m_srpt.AddMessage(String.Format("Generating games report ({0})...", m_ebGameOutput.Text));
+            m_srpt.AddMessage($"Generating games report ({m_ebGameOutput.Text})...");
             m_srpt.PushLevel();
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             Roster rst = RstEnsure(m_pr.RosterWorking);

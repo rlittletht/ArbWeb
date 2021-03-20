@@ -116,7 +116,7 @@ namespace ArbWeb
             public string Pos { get { return m_sPos; } }
             public DateTime Dttm { get { return m_dttm; } }
             public string Site { get { return m_sSite; } }
-            public string SportLevel { get { return String.Format("{0} {1}", m_sSport, m_sLevel); } }
+            public string SportLevel { get { return $"{m_sSport} {m_sLevel}"; } }
 
             public string SiteShort
             {
@@ -171,15 +171,15 @@ namespace ArbWeb
                 m_mpFieldVal.Add("Home", m_sHome);
                 m_mpFieldVal.Add("Away", m_sAway);
                 m_mpFieldVal.Add("Site", m_sSite);
-                m_mpFieldVal.Add("Description", String.Format("{0}: [{1}] {2}: {3} vs. {4} ({5} {6})", m_sPos, m_sGameNum, sDateTime, m_sHome, m_sAway, m_sSport, m_sLevel));
+                m_mpFieldVal.Add("Description", $"{m_sPos}: [{m_sGameNum}] {sDateTime}: {m_sHome} vs. {m_sAway} ({m_sSport} {m_sLevel})");
                 m_mpFieldVal.Add("Cancelled", m_fCancelled ? "1" : "0");
 
                 m_mpFieldVal.Add("Sport", m_sSport);
 
-                string sSportLevelPos = String.Format("{0}-{1}-{2}", m_sSport, m_sLevel, m_sPos);
-                string sSportTotal = String.Format("{0}-Total", m_sSport);
-                string sSportLevelTotal = String.Format("{0}-{1}-Total", m_sSport, m_sLevel);
-                string sSportPos = String.Format("{0}-{1}", m_sSport, m_sPos);
+                string sSportLevelPos = $"{m_sSport}-{m_sLevel}-{m_sPos}";
+                string sSportTotal = $"{m_sSport}-Total";
+                string sSportLevelTotal = $"{m_sSport}-{m_sLevel}-Total";
+                string sSportPos = $"{m_sSport}-{m_sPos}";
                 string sTotal = String.Format("Total");
 
                 m_mpFieldVal.Add(sSportLevelPos, "1");
@@ -403,16 +403,16 @@ namespace ArbWeb
                 sport.EnsurePos(sLevel, sPos, out fNewLevel, out fNewPos, out fNewLevelPos);
 
                 if (fNewLevelPos)
-                    m_plsLegend.Add(String.Format("{0}-{1}-{2}", sSport, sLevel, sPos));
+                    m_plsLegend.Add($"{sSport}-{sLevel}-{sPos}");
 
                 if (fNewSport)
-                    m_plsLegend.Add(String.Format("{0}-Total", sSport));
+                    m_plsLegend.Add($"{sSport}-Total");
 
                 if (fNewLevel)
-                    m_plsLegend.Add(String.Format("{0}-{1}-Total", sSport, sLevel));
+                    m_plsLegend.Add($"{sSport}-{sLevel}-Total");
 
                 if (fNewPos)
-                    m_plsLegend.Add(String.Format("{0}-{1}", sSport, sPos));
+                    m_plsLegend.Add($"{sSport}-{sPos}");
             }
 
             /* A D D  G A M E */
@@ -463,15 +463,16 @@ namespace ArbWeb
             {
                 string sTeamSport = gms.Team + "#-#" + gms.Sport;
 
-                m_plgmsSorted.Add(String.Format("{0}_{1}_{2}", gms.Name, gms.Dttm.ToString("yyyyMMdd:HH:mm"), m_plgmsSorted.Count), gms);
-                m_plgmsSortedGameNum.Add(String.Format("{0}_{1}_{2}_{3}_{4}_{5}", gms.Dttm.ToString("yyyyMMdd:HH:mm"), gms.Site, gms.Sport, gms.Level, gms.GameNum, m_plgmsSortedGameNum.Count), gms);
+                m_plgmsSorted.Add($"{gms.Name}_{gms.Dttm.ToString("yyyyMMdd:HH:mm")}_{m_plgmsSorted.Count}", gms);
+                m_plgmsSortedGameNum.Add(
+	                $"{gms.Dttm.ToString("yyyyMMdd:HH:mm")}_{gms.Site}_{gms.Sport}_{gms.Level}_{gms.GameNum}_{m_plgmsSortedGameNum.Count}", gms);
 
 
                 if (!m_mpnumgm.ContainsKey(gms.GameNum))
                     {
                     Game gm;
                     m_mpnumgm.Add(gms.GameNum, gm = new Game());
-                    m_plgmSorted.Add(String.Format("{0}-{1}", gms.Dttm.ToString("yyyymmdd-HH:MM"), gms.GameNum), gm);
+                    m_plgmSorted.Add($"{gms.Dttm.ToString("yyyymmdd-HH:MM")}-{gms.GameNum}", gm);
                     }
 
                 m_mpnumgm[gms.GameNum].AddGameSlot(gms);
@@ -769,7 +770,7 @@ namespace ArbWeb
 			----------------------------------------------------------------------------*/
             public static void UpdateTeamCount(Dictionary<string, int> mpTeamCount, string sTeam, string sSport, int dCount)
             {
-                string sTeamSport = String.Format("{0}#-#{1}", sTeam, sSport);
+                string sTeamSport = $"{sTeam}#-#{sSport}";
 
                 if (!mpTeamCount.ContainsKey(sTeam))
                     mpTeamCount.Add(sTeam, dCount);
@@ -833,7 +834,7 @@ namespace ArbWeb
                     // when we distribute games around...
                     foreach (string sTeam in rgsTeams)
                         {
-                        string sTeamSport = String.Format("{0}#-#{1}", sTeam, sSport);
+                        string sTeamSport = $"{sTeam}#-#{sSport}";
 
                         if (fIntraSport)
                             {
@@ -865,7 +866,7 @@ namespace ArbWeb
                     if (gm.Team.IndexOf(';') == -1)
                         continue;
 
-                    string sSportTeam = String.Format("{0}#-#{1}", gm.Team, gm.Sport);
+                    string sSportTeam = $"{gm.Team}#-#{gm.Sport}";
 
                     DistributeTeamCount dtc = m_mpTeamDtc[sSportTeam];
 
@@ -1105,7 +1106,7 @@ namespace ArbWeb
 
                 if (rgs[0] == null || rgs[1] == null)
                     return s;
-                return String.Format("{0},{1}", rgs[1], rgs[0]);
+                return $"{rgs[1]},{rgs[0]}";
             }
 
             [Test]
@@ -1146,7 +1147,7 @@ namespace ArbWeb
                 if (rgs[0] == null || rgs[1] == null || rgs[2] == null)
                     return ReverseNameSimple(s);
 
-                return String.Format("{0},{1}{2}", rgs[2], rgs[0], rgs[1]);
+                return $"{rgs[2]},{rgs[0]}{rgs[1]}";
             }
 
             [Test]
@@ -1313,21 +1314,21 @@ namespace ArbWeb
                     sBackground = " style='background: #c0c0c0'";
                 }
                 sw.WriteLine($"<tr{sBackground}>");
-                sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].GameNum));
-                sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("ddd M/dd")));
-                sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Dttm.ToString("h:mm tt")));
-                sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].SportLevel));
+                sw.WriteLine($"<td class='rosterOuter'>{plgm[0].GameNum}");
+                sw.WriteLine($"<td class='rosterOuter'>{plgm[0].Dttm.ToString("ddd M/dd")}");
+                sw.WriteLine($"<td class='rosterOuter'>{plgm[0].Dttm.ToString("h:mm tt")}");
+                sw.WriteLine($"<td class='rosterOuter'>{plgm[0].SportLevel}");
                 if (fHeader)
                 {
-                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", mpSiteRoot[plgm[0].Site]));
+                    sw.WriteLine($"<td class='rosterOuter'>{mpSiteRoot[plgm[0].Site]}");
                 }
                 else
                 {
-                    sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Site));
+                    sw.WriteLine($"<td class='rosterOuter'>{plgm[0].Site}");
                 }
 
-                sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Home));
-                sw.WriteLine(String.Format("<td class='rosterOuter'>{0}", plgm[0].Away));
+                sw.WriteLine($"<td class='rosterOuter'>{plgm[0].Home}");
+                sw.WriteLine($"<td class='rosterOuter'>{plgm[0].Away}");
                 sw.WriteLine($"<tr{sBackground}><td colspan='7' class='rosterOuter'>");
                 sw.WriteLine($"<table {sBackground} class='rosterInner'>");
                 foreach (GameSlot gm in plgm)
@@ -1337,7 +1338,7 @@ namespace ArbWeb
                         {
                         if (!gm.Sport.Contains("Admin"))
                             {
-                            sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Pos));
+                            sw.WriteLine($"<td class='rosterInner'>{gm.Pos}");
                             sw.WriteLine("<td colspan='4'>&nbsp;");
                             }
                         }
@@ -1360,15 +1361,15 @@ namespace ArbWeb
                             {
                             sPhone = rste.CellPhone;
                             sName = rste.Name;
-                            nBaseRank = rste.Rank(String.Format("{0}, {1}", gm.Sport, gm.Pos));
+                            nBaseRank = rste.Rank($"{gm.Sport}, {gm.Pos}");
                             sOtherRanks = rste.OtherRanks(gm.Sport, gm.Pos, nBaseRank);
                             }
                         
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0} ({1})", gm.Pos, nBaseRank));
-                        sw.WriteLine(String.Format("<td class='rosterInnerName'>{0}", sName));
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", sPhone));
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", sOtherRanks));
-                        sw.WriteLine(String.Format("<td class='rosterInner'>{0}", gm.Status));
+                        sw.WriteLine($"<td class='rosterInner'>{gm.Pos} ({nBaseRank})");
+                        sw.WriteLine($"<td class='rosterInnerName'>{sName}");
+                        sw.WriteLine($"<td class='rosterInner'>{sPhone}");
+                        sw.WriteLine($"<td class='rosterInner'>{sOtherRanks}");
+                        sw.WriteLine($"<td class='rosterInner'>{gm.Status}");
                         }
                     }
                 sw.WriteLine("</table>");
@@ -1543,8 +1544,7 @@ namespace ArbWeb
                         sType = $"{sSite}Game";
 
                     mpgames.Add(
-                        String.Format("{0}_{1}_{2}_{3}_{4}_{5}_{6}", gm.Dttm.ToString("yyyyMMdd:HH:mm"), sType, gm.Site,
-                            gm.Sport, gm.Level, gm.GameNum, mpgames.Count), gm);
+	                    $"{gm.Dttm.ToString("yyyyMMdd:HH:mm")}_{sType}_{gm.Site}_{gm.Sport}_{gm.Level}_{gm.GameNum}_{mpgames.Count}", gm);
                 }
                 // at this point we are ready to generate the report
 
@@ -1643,7 +1643,7 @@ namespace ArbWeb
 
                 foreach (GameSlot gm in m_plgmsSorted.Values)
                     {
-                    string sPosRank = String.Format("{0}, {1}", gm.Sport, gm.Pos);
+                    string sPosRank = $"{gm.Sport}, {gm.Pos}";
 
                     if (!hs.Contains(sPosRank))
                         {
@@ -1692,7 +1692,8 @@ namespace ArbWeb
                     if (plsLevels != null && !(plsLevels.ContainsKey(gm.SportLevel)))
                         continue;
 
-                    sw.WriteLine(String.Format(sFormat, gm.GameNum, gm.Dttm.ToString("MM/dd/yy ddd"), gm.Dttm.ToString("hh:mm tt"), gm.Site, String.Format("{0}, {1}", gm.Sport, gm.Level), gm.Home, gm.Away, gm.Pos));
+                    sw.WriteLine(String.Format(sFormat, gm.GameNum, gm.Dttm.ToString("MM/dd/yy ddd"), gm.Dttm.ToString("hh:mm tt"), gm.Site,
+	                    $"{gm.Sport}, {gm.Level}", gm.Home, gm.Away, gm.Pos));
                     }
                 sw.Close();
             }
@@ -1880,7 +1881,7 @@ namespace ArbWeb
                             Debug.Assert(
                                 rs == ReadState.ReadingComments || rs == ReadState.ScanForHeader ||
                                 rs == ReadState.ScanForGame,
-                                String.Format("Page break at illegal position: state = {0}", rs));
+                                $"Page break at illegal position: state = {rs}");
                             rs = ReadState.ScanForHeader;
                             continue;
                         }
@@ -2012,7 +2013,7 @@ namespace ArbWeb
                       || Regex.Match(sLine, ",_Events*").Success
                       || Regex.Match(sLine, ",zEvents*").Success
                       || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Training").Success))
-                    Debug.Assert(false, String.Format("failed to find game as expected!: {0} ({1}", sLine, rs));
+                    Debug.Assert(false, $"failed to find game as expected!: {sLine} ({rs}");
                 rs = ReadState.ReadingGame1;
                 // fallthrough to ReadingGame1
                 return rs;
@@ -2063,8 +2064,8 @@ namespace ArbWeb
                     if (Regex.Match(rgsFields[OfficialColumn], "_____").Success)
                         {
                         fOpenSlot = true;
-                        mpNamePos.Add(String.Format("!!OPEN{0}", mpNamePos.Count), rgsFields[1]);
-                        mpNameStatus.Add(String.Format("!!OPEN{0}", mpNameStatus.Count), rgsFields[SlotStatusColumn]);
+                        mpNamePos.Add($"!!OPEN{mpNamePos.Count}", rgsFields[1]);
+                        mpNameStatus.Add($"!!OPEN{mpNameStatus.Count}", rgsFields[SlotStatusColumn]);
                         return rs;
                         }
                     else
@@ -2108,7 +2109,8 @@ namespace ArbWeb
                             if (ump == null)
                                 {
                                 if (sName != "")
-                                    m_srpt.AddMessage(String.Format("Cannot find info for Umpire: {0}", sName),
+                                    m_srpt.AddMessage(
+	                                    $"Cannot find info for Umpire: {sName}",
                                                       StatusRpt.MSGT.Error);
                                 sEmail = "";
                                 sTeam = "";
@@ -2154,7 +2156,7 @@ namespace ArbWeb
                     // nothing in that column means we have a continuation.  now lets concatenate all our stuff
                     mpNamePos.Remove(ReverseName(rst, sNameLast));
                     mpNameStatus.Remove(ReverseName(rst, sNameLast));
-                    string sName = String.Format("{0} {1}", sNameLast, rgsFields[3]);
+                    string sName = $"{sNameLast} {rgsFields[3]}";
                     sName = ReverseName(rst, sName);
                     mpNamePos.Add(sName, sPosLast);
                     mpNameStatus.Add(sName, sStatusLast);
