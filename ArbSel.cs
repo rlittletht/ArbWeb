@@ -141,6 +141,28 @@ namespace ArbWeb
 
 		public void WaitForPageLoad(IWebDriver driver, int maxWaitTimeInSeconds) => WaitForPageLoad(m_appContext, m_driver, maxWaitTimeInSeconds);
 
+		public delegate bool WaitDelegate(IWebDriver driver);
+
+		public void WaitForCondition(WaitDelegate waitDelegate, int msecTimeout = 500)
+		{
+			WebDriverWait wait = new WebDriverWait(m_driver, TimeSpan.FromMilliseconds(msecTimeout));
+
+			wait.Until(
+				(d) =>
+				{
+					try
+					{
+						return waitDelegate(d);
+					}
+					catch
+					{
+						return false;
+					}
+
+					return true;
+				});
+		}
+		
 		#endregion
 
 		#region Individual Control Interaction
@@ -149,7 +171,7 @@ namespace ArbWeb
 			%%Function:FCheckForControl
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FCheckForControl
 		----------------------------------------------------------------------------*/
-		public static bool FCheckForControl(IWebDriver driver, string sid)
+		public static bool FCheckForControlId(IWebDriver driver, string sid)
 		{
 			IWebElement element;
 
@@ -163,6 +185,8 @@ namespace ArbWeb
 			}
 			return element != null;
 		}
+
+		public bool FCheckForControlId(string sid) => FCheckForControlId(m_driver, sid);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FClickControl
@@ -205,7 +229,7 @@ namespace ArbWeb
 			%%Function:FSetInputControlText
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetInputControlText
 		----------------------------------------------------------------------------*/
-		public static bool FSetInputControlText(IWebDriver driver, string sName, string sValue, bool fCheck)
+		public static bool FSetTextForInputControlName(IWebDriver driver, string sName, string sValue, bool fCheck)
 		{
 			IWebElement element = driver.FindElement(By.Name(sName));
 
@@ -221,10 +245,10 @@ namespace ArbWeb
 			if (fCheck)
 				return String.Compare(sOriginalValue, sValue) != 0;
 
-			return false;
+			return !fCheck;
 		}
 
-		public bool FSetInputControlText(string sName, string sValue, bool fCheck) => FSetInputControlText(m_driver, sName, sValue, fCheck);
+		public bool FSetTextForInputControlName(string sName, string sValue, bool fCheck) => FSetTextForInputControlName(m_driver, sName, sValue, fCheck);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FSetCheckboxControlVal

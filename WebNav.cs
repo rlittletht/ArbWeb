@@ -89,10 +89,10 @@ namespace ArbWeb
                 if (!m_webControl.FNavToPage(WebCore._s_Home))
                     throw (new Exception("could not navigate to arbiter homepage!"));
 
-                if (!ArbWebControl_Selenium.FCheckForControl(m_webControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
+                if (!ArbWebControl_Selenium.FCheckForControlId(m_webControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
                 {
-                    ArbWebControl_Selenium.FSetInputControlText(m_webControl.Driver, WebCore._s_Home_Input_Email, m_pr.UserID, false);
-                    ArbWebControl_Selenium.FSetInputControlText(m_webControl.Driver, WebCore._s_Home_Input_Password, m_pr.Password, false);
+                    ArbWebControl_Selenium.FSetTextForInputControlName(m_webControl.Driver, WebCore._s_Home_Input_Email, m_pr.UserID, false);
+                    ArbWebControl_Selenium.FSetTextForInputControlName(m_webControl.Driver, WebCore._s_Home_Input_Password, m_pr.Password, false);
 
                     m_webControl.FClickControlName(WebCore._s_Home_Button_SignIn);
                 }
@@ -101,7 +101,7 @@ namespace ArbWeb
 
                 bool fToggledBrowser = false;
 
-                if (ArbWebControl_Selenium.FCheckForControl(m_webControl.Driver, WebCore._sid_Home_Div_PnlAccounts))
+                if (ArbWebControl_Selenium.FCheckForControlId(m_webControl.Driver, WebCore._sid_Home_Div_PnlAccounts))
                 {
                     EnsureAdminLoggedIn();
                 }
@@ -131,7 +131,7 @@ namespace ArbWeb
                 }
 #endif
 
-                if (!ArbWebControl_Selenium.FCheckForControl(m_webControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
+                if (!ArbWebControl_Selenium.FCheckForControlId(m_webControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
                     MessageBox.Show("Login failed for ArbiterOne!");
                 else
                     m_fLoggedIn = true;

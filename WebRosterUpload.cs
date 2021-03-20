@@ -11,6 +11,9 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using Win32Win;
+using HtmlAgilityPack;
+using OpenQA.Selenium.Support.UI;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
 {
@@ -84,20 +87,31 @@ namespace ArbWeb
 
         }
 
-        bool FConfirmExistingArbiterUserAdd(IHTMLDocument2 oDoc2, RosterEntry rsteNewUser)
+        /*----------------------------------------------------------------------------
+			%%Function:FConfirmExistingArbiterUserAdd
+			%%Qualified:ArbWeb.AwMainForm.FConfirmExistingArbiterUserAdd
+
+			The user is already in the system (another association)
+        ----------------------------------------------------------------------------*/
+        bool FConfirmExistingArbiterUserAdd(RosterEntry rsteNewUser)
         {
             m_srpt.AddMessage($"Email {rsteNewUser.Email} already in use", StatusBox.StatusRpt.MSGT.Warning);
 
             // this email is member of another group.  we can't change their personal info
             // do a quick sanity match to make sure this is the same user
-            string sText = oDoc2.body.innerText;
+            string sHtml = m_webControl.Driver.FindElement(By.XPath("//body")).GetAttribute("innerHTML");
+            
+            HtmlDocument html = new HtmlDocument();
+            html.LoadHtml(sHtml);
+
+            string sText = html.DocumentNode.InnerText;
             string sPrefix = "is already being used in the system by ";
             int iFirst = sText.IndexOf(sPrefix);
 
             ThrowIfNot(iFirst > 0, "Failed hierarchy on assumed 'in use' email name");
             iFirst += sPrefix.Length;
 
-            int iLast = sText.IndexOf(". Click", iFirst);
+            int iLast = sText.IndexOf(".  Click", iFirst);
             ThrowIfNot(iLast > iFirst, "couldn't find the end of the users name on 'in use' email page");
 
             string sName = sText.Substring(iFirst, iLast - iFirst);
@@ -108,29 +122,26 @@ namespace ArbWeb
                         "ArbWeb", MessageBoxButtons.YesNo) != DialogResult.Yes)
                     {
                     // ok, then just cancel...
-                    m_awc.ResetNav();
-                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
-                    m_awc.FWaitForNavFinish();
+                    ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_AddUser_Button_Cancel), "Can't click cancel button on adduser");
                     return false;
                     }
                 }
 
             // cool, just go on...
-            m_awc.ResetNav();
-            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-            m_awc.FWaitForNavFinish();
+            ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
 
             // sigh, now we're being asked whether we want to add local personal info.  of course
             // we don't since it will be thrown away when they choose to join our group!
 
             // but make sure that we're really on that page...
-            sText = oDoc2.body.innerText;
+            sHtml = m_webControl.Driver.FindElement(By.XPath("//body")).GetAttribute("innerHTML");
+            html.LoadHtml(sHtml);
+            sText = html.DocumentNode.InnerText;
+            
             ThrowIfNot(sText.IndexOf("as a fully integrated user") > 0, "Didn't find the confirmation text on 'personal info' portion of existing user sequence");
 
             // cool, let's just move on again...
-            m_awc.ResetNav();
-            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-            m_awc.FWaitForNavFinish();
+            ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
 
             // now fallthrough to the "Official's info" page handling, which is common
             return true;
@@ -151,49 +162,47 @@ namespace ArbWeb
                 m_srpt.PushLevel();
 
                 // go to the add user page
-                m_awc.ResetNav();
-                if (!m_awc.FNavToPage(WebCore._s_AddUser))
+                if (!m_webControl.FNavToPage(WebCore._s_AddUser))
                     {
                     throw (new Exception("could not navigate to the add user page"));
                     }
 
-                m_awc.FWaitForNavFinish();
-
-                IHTMLDocument2 oDoc2 = m_awc.Document2;
-
                 // Set the basic user info + email address
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_FirstName, rste.First, false /*fCheck*/), "Failed to find first name control");
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_LastName, rste.Last, false /*fCheck*/), "Failed to find last name control");
-                ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Email, rste.Email, false /*fCheck*/), "Failed to find email control");
+                ThrowIfNot(m_webControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_FirstName, rste.First, false /*fCheck*/), "Failed to find first name control");
+                ThrowIfNot(m_webControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_LastName, rste.Last, false /*fCheck*/), "Failed to find last name control");
+                ThrowIfNot(m_webControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Email, rste.Email, false /*fCheck*/), "Failed to find email control");
 
-                m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-                m_awc.FWaitForNavFinish();
+                ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
 
                 // we are either adding a new user, or a user that arbiter already knows
                 // about...
                 // 
-                if (!ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_AddUser_Input_Address1))
+                if (!m_webControl.FCheckForControlId(WebCore._sid_AddUser_Input_Address1))
                     {
-                    if (!FConfirmExistingArbiterUserAdd(oDoc2, rste))
+                    if (!FConfirmExistingArbiterUserAdd(rste))
                         continue; // don't add this user, they cancelled
                     }
                 else
                     {
+                    // once we set the country, we will be able to set the zip code. note that we cleverly 
+                    // set the other info after the country, so we will commit the change to the country.
+                    ThrowIfNot(m_webControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_Country, "United States"), "Failed to set country control");
+                    
+                    m_webControl.WaitForCondition((d)=>
+                    {
+	                    string xPath = $"//option[contains(text(), '{rste.State}')]";
+
+                        return (d.FindElement(By.XPath(xPath)) != null);
+                    }, 1000);
+                    
                     // if there's an address control, then this is a brand new official
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.Address1, false /*fCheck*/), "Failed to find address1 control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Address1, rste.Address2, false /*fCheck*/), "Failed to find address2 control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_City, rste.City, false /*fCheck*/), "Failed to find city control");
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_State, rste.State, false /*fCheck*/), "Failed to find state control");
+                    ThrowIfNot(m_webControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_City, rste.City, false /*fCheck*/), "Failed to find city control");
+                    ThrowIfNot(m_webControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_State, rste.State), "Failed to find state control");
 
-                    // DebugModelessWait();
-                    // once we set the country, we will be able to set the zip code
-                    ThrowIfNot(ArbWebControl.FSetSelectControlTextFromDoc(m_awc, oDoc2, WebCore._s_AddUser_Input_Country, WebCore._sid_AddUser_Input_Country, "United States", true), "Failed to set country control");
-                    // DebugModelessWait();
+                    ThrowIfNot(m_webControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Zip, rste.Zip, false /*fCheck*/), "Failed to find zip control");
 
-                    ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_AddUser_Input_Zip, rste.Zip, false /*fCheck*/), "Failed to find zip control");
-                    ArbWebControl.DispatchChangeEventCore(m_awc, WebCore._sid_AddUser_Input_Zip, "keyup");
-
+                    ThrowIfNot(m_webControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address1, false /*fCheck*/), "Failed to find address1 control");
+                    ThrowIfNot(m_webControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address2, false /*fCheck*/), "Failed to find address2 control");
 
                     string[] rgsPhoneNums = new string[] {WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2, WebCore._s_AddUser_Input_PhoneNum3};
                     string[] rgsPhoneTypes = new string[] {WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2, WebCore._s_AddUser_Input_PhoneType3};
@@ -206,20 +215,16 @@ namespace ArbWeb
                         rste.GetPhoneNumber(iPhone + 1 /*convert to 1 based*/, out sPhoneNum, out sPhoneType);
                         if (sPhoneNum != null)
                             {
-                            ThrowIfNot(ArbWebControl.FSetInputControlText(oDoc2, rgsPhoneNums[iPhone], sPhoneNum, false /*fCheck*/), "Failed to find phonenum* control");
-                            string sNewTypeID = ArbWebControl.SGetSelectIDFromDoc(oDoc2, rgsPhoneTypes[iPhone], sPhoneType);
-                            ArbWebControl.FSetSelectControlValue(oDoc2, rgsPhoneTypes[iPhone], sNewTypeID, false);
+                            ThrowIfNot(m_webControl.FSetTextForInputControlName(rgsPhoneNums[iPhone], sPhoneNum, false /*fCheck*/), "Failed to find phonenum* control");
+
+                            string sNewTypeOptionValue = m_webControl.GetOptionValueForSelectControlNameOptionText(rgsPhoneTypes[iPhone], sPhoneType);
+                            m_webControl.FSetSelectedOptionValueForControlName(rgsPhoneTypes[iPhone], sNewTypeOptionValue);
                             }
 
                         iPhone++;
                         }
 
-                    m_awc.ResetNav();
-                    // DebugModelessWait();
-
-                    ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-                    // DebugModelessWait();
-                    m_awc.FWaitForNavFinish();
+                    ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
 
                     // fallthrough to the common handling below
                     }
@@ -227,20 +232,16 @@ namespace ArbWeb
                 // now we are on the last add official page
                 // the only thing that *might* be interesting on this page is the active button which is
                 // not checked by default...
-                ThrowIfNot(ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_AddUser_Input_IsActive),
+                ThrowIfNot(m_webControl.FCheckForControlId(WebCore._sid_AddUser_Input_IsActive),
                            "bad hierarchy in add user.  expected screen with 'active' checkbox, didn't find it.");
 
                 // don't worry about Active for now...Just click next again
-                m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-                m_awc.FWaitForNavFinish();
+                ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
 
                 // and now we're on the finish page.  oddly enough, the finish button has the "Cancel" ID
-                ThrowIfNot(String.Compare("Finish", ArbWebControl.SGetControlValue(oDoc2, WebCore._sid_AddUser_Button_Cancel)) == 0, "Finish screen didn't have a finish button");
+                ThrowIfNot(String.Compare("Finish", m_webControl.GetValueForControlId(WebCore._sid_AddUser_Button_Cancel)) == 0, "Finish screen didn't have a finish button");
 
-                m_awc.ResetNav();
-                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
-                m_awc.FWaitForNavFinish();
+                ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
                 m_srpt.PopLevel();
                 // and now we're back somewhere (probably officials edit page)
                 // continue to the next one...
@@ -291,7 +292,7 @@ namespace ArbWeb
                     if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_Ranked, mpNameOptionValue[s]))
                         throw new Exception("couldn't select an official for reranking!");
                 }
-                webControl.FSetInputControlText(WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
+                webControl.FSetTextForInputControlName(WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
 
                 // now, rank'em
                 webControl.FClickControlName(WebCore._s_RanksEdit_Button_ReRank);
@@ -314,7 +315,7 @@ namespace ArbWeb
                     // throw new Exception("couldn't select an official for ranking!");
                 }
 
-                webControl.FSetInputControlText(WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
+                webControl.FSetTextForInputControlName(WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
 
                 // now, rank'em
                 webControl.FClickControlName(WebCore._s_RanksEdit_Button_Rank);

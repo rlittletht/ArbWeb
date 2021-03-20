@@ -159,13 +159,13 @@ namespace ArbWeb
 	                        && !String.IsNullOrEmpty(sValue))
 	                    {
 		                    // null means empty which replaces non-empty
-		                    m_webControl.FSetInputControlText(sName, "", false);
+		                    m_webControl.FSetTextForInputControlName(sName, "", false);
 		                    fNeedSave = true;
 	                    }
 	                    else if (iMisc != -1
 	                             && String.Compare(plsMiscNew[iMisc], sValue, true /*ignoreCase*/) != 0)
 	                    {
-		                    m_webControl.FSetInputControlText(sName, plsMiscNew[iMisc], false);
+		                    m_webControl.FSetTextForInputControlName(sName, plsMiscNew[iMisc], false);
 		                    fNeedSave = true;
 	                    }
                     }
@@ -264,7 +264,7 @@ namespace ArbWeb
                             }
                         else
                         {
-	                        m_webControl.FSetInputControlText(name, sNewValue, false);
+	                        m_webControl.FSetTextForInputControlName(name, sNewValue, false);
                             fNeedSave = true;
                             }
                         }
@@ -382,7 +382,7 @@ namespace ArbWeb
                     string s; // add middle name
                     if (MatchAssignText(input, WebCore._s_EditUser_FirstName, rsteNew?.First, out s, ref fNeedSave, ref fFailUpdate))
                         rsteOut.First = s;
-                    if (MatchAssignText(input, WebCore._s_EditUser_MiddleName, rsteNew?.First, out s, ref fNeedSave, ref fFailUpdate))
+                    if (MatchAssignText(input, WebCore._s_EditUser_MiddleName, rsteNew?.Middle, out s, ref fNeedSave, ref fFailUpdate))
 	                    rsteOut.Middle = s;
                     if (MatchAssignText(input, WebCore._s_EditUser_LastName, rsteNew?.Last, out s, ref fNeedSave, ref fFailUpdate))
                         rsteOut.Last = s;
@@ -491,7 +491,7 @@ namespace ArbWeb
             if (rsteNew != null)
                 {
                 rsteNew.GetPhoneNumber(iNextPhone, out sNumberNew, out sTypeNew);
-                if (webControl.FSetInputControlText(sNamePhoneNumberNext, sNumberNew, true))
+                if (webControl.FSetTextForInputControlName(sNamePhoneNumberNext, sNumberNew, true))
                     {
                     // new numbers are public by default
                     webControl.FSetCheckboxControlNameVal(true, sNamePhonePublicNext);
