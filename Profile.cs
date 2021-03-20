@@ -1,18 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
-using System.Collections.Generic;
-using System.Drawing.Design;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
-using Microsoft.Win32;
-using StatusBox;
-using mshtml;
-using System.Runtime.InteropServices;
-using TCore.CmdLine;
-using Outlook=Microsoft.Office.Interop.Outlook;
-using System.Threading.Tasks;
 using TCore.Settings;
 
 namespace ArbWeb

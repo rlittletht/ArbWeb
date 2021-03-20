@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Drawing;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
@@ -8,11 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 using StatusBox;
-using mshtml;
-using System.Runtime.InteropServices;
 using TCore.CmdLine;
-using Outlook=Microsoft.Office.Interop.Outlook;
-using System.Threading.Tasks;
 using TCore.Settings;
 using TCore.UI;
 using TCore.Util;

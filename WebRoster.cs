@@ -1,13 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
 using StatusBox;
-using mshtml;
-using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using NUnit.Framework;
 using OpenQA.Selenium;

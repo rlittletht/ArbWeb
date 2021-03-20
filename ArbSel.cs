@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.IO;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -8,8 +7,6 @@ using StatusBox;
 using System.Collections.Generic;
 using System.Threading;
 using HtmlAgilityPack;
-using Microsoft.Office.Interop.Excel;
-using OpenQA.Selenium.DevTools.V86.Input;
 
 namespace ArbWeb
 {
