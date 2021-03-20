@@ -53,7 +53,7 @@ namespace ArbWeb
         public void EnsureWebControl()
         {
 	        if (m_webControl == null)
-				m_webControl = new WebControl(this);
+				m_webControl = new WebControl(this, m_cbShowBrowser.Checked);
         }
         
         /* E N S U R E  L O G G E D  I N */

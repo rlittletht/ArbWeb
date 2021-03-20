@@ -1779,6 +1779,9 @@ namespace ArbWeb
 		private void DoSaveState(object sender, FormClosingEventArgs e)
         {
 			DoSaveStateCore();
+			m_webControl.Driver.Close();
+			m_webControl.Driver.Quit();
+			m_webControl = null;
         }
 
         /* O N  P R O F I L E  L E A V E */

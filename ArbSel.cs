@@ -7,29 +7,40 @@ using StatusBox;
 using System.Collections.Generic;
 using System.Threading;
 using HtmlAgilityPack;
+using SeleniumExtras.WaitHelpers;
 
 namespace ArbWeb
 {
 	// Arbiter Selenium Control
 	public class WebControl
 	{
-		private readonly IWebDriver m_driver;
 		private IAppContext m_appContext;
 		
-		public IWebDriver Driver => m_driver;
+		public IWebDriver Driver { get; }
 		public string DownloadPath { get; set; }
 
-		public WebControl(IAppContext context)
+		public WebControl(IAppContext context, bool fShowUI)
 		{
 			m_appContext = context;
 			ChromeOptions options = new ChromeOptions();
+			ChromeDriverService service = ChromeDriverService.CreateDefaultService();
+			
+			if (fShowUI == false)
+			{
+				options.AddArguments("--window-size=1920,1080");
+				options.AddArguments("--start-maximized");
+				options.AddArgument("--headless");
+				options.AddArgument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36");
+				service.HideCommandPromptWindow = true;
+			}
+			
 			DownloadPath = $"{Environment.GetEnvironmentVariable("TEMP")}\\arb-{Guid.NewGuid().ToString()}";
 			Directory.CreateDirectory(DownloadPath);
 			
 			options.AddUserProfilePreference("download.prompt_for_download", false);
 			options.AddUserProfilePreference("download.default_directory", DownloadPath);
 
-			m_driver = new ChromeDriver(options);
+			Driver = new ChromeDriver(service, options);
 		}
 		
 		#region Page Navigation
@@ -45,7 +56,7 @@ namespace ArbWeb
 
 			try
 			{
-				m_driver.Navigate().GoToUrl(sUrl);
+				Driver.Navigate().GoToUrl(sUrl);
 			}
 			catch (Exception)
 			{
@@ -136,13 +147,13 @@ namespace ArbWeb
 			appContext.StatusReport.LogData($"WaitForPageLoad elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
 		}
 
-		public void WaitForPageLoad(int maxWaitTimeInSeconds = 500) => WaitForPageLoad(m_appContext, m_driver, maxWaitTimeInSeconds);
+		public void WaitForPageLoad(int maxWaitTimeInSeconds = 500) => WaitForPageLoad(m_appContext, Driver, maxWaitTimeInSeconds);
 
 		public delegate bool WaitDelegate(IWebDriver driver);
 
 		public void WaitForCondition(WaitDelegate waitDelegate, int msecTimeout = 500)
 		{
-			WebDriverWait wait = new WebDriverWait(m_driver, TimeSpan.FromMilliseconds(msecTimeout));
+			WebDriverWait wait = new WebDriverWait(Driver, TimeSpan.FromMilliseconds(msecTimeout));
 
 			wait.Until(
 				(d) =>
@@ -157,7 +168,14 @@ namespace ArbWeb
 					}
 				});
 		}
-		
+
+		public void WaitForCondition(System.Func<OpenQA.Selenium.IWebDriver, OpenQA.Selenium.IWebElement> until, int msecTimeout = 500)
+		{
+			WebDriverWait wait = new WebDriverWait(Driver, TimeSpan.FromMilliseconds(msecTimeout));
+
+			wait.Until(until);
+		}
+
 		#endregion
 
 		#region Individual Control Interaction
@@ -181,7 +199,7 @@ namespace ArbWeb
 			return element != null;
 		}
 
-		public bool FCheckForControlId(string sid) => FCheckForControlId(m_driver, sid);
+		public bool FCheckForControlId(string sid) => FCheckForControlId(Driver, sid);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FClickControl
@@ -206,7 +224,7 @@ namespace ArbWeb
 		{
 			m_appContext.StatusReport.LogData($"FClickControl {sName}", 5, StatusBox.StatusRpt.MSGT.Body);
 
-			return FClickControl(m_appContext, m_driver, m_driver.FindElement(By.Name(sName)));
+			return FClickControl(m_appContext, Driver, Driver.FindElement(By.Name(sName)));
 		}
 
 		/*----------------------------------------------------------------------------
@@ -217,7 +235,7 @@ namespace ArbWeb
 		{
 			m_appContext.StatusReport.LogData($"FClickControl {sid}", 5, StatusBox.StatusRpt.MSGT.Body);
 
-			return FClickControl(m_appContext, m_driver, m_driver.FindElement(By.Id(sid)));
+			return FClickControl(m_appContext, Driver, Driver.FindElement(By.Id(sid)));
 		}
 
 		/*----------------------------------------------------------------------------
@@ -243,7 +261,7 @@ namespace ArbWeb
 			return !fCheck;
 		}
 
-		public bool FSetTextForInputControlName(string sName, string sValue, bool fCheck) => FSetTextForInputControlName(m_driver, sName, sValue, fCheck);
+		public bool FSetTextForInputControlName(string sName, string sValue, bool fCheck) => FSetTextForInputControlName(Driver, sName, sValue, fCheck);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FSetCheckboxControlVal
@@ -264,7 +282,7 @@ namespace ArbWeb
 			return false;
 		}
 
-		public bool FSetCheckboxControlNameVal(bool fChecked, string sName) => FSetCheckboxControlNameVal(m_driver, fChecked, sName);
+		public bool FSetCheckboxControlNameVal(bool fChecked, string sName) => FSetCheckboxControlNameVal(Driver, fChecked, sName);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FSetCheckboxControlIdVal
@@ -285,7 +303,7 @@ namespace ArbWeb
 			return false;
 		}
 
-		public bool FSetCheckboxControlIdVal(bool fChecked, string sid) => FSetCheckboxControlIdVal(m_driver, fChecked, sid);
+		public bool FSetCheckboxControlIdVal(bool fChecked, string sid) => FSetCheckboxControlIdVal(Driver, fChecked, sid);
 
 		/* S  G E T  C O N T R O L  V A L U E */
 		/*----------------------------------------------------------------------------
@@ -301,7 +319,7 @@ namespace ArbWeb
 			return control.GetProperty("value");
 		}
 
-		public string GetValueForControlId(string sId) => GetValueForControlId(m_driver, sId);
+		public string GetValueForControlId(string sId) => GetValueForControlId(Driver, sId);
 
 		public static bool FSetTextAreaTextForControlName(IWebDriver driver, string sName, string sValue, bool fCheck)
 		{
@@ -321,7 +339,7 @@ namespace ArbWeb
 			return true;
 		}
 		
-		public bool FSetTextAreaTextForControlName(string sName, string sValue, bool fCheck) => FSetTextAreaTextForControlName(m_driver, sName, sValue, fCheck);
+		public bool FSetTextAreaTextForControlName(string sName, string sValue, bool fCheck) => FSetTextAreaTextForControlName(Driver, sName, sValue, fCheck);
 
 		#endregion
 
@@ -356,7 +374,7 @@ namespace ArbWeb
 			return null;
 		}
 
-		public string GetOptionTextFromOptionValueForControlName(string sName, string sOptionName) => GetOptionTextFromOptionValueForControlName(m_driver, m_appContext, sName, sOptionName);
+		public string GetOptionTextFromOptionValueForControlName(string sName, string sOptionName) => GetOptionTextFromOptionValueForControlName(Driver, m_appContext, sName, sOptionName);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FSetSelectControlText
@@ -381,7 +399,7 @@ namespace ArbWeb
 			return fChanged;
 		}
 
-		public bool FSetSelectedOptionTextForControlId(string sid, string sValue) => FSetSelectedOptionTextForControlId(m_driver, m_appContext, sid, sValue);
+		public bool FSetSelectedOptionTextForControlId(string sid, string sValue) => FSetSelectedOptionTextForControlId(Driver, m_appContext, sid, sValue);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FSetSelectControlValue
@@ -413,7 +431,7 @@ namespace ArbWeb
 			return fChanged;
 		}
 
-		public bool FSetSelectedOptionValueForControlName(string sName, string sValue) => FSetSelectedOptionValueForControlName(m_driver, m_appContext, sName, sValue);
+		public bool FSetSelectedOptionValueForControlName(string sName, string sValue) => FSetSelectedOptionValueForControlName(Driver, m_appContext, sName, sValue);
 
 		/*----------------------------------------------------------------------------
 			%%Function:GetSelectedOptionTextFromSelectControl
@@ -427,7 +445,7 @@ namespace ArbWeb
 			return select.SelectedOption?.Text;
 		}
 
-		public string GetSelectedOptionTextFromSelectControlName(string sName) => GetSelectedOptionTextFromSelectControlName(m_driver, sName);
+		public string GetSelectedOptionTextFromSelectControlName(string sName) => GetSelectedOptionTextFromSelectControlName(Driver, sName);
 
 		/*----------------------------------------------------------------------------
 			%%Function:GetSelectedOptionValueFromSelectControlName
@@ -441,7 +459,7 @@ namespace ArbWeb
 			return select.SelectedOption.GetAttribute("value");
 		}
 
-		public string GetSelectedOptionValueFromSelectControlName(string sName) => GetSelectedOptionValueFromSelectControlName(m_driver, sName);
+		public string GetSelectedOptionValueFromSelectControlName(string sName) => GetSelectedOptionValueFromSelectControlName(Driver, sName);
 
 		/*----------------------------------------------------------------------------
 			%%Function:GetOptionValueForSelectControlOptionText
@@ -461,7 +479,7 @@ namespace ArbWeb
 			return null;
 		}
 
-		public string GetOptionValueForSelectControlNameOptionText(string sName, string sOptionText) => GetOptionValueForSelectControlNameOptionText(m_driver, sName, sOptionText);
+		public string GetOptionValueForSelectControlNameOptionText(string sName, string sOptionText) => GetOptionValueForSelectControlNameOptionText(Driver, sName, sOptionText);
 
 		/*----------------------------------------------------------------------------
 			%%Function:MpGetSelectValuesFromControl
@@ -520,7 +538,7 @@ namespace ArbWeb
 			return mp;
 		}
 
-		public Dictionary<string, string> GetOptionsValueTextMappingFromControlId(string sid) => GetOptionsValueTextMappingFromControlId(m_driver, m_appContext.StatusReport, sid);
+		public Dictionary<string, string> GetOptionsValueTextMappingFromControlId(string sid) => GetOptionsValueTextMappingFromControlId(Driver, m_appContext.StatusReport, sid);
 
 		/*----------------------------------------------------------------------------
 			%%Function:GetOptionsTextValueMappingFromControl
@@ -572,7 +590,7 @@ namespace ArbWeb
 			return mp;
 		}
 
-		public Dictionary<string, string> GetOptionsTextValueMappingFromControlId(string sid) => GetOptionsTextValueMappingFromControlId(m_driver, m_appContext.StatusReport, sid);
+		public Dictionary<string, string> GetOptionsTextValueMappingFromControlId(string sid) => GetOptionsTextValueMappingFromControlId(Driver, m_appContext.StatusReport, sid);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FResetMultiSelectOptions
@@ -590,7 +608,7 @@ namespace ArbWeb
 			return true;
 		}
 
-		public bool FResetMultiSelectOptionsForControlName(string sName) => FResetMultiSelectOptionsForControlName(m_driver, sName);
+		public bool FResetMultiSelectOptionsForControlName(string sName) => FResetMultiSelectOptionsForControlName(Driver, sName);
 
 		// if fValueIsValue == false, then sValue is the "text" of the option control
 		/* F  S E L E C T  M U L T I  S E L E C T  O P T I O N */
@@ -617,7 +635,7 @@ namespace ArbWeb
 			return true;
 		}
 
-		public bool FSelectMultiSelectOptionValueForControlName(string sName, string sValue) => FSelectMultiSelectOptionValueForControlName(m_driver, sName, sValue);
+		public bool FSelectMultiSelectOptionValueForControlName(string sName, string sValue) => FSelectMultiSelectOptionValueForControlName(Driver, sName, sValue);
 
 		#endregion
 

@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using System.IO;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
+using SeleniumExtras.WaitHelpers;
 using StatusBox;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
@@ -296,6 +298,7 @@ namespace ArbWeb
         void DoRosterDownload(string sTempFile)
         {
             ThrowIfNot(m_webControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            m_webControl.WaitForPageLoad();
             
             // now we are on the PrintRoster screen
             ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
@@ -303,15 +306,22 @@ namespace ArbWeb
 
             // select All Officials
             WebControl.FSetSelectedOptionTextForControlId(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
+            m_webControl.WaitForPageLoad();
 
             WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
             WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
             WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateOfBirth);
             WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_UserID);
             WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_MiddleName);
-
+            
+//            IWebElement element = m_webControl.Driver.FindElement(By.Id(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown));
+//            m_webControl.Driver.ExecuteJavaScript("arguments[0].click();", element);
+            
             m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dropdown the menu
+            m_webControl.WaitForCondition(ExpectedConditions.ElementToBeClickable(m_webControl.Driver.FindElement(By.Id(WebCore._sid_CustomRosterPrint_SelectAllCustomFields))));
+            
             WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
+            m_webControl.WaitForPageLoad();
             m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dismiss the menu
 
             WebControl.FileDownloader downloader = new WebControl.FileDownloader(
