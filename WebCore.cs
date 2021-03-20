@@ -12,6 +12,7 @@ using OpenQA.Selenium;
 using StatusBox;
 using TCore.Util;
 using Win32Win;
+using HtmlAgilityPack;
 
 namespace ArbWeb
 {
@@ -91,6 +92,7 @@ namespace ArbWeb
         // ============================================================================
         public const string _s_EditUser_Email = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclEmails$rptEmail$ctl01$txtEmail"; // ok2018
         public const string _s_EditUser_FirstName = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtFirstName"; // ok2018
+        public const string _s_EditUser_MiddleName = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtMiddleName"; // ok2018
         public const string _s_EditUser_LastName = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$txtLastName"; // ok2018
         public const string _s_EditUser_Address1 = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclAddress$address_txtAddress1"; // ok2018
         public const string _s_EditUser_Address2 = "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclAddress$address_txtAddress2"; // ok2018
@@ -132,6 +134,8 @@ namespace ArbWeb
         public const string _sid_MiscFields_Button_Save = "ctl00_ContentHolder_pgeMiscFieldsEdit_navMiscFieldsEdit_btnSave"; // ok2010u
         public const string _sid_MiscFields_Button_Cancel = "ctl00_ContentHolder_pgeMiscFieldsEdit_navMiscFieldsEdit_lnkCancel"; // ok2010u
 
+        public const string _sid_MiscFields_MainBodyContentTable = "MainBodyContentTable"; // ok2021
+        
         // phone types are Home, Work, Fax, Cellular, Pager, Security, Other
         public const string _sid_AddUser_Button_Next = "ctl00_ContentHolder_pgeUserAdd_navUserAdd_btnNext"; // ok2010
         public const string _sid_AddUser_Input_Address1 = "ctl00_ContentHolder_pgeUserAdd_conUserAdd_uclAddress_address_txtAddress1"; // ok2018
@@ -288,7 +292,7 @@ namespace ArbWeb
 
     public class DownloadGenericExcelReport
     {
-        private readonly string m_sFilterReq;
+        private readonly string m_sFilterOptionTextReq;
         private readonly string m_sDescription;
         private readonly IAppContext m_iac;
         private readonly string m_sReportPage;
@@ -305,7 +309,7 @@ namespace ArbWeb
         {
             private string m_sControlName;
             private string m_sidControlExtra;   // this is usually something like the Choice element ID
-            private T m_tControlValue;
+            private T m_tControlValue; // for select controls, this is the option text value
 
             public string ControlName => m_sControlName;
             public string IdControlExtra => m_sidControlExtra;
@@ -332,7 +336,7 @@ namespace ArbWeb
 
         // this version selects a filter
         public DownloadGenericExcelReport(
-            string sFilterReq, 
+            string sFilterOptionTextReq, 
             string sDescription, 
             string sReportPage, 
             string sSelectFilterControlName, 
@@ -346,7 +350,7 @@ namespace ArbWeb
             string sGameCopy,
             IAppContext iac)
         {
-            m_sFilterReq = sFilterReq;
+            m_sFilterOptionTextReq = sFilterOptionTextReq;
             m_sDescription = sDescription;
             m_iac = iac;
             m_sReportPage = sReportPage;
@@ -547,7 +551,7 @@ namespace ArbWeb
         private void DoLaunchDownloadGeneric(string sTempFile)
         {
             int count = 0;
-            string sFilter = null;
+            string sFilterOptionValue = null;
 
             while (count < 2)
                 {
@@ -557,8 +561,8 @@ namespace ArbWeb
 
                 if (FNeedSelectReportFilter())
                     {
-                    sFilter = m_iac.WebControlNew.SGetFilterID(m_sSelectFilterControlName, m_sFilterReq);
-                    if (sFilter != null)
+                    sFilterOptionValue = m_iac.WebControlNew.GetOptionValueFromFilterOptionTextForControlName(m_sSelectFilterControlName, m_sFilterOptionTextReq);
+                    if (sFilterOptionValue != null)
                         break;
                     }
                 else
@@ -572,19 +576,19 @@ namespace ArbWeb
 
             if (FNeedSelectReportFilter())
                 {
-                if (sFilter == null)
-                    throw (new Exception($"there is no '{m_sFilterReq}' filter"));
+                if (sFilterOptionValue == null)
+                    throw (new Exception($"there is no '{m_sFilterOptionTextReq}' filter"));
 
                 // now set that filter
 
-                m_iac.WebControlNew.FSetSelectControlText(m_sidSelectFilterControl, m_sFilterReq);
+                m_iac.WebControlNew.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
 
-                if (!m_iac.WebControlNew.FNavToPage(m_sReportPrintPagePrefix + sFilter))
+                if (!m_iac.WebControlNew.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
                     throw (new Exception("could not navigate to the reports page!"));
                 }
             else
                 {
-                m_iac.ThrowIfNot(m_iac.WebControlNew.FClickControl(m_sidReportPageLink), "could not click on report link");
+                m_iac.ThrowIfNot(m_iac.WebControlNew.FClickControlId(m_sidReportPageLink), "could not click on report link");
                 }
 
             // loop through the Select controls we have to set (typically, this will include the file format)
@@ -592,14 +596,14 @@ namespace ArbWeb
                 {
                 foreach (ControlSetting<string> cs in m_rgSelectSettings)
                     {
-                    m_iac.WebControlNew.FSetSelectControlText(cs.IdControlExtra, cs.ControlValue);
+                    m_iac.WebControlNew.FSetSelectedOptionTextForControlId(cs.IdControlExtra, cs.ControlValue);
                     }
                 }
 
             if (m_rgCheckedSettings != null)
                 {
                 foreach (ControlSetting<bool> cs in m_rgCheckedSettings)
-                    m_iac.WebControlNew.FSetCheckboxControlVal(cs.ControlValue, cs.ControlName);
+                    m_iac.WebControlNew.FSetCheckboxControlNameVal(cs.ControlValue, cs.ControlName);
                 }
 
             // m_iac.StatusReport.LogData($"Setting clipboard data: {sTempFile}", 3, StatusRpt.MSGT.Body);
@@ -609,7 +613,7 @@ namespace ArbWeb
 	            m_iac.WebControlNew,
 	            m_sFullExpectedName,
 	            sTempFile,
-	            () => m_iac.WebControlNew.FClickControl(m_sReportPrintSubmitPrintControlName));
+	            () => m_iac.WebControlNew.FClickControlName(m_sReportPrintSubmitPrintControlName));
             
             downloader.GetDownloadedFile();
         }
@@ -687,26 +691,31 @@ namespace ArbWeb
             are looking for the official ID.  essentially, a state machine.. (albeit 2 
             states)
 		----------------------------------------------------------------------------*/
-        private void PopulatePglOfficialsFromPageCore(PGL pgl, IHTMLDocument2 oDoc)
+        private void PopulatePglOfficialsFromPageCore(PGL pgl)
         {
-            IHTMLElementCollection links = oDoc.links;
-            Regex rx3 = new Regex("OfficialEdit.aspx\\?userID=.*");
+	        // grab the info from the current navigated page
+	        IWebElement table = m_iac.WebControlNew.Driver.FindElement(By.XPath("//body"));
+
+	        string sHtml = table.GetAttribute("outerHTML");
+	        HtmlAgilityPack.HtmlDocument html = new HtmlAgilityPack.HtmlDocument();
+
+	        html.LoadHtml(sHtml);
+	        string sHrefSubstringMatch = "OfficialEdit.aspx\\?userID=";
+	        
+            Regex rx3 = new Regex($"{sHrefSubstringMatch}.*");
             Regex rxData = new Regex("mailto:.*");
 
             bool fLookingForEmail = false;
 
+            string sXpath = $"//a"; // [contains(@href, '{sHrefSubstringMatch}')]
+
             // build up a list of probable index links
-            foreach (HTMLAnchorElementClass link in links)
+            HtmlNodeCollection links = html.DocumentNode.SelectSingleNode(".")
+	            .SelectNodes(sXpath);
+            
+            foreach (HtmlNode link in links)
             {
-                string sLinkName = link.nameProp;
-                string sLinkText = link.innerText;
-                string sLinkTarget = link.href;
-
-                if (sLinkText == null)
-                    sLinkText = "";
-
-                if (sLinkName == null)
-                    sLinkName = link.innerText.Substring(1, link.innerText.Length - 1);
+                string sLinkTarget = link.GetAttributeValue("href", "");
 
                 if (rxData != null && sLinkTarget != null && rxData.IsMatch(sLinkTarget))
                 {
@@ -722,12 +731,12 @@ namespace ArbWeb
                     }
                 }
 
-                if (rx3.IsMatch(sLinkName))
+                if (rx3.IsMatch(sLinkTarget))
                 {
                     PGL.OFI ofi = new PGL.OFI();
 
                     ofi.sEmail = "";
-                    ofi.sOfficialID = link.href;
+                    ofi.sOfficialID = sLinkTarget;
                     pgl.plofi.Add(ofi);
 
                     fLookingForEmail = true;
@@ -839,9 +848,9 @@ namespace ArbWeb
                 }
         }
 
-        private void VOPC_PopulatePgl(IHTMLDocument2 oDoc2, Object o)
+        private void VOPC_PopulatePgl(Object o)
         {
-            PopulatePglOfficialsFromPageCore((PGL)o, oDoc2);
+            PopulatePglOfficialsFromPageCore((PGL)o);
         }
 
 
@@ -858,7 +867,7 @@ namespace ArbWeb
 
             m_iac.ThrowIfNot(m_iac.WebControlNew.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
 
-            m_iac.WebControlNew.FSetSelectControlText(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
+            m_iac.WebControlNew.FSetSelectedOptionTextForControlId(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
         }
 
         // object could be RST or PGL
@@ -968,15 +977,7 @@ namespace ArbWeb
 
             PGL pgl = new PGL();
 
-            throw new Exception("NYI");
-            // ProcessAllOfficialPages(VOPC_PopulatePgl, pgl);
-
-            //            NavigateOfficialsPageAllOfficials();
-
-            //            IHTMLDocument2 oDoc = m_awc.Document2;
-
-            //			PopulatePglFromPageCore(pgl, oDoc);
-            // for now, assume that all the officials fit on the same screen!!
+            ProcessAllOfficialPages(VOPC_PopulatePgl, pgl);
 
             // if there are no links, then we aren't logged in yet
             if (pgl.plofi.Count == 0)

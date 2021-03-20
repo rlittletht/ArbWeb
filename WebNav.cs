@@ -94,7 +94,7 @@ namespace ArbWeb
                     ArbWebControl_Selenium.FSetInputControlText(m_webControl.Driver, WebCore._s_Home_Input_Email, m_pr.UserID, false);
                     ArbWebControl_Selenium.FSetInputControlText(m_webControl.Driver, WebCore._s_Home_Input_Password, m_pr.Password, false);
 
-                    m_webControl.FClickControl(WebCore._s_Home_Button_SignIn);
+                    m_webControl.FClickControlName(WebCore._s_Home_Button_SignIn);
                 }
 
                 int count = 0;

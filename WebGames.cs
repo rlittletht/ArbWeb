@@ -37,12 +37,16 @@ namespace ArbWeb
             return;
         }
 
-        Dictionary<string, string> MpFetchGameFilters()
+        /*----------------------------------------------------------------------------
+			%%Function:MpFetchGameFilters
+			%%Qualified:ArbWeb.AwMainForm.MpFetchGameFilters
+        ----------------------------------------------------------------------------*/
+        Dictionary<string, string> FetchOptionValueTextMapForGameFilter()
         {
             if (!m_webControl.FNavToPage(WebCore._s_Assigning))
                 throw (new Exception("could not navigate to games view"));
 
-            return m_webControl.MpGetSelectValues(WebCore._sid_Assigning_Select_Filters);
+            return m_webControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_Assigning_Select_Filters);
         }
 
         /*----------------------------------------------------------------------------
@@ -163,9 +167,9 @@ namespace ArbWeb
         void DoDownloadGames()
         {
             var x = m_awc.Handle;
-            string sFilterReq = (string) m_cbxGameFilter.SelectedItem;
-            if (sFilterReq == null)
-                sFilterReq = "All Games";
+            string sFilterOptionTextReq = (string) m_cbxGameFilter.SelectedItem;
+            if (sFilterOptionTextReq == null)
+                sFilterOptionTextReq = "All Games";
 
             // let's make sure the webbrowser handle is created
 
@@ -173,7 +177,7 @@ namespace ArbWeb
 
             DownloadGenericExcelReport dg =
                 new DownloadGenericExcelReport(
-                    sFilterReq,
+                    sFilterOptionTextReq,
                     "games",
                     WebCore._s_Assigning,
                     WebCore._s_Assigning_Select_Filters,

@@ -1590,9 +1590,9 @@ namespace ArbWeb
         {
             EnsureLoggedIn();
 
-            Dictionary<string, string> mpFilters = MpFetchGameFilters();
-            SetGameFiltersFromEnumerable(m_cbxGameFilter, mpFilters.Keys);
-            m_pr.GameFilters = mpFilters.Keys.ToArray();
+            Dictionary<string, string> mpFilters = FetchOptionValueTextMapForGameFilter();
+            SetGameFiltersFromEnumerable(m_cbxGameFilter, mpFilters.Values);
+            m_pr.GameFilters = mpFilters.Values.ToArray();
             m_pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
         }
 

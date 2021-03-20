@@ -24,7 +24,7 @@ namespace ArbWeb
         public string m_sTotalGames;
         public string m_sWaitMinutes;
 
-        public bool IsUploadableQuickroster {  get { return m_rstt == Roster.RSTT.QuickFull_Signin || m_rstt == Roster.RSTT.QuickFull; } }
+        public bool IsUploadableQuickroster {  get { return m_rstt == Roster.RSTT.QuickFull_Signin || m_rstt == Roster.RSTT.QuickFull || m_rstt == Roster.RSTT.QuickFull2021_Signin || m_rstt == Roster.RSTT.QuickFull2021; } }
 
         public int m_cRankings;
         public Dictionary<string, int> m_mpRanking;
@@ -97,7 +97,18 @@ namespace ArbWeb
             if (String.Compare(m_sOfficialNumber, rste.m_sOfficialNumber) != 0)
                 return false;
             if (String.Compare(m_sDateOfBirth, rste.m_sDateOfBirth) != 0)
-                return false;
+            {
+	            // be extra careful...this might be equivalent, but differnet date formats
+	            DateTime dttm1, dttm2;
+	            
+                if (!DateTime.TryParse(m_sDateOfBirth, out dttm1)
+                    || !DateTime.TryParse(rste.m_sDateOfBirth, out dttm2)
+                    || !dttm1.Equals(dttm2))
+                {
+                    return false;
+                }
+            }
+
 //            if (String.Compare(m_sDateJoined, rste.m_sDateJoined) != 0)
 //                return false;
             if (String.Compare(m_sGamesPerDay, rste.m_sGamesPerDay) != 0)
@@ -188,8 +199,8 @@ namespace ArbWeb
             State = 7,
             PostalCode = 8,
             CellPhone = 9,
-            HomePhone = 10,
-            WorkPhone = 11,
+            WorkPhone = 10,
+            HomePhone = 11,
             DateJoined = 12,
             DateOfBirth = 13,
             ArbiterUserId = 14,
@@ -246,8 +257,10 @@ namespace ArbWeb
 	        if (String.Compare(rgs[(int) QuickShortColumns2021.State], "State", false) != 0) return false;
 	        if (String.Compare(rgs[(int) QuickShortColumns2021.PostalCode], "PostalCode", false) != 0) return false;
 	        if (String.Compare(rgs[(int) QuickShortColumns2021.CellPhone], "CellPhone", false) != 0) return false;
-	        if (String.Compare(rgs[(int) QuickShortColumns2021.HomePhone], "HomePhone", false) != 0) return false;
-	        if (String.Compare(rgs[(int) QuickShortColumns2021.WorkPhone], "WorkPhone", false) != 0) return false;
+	        // NOTE: Currently (3/15/21) Arbiter download roster MISLABELS Work and Home phones. We accommodate that
+	        // here.
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.HomePhone], "WorkPhone", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.WorkPhone], "HomePhone", false) != 0) return false;
 	        if (String.Compare(rgs[(int) QuickShortColumns2021.DateJoined], "DateJoined", false) != 0) return false;
 	        if (String.Compare(rgs[(int) QuickShortColumns2021.DateOfBirth], "DateOfBirth", false) != 0) return false;
 	        if (String.Compare(rgs[(int) QuickShortColumns2021.ArbiterUserId], "ArbiterUserId", false) != 0) return false;
@@ -874,7 +887,7 @@ namespace ArbWeb
         }
 
         public bool IsQuick { get { return m_rstt != RSTT.Full; } }
-        public bool IsUploadableQuickroster {  get { return m_rstt == RSTT.QuickFull || m_rstt == RSTT.QuickFull_Signin; } }
+        public bool IsUploadableQuickroster {  get { return m_rstt == RSTT.QuickFull || m_rstt == RSTT.QuickFull_Signin || m_rstt == RSTT.QuickFull2021 || m_rstt == RSTT.QuickFull2021_Signin; } }
         public RSTT Rstt { get { return m_rstt; } }
 
         public bool HasRankings { get { return m_plsRankings.Count > 0; } }
@@ -908,6 +921,12 @@ namespace ArbWeb
 
                 rgs = Csv.LineToArray(sLine);
 
+                if (rgs.Length > 1 && rgs[0] == "TRUE")
+                {
+                    // hacky fixup for Excel annoyance!
+                    rgs[0] = "True";
+                }
+                
                 if (fFirst 
                     && sLine.Contains("First") 
                     && sLine.Contains("Email") 

@@ -8,6 +8,7 @@ using StatusBox;
 using System.Collections.Generic;
 using System.Threading;
 using HtmlAgilityPack;
+using Microsoft.Office.Interop.Excel;
 using OpenQA.Selenium.DevTools.V86.Input;
 
 namespace ArbWeb
@@ -34,6 +35,8 @@ namespace ArbWeb
 			m_driver = new ChromeDriver(options);
 		}
 		
+		#region Page Navigation
+		
 		/*----------------------------------------------------------------------------
 			%%Function:FNavToPage
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FNavToPage
@@ -42,7 +45,7 @@ namespace ArbWeb
 		public bool FNavToPage(string sUrl)
 		{
 			MicroTimer timer = new MicroTimer();
-			
+
 			try
 			{
 				m_driver.Navigate().GoToUrl(sUrl);
@@ -58,48 +61,8 @@ namespace ArbWeb
 		}
 
 		/*----------------------------------------------------------------------------
-			%%Function:FCheckForControl
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.FCheckForControl
-		----------------------------------------------------------------------------*/
-		public static bool FCheckForControl(IWebDriver driver, string sid)
-		{
-			IWebElement element;
-
-			try
-			{
-				element = driver.FindElement(By.Id(sid));
-			}
-			catch (OpenQA.Selenium.NoSuchElementException)
-			{
-				return false;
-			}
-			return element != null;
-		}
-
-		/*----------------------------------------------------------------------------
-			%%Function:FSetInputControlText
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetInputControlText
-		----------------------------------------------------------------------------*/
-		public static bool FSetInputControlText(IWebDriver driver, string sName, string sValue, bool fCheck)
-		{
-			IWebElement element = driver.FindElement(By.Name(sName));
-			
-			if (element == null)
-				return false;
-
-			string sOriginalValue = element.GetProperty("value");
-			element.SendKeys(sValue);
-			
-			if (fCheck)
-				return String.Compare(sOriginalValue, sValue) != 0;
-
-			return false;
-		}
-
-		/*----------------------------------------------------------------------------
 			%%Function:WaitForControl
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.WaitForControl
-
 		----------------------------------------------------------------------------*/
 		public static bool WaitForControl(IWebDriver driver, IAppContext appContext, string sid)
 		{
@@ -111,232 +74,15 @@ namespace ArbWeb
 
 			return element != null;
 		}
-		
-		/*----------------------------------------------------------------------------
-			%%Function:FClickControl
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.FClickControl
-		----------------------------------------------------------------------------*/
-		public bool FClickControl(string sName, string sidWaitFor = null)
-		{
-			m_appContext.StatusReport.LogData(String.Format("FClickControl {0}", sName), 5, StatusBox.StatusRpt.MSGT.Body);
-			
-			IWebElement element = m_driver.FindElement(By.Name(sName));
 
-			if (element != null)
-				element.Click();
-
-			//			m_srpt.AddMessage("After clickcontrol");
-			if (sidWaitFor != null)
-				return WaitForControl(m_driver, m_appContext, sidWaitFor);
-			
-			WaitForPageLoad(m_driver, 2000);
-			return true;
-		}
-
-		/*----------------------------------------------------------------------------
-			%%Function:FClickControlId
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.FClickControlId
-		----------------------------------------------------------------------------*/
-		public bool FClickControlId(string sid, string sidWaitFor = null)
-		{
-			m_appContext.StatusReport.LogData(String.Format("FClickControl {0}", sid), 5, StatusBox.StatusRpt.MSGT.Body);
-
-			IWebElement element = m_driver.FindElement(By.Id(sid));
-
-			if (element != null)
-				element.Click();
-
-			//			m_srpt.AddMessage("After clickcontrol");
-			if (sidWaitFor != null)
-				return WaitForControl(m_driver, m_appContext, sidWaitFor);
-
-			WaitForPageLoad(m_driver, 2000);
-			return true;
-		}
-
-		/*----------------------------------------------------------------------------
-			%%Function:FSetCheckboxControlIdVal
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetCheckboxControlIdVal
-		----------------------------------------------------------------------------*/
-		public static bool FSetCheckboxControlVal(IWebDriver driver, bool fChecked, string sName)
-		{
-			IWebElement element = driver.FindElement(By.Id(sName));
-			string sValue = fChecked ? "true" : "false";
-			string sActual = element.GetProperty("checked");
-
-			if (String.Compare(element.GetProperty("checked"), sValue, true) != 0)
-			{
-				element.Click();
-				return true;
-			}
-
-			return false;
-		}
-
-		public bool FSetCheckboxControlVal(bool fChecked, string sName)
-		{
-			return FSetCheckboxControlVal(m_driver, fChecked, sName);
-		}
-		
-		/*----------------------------------------------------------------------------
-			%%Function:FSetCheckboxControlIdVal
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetCheckboxControlIdVal
-		----------------------------------------------------------------------------*/
-		public static bool FSetCheckboxControlIdVal(IWebDriver driver, bool fChecked, string sid)
-		{
-			IWebElement element = driver.FindElement(By.Id(sid));
-			string sValue = fChecked ? "true" : "false";
-			string sActual = element.GetProperty("checked");
-			
-			if (String.Compare(element.GetProperty("checked"), sValue, true) != 0)
-			{
-				element.Click();
-				return true;
-			}
-
-			return false;
-		}
-
-		public bool FSetCheckboxControlIdVal(bool fChecked, string sid)
-		{
-			return FSetCheckboxControlIdVal(m_driver, fChecked, sid);
-		}
-
-		/* S  G E T  F I L T E R  I  D */
-		/*----------------------------------------------------------------------------
-        	%%Function: SGetFilterID
-        	%%Qualified: ArbWeb.ArbWebControl.SGetFilterID
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-		public string SGetFilterID(string sName, string sValue)
-		{
-			m_appContext.StatusReport.LogData($"SGetSelectIDFromDoc for id {sName}", 3, StatusRpt.MSGT.Body);
-			
-			string s = SGetSelectIDFromDoc(sName, sValue);
-
-			m_appContext.StatusReport.LogData($"Return: {s}", 3, StatusRpt.MSGT.Body);
-			return s;
-		}
-
-
-		/* S  G E T  F I L T E R  I  D */
-		/*----------------------------------------------------------------------------
-        	%%Function: SGetFilterID
-        	%%Qualified: ArbWeb.ArbWebControl.SGetFilterID
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-		public static string SGetSelectIDFromDoc(IWebDriver driver, IAppContext context, string sName, string sOptionName)
-		{
-			IWebElement selectElement = driver.FindElement(By.Name(sName));
-			
-			Dictionary<string, string> mpSelectValues = MpGetSelectValuesFromControl(selectElement, context.StatusReport);
-			if (mpSelectValues.ContainsKey(sOptionName))
-				return mpSelectValues[sOptionName];
-
-			return null;
-		}
-
-		public string SGetSelectIDFromDoc(string sName, string sOptionName)
-		{
-			return SGetSelectIDFromDoc(m_driver, m_appContext, sName, sOptionName);
-		}
-		
-		/*----------------------------------------------------------------------------
-			%%Function:FSetSelectControlText
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetSelectControlText
-		----------------------------------------------------------------------------*/
-		public static bool FSetSelectControlText(IWebDriver driver, IAppContext appContext, string sid, string sValue)
-		{
-			appContext.StatusReport.LogData($"FSetSelectControlText for id {sid}", 5, StatusRpt.MSGT.Body);
-			
-			SelectElement select = new SelectElement(driver.FindElement(By.Id(sid)));
-			string sOriginal = select.SelectedOption.Text;
-			bool fChanged = false;
-
-			if (String.Compare(sOriginal, sValue, true) != 0)
-			{
-				select.SelectByText(sValue);
-				fChanged = true;
-			}
-			
-			appContext.StatusReport.LogData($"Return: {fChanged}", 5, StatusRpt.MSGT.Body);
-
-			return fChanged;
-		}
-		
-		public bool FSetSelectControlText(string sid, string sValue)
-		{
-			return FSetSelectControlText(m_driver, m_appContext, sid, sValue);
-		}
-
-		/*----------------------------------------------------------------------------
-			%%Function:MpGetSelectValuesFromControl
-			%%Qualified:ArbWeb.ArbWebControl_Selenium.MpGetSelectValuesFromControl
-		----------------------------------------------------------------------------*/
-		public static Dictionary<string, string> MpGetSelectValuesFromControl(
-			IWebElement selectElement, 
-			StatusRpt srpt)
-		{
-			string sHtml = selectElement.GetAttribute("innerHTML");
-			
-			HtmlDocument html = new HtmlDocument();
-			html.LoadHtml(sHtml);
-
-			HtmlNodeCollection options = html.DocumentNode.SelectNodes("//option");
-			Dictionary<string, string> mp = new Dictionary<string, string>();
-
-			if (options != null)
-			{
-				foreach (HtmlNode option in options)
-				{
-					if (mp.ContainsKey(option.InnerText))
-						srpt.AddMessage(
-							$"How strange!  Option '{option.InnerText}' shows up more than once in the options list!",
-							StatusRpt.MSGT.Warning);
-					else
-						mp.Add(option.InnerText, option.SelectSingleNode("@value").InnerText);
-				}
-			}
-
-			return mp;
-		}
-		
-		/* M P  G E T  S E L E C T  V A L U E S */
-		/*----------------------------------------------------------------------------
-			%%Function: MpGetSelectValues
-			%%Qualified: ArbWeb.AwMainForm.MpGetSelectValues
-			%%Contact: rlittle
-
-            for a given <select name=$sName><option value=$sValue>$sText</option>...
-         
-            Find the given sName select object. Then add a mapping of
-            $sText -> $sValue to a dictionary and return it.
-		----------------------------------------------------------------------------*/
-		public static Dictionary<string, string> MpGetSelectValues(IWebDriver driver, StatusRpt srpt, string sid)
-		{
-			MicroTimer timer = new MicroTimer();
-			
-			Dictionary<string, string> mp = MpGetSelectValuesFromControl(driver.FindElement(By.Id(sid)), srpt);
-
-			timer.Stop();
-			srpt.LogData($"MpGetSelectValues({sid}) elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
-			return mp;
-		}
-
-		public Dictionary<string, string> MpGetSelectValues(string sid)
-		{
-			return MpGetSelectValues(m_driver, m_appContext.StatusReport, sid);
-		}
 		/*----------------------------------------------------------------------------
 			%%Function:WaitForPageLoad
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.WaitForPageLoad
 		----------------------------------------------------------------------------*/
-		public void WaitForPageLoad(IWebDriver driver, int maxWaitTimeInSeconds)
+		public static void WaitForPageLoad(IAppContext appContext, IWebDriver driver, int maxWaitTimeInSeconds)
 		{
 			MicroTimer timer = new MicroTimer();
-			
+
 			string state = string.Empty;
 			try
 			{
@@ -344,9 +90,9 @@ namespace ArbWeb
 
 				//Checks every 500 ms whether predicate returns true if returns exit otherwise keep trying till it returns ture
 				wait.Until(d => {
-					
+
 					// use d instead of driver below?
-					
+
 					try
 					{
 						state = ((IJavaScriptExecutor)driver).ExecuteScript(@"return document.readyState").ToString();
@@ -361,8 +107,8 @@ namespace ArbWeb
 						driver.SwitchTo().Window(driver.WindowHandles[driver.WindowHandles.Count - 1]);
 					}
 					//In IE7 there are chances we may get state as loaded instead of complete
-					return state.Equals("complete", StringComparison.InvariantCultureIgnoreCase) 
-					        || state.Equals("loaded", StringComparison.InvariantCultureIgnoreCase);
+					return state.Equals("complete", StringComparison.InvariantCultureIgnoreCase)
+							|| state.Equals("loaded", StringComparison.InvariantCultureIgnoreCase);
 
 				});
 			}
@@ -390,9 +136,453 @@ namespace ArbWeb
 			}
 
 			timer.Stop();
-			m_appContext.StatusReport.LogData($"WaitForPageLoad elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+			appContext.StatusReport.LogData($"WaitForPageLoad elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
 		}
 
+		public void WaitForPageLoad(IWebDriver driver, int maxWaitTimeInSeconds) => WaitForPageLoad(m_appContext, m_driver, maxWaitTimeInSeconds);
+
+		#endregion
+
+		#region Individual Control Interaction
+
+		/*----------------------------------------------------------------------------
+			%%Function:FCheckForControl
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FCheckForControl
+		----------------------------------------------------------------------------*/
+		public static bool FCheckForControl(IWebDriver driver, string sid)
+		{
+			IWebElement element;
+
+			try
+			{
+				element = driver.FindElement(By.Id(sid));
+			}
+			catch (OpenQA.Selenium.NoSuchElementException)
+			{
+				return false;
+			}
+			return element != null;
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function:FClickControl
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FClickControl
+		----------------------------------------------------------------------------*/
+		private static bool FClickControl(IAppContext appContext, IWebDriver driver, IWebElement element, string sidWaitFor = null)
+		{
+			element?.Click();
+
+			if (sidWaitFor != null)
+				return WaitForControl(driver, appContext, sidWaitFor);
+
+			WaitForPageLoad(appContext, driver, 2000);
+			return true;
+		}
+		
+		/*----------------------------------------------------------------------------
+			%%Function:FClickControl
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FClickControl
+		----------------------------------------------------------------------------*/
+		public bool FClickControlName(string sName, string sidWaitFor = null)
+		{
+			m_appContext.StatusReport.LogData($"FClickControl {sName}", 5, StatusBox.StatusRpt.MSGT.Body);
+
+			return FClickControl(m_appContext, m_driver, m_driver.FindElement(By.Name(sName)));
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function:FClickControlId
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FClickControlId
+		----------------------------------------------------------------------------*/
+		public bool FClickControlId(string sid, string sidWaitFor = null)
+		{
+			m_appContext.StatusReport.LogData($"FClickControl {sid}", 5, StatusBox.StatusRpt.MSGT.Body);
+
+			return FClickControl(m_appContext, m_driver, m_driver.FindElement(By.Id(sid)));
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function:FSetInputControlText
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetInputControlText
+		----------------------------------------------------------------------------*/
+		public static bool FSetInputControlText(IWebDriver driver, string sName, string sValue, bool fCheck)
+		{
+			IWebElement element = driver.FindElement(By.Name(sName));
+
+			if (element == null)
+				return false;
+
+			string sOriginalValue = fCheck ? element.GetProperty("value") : null;
+
+			element.Clear();
+			element.SendKeys(sValue);
+
+
+			if (fCheck)
+				return String.Compare(sOriginalValue, sValue) != 0;
+
+			return false;
+		}
+
+		public bool FSetInputControlText(string sName, string sValue, bool fCheck) => FSetInputControlText(m_driver, sName, sValue, fCheck);
+
+		/*----------------------------------------------------------------------------
+			%%Function:FSetCheckboxControlVal
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetCheckboxControlIdVal
+		----------------------------------------------------------------------------*/
+		public static bool FSetCheckboxControlNameVal(IWebDriver driver, bool fChecked, string sName)
+		{
+			IWebElement element = driver.FindElement(By.Name(sName));
+			string sValue = fChecked ? "true" : "false";
+			string sActual = element.GetProperty("checked");
+
+			if (String.Compare(element.GetProperty("checked"), sValue, true) != 0)
+			{
+				element.Click();
+				return true;
+			}
+
+			return false;
+		}
+
+		public bool FSetCheckboxControlNameVal(bool fChecked, string sName) => FSetCheckboxControlNameVal(m_driver, fChecked, sName);
+
+		/*----------------------------------------------------------------------------
+			%%Function:FSetCheckboxControlIdVal
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetCheckboxControlIdVal
+		----------------------------------------------------------------------------*/
+		public static bool FSetCheckboxControlIdVal(IWebDriver driver, bool fChecked, string sid)
+		{
+			IWebElement element = driver.FindElement(By.Id(sid));
+			string sValue = fChecked ? "true" : "false";
+			string sActual = element.GetProperty("checked");
+
+			if (String.Compare(element.GetProperty("checked"), sValue, true) != 0)
+			{
+				element.Click();
+				return true;
+			}
+
+			return false;
+		}
+
+		public bool FSetCheckboxControlIdVal(bool fChecked, string sid) => FSetCheckboxControlIdVal(m_driver, fChecked, sid);
+
+		/* S  G E T  C O N T R O L  V A L U E */
+		/*----------------------------------------------------------------------------
+        	%%Function: SGetControlValue
+        	%%Qualified: ArbWeb.ArbWebControl.SGetControlValue
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+		public static string GetValueForControlId(IWebDriver driver, string sId)
+		{
+			IWebElement control = driver.FindElement(By.Id(sId));
+
+			return control.GetProperty("value");
+		}
+
+		public string GetValueForControlId(string sId) => GetValueForControlId(m_driver, sId);
+
+		#endregion
+
+		#region Select/Option Interaction
+
+		/*----------------------------------------------------------------------------
+			%%Function:GetOptionValueFromFilterOptionText
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetOptionValueFromFilterOptionText
+		----------------------------------------------------------------------------*/
+		public string GetOptionValueFromFilterOptionTextForControlName(string sName, string sOptionText)
+		{
+			m_appContext.StatusReport.LogData($"SGetSelectIDFromDoc for id {sName}", 3, StatusRpt.MSGT.Body);
+
+			string s = GetOptionValueForSelectControlNameOptionText(sName, sOptionText);
+
+			m_appContext.StatusReport.LogData($"Return: {s}", 3, StatusRpt.MSGT.Body);
+			return s;
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function:GetOptionTextFromOptionValue
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetOptionTextFromOptionValue
+		----------------------------------------------------------------------------*/
+		public static string GetOptionTextFromOptionValueForControlName(IWebDriver driver, IAppContext context, string sName, string sOptionValue)
+		{
+			IWebElement selectElement = driver.FindElement(By.Name(sName));
+
+			Dictionary<string, string> mpValueText = GetOptionsValueTextMappingFromControl(selectElement, context.StatusReport);
+			if (mpValueText.ContainsKey(sOptionValue))
+				return mpValueText[sOptionValue];
+
+			return null;
+		}
+
+		public string GetOptionTextFromOptionValueForControlName(string sName, string sOptionName) => GetOptionTextFromOptionValueForControlName(m_driver, m_appContext, sName, sOptionName);
+
+		/*----------------------------------------------------------------------------
+			%%Function:FSetSelectControlText
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetSelectControlText
+		----------------------------------------------------------------------------*/
+		public static bool FSetSelectedOptionTextForControlId(IWebDriver driver, IAppContext appContext, string sid, string sValue)
+		{
+			appContext.StatusReport.LogData($"FSetSelectControlText for id {sid}", 5, StatusRpt.MSGT.Body);
+
+			SelectElement select = new SelectElement(driver.FindElement(By.Id(sid)));
+			string sOriginal = select.SelectedOption.Text;
+			bool fChanged = false;
+
+			if (String.Compare(sOriginal, sValue, true) != 0)
+			{
+				select.SelectByText(sValue);
+				fChanged = true;
+			}
+
+			appContext.StatusReport.LogData($"Return: {fChanged}", 5, StatusRpt.MSGT.Body);
+
+			return fChanged;
+		}
+
+		public bool FSetSelectedOptionTextForControlId(string sid, string sValue) => FSetSelectedOptionTextForControlId(m_driver, m_appContext, sid, sValue);
+
+		/*----------------------------------------------------------------------------
+			%%Function:FSetSelectControlValue
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetSelectControlValue
+		----------------------------------------------------------------------------*/
+		public static bool FSetSelectedOptionValueForControlName(IWebDriver driver, IAppContext appContext, string sName, string sValue)
+		{
+			appContext.StatusReport.LogData($"FSetSelectControlValue for name {sName}", 5, StatusRpt.MSGT.Body);
+
+			SelectElement select = new SelectElement(driver.FindElement(By.Name(sName)));
+			string sOriginal = select.SelectedOption.GetProperty("value");
+			bool fChanged = false;
+
+			if (String.Compare(sOriginal, sValue, true) != 0)
+			{
+				try
+				{
+					select.SelectByValue(sValue);
+				}
+				catch
+				{
+					return false;
+				}
+				fChanged = true;
+			}
+
+			appContext.StatusReport.LogData($"Return: {fChanged}", 5, StatusRpt.MSGT.Body);
+
+			return fChanged;
+		}
+
+		public bool FSetSelectedOptionValueForControlName(string sName, string sValue) => FSetSelectedOptionValueForControlName(m_driver, m_appContext, sName, sValue);
+
+		/*----------------------------------------------------------------------------
+			%%Function:GetSelectedOptionTextFromSelectControl
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetSelectedOptionTextFromSelectControl
+		----------------------------------------------------------------------------*/
+		public static string GetSelectedOptionTextFromSelectControlName(IWebDriver driver, string sName)
+		{
+			IWebElement selectElement = driver.FindElement(By.Name(sName));
+			SelectElement select = new SelectElement(selectElement);
+
+			return select.SelectedOption?.Text;
+		}
+
+		public string GetSelectedOptionTextFromSelectControlName(string sName) => GetSelectedOptionTextFromSelectControlName(m_driver, sName);
+
+		/*----------------------------------------------------------------------------
+			%%Function:GetSelectedOptionValueFromSelectControlName
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetSelectedOptionValueFromSelectControlName
+		----------------------------------------------------------------------------*/
+		public static string GetSelectedOptionValueFromSelectControlName(IWebDriver driver, string sName)
+		{
+			IWebElement selectElement = driver.FindElement(By.Name(sName));
+			SelectElement select = new SelectElement(selectElement);
+
+			return select.SelectedOption.GetAttribute("value");
+		}
+
+		public string GetSelectedOptionValueFromSelectControlName(string sName) => GetSelectedOptionValueFromSelectControlName(m_driver, sName);
+
+		/*----------------------------------------------------------------------------
+			%%Function:GetOptionValueForSelectControlOptionText
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetOptionValueForSelectControlOptionText
+		----------------------------------------------------------------------------*/
+		public static string GetOptionValueForSelectControlNameOptionText(IWebDriver driver, string sName, string sOptionText)
+		{
+			IWebElement selectElement = driver.FindElement(By.Name(sName));
+			Dictionary<string, string> mpValueText = GetOptionsValueTextMappingFromControl(selectElement, null);
+
+			foreach (string sKey in mpValueText.Keys)
+			{
+				if (String.Compare(mpValueText[sKey], sOptionText, true) == 0)
+					return sKey;
+			}
+
+			return null;
+		}
+
+		public string GetOptionValueForSelectControlNameOptionText(string sName, string sOptionText) => GetOptionValueForSelectControlNameOptionText(m_driver, sName, sOptionText);
+
+		/*----------------------------------------------------------------------------
+			%%Function:MpGetSelectValuesFromControl
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.MpGetSelectValuesFromControl
+		----------------------------------------------------------------------------*/
+		private static Dictionary<string, string> GetOptionsValueTextMappingFromControl(
+			IWebElement selectElement,
+			StatusRpt srpt)
+		{
+			string sHtml = selectElement.GetAttribute("innerHTML");
+
+			HtmlDocument html = new HtmlDocument();
+			html.LoadHtml(sHtml);
+
+			HtmlNodeCollection options = html.DocumentNode.SelectNodes("//option");
+			Dictionary<string, string> mp = new Dictionary<string, string>();
+
+			if (options != null)
+			{
+				foreach (HtmlNode option in options)
+				{
+					string sValue = option.GetAttributeValue("value", null);
+					string sText = option.InnerText.Trim();
+					
+					if (mp.ContainsKey(sValue))
+						srpt?.AddMessage(
+							$"How strange!  Option '{sValue}' shows up more than once in the options list!",
+							StatusRpt.MSGT.Warning);
+					else
+						mp.Add(sValue, sText);
+				}
+			}
+
+			return mp;
+		}
+
+		/* M P  G E T  S E L E C T  V A L U E S */
+		/*----------------------------------------------------------------------------
+			%%Function: MpGetSelectValues
+			%%Qualified: ArbWeb.AwMainForm.MpGetSelectValues
+			%%Contact: rlittle
+
+            for a given <select name=$sName><option value=$sValue>$sText</option>...
+         
+            Find the given sName select object. Then add a mapping of
+            $sText -> $sValue to a dictionary and return it.
+		----------------------------------------------------------------------------*/
+		public static Dictionary<string, string> GetOptionsValueTextMappingFromControlId(IWebDriver driver, StatusRpt srpt, string sid)
+		{
+			MicroTimer timer = new MicroTimer();
+
+			Dictionary<string, string> mp = GetOptionsValueTextMappingFromControl(driver.FindElement(By.Id(sid)), srpt);
+
+			timer.Stop();
+			srpt.LogData($"MpGetSelectValues({sid}) elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+			return mp;
+		}
+
+		public Dictionary<string, string> GetOptionsValueTextMappingFromControlId(string sid) => GetOptionsValueTextMappingFromControlId(m_driver, m_appContext.StatusReport, sid);
+
+		/*----------------------------------------------------------------------------
+			%%Function:GetOptionsTextValueMappingFromControl
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetOptionsTextValueMappingFromControl
+		----------------------------------------------------------------------------*/
+		private static Dictionary<string, string> GetOptionsTextValueMappingFromControl(
+			IWebElement selectElement,
+			StatusRpt srpt)
+		{
+			string sHtml = selectElement.GetAttribute("innerHTML");
+
+			HtmlDocument html = new HtmlDocument();
+			html.LoadHtml(sHtml);
+
+			HtmlNodeCollection options = html.DocumentNode.SelectNodes("//option");
+			Dictionary<string, string> mp = new Dictionary<string, string>();
+
+			if (options != null)
+			{
+				foreach (HtmlNode option in options)
+				{
+					string sValue = option.GetAttributeValue("value", null);
+					string sText = option.InnerText.Trim();
+
+					if (mp.ContainsKey(sText))
+						srpt?.AddMessage(
+							$"How strange!  Option '{sText}' shows up more than once in the options list!",
+							StatusRpt.MSGT.Warning);
+					else
+						mp.Add(sText, sValue);
+				}
+			}
+
+			return mp;
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function:GetOptionsTextValueMappingFromControlId
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetOptionsTextValueMappingFromControlId
+		----------------------------------------------------------------------------*/
+		public static Dictionary<string, string> GetOptionsTextValueMappingFromControlId(IWebDriver driver, StatusRpt srpt, string sid)
+		{
+			MicroTimer timer = new MicroTimer();
+
+			Dictionary<string, string> mp = GetOptionsTextValueMappingFromControl(driver.FindElement(By.Id(sid)), srpt);
+
+			timer.Stop();
+			srpt.LogData($"GetOptionsTextValueMappingFromControlId({sid}) elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+			return mp;
+		}
+
+		public Dictionary<string, string> GetOptionsTextValueMappingFromControlId(string sid) => GetOptionsTextValueMappingFromControlId(m_driver, m_appContext.StatusReport, sid);
+
+		/*----------------------------------------------------------------------------
+			%%Function:FResetMultiSelectOptions
+			%%Qualified:ArbWeb.ArbWebControl_Selenium.FResetMultiSelectOptions
+
+			Uncheck all of the items for this multiselect control
+		----------------------------------------------------------------------------*/
+		public static bool FResetMultiSelectOptionsForControlName(IWebDriver driver, string sName)
+		{
+			IWebElement selectElement = driver.FindElement(By.Name(sName));
+			SelectElement select = new SelectElement(selectElement);
+
+			select.DeselectAll();
+
+			return true;
+		}
+
+		public bool FResetMultiSelectOptionsForControlName(string sName) => FResetMultiSelectOptionsForControlName(m_driver, sName);
+
+		// if fValueIsValue == false, then sValue is the "text" of the option control
+		/* F  S E L E C T  M U L T I  S E L E C T  O P T I O N */
+		/*----------------------------------------------------------------------------
+        	%%Function: FSelectMultiSelectOption
+        	%%Qualified: ArbWeb.ArbWebControl.FSelectMultiSelectOption
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+		public static bool FSelectMultiSelectOptionValueForControlName(IWebDriver driver, string sName, string sValue)
+		{
+			IWebElement selectElement = driver.FindElement(By.Name(sName));
+			SelectElement select = new SelectElement(selectElement);
+
+			try
+			{
+				select.SelectByValue(sValue);
+			}
+			catch
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		public bool FSelectMultiSelectOptionValueForControlName(string sName, string sValue) => FSelectMultiSelectOptionValueForControlName(m_driver, sName, sValue);
+
+		#endregion
+
+		#region File Downloader
 		public class FileDownloader
 		{
 			public delegate void StartDownload();
@@ -450,6 +640,6 @@ namespace ArbWeb
 				return m_sTargetFile;
 			}
 		}
-		
+		#endregion
 	}
 }

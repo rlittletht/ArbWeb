@@ -9,6 +9,7 @@ using StatusBox;
 using mshtml;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using OpenQA.Selenium;
 using Win32Win;
 
 namespace ArbWeb
@@ -34,7 +35,7 @@ namespace ArbWeb
 
             List<string> plsMiscServer = rstServer.PlsMisc;
 
-            List<string> plsValue = SyncPlsMiscWithServer(m_awc.Document2, sEmail, sOfficialID, rsteNew.Misc, rstUploading.PlsMisc, ref plsMiscServer);
+            List<string> plsValue = SyncPlsMiscWithServer(sEmail, sOfficialID, rsteNew.Misc, rstUploading.PlsMisc, ref plsMiscServer);
 
             rstServer.PlsMisc = plsMiscServer;
 
@@ -79,7 +80,7 @@ namespace ArbWeb
                     return;
                 }
 
-            SyncRsteWithServer(m_awc.Document2, sOfficialID, rste, rsteNew);
+            SyncRsteWithServer(sOfficialID, rste, rsteNew);
 
         }
 
@@ -254,75 +255,68 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private static void VisitRankCallbackUpload(IRoster irst, string sRankPosition, Dictionary<string, int> mpRanked, Dictionary<string, string> mpRankedId, ArbWebControl awc, StatusBox.StatusRpt srpt)
+        private static void VisitRankCallbackUpload(IRoster irst, string sRankPosition, Dictionary<string, int> mpNameRank, Dictionary<string, string> mpNameOptionValue, ArbWebControl_Selenium webControl, StatusRpt srpt)
         {
-            IHTMLDocument2 oDoc2;
-            oDoc2 = awc.Document2;
-
-            List<string> plsUnrank;
-            Dictionary<int, List<string>> mpRank;
-            Dictionary<int, List<string>> mpRerank;
-
-            BuildRankingJobs(irst, sRankPosition, mpRanked, out plsUnrank, out mpRank, out mpRerank);
+	        BuildRankingJobs(
+		        irst,
+		        sRankPosition,
+		        mpNameRank,
+		        out List<string> plsUnrankNames,
+		        out Dictionary<int, List<string>> mpRankNames,
+		        out Dictionary<int, List<string>> mpRankNamesRerank);
 
             // at this point, we have a list of jobs to do.
 
             // first, unrank everyone that needs unranked
-            if (plsUnrank.Count > 0)
+            if (plsUnrankNames.Count > 0)
             {
-                ArbWebControl.FResetMultiSelectOptions(oDoc2, WebCore._s_RanksEdit_Select_Ranked);
-                foreach (string s in plsUnrank)
+                webControl.FResetMultiSelectOptionsForControlName(WebCore._s_RanksEdit_Select_Ranked);
+                foreach (string s in plsUnrankNames)
                 {
-                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, WebCore._s_RanksEdit_Select_Ranked, mpRankedId[s], true))
+                    if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_Ranked, mpNameOptionValue[s]))
                         throw new Exception("couldn't select an official for unranking!");
                 }
 
                 // now, do the unrank
-                awc.ResetNav();
-                awc.FClickControl(oDoc2, WebCore._s_RanksEdit_Button_Unrank);
-                awc.FWaitForNavFinish();
-                oDoc2 = awc.Document2;
+                webControl.FClickControlName(WebCore._s_RanksEdit_Button_Unrank);
             }
 
             // now, let's rerank the folks that need to be re-ranked
             // we will do this once for every new rank we are setting
-            foreach (int nRank in mpRerank.Keys)
+            foreach (int nRank in mpRankNamesRerank.Keys)
             {
-                ArbWebControl.FResetMultiSelectOptions(oDoc2, WebCore._s_RanksEdit_Select_Ranked);
-                foreach (string s in mpRerank[nRank])
+                webControl.FResetMultiSelectOptionsForControlName(WebCore._s_RanksEdit_Select_Ranked);
+                foreach (string s in mpRankNamesRerank[nRank])
                 {
-                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, WebCore._s_RanksEdit_Select_Ranked, mpRankedId[s], true))
+                    if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_Ranked, mpNameOptionValue[s]))
                         throw new Exception("couldn't select an official for reranking!");
                 }
-                ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
+                webControl.FSetInputControlText(WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
 
                 // now, rank'em
-                awc.ResetNav();
-                awc.FClickControl(oDoc2, WebCore._s_RanksEdit_Button_ReRank);
-                awc.FWaitForNavFinish();
-                oDoc2 = awc.Document2;
+                webControl.FClickControlName(WebCore._s_RanksEdit_Button_ReRank);
             }
 
             // finally, let's rank the folks that weren't ranked before
 
-            foreach (int nRank in mpRank.Keys)
+            Dictionary<string, string> mpNameOptionValueUnranked =
+	            webControl.GetOptionsTextValueMappingFromControlId(WebCore._sid_RanksEdit_Select_NotRanked);
+            
+            foreach (int nRank in mpRankNames.Keys)
             {
-                ArbWebControl.FResetMultiSelectOptions(oDoc2, WebCore._s_RanksEdit_Select_NotRanked);
-                foreach (string s in mpRank[nRank])
+                webControl.FResetMultiSelectOptionsForControlName(WebCore._s_RanksEdit_Select_NotRanked);
+                foreach (string s in mpRankNames[nRank])
                 {
-                    if (!ArbWebControl.FSelectMultiSelectOption(oDoc2, WebCore._s_RanksEdit_Select_NotRanked, s, false))
+                    if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_NotRanked, mpNameOptionValueUnranked[s]))
                         srpt.AddMessage(String.Format("Could not select an official for ranking: {0}", s),
                                         StatusRpt.MSGT.Error);
                     // throw new Exception("couldn't select an official for ranking!");
                 }
 
-                ArbWebControl.FSetInputControlText(oDoc2, WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
+                webControl.FSetInputControlText(WebCore._s_RanksEdit_Input_Rank, nRank.ToString(), false);
 
                 // now, rank'em
-                awc.ResetNav();
-                awc.FClickControl(oDoc2, WebCore._s_RanksEdit_Button_Rank);
-                awc.FWaitForNavFinish();
-                oDoc2 = awc.Document2;
+                webControl.FClickControlName(WebCore._s_RanksEdit_Button_Rank);
             }
         }
 
@@ -377,15 +371,7 @@ namespace ArbWeb
 
             // compare the two rosters to find differences
 
-            if (m_awc.InvokeRequired)
-                {
-                IAsyncResult rslt = m_awc.BeginInvoke(new AwMainForm.HandleRosterDel(InvokeHandleRoster), new object[] {rst, sInFile, rstServer, null});
-                m_awc.EndInvoke(rslt);
-                }
-            else
-                {
-                InvokeHandleRoster(rst, null, rstServer, null);
-                }
+			InvokeHandleRoster(rst, null, rstServer, null);
 
             m_srpt.PopLevel();
             m_srpt.AddMessage("Completed Roster upload.");

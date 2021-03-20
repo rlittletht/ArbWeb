@@ -28,7 +28,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void GetRosterInfoFromServer(string sEmail, string sOfficialID, RosterEntry rste)
         {
-            SyncRsteWithServer(m_awc.Document2, sOfficialID, rste, null);
+            SyncRsteWithServer(sOfficialID, rste, null);
 
             if (rste.Address1 == null || rste.Address2 == null || rste.City == null || rste.m_sDateJoined == null
                 || rste.m_sDateOfBirth == null || rste.Email == null || rste.First == null
@@ -169,7 +169,7 @@ namespace ArbWeb
                     {
                     m_srpt.AddMessage(
                         String.Format("Lookup failed during ProcessAllOfficialPages for official '{0}'({1})",
-                                      cells[2].InnerText, sEmail), StatusBox.StatusRpt.MSGT.Error);
+                                      cells[2].InnerText.Trim(), sEmail), StatusBox.StatusRpt.MSGT.Error);
                     continue;
                     }
 
@@ -316,7 +316,7 @@ namespace ArbWeb
             // check a whole bunch of config checkboxes
 
             // select All Officials
-            ArbWebControl_Selenium.FSetSelectControlText(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
+            ArbWebControl_Selenium.FSetSelectedOptionTextForControlId(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
 
             ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
             ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
@@ -347,7 +347,7 @@ namespace ArbWeb
             // now we are on the PrintRoster screen
             ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
 
-            ArbWebControl_Selenium.FSetSelectControlText(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
+            ArbWebControl_Selenium.FSetSelectedOptionTextForControlId(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
 
             // check a whole bunch of config checkboxes
             ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
