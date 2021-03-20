@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ArbWeb;
-using mshtml;
-using Win32Win;
 using System.IO;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
@@ -300,13 +294,6 @@ namespace ArbWeb
             return rst;
         }
 
-        private delegate AutoResetEvent LaunchRosterFileDownloadDel(string sTempFile);
-
-        AutoResetEvent LaunchRosterFileDownload(string sTempFile)
-        {
-			return DoLaunchRosterFileDownload(sTempFile);
-        }
-
         void DoRosterDownload(string sTempFile)
         {
             ThrowIfNot(m_webControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
@@ -316,19 +303,19 @@ namespace ArbWeb
             // check a whole bunch of config checkboxes
 
             // select All Officials
-            ArbWebControl_Selenium.FSetSelectedOptionTextForControlId(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
+            WebControl.FSetSelectedOptionTextForControlId(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
 
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateOfBirth);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_UserID);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_MiddleName);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateOfBirth);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_UserID);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_MiddleName);
 
             m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dropdown the menu
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
             m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dismiss the menu
 
-            ArbWebControl_Selenium.FileDownloader downloader = new ArbWebControl_Selenium.FileDownloader(
+            WebControl.FileDownloader downloader = new WebControl.FileDownloader(
 	            m_webControl,
 	            "RosterReport.xlsx",
 	            null,
@@ -338,35 +325,6 @@ namespace ArbWeb
             
             DownloadGenericExcelReport.ConvertExcelFileToCsv(sDownloadedFile, sTempFile);
             File.Delete(sDownloadedFile);
-        }
-
-        AutoResetEvent DoLaunchRosterFileDownload(string sTempFile)
-        {
-            ThrowIfNot(m_webControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
-            
-            // now we are on the PrintRoster screen
-            ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
-
-            ArbWebControl_Selenium.FSetSelectedOptionTextForControlId(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
-
-            // check a whole bunch of config checkboxes
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
-
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateOfBirth);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_UserID);
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_MiddleName);
-
-            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dropdown the menu
-            ArbWebControl_Selenium.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
-            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dismiss the menu
-
-            AutoResetEvent evtDownload = new AutoResetEvent(false);
-            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "RosterReport.xlsx", "RosterReport", sTempFile, "of OfficialsView.aspx from", evtDownload);
-
-            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_GenerateRosterReport);
-            return evtDownload;
         }
 
         private string SRosterFileDownload()
@@ -452,8 +410,6 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         async void DoDownloadQuickRoster()
         {
-            var x = m_awc.Handle; // this makes sure that m_awc has a handle before we ask it if invoke is required.(forces it to get created on the correct thread)
-
             Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterWork);
 
             tsk.Start();

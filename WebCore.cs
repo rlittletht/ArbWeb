@@ -11,7 +11,6 @@ using mshtml;
 using OpenQA.Selenium;
 using StatusBox;
 using TCore.Util;
-using Win32Win;
 using HtmlAgilityPack;
 
 namespace ArbWeb
@@ -289,7 +288,179 @@ namespace ArbWeb
         public const string _sid_Contacts_Roster_Submit_Print = "ctl00_ContentHolder_pgeContactsView_navContactsView_btnPrint"; // ok2018
 
         #endregion
+        
+        #region Support Functions
+        
+	    /* R G S  F R O M  C H L B X */
+	    /*----------------------------------------------------------------------------
+		    %%Function: RgsFromChlbx
+		    %%Qualified: ArbWeb.ArbWebControl.RgsFromChlbx
+		    %%Contact: rlittle
+		    
+	    ----------------------------------------------------------------------------*/
+	    public static string[] RgsFromChlbx(bool fUse, CheckedListBox chlbx)
+	    {
+		    return RgsFromChlbx(fUse, chlbx, -1, false, null, false);
+	    }
+
+	    /* R G S  F R O M  C H L B X  S P O R T */
+	    /*----------------------------------------------------------------------------
+		    %%Function: RgsFromChlbxSport
+		    %%Qualified: ArbWeb.ArbWebControl.RgsFromChlbxSport
+		    %%Contact: rlittle
+		    
+	    ----------------------------------------------------------------------------*/
+	    public static string[] RgsFromChlbxSport(bool fUse, CheckedListBox chlbx, string sSport, bool fMatch)
+	    {
+		    return RgsFromChlbx(fUse, chlbx, -1, false, sSport, fMatch);
+	    }
+
+	    /* R G S  F R O M  C H L B X */
+	    /*----------------------------------------------------------------------------
+		    %%Function: RgsFromChlbx
+		    %%Qualified: ArbWeb.ArbWebControl.RgsFromChlbx
+		    %%Contact: rlittle
+		    
+	    ----------------------------------------------------------------------------*/
+	    public static string[] RgsFromChlbx(
+		    bool fUse,
+		    CheckedListBox chlbx,
+		    int iForceToggle,
+		    bool fForceOn,
+		    string sSport,
+		    bool fMatch)
+	    {
+		    string sSport2 = sSport == "Softball" ? "SB" : sSport;
+
+		    if (!fUse && sSport == null)
+			    return null;
+
+		    int c = chlbx.CheckedItems.Count;
+
+		    if (!fUse)
+			    c = chlbx.Items.Count;
+
+		    if (iForceToggle != -1)
+		    {
+			    if (fForceOn)
+				    c++;
+			    else
+				    c--;
+		    }
+
+		    string[] rgs = new string[c];
+		    int i = 0;
+
+		    if (!fUse)
+		    {
+			    int iT = 0;
+
+			    for (i = 0; i < c; i++)
+			    {
+				    rgs[iT] = (string) chlbx.Items[i];
+				    if (sSport != null)
+				    {
+					    if ((rgs[iT].IndexOf(sSport) >= 0 && fMatch)
+					        || (rgs[iT].IndexOf(sSport) == -1 && !fMatch)
+					        || (rgs[iT].IndexOf(sSport2) >= 0 && fMatch)
+					        || (rgs[iT].IndexOf(sSport2) == -1 && !fMatch))
+					    {
+						    iT++;
+					    }
+				    }
+				    else
+				    {
+					    iT++;
+				    }
+			    }
+
+			    if (iT < c)
+				    Array.Resize(ref rgs, iT);
+
+			    return rgs;
+		    }
+
+		    i = 0;
+		    foreach (int iChecked in chlbx.CheckedIndices)
+		    {
+			    if (iChecked == iForceToggle)
+				    continue;
+			    rgs[i] = (string) chlbx.Items[iChecked];
+			    if (sSport != null)
+			    {
+				    if ((rgs[i].IndexOf(sSport) >= 0 && fMatch)
+				        || (rgs[i].IndexOf(sSport) == -1 && !fMatch))
+				    {
+					    i++;
+				    }
+			    }
+			    else
+			    {
+				    i++;
+			    }
+		    }
+
+		    if (fForceOn && iForceToggle != -1)
+			    rgs[i++] = (string) chlbx.Items[iForceToggle];
+
+		    if (i < c)
+			    Array.Resize(ref rgs, i);
+
+		    return rgs;
+	    }
+
+	    /* U P D A T E  C H L B X  F R O M  R G S */
+	    /*----------------------------------------------------------------------------
+		    %%Function: UpdateChlbxFromRgs
+		    %%Qualified: ArbWeb.ArbWebControl.UpdateChlbxFromRgs
+		    %%Contact: rlittle
+		    
+	    ----------------------------------------------------------------------------*/
+	    public static void UpdateChlbxFromRgs(
+		    CheckedListBox chlbx,
+		    string[] rgsSource,
+		    string[] rgsChecked,
+		    string[] rgsFilterPrefix,
+		    bool fCheckAll)
+	    {
+		    chlbx.Items.Clear();
+		    SortedList<string, int> mp = Utils.PlsUniqueFromRgs(rgsChecked);
+
+		    foreach (string s in rgsSource)
+		    {
+			    bool fSkip = false;
+
+			    if (rgsFilterPrefix != null)
+			    {
+				    fSkip = true;
+				    foreach (string sPrefix in rgsFilterPrefix)
+				    {
+					    if (s.Length > sPrefix.Length && String.Compare(s.Substring(0, sPrefix.Length), sPrefix, true /*ignoreCase*/) == 0)
+					    {
+						    fSkip = false;
+						    break;
+					    }
+				    }
+			    }
+
+			    if (fSkip)
+				    continue;
+
+			    CheckState cs;
+
+			    if (fCheckAll || mp.ContainsKey(s))
+				    cs = CheckState.Checked;
+			    else
+				    cs = CheckState.Unchecked;
+
+			    int i = chlbx.Items.Add(s, cs);
+		    }
+	    }
+	    
+	    #endregion
     }
+    
+    
 
     public class DownloadGenericExcelReport
     {
@@ -500,41 +671,11 @@ namespace ArbWeb
         {
             m_iac.EnsureLoggedIn();
 
-//            m_iac.StatusReport.LogData("LaunchDownloadGeneric async task launched", 3, StatusRpt.MSGT.Body);
             DoLaunchDownloadGeneric(sTempFile);
-            //m_iac.StatusReport.LogData("Before evtDownload.Wait()", 3, StatusRpt.MSGT.Body);
-//            evtDownload.WaitOne();
-//            m_iac.StatusReport.LogData("evtDownload.WaitOne() complete", 3, StatusRpt.MSGT.Body);
 
             return sTempFile;
         }
 
-        #if false
-        private delegate AutoResetEvent LaunchDownloadGenericDel(string sTempFile);
-
-        /*----------------------------------------------------------------------------
-        	%%Function: LaunchDownloadGames
-        	%%Qualified: ArbWeb.AwMainForm.LaunchDownloadGames
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        AutoResetEvent LaunchDownloadGeneric(string sTempFile)
-        {
-            if (m_iac.WebControl.InvokeRequired)
-            {
-            m_iac.StatusReport.LogData("InvokeRequired true for LaunchDownloadGeneric", 3, StatusRpt.MSGT.Body);
-
-                IAsyncResult rsl = m_iac.WebControl.BeginInvoke(new LaunchDownloadGenericDel(DoLaunchDownloadGeneric), sTempFile);
-                return (AutoResetEvent)m_iac.WebControl.EndInvoke(rsl);
-            }
-            else
-            {
-            m_iac.StatusReport.LogData("InvokeRequired false for DoLaunchDownloadGames", 3, StatusRpt.MSGT.Body);
-                return DoLaunchDownloadGeneric(sTempFile);
-            }
-        }
-        #endif
-	    
         bool FNeedSelectReportFilter()
         {
             return m_sSelectFilterControlName != null;
@@ -610,7 +751,7 @@ namespace ArbWeb
             // m_iac.StatusReport.LogData($"Setting clipboard data: {sTempFile}", 3, StatusRpt.MSGT.Body);
             // System.Windows.Forms.Clipboard.SetText(sTempFile);
 
-            ArbWebControl_Selenium.FileDownloader downloader = new ArbWebControl_Selenium.FileDownloader(
+            WebControl.FileDownloader downloader = new WebControl.FileDownloader(
 	            m_iac.WebControlNew,
 	            m_sFullExpectedName,
 	            sTempFile,

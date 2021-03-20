@@ -10,7 +10,6 @@ using mshtml;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using OpenQA.Selenium;
-using Win32Win;
 using HtmlAgilityPack;
 using OpenQA.Selenium.Support.UI;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
@@ -256,7 +255,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private static void VisitRankCallbackUpload(IRoster irst, string sRankPosition, Dictionary<string, int> mpNameRank, Dictionary<string, string> mpNameOptionValue, ArbWebControl_Selenium webControl, StatusRpt srpt)
+        private static void VisitRankCallbackUpload(IRoster irst, string sRankPosition, Dictionary<string, int> mpNameRank, Dictionary<string, string> mpNameOptionValue, WebControl webControl, StatusRpt srpt)
         {
 	        BuildRankingJobs(
 		        irst,

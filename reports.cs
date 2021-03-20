@@ -48,8 +48,11 @@ namespace ArbWeb
 
             // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
             // rated for the sports we are filtered to
-            GameData.GameSlots gms = gc.GamesFromFilter(ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
-                                                        ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), false, m_saOpenSlots);
+            GameData.GameSlots gms = gc.GamesFromFilter(
+	            WebCore.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+	            WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels),
+	            false,
+	            m_saOpenSlots);
 
             m_srpt.LogData("Beginning to build rosterfiltered...", 3, StatusRpt.MSGT.Body);
             Roster rstFiltered;
@@ -211,20 +214,20 @@ namespace ArbWeb
                 string[] rgs;
 
                 oNote.HTMLBody += "<h1>Baseball open slots</h1>";
-                rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", false);
+                rgs = WebCore.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", false);
                 gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      rgs, WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
                 oNote.HTMLBody += SHtmlReadFile(sTempFile) + "<h1>Softball Open Slots</h1>";
-                rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", true);
+                rgs = WebCore.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", true);
                 gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      rgs, WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
                 oNote.HTMLBody += SHtmlReadFile(sTempFile);
                 }
             else
                 {
                 gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
-                                      ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      WebCore.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+                                      WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
                 oNote.HTMLBody += SHtmlReadFile(sTempFile);
                 }
             oNote.Display(true);
@@ -252,8 +255,8 @@ namespace ArbWeb
             m_srpt.PopLevel();
             m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
             // update regenerate the listboxes...
-            string[] rgsSports = ArbWebControl.RgsFromChlbx(true, m_chlbxSports);
-            string[] rgsSportLevels = ArbWebControl.RgsFromChlbx(true, m_chlbxSportLevels);
+            string[] rgsSports = WebCore.RgsFromChlbx(true, m_chlbxSports);
+            string[] rgsSportLevels = WebCore.RgsFromChlbx(true, m_chlbxSportLevels);
 
             bool fCheckAllSports = false;
             bool fCheckAllSportLevels = false;
@@ -264,11 +267,11 @@ namespace ArbWeb
             if (rgsSports.Length == 0 && m_chlbxSportLevels.Items.Count == 0)
                 fCheckAllSportLevels = true;
 
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
-            string[] rgsRosterSites = ArbWebControl.RgsFromChlbx(true, m_chlbxRoster);
+            WebCore.UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
+            WebCore.UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
+            string[] rgsRosterSites = WebCore.RgsFromChlbx(true, m_chlbxRoster);
 
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
+            WebCore.UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
             m_srpt.PopLevel();
             DoPendingQueueUIOp();
         }
@@ -299,7 +302,7 @@ namespace ArbWeb
             string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
-            gc.GenSiteRosterReport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
+            gc.GenSiteRosterReport(sTempFile, rst, WebCore.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
             // launch word with the file
             Process.Start(sTempFile);
             // System.IO.File.Delete(sTempFile);

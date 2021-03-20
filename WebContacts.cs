@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using mshtml;
 using StatusBox;
 using TCore.Util;
-using Win32Win;
 
 namespace ArbWeb
 {
@@ -39,6 +38,7 @@ namespace ArbWeb
 
         void DoDownloadContacts()
         {
+	        #if NYI
             var x = m_awc.Handle; // let's make sure the webbrowser handle is created
 
             m_srpt.LogData("Starting DoDownloadContacts", 3, StatusRpt.MSGT.Header);
@@ -84,6 +84,7 @@ namespace ArbWeb
                 });
 
             tskDownloadContacts.Start();
+            #endif
         }
     }
 }

@@ -14,7 +14,7 @@ using OpenQA.Selenium.DevTools.V86.Input;
 namespace ArbWeb
 {
 	// Arbiter Selenium Control
-	public class ArbWebControl_Selenium
+	public class WebControl
 	{
 		private readonly IWebDriver m_driver;
 		private IAppContext m_appContext;
@@ -22,7 +22,7 @@ namespace ArbWeb
 		public IWebDriver Driver => m_driver;
 		public string DownloadPath { get; set; }
 
-		public ArbWebControl_Selenium(IAppContext context)
+		public WebControl(IAppContext context)
 		{
 			m_appContext = context;
 			ChromeOptions options = new ChromeOptions();
@@ -158,8 +158,6 @@ namespace ArbWeb
 					{
 						return false;
 					}
-
-					return true;
 				});
 		}
 		
@@ -635,7 +633,7 @@ namespace ArbWeb
 			private readonly string m_sTargetFile;
 			private StartDownload m_startDownload;
 			
-			public FileDownloader(ArbWebControl_Selenium webControl, string expectedFile, string targetFile, StartDownload startDownload)
+			public FileDownloader(WebControl webControl, string expectedFile, string targetFile, StartDownload startDownload)
 			{
 				m_sExpectedFullName = Path.Combine(webControl.DownloadPath, expectedFile);
 				if (targetFile == null)

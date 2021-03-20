@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using NUnit.Framework;
 using OpenQA.Selenium;
-using Win32Win;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
@@ -29,8 +28,6 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, RosterEntry rste, IRoster irstBuilding)
         {
-	        throw new Exception("NYI");
-	        
             Roster rstBuilding = (Roster) irstBuilding;
             List<string> plsMiscBuilding = rstBuilding.PlsMisc;
 
@@ -470,7 +467,7 @@ namespace ArbWeb
         	
         ----------------------------------------------------------------------------*/
         private static bool MatchAssignPhoneNumber(
-	        ArbWebControl_Selenium webControl, 
+	        WebControl webControl, 
 	        RosterEntry rsteOut, 
 	        RosterEntry rsteNew, 
 	        int iNextPhone, 
@@ -607,7 +604,7 @@ namespace ArbWeb
 	        string sRank, 
 	        Dictionary<string, int> mpNameRank, 
 	        Dictionary<string, string> mpNameOptionValue, 
-	        ArbWebControl_Selenium webControl,
+	        WebControl webControl,
             StatusBox.StatusRpt srpt)
         {
 	        MicroTimer timer = new MicroTimer();
@@ -628,7 +625,7 @@ namespace ArbWeb
 	        string sRank, 
 	        Dictionary<string, int> mpRanked, 
 	        Dictionary<string, string> mpRankedId, 
-	        ArbWebControl_Selenium webControl,
+	        WebControl webControl,
             StatusBox.StatusRpt srpt);
 
         /*----------------------------------------------------------------------------
@@ -710,8 +707,6 @@ namespace ArbWeb
 
                 if (fVerboseLog)
                     {
-                    m_awc.RefreshPage();
-
                     BuildRankingMapFromPage(sRankPosition, out Dictionary<string, int> mpNameRankCheck, out Dictionary<string, string> _);
 
                     List<string> plsUnrank;
