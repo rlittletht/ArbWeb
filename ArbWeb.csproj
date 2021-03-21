@@ -27,7 +27,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -177,7 +177,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArbSel.cs" />
     <Compile Include="contacts.cs" />
     <Compile Include="EditProfile.cs">
       <SubType>Form</SubType>
@@ -274,6 +273,10 @@
     <ProjectReference Include="..\liblet\cs\TCore.Util\TCore.Util.csproj">
       <Project>{59868345-bc40-4771-a4d7-7c6a763663f0}</Project>
       <Name>TCore.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\liblet\cs\TCore.WebControl\TCore.WebControl.csproj">
+      <Project>{84b4e064-d576-4f70-b54a-3899e50865f4}</Project>
+      <Name>TCore.WebControl</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

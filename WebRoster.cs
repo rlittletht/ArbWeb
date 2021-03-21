@@ -4,6 +4,7 @@ using TCore.StatusBox;
 using HtmlAgilityPack;
 using NUnit.Framework;
 using OpenQA.Selenium;
+using TCore.WebControl;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb

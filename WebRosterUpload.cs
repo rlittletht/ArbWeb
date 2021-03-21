@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.IO;
 using TCore.StatusBox;
 using OpenQA.Selenium;
+using TCore.WebControl;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb

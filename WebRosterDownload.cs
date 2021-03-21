@@ -7,6 +7,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
+using TCore.WebControl;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb

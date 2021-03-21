@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using TCore.StatusBox;
 using TCore.Util;
 using HtmlAgilityPack;
+using TCore.WebControl;
 
 namespace ArbWeb
 {

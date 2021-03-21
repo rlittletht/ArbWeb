@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using OpenQA.Selenium;
 using TCore.StatusBox;
+using TCore.WebControl;
 
 namespace ArbWeb
 {
