@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.IO;
-using StatusBox;
+using TCore.StatusBox;
 using System.Runtime.InteropServices;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using System.Threading.Tasks;
@@ -42,9 +42,9 @@ namespace ArbWeb
         {
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             Roster rst = RstEnsure(m_pr.RosterWorking);
-            m_srpt.AddMessage("Generating mail merge documents...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Generating mail merge documents...", MSGT.Header, false);
 
-            m_srpt.LogData("GamesFromFilter...", 3, StatusRpt.MSGT.Header);
+            m_srpt.LogData("GamesFromFilter...", 3, MSGT.Header);
 
             // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
             // rated for the sports we are filtered to
@@ -54,7 +54,7 @@ namespace ArbWeb
 	            false,
 	            m_saOpenSlots);
 
-            m_srpt.LogData("Beginning to build rosterfiltered...", 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData("Beginning to build rosterfiltered...", 3, MSGT.Body);
             Roster rstFiltered;
 
             if (m_cbFilterRank.Checked)
@@ -63,7 +63,7 @@ namespace ArbWeb
                 rstFiltered = rst;
 
             string sCsvTemp = Filename.SBuildTempFilename("MailMergeRoster", "csv");
-            m_srpt.LogData($"Writing filtered roster to {sCsvTemp}", 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Writing filtered roster to {sCsvTemp}", 3, MSGT.Body);
             StreamWriter sw = new StreamWriter(sCsvTemp, false, System.Text.Encoding.Default);
 
             sw.WriteLine("email,firstname,lastname");
@@ -78,20 +78,20 @@ namespace ArbWeb
             // ok, now create the mailmerge .docx
             string sTempName;
             string sArbiterHelpNeeded;
-            m_srpt.LogData("Filtered roster written", 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData("Filtered roster written", 3, MSGT.Body);
 
             string sApp = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string sFile = Path.Combine(Path.GetPathRoot(sApp),Path.GetDirectoryName(sApp), "mailmergedoc.docx");
 
             sTempName = Filename.SBuildTempFilename("mailmergedoc", "docx");
-            m_srpt.LogData($"Writing mailmergedoc to {sTempName} using template at {sFile}", 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Writing mailmergedoc to {sTempName} using template at {sFile}", 3, MSGT.Body);
             OOXML.CreateMailMergeDoc(sFile, sTempName, sCsvTemp, gms, out sArbiterHelpNeeded);
 
-            m_srpt.LogData($"ArbiterHelp HTML created: {sArbiterHelpNeeded}", 5, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"ArbiterHelp HTML created: {sArbiterHelpNeeded}", 5, MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
             if (m_cbLaunch.Checked)
                 {
-                m_srpt.AddMessage("Done, launching document...", StatusRpt.MSGT.Header, false);
+                m_srpt.AddMessage("Done, launching document...", MSGT.Header, false);
                 System.Diagnostics.Process.Start(sTempName);
                 }
             if (m_cbSetArbiterAnnounce.Checked)
@@ -127,7 +127,7 @@ namespace ArbWeb
 
 	        string sCtl = null;
 
-	        m_srpt.LogData("Found D9UrgentHelpNeeded DIV, looking for parent TR element", 3, StatusRpt.MSGT.Body);
+	        m_srpt.LogData("Found D9UrgentHelpNeeded DIV, looking for parent TR element", 3, MSGT.Body);
 
 
 	        // ok, go up to the parent TR.
@@ -140,7 +140,7 @@ namespace ArbWeb
 		        ThrowIfNot(nodeFind != null, "Can't find HELP announcement");
 	        }
 
-	        m_srpt.LogData("Found D9UrgentHelpNeeded parent TR", 3, StatusRpt.MSGT.Body);
+	        m_srpt.LogData("Found D9UrgentHelpNeeded parent TR", 3, MSGT.Body);
 
 	        // now find one of our controls and get its control number
 	        string s = nodeFind.InnerHtml;
@@ -150,7 +150,7 @@ namespace ArbWeb
 		        sCtl = s.Substring(ich + WebCore._s_Announcements_Button_Edit_Prefix.Length, 5);
 	        }
 
-	        m_srpt.LogData($"Extracted ID for announcment to set: {sCtl}", 3, StatusRpt.MSGT.Body);
+	        m_srpt.LogData($"Extracted ID for announcment to set: {sCtl}", 3, MSGT.Body);
         
         ThrowIfNot(sCtl != null, "Can't find HELP announcement");
 
@@ -253,7 +253,7 @@ namespace ArbWeb
             CountsData cd = await taskCalc;
             
             m_srpt.PopLevel();
-            m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Updating listboxes...", MSGT.Header, false);
             // update regenerate the listboxes...
             string[] rgsSports = WebCore.RgsFromChlbx(true, m_chlbxSports);
             string[] rgsSportLevels = WebCore.RgsFromChlbx(true, m_chlbxSportLevels);
@@ -285,13 +285,13 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
         private CountsData CalcOpenSlotsWork()
         {
-            m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Calculating slot data...", MSGT.Header, false);
 
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
             m_srpt.PopLevel();
-            m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Calculating open slots...", MSGT.Header, false);
             m_saOpenSlots = gc.CalcOpenSlots(m_dtpStart.Value, m_dtpEnd.Value);
             return gc;
         }

@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using NUnit.Framework;
-using StatusBox;
+using TCore.StatusBox;
 
 namespace ArbWeb
 {
@@ -18,7 +18,7 @@ namespace ArbWeb
         {
             private ArbWeb.Roster m_rst;
             private Dictionary<string, Umpire> m_mpNameUmpire;
-            private StatusRpt m_srpt;
+            private StatusBox m_srpt;
 
             public List<string> PlsMiscHeadings { get { return m_rst.PlsMisc; } }
             public RosterEntry RsteLookupEmail(string sEmail)
@@ -32,7 +32,7 @@ namespace ArbWeb
                 return "";
             }
 
-            public Roster(StatusRpt srpt)
+            public Roster(StatusBox srpt)
             {
                 m_mpNameUmpire = new Dictionary<string, Umpire>();
                 m_rst = new ArbWeb.Roster();
@@ -331,7 +331,7 @@ namespace ArbWeb
             private List<string> m_plsMiscHeadings;
             private SortedList<string, GameSlot> m_plgmsSorted;
             private SortedList<string, GameSlot> m_plgmsSortedGameNum;
-            private StatusRpt m_srpt;
+            private StatusBox m_srpt;
             // private Dictionary<string, Dictionary<string, int>> m_mpNameSportLevelCount;
             private Dictionary<string, Sport> m_mpSportSport;
             private List<string> m_plsLegend;
@@ -358,7 +358,7 @@ namespace ArbWeb
             	%%Contact: rlittle
             	
             ----------------------------------------------------------------------------*/
-            public GameSlots(StatusRpt srpt)
+            public GameSlots(StatusBox srpt)
             {
                 m_plgmsSorted = new SortedList<string, GameSlot>();
                 m_plgmsSortedGameNum = new SortedList<string, GameSlot>();
@@ -2108,7 +2108,7 @@ namespace ArbWeb
                                 if (sName != "")
                                     m_srpt.AddMessage(
 	                                    $"Cannot find info for Umpire: {sName}",
-                                                      StatusRpt.MSGT.Error);
+                                                      MSGT.Error);
                                 sEmail = "";
                                 sTeam = "";
                                 }
@@ -2264,7 +2264,7 @@ namespace ArbWeb
 
         private Roster m_rst;
         private GameSlots m_gms;
-        private StatusRpt m_srpt;
+        private StatusBox m_srpt;
 
         public string SMiscHeader(int i)
         {
@@ -2396,7 +2396,7 @@ namespace ArbWeb
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
-        public GameData(StatusRpt srpt)
+        public GameData(StatusBox srpt)
         {
             //  m_sRoster = null;
             m_srpt = srpt;

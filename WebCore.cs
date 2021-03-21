@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using OpenQA.Selenium;
-using StatusBox;
+using TCore.StatusBox;
 using TCore.Util;
 using HtmlAgilityPack;
 
@@ -863,7 +863,7 @@ namespace ArbWeb
                     }
                     else
                     {
-                        m_iac.StatusReport.AddMessage("Found (" + sLinkTarget + ") when not looking for email!", StatusRpt.MSGT.Error);
+                        m_iac.StatusReport.AddMessage("Found (" + sLinkTarget + ") when not looking for email!", MSGT.Error);
                     }
                 }
 
@@ -1045,7 +1045,7 @@ namespace ArbWeb
 
             // first, get the first pages and callback
             timer.Stop();
-            m_iac.StatusReport.LogData($"Process All Officials(NavigateAtStart) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+            m_iac.StatusReport.LogData($"Process All Officials(NavigateAtStart) elapsedTime: {timer.MsecFloat}", 1, MSGT.Body);
 
             visit(o);
 
@@ -1070,7 +1070,7 @@ namespace ArbWeb
 	        }
 
 	        timer.Stop();
-	        m_iac.StatusReport.LogData($"Process All Officials(buildAnchorList) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+	        m_iac.StatusReport.LogData($"Process All Officials(buildAnchorList) elapsedTime: {timer.MsecFloat}", 1, MSGT.Body);
 	        
 	        // now, we are going to navigate to each page by finding and clicking each pagination link in turn
 	        foreach (string sHref in plsHrefs)
@@ -1092,7 +1092,7 @@ namespace ArbWeb
                 }
                 
                 timer.Stop();
-                m_iac.StatusReport.LogData($"Process All Officials(find item by xpath) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+                m_iac.StatusReport.LogData($"Process All Officials(find item by xpath) elapsedTime: {timer.MsecFloat}", 1, MSGT.Body);
 
                 timer.Reset();
                 timer.Start();
@@ -1100,7 +1100,7 @@ namespace ArbWeb
                 anchor.Click();
 
                 timer.Stop();
-                m_iac.StatusReport.LogData($"Process All Officials(anchor click) elapsedTime: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+                m_iac.StatusReport.LogData($"Process All Officials(anchor click) elapsedTime: {timer.MsecFloat}", 1, MSGT.Body);
 
                 visit(o);
 	        }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using StatusBox;
+using TCore.StatusBox;
 using HtmlAgilityPack;
 using NUnit.Framework;
 using OpenQA.Selenium;
@@ -365,7 +365,7 @@ namespace ArbWeb
                             }
                         else
                             {
-                            m_srpt.AddMessage($"NULL Email address for {rsteOut.First},{rsteOut.Last}", StatusBox.StatusRpt.MSGT.Error);
+                            m_srpt.AddMessage($"NULL Email address for {rsteOut.First},{rsteOut.Last}", MSGT.Error);
                             }
                         }
 
@@ -439,7 +439,7 @@ namespace ArbWeb
 
             if (fFailUpdate)
                 {
-                m_srpt.AddMessage($"FAILED to update some general info!  '{rsteOut.Email}' was read only", StatusBox.StatusRpt.MSGT.Error);
+                m_srpt.AddMessage($"FAILED to update some general info!  '{rsteOut.Email}' was read only", MSGT.Error);
                 }
 
             if (fNeedSave)
@@ -598,7 +598,7 @@ namespace ArbWeb
 	        Dictionary<string, int> mpNameRank, 
 	        Dictionary<string, string> mpNameOptionValue, 
 	        WebControl webControl,
-            StatusBox.StatusRpt srpt)
+            StatusBox srpt)
         {
 	        MicroTimer timer = new MicroTimer();
 	        
@@ -610,7 +610,7 @@ namespace ArbWeb
             }
             
             timer.Stop();
-            srpt.LogData($"VisitRankingDownload({sRank}: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+            srpt.LogData($"VisitRankingDownload({sRank}: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         private delegate void VisitRankCallback(
@@ -619,7 +619,7 @@ namespace ArbWeb
 	        Dictionary<string, int> mpRanked, 
 	        Dictionary<string, string> mpRankedId, 
 	        WebControl webControl,
-            StatusBox.StatusRpt srpt);
+            StatusBox srpt);
 
         /*----------------------------------------------------------------------------
         	%%Function: HandleRankings
@@ -677,8 +677,8 @@ namespace ArbWeb
         {
             // now, navigate to every ranked positions' page and either fetch or sync every
             // official
-            m_srpt.LogData("Visit Rankings", 3, StatusRpt.MSGT.Header);
-            m_srpt.LogData("plsRankedPositions:", 3, StatusRpt.MSGT.Body, plsRankedPositions);
+            m_srpt.LogData("Visit Rankings", 3, MSGT.Header);
+            m_srpt.LogData("plsRankedPositions:", 3, MSGT.Body, plsRankedPositions);
 
             foreach (string sRankPosition in plsRankedPositions)
                 {
@@ -687,14 +687,14 @@ namespace ArbWeb
                 if (!FNavigateToRankPosition(mpPositionOptionsValueText, sRankPosition))
                     {
                     m_srpt.AddMessage("Ranks for position '{0}' do not exist on Arbiter!  Skipping...",
-                                      StatusBox.StatusRpt.MSGT.Error);
+                                      MSGT.Error);
                     continue;
                     }
 
                 BuildRankingMapFromPage(sRankPosition, out Dictionary<string, int> mpNameRank, out Dictionary<string, string> mpNameOptionValue);
 
-                m_srpt.LogData("Rankings built: mpRanked:", 5, StatusRpt.MSGT.Body, mpNameRank);
-                m_srpt.LogData("Rankings built: mpRankedId:", 5, StatusRpt.MSGT.Body, mpNameOptionValue);
+                m_srpt.LogData("Rankings built: mpRanked:", 5, MSGT.Body, mpNameRank);
+                m_srpt.LogData("Rankings built: mpRankedId:", 5, MSGT.Body, mpNameOptionValue);
 
                 visit(irstParam, sRankPosition, mpNameRank, mpNameOptionValue, m_webControl, m_srpt);
 
@@ -708,18 +708,18 @@ namespace ArbWeb
                     BuildRankingJobs(irstParam, sRankPosition, mpNameRankCheck, out plsUnrank, out mpRank, out mpRerank);
 
                     if (plsUnrank.Count != 0)
-                        m_srpt.LogData("plsUnrank not empty: ", 3, StatusRpt.MSGT.Error, plsUnrank);
+                        m_srpt.LogData("plsUnrank not empty: ", 3, MSGT.Error, plsUnrank);
                     else
-                        m_srpt.LogData("plsUnrank empty after upload", 5, StatusRpt.MSGT.Header);
+                        m_srpt.LogData("plsUnrank empty after upload", 5, MSGT.Header);
 
                     if (mpRank.Count != 0)
-                        m_srpt.LogData("mpRank not empty: ", 3, StatusRpt.MSGT.Error, mpRank);
+                        m_srpt.LogData("mpRank not empty: ", 3, MSGT.Error, mpRank);
                     else
-                        m_srpt.LogData("mpRank empty after upload", 5, StatusRpt.MSGT.Header);
+                        m_srpt.LogData("mpRank empty after upload", 5, MSGT.Header);
                     if (mpRerank.Count != 0)
-                        m_srpt.LogData("mpRerank not empty: ", 3, StatusRpt.MSGT.Error, mpRerank);
+                        m_srpt.LogData("mpRerank not empty: ", 3, MSGT.Error, mpRerank);
                     else
-                        m_srpt.LogData("mpRerank empty after upload", 5, StatusRpt.MSGT.Header);
+                        m_srpt.LogData("mpRerank empty after upload", 5, MSGT.Header);
 
 
                     }
@@ -804,7 +804,7 @@ namespace ArbWeb
 		        {
 			        m_srpt.AddMessage(
 				        $"Duplicate key {sName} adding rank {nRank} to rank {sRankPosition}",
-				        StatusRpt.MSGT.Error);
+				        MSGT.Error);
 		        }
 
 		        if (!mpNameOptionValue.ContainsKey(sName))
@@ -813,7 +813,7 @@ namespace ArbWeb
 		        {
 			        m_srpt.AddMessage(
 				        $"Duplicate key {sName} adding rankid {mpT[sRankAndName]} to rank {sRankPosition}",
-				        StatusRpt.MSGT.Error);
+				        MSGT.Error);
 		        }
 	        }
         }

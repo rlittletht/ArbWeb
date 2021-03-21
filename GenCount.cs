@@ -1,6 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
-using StatusBox;
+using TCore.StatusBox;
 
 namespace ArbWeb
 	{
@@ -47,7 +47,7 @@ namespace ArbWeb
 	        }
 	    }
 
-        StatusBox.StatusRpt m_srpt;
+        StatusBox m_srpt;
 
 		/* G E N  C O U N T S */
 		/*----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ namespace ArbWeb
 			%%Contact: rlittle
 
 		----------------------------------------------------------------------------*/
-        public CountsData(StatusBox.StatusRpt srpt)
+        public CountsData(StatusBox srpt)
 		{
 			m_srpt = srpt;
 		}
@@ -74,13 +74,13 @@ namespace ArbWeb
 		{
 //            srpt.UnitTest();
 			m_gmd = new GameData(m_srpt);
-		    m_srpt.AddMessage("Loading roster...", StatusRpt.MSGT.Header, false);
+		    m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
 
 			m_gmd.FLoadRoster(sRoster, iMiscAffiliation);
             // m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
 
 		    m_srpt.PopLevel();
-		    m_srpt.AddMessage("Loading games...", StatusRpt.MSGT.Header, false);
+		    m_srpt.AddMessage("Loading games...", MSGT.Header, false);
 			m_gmd.FLoadGames(sSource, fIncludeCanceled);
 		    m_srpt.PopLevel();
 			// read in the roster of umpires...

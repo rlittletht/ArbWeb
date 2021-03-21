@@ -3,25 +3,26 @@ using System.IO;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
-using StatusBox;
+// using TCore.StatusBox;
 using System.Collections.Generic;
 using System.Threading;
 using HtmlAgilityPack;
 using SeleniumExtras.WaitHelpers;
+using TCore.StatusBox;
 
 namespace ArbWeb
 {
 	// Arbiter Selenium Control
 	public class WebControl
 	{
-		private IAppContext m_appContext;
+		private IStatusReporter m_iStatusReporter;
 		
 		public IWebDriver Driver { get; }
 		public string DownloadPath { get; set; }
 
-		public WebControl(IAppContext context, bool fShowUI)
+		public WebControl(IStatusReporter iStatusReporter, bool fShowUI)
 		{
-			m_appContext = context;
+			m_iStatusReporter = iStatusReporter;
 			ChromeOptions options = new ChromeOptions();
 			ChromeDriverService service = ChromeDriverService.CreateDefaultService();
 			
@@ -64,7 +65,7 @@ namespace ArbWeb
 			}
 
 			timer.Stop();
-			m_appContext.StatusReport.LogData($"FNavToPage({sUrl}) elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+			m_iStatusReporter.LogData($"FNavToPage({sUrl}) elapsed: {timer.MsecFloat}", 1, MSGT.Body);
 			return true;
 		}
 
@@ -72,7 +73,7 @@ namespace ArbWeb
 			%%Function:WaitForControl
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.WaitForControl
 		----------------------------------------------------------------------------*/
-		public static bool WaitForControl(IWebDriver driver, IAppContext appContext, string sid)
+		public static bool WaitForControl(IWebDriver driver, IStatusReporter srpt, string sid)
 		{
 			if (sid == null)
 				return true;
@@ -87,7 +88,7 @@ namespace ArbWeb
 			%%Function:WaitForPageLoad
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.WaitForPageLoad
 		----------------------------------------------------------------------------*/
-		public static void WaitForPageLoad(IAppContext appContext, IWebDriver driver, int maxWaitTimeInSeconds)
+		public static void WaitForPageLoad(IStatusReporter srpt, IWebDriver driver, int maxWaitTimeInSeconds)
 		{
 			MicroTimer timer = new MicroTimer();
 
@@ -144,10 +145,10 @@ namespace ArbWeb
 			}
 
 			timer.Stop();
-			appContext.StatusReport.LogData($"WaitForPageLoad elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+			srpt.LogData($"WaitForPageLoad elapsed: {timer.MsecFloat}", 1, MSGT.Body);
 		}
 
-		public void WaitForPageLoad(int maxWaitTimeInSeconds = 500) => WaitForPageLoad(m_appContext, Driver, maxWaitTimeInSeconds);
+		public void WaitForPageLoad(int maxWaitTimeInSeconds = 500) => WaitForPageLoad(m_iStatusReporter, Driver, maxWaitTimeInSeconds);
 
 		public delegate bool WaitDelegate(IWebDriver driver);
 
@@ -205,14 +206,14 @@ namespace ArbWeb
 			%%Function:FClickControl
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FClickControl
 		----------------------------------------------------------------------------*/
-		private static bool FClickControl(IAppContext appContext, IWebDriver driver, IWebElement element, string sidWaitFor = null)
+		private static bool FClickControl(IStatusReporter srpt, IWebDriver driver, IWebElement element, string sidWaitFor = null)
 		{
 			element?.Click();
 
 			if (sidWaitFor != null)
-				return WaitForControl(driver, appContext, sidWaitFor);
+				return WaitForControl(driver, srpt, sidWaitFor);
 
-			WaitForPageLoad(appContext, driver, 2000);
+			WaitForPageLoad(srpt, driver, 2000);
 			return true;
 		}
 		
@@ -222,9 +223,9 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
 		public bool FClickControlName(string sName, string sidWaitFor = null)
 		{
-			m_appContext.StatusReport.LogData($"FClickControl {sName}", 5, StatusBox.StatusRpt.MSGT.Body);
+			m_iStatusReporter.LogData($"FClickControl {sName}", 5, MSGT.Body);
 
-			return FClickControl(m_appContext, Driver, Driver.FindElement(By.Name(sName)));
+			return FClickControl(m_iStatusReporter, Driver, Driver.FindElement(By.Name(sName)));
 		}
 
 		/*----------------------------------------------------------------------------
@@ -233,9 +234,9 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
 		public bool FClickControlId(string sid, string sidWaitFor = null)
 		{
-			m_appContext.StatusReport.LogData($"FClickControl {sid}", 5, StatusBox.StatusRpt.MSGT.Body);
+			m_iStatusReporter.LogData($"FClickControl {sid}", 5, MSGT.Body);
 
-			return FClickControl(m_appContext, Driver, Driver.FindElement(By.Id(sid)));
+			return FClickControl(m_iStatusReporter, Driver, Driver.FindElement(By.Id(sid)));
 		}
 
 		/*----------------------------------------------------------------------------
@@ -351,11 +352,11 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
 		public string GetOptionValueFromFilterOptionTextForControlName(string sName, string sOptionText)
 		{
-			m_appContext.StatusReport.LogData($"SGetSelectIDFromDoc for id {sName}", 3, StatusRpt.MSGT.Body);
+			m_iStatusReporter.LogData($"SGetSelectIDFromDoc for id {sName}", 3, MSGT.Body);
 
 			string s = GetOptionValueForSelectControlNameOptionText(sName, sOptionText);
 
-			m_appContext.StatusReport.LogData($"Return: {s}", 3, StatusRpt.MSGT.Body);
+			m_iStatusReporter.LogData($"Return: {s}", 3, MSGT.Body);
 			return s;
 		}
 
@@ -363,26 +364,26 @@ namespace ArbWeb
 			%%Function:GetOptionTextFromOptionValue
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetOptionTextFromOptionValue
 		----------------------------------------------------------------------------*/
-		public static string GetOptionTextFromOptionValueForControlName(IWebDriver driver, IAppContext context, string sName, string sOptionValue)
+		public static string GetOptionTextFromOptionValueForControlName(IWebDriver driver, IStatusReporter srpt, string sName, string sOptionValue)
 		{
 			IWebElement selectElement = driver.FindElement(By.Name(sName));
 
-			Dictionary<string, string> mpValueText = GetOptionsValueTextMappingFromControl(selectElement, context.StatusReport);
+			Dictionary<string, string> mpValueText = GetOptionsValueTextMappingFromControl(selectElement, srpt);
 			if (mpValueText.ContainsKey(sOptionValue))
 				return mpValueText[sOptionValue];
 
 			return null;
 		}
 
-		public string GetOptionTextFromOptionValueForControlName(string sName, string sOptionName) => GetOptionTextFromOptionValueForControlName(Driver, m_appContext, sName, sOptionName);
+		public string GetOptionTextFromOptionValueForControlName(string sName, string sOptionName) => GetOptionTextFromOptionValueForControlName(Driver, m_iStatusReporter, sName, sOptionName);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FSetSelectControlText
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetSelectControlText
 		----------------------------------------------------------------------------*/
-		public static bool FSetSelectedOptionTextForControlId(IWebDriver driver, IAppContext appContext, string sid, string sValue)
+		public static bool FSetSelectedOptionTextForControlId(IWebDriver driver, IStatusReporter srpt, string sid, string sValue)
 		{
-			appContext.StatusReport.LogData($"FSetSelectControlText for id {sid}", 5, StatusRpt.MSGT.Body);
+			srpt.LogData($"FSetSelectControlText for id {sid}", 5, MSGT.Body);
 
 			SelectElement select = new SelectElement(driver.FindElement(By.Id(sid)));
 			string sOriginal = select.SelectedOption.Text;
@@ -394,20 +395,20 @@ namespace ArbWeb
 				fChanged = true;
 			}
 
-			appContext.StatusReport.LogData($"Return: {fChanged}", 5, StatusRpt.MSGT.Body);
+			srpt.LogData($"Return: {fChanged}", 5, MSGT.Body);
 
 			return fChanged;
 		}
 
-		public bool FSetSelectedOptionTextForControlId(string sid, string sValue) => FSetSelectedOptionTextForControlId(Driver, m_appContext, sid, sValue);
+		public bool FSetSelectedOptionTextForControlId(string sid, string sValue) => FSetSelectedOptionTextForControlId(Driver, m_iStatusReporter, sid, sValue);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FSetSelectControlValue
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.FSetSelectControlValue
 		----------------------------------------------------------------------------*/
-		public static bool FSetSelectedOptionValueForControlName(IWebDriver driver, IAppContext appContext, string sName, string sValue)
+		public static bool FSetSelectedOptionValueForControlName(IWebDriver driver, IStatusReporter srpt, string sName, string sValue)
 		{
-			appContext.StatusReport.LogData($"FSetSelectControlValue for name {sName}", 5, StatusRpt.MSGT.Body);
+			srpt.LogData($"FSetSelectControlValue for name {sName}", 5, MSGT.Body);
 
 			SelectElement select = new SelectElement(driver.FindElement(By.Name(sName)));
 			string sOriginal = select.SelectedOption.GetProperty("value");
@@ -426,12 +427,12 @@ namespace ArbWeb
 				fChanged = true;
 			}
 
-			appContext.StatusReport.LogData($"Return: {fChanged}", 5, StatusRpt.MSGT.Body);
+			srpt.LogData($"Return: {fChanged}", 5, MSGT.Body);
 
 			return fChanged;
 		}
 
-		public bool FSetSelectedOptionValueForControlName(string sName, string sValue) => FSetSelectedOptionValueForControlName(Driver, m_appContext, sName, sValue);
+		public bool FSetSelectedOptionValueForControlName(string sName, string sValue) => FSetSelectedOptionValueForControlName(Driver, m_iStatusReporter, sName, sValue);
 
 		/*----------------------------------------------------------------------------
 			%%Function:GetSelectedOptionTextFromSelectControl
@@ -487,7 +488,7 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
 		private static Dictionary<string, string> GetOptionsValueTextMappingFromControl(
 			IWebElement selectElement,
-			StatusRpt srpt)
+			IStatusReporter srpt)
 		{
 			string sHtml = selectElement.GetAttribute("innerHTML");
 
@@ -507,7 +508,7 @@ namespace ArbWeb
 					if (mp.ContainsKey(sValue))
 						srpt?.AddMessage(
 							$"How strange!  Option '{sValue}' shows up more than once in the options list!",
-							StatusRpt.MSGT.Warning);
+							MSGT.Warning);
 					else
 						mp.Add(sValue, sText);
 				}
@@ -527,18 +528,18 @@ namespace ArbWeb
             Find the given sName select object. Then add a mapping of
             $sText -> $sValue to a dictionary and return it.
 		----------------------------------------------------------------------------*/
-		public static Dictionary<string, string> GetOptionsValueTextMappingFromControlId(IWebDriver driver, StatusRpt srpt, string sid)
+		public static Dictionary<string, string> GetOptionsValueTextMappingFromControlId(IWebDriver driver, IStatusReporter srpt, string sid)
 		{
 			MicroTimer timer = new MicroTimer();
 
 			Dictionary<string, string> mp = GetOptionsValueTextMappingFromControl(driver.FindElement(By.Id(sid)), srpt);
 
 			timer.Stop();
-			srpt.LogData($"MpGetSelectValues({sid}) elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+			srpt.LogData($"MpGetSelectValues({sid}) elapsed: {timer.MsecFloat}", 1, MSGT.Body);
 			return mp;
 		}
 
-		public Dictionary<string, string> GetOptionsValueTextMappingFromControlId(string sid) => GetOptionsValueTextMappingFromControlId(Driver, m_appContext.StatusReport, sid);
+		public Dictionary<string, string> GetOptionsValueTextMappingFromControlId(string sid) => GetOptionsValueTextMappingFromControlId(Driver, m_iStatusReporter, sid);
 
 		/*----------------------------------------------------------------------------
 			%%Function:GetOptionsTextValueMappingFromControl
@@ -546,7 +547,7 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
 		private static Dictionary<string, string> GetOptionsTextValueMappingFromControl(
 			IWebElement selectElement,
-			StatusRpt srpt)
+			IStatusReporter srpt)
 		{
 			string sHtml = selectElement.GetAttribute("innerHTML");
 
@@ -566,7 +567,7 @@ namespace ArbWeb
 					if (mp.ContainsKey(sText))
 						srpt?.AddMessage(
 							$"How strange!  Option '{sText}' shows up more than once in the options list!",
-							StatusRpt.MSGT.Warning);
+							MSGT.Warning);
 					else
 						mp.Add(sText, sValue);
 				}
@@ -579,18 +580,18 @@ namespace ArbWeb
 			%%Function:GetOptionsTextValueMappingFromControlId
 			%%Qualified:ArbWeb.ArbWebControl_Selenium.GetOptionsTextValueMappingFromControlId
 		----------------------------------------------------------------------------*/
-		public static Dictionary<string, string> GetOptionsTextValueMappingFromControlId(IWebDriver driver, StatusRpt srpt, string sid)
+		public static Dictionary<string, string> GetOptionsTextValueMappingFromControlId(IWebDriver driver, IStatusReporter srpt, string sid)
 		{
 			MicroTimer timer = new MicroTimer();
 
 			Dictionary<string, string> mp = GetOptionsTextValueMappingFromControl(driver.FindElement(By.Id(sid)), srpt);
 
 			timer.Stop();
-			srpt.LogData($"GetOptionsTextValueMappingFromControlId({sid}) elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+			srpt.LogData($"GetOptionsTextValueMappingFromControlId({sid}) elapsed: {timer.MsecFloat}", 1, MSGT.Body);
 			return mp;
 		}
 
-		public Dictionary<string, string> GetOptionsTextValueMappingFromControlId(string sid) => GetOptionsTextValueMappingFromControlId(Driver, m_appContext.StatusReport, sid);
+		public Dictionary<string, string> GetOptionsTextValueMappingFromControlId(string sid) => GetOptionsTextValueMappingFromControlId(Driver, m_iStatusReporter, sid);
 
 		/*----------------------------------------------------------------------------
 			%%Function:FResetMultiSelectOptions

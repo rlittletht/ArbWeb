@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Threading.Tasks;
-using StatusBox;
+using TCore.StatusBox;
 
 namespace ArbWeb
 {
@@ -80,7 +80,7 @@ namespace ArbWeb
 
             // let's make sure the webbrowser handle is created
 
-            m_srpt.LogData("Starting DoDownloadGames", 3, StatusRpt.MSGT.Header);
+            m_srpt.LogData("Starting DoDownloadGames", 3, MSGT.Header);
 
             DownloadGenericExcelReport dg =
                 new DownloadGenericExcelReport(

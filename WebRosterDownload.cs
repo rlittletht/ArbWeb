@@ -6,7 +6,7 @@ using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using SeleniumExtras.WaitHelpers;
-using StatusBox;
+using TCore.StatusBox;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
@@ -51,7 +51,7 @@ namespace ArbWeb
             UpdateLastAccessFromCoreOfficialsPage(rstBuilding);
             
             timer.Stop();
-            m_srpt.LogData($"UpdateLastAccessFromPage elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"UpdateLastAccessFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         /*----------------------------------------------------------------------------
@@ -99,13 +99,13 @@ namespace ArbWeb
                 {
                     m_srpt.AddMessage(
                         $"Could not find no email entry for nonJoinedOfficial {sRosterName} with email {sEmail}",
-                        StatusBox.StatusRpt.MSGT.Error);
+                        MSGT.Error);
 
                     continue;
                 }
 
                 m_srpt.AddMessage($"Updating email address for {sRosterName} to {sEmail}",
-                                  StatusBox.StatusRpt.MSGT.Body);
+                                  MSGT.Body);
 
                 rste.Email = sEmail;
             }
@@ -120,7 +120,7 @@ namespace ArbWeb
             FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(rstBuilding);
             
             timer.Stop();
-            m_srpt.LogData($"FixupEmailAddressForNotJoinedFromPage elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"FixupEmailAddressForNotJoinedFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         /*----------------------------------------------------------------------------
@@ -163,13 +163,13 @@ namespace ArbWeb
                 if (rste == null)
                     {
                     m_srpt.AddMessage(
-	                    $"Lookup failed during ProcessAllOfficialPages for official '{cells[2].InnerText.Trim()}'({sEmail})", StatusBox.StatusRpt.MSGT.Error);
+	                    $"Lookup failed during ProcessAllOfficialPages for official '{cells[2].InnerText.Trim()}'({sEmail})", MSGT.Error);
                     continue;
                     }
 
                 m_srpt.LogData(
 	                $"Updating last access for official '{rste.Name}', {sSignedIn}", 5,
-                                  StatusBox.StatusRpt.MSGT.Body);
+                                  MSGT.Body);
                 rste.m_sLastSignin = sSignedIn;
                 }
         }
@@ -196,7 +196,7 @@ namespace ArbWeb
                 gr.ProcessAllOfficialPages(VOPC_FixupNonJoinedEmailAddress, rstBuilding);
 
                 timer.Stop();
-                m_srpt.LogData($"ProcessAllOfficialPages For EmailFixup elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+                m_srpt.LogData($"ProcessAllOfficialPages For EmailFixup elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
             if (fIncludeLastAccess)
@@ -213,7 +213,7 @@ namespace ArbWeb
 	            gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
 	            
 	            timer.Stop();
-	            m_srpt.LogData($"ProcessAllOfficialPages For LastAccess elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+	            m_srpt.LogData($"ProcessAllOfficialPages For LastAccess elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
             if (fIncludeRankings)
@@ -223,7 +223,7 @@ namespace ArbWeb
 	            HandleRankings(null, rstBuilding);
 	            
 	            timer.Stop();
-	            m_srpt.LogData($"Handle rankings elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+	            m_srpt.LogData($"Handle rankings elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
             return rstBuilding;
@@ -305,7 +305,7 @@ namespace ArbWeb
             // check a whole bunch of config checkboxes
 
             // select All Officials
-            WebControl.FSetSelectedOptionTextForControlId(m_webControl.Driver, this, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
+            WebControl.FSetSelectedOptionTextForControlId(m_webControl.Driver, m_srpt, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
             m_webControl.WaitForPageLoad();
 
             WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);

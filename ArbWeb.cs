@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using Microsoft.Win32;
-using StatusBox;
+using TCore.StatusBox;
 using TCore.CmdLine;
 using TCore.Settings;
 using TCore.UI;
@@ -15,7 +15,7 @@ namespace ArbWeb
 {
     public interface IAppContext
     {
-        StatusRpt StatusReport { get; }
+        StatusBox StatusReport { get; }
         WebControl WebControlNew { get; }
         void EnsureLoggedIn();
         Profile Profile { get; }
@@ -101,11 +101,11 @@ namespace ArbWeb
         private Button m_pbRefreshGameFilters;
         private Button pbTestDownload;
         private CheckBox m_cbSkipContactDownload;
-        private StatusBox.StatusRpt m_srpt;
+        private StatusBox m_srpt;
 
         #endregion
 
-        public StatusRpt StatusReport => m_srpt;
+        public StatusBox StatusReport => m_srpt;
 
         public void ThrowIfNot(bool f, string s)
         {
@@ -226,7 +226,7 @@ namespace ArbWeb
 
             InitializeComponent();
 
-            m_srpt = new StatusBox.StatusRpt(m_recStatus);
+            m_srpt = new StatusBox(m_recStatus);
             m_fDontUpdateProfile = true;
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
 
@@ -1627,12 +1627,12 @@ namespace ArbWeb
                 {
                 m_srpt.AttachLogfile(Filename.SBuildTempFilename("arblog", "log"));
                 m_srpt.SetLogLevel(1);
-                m_srpt.SetFilter(StatusRpt.MSGT.Body);
+                m_srpt.SetFilter(MSGT.Body);
                 }
             else
                 {
                 m_srpt.SetLogLevel(0);
-                m_srpt.SetFilter(StatusRpt.MSGT.Error);
+                m_srpt.SetFilter(MSGT.Error);
                 }
         }
 
@@ -1821,7 +1821,7 @@ namespace ArbWeb
 
         private void AwMainForm_Move(object sender, EventArgs e)
         {
-            m_srpt.LogData("Moving",10,StatusRpt.MSGT.Body);
+            m_srpt.LogData("Moving",10,MSGT.Body);
         }
 
         private void AwMainForm_Load(object sender, EventArgs e)

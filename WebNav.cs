@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using OpenQA.Selenium;
-using StatusBox;
+using TCore.StatusBox;
 
 namespace ArbWeb
 {
@@ -53,7 +53,7 @@ namespace ArbWeb
         public void EnsureWebControl()
         {
 	        if (m_webControl == null)
-				m_webControl = new WebControl(this, m_cbShowBrowser.Checked);
+				m_webControl = new WebControl(m_srpt, m_cbShowBrowser.Checked);
         }
         
         /* E N S U R E  L O G G E D  I N */
@@ -70,7 +70,7 @@ namespace ArbWeb
 	        EnsureWebControl();
 	        
 	        timer.Stop();
-	        m_srpt.LogData($"EnsureWebControl elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+	        m_srpt.LogData($"EnsureWebControl elapsed: {timer.MsecFloat}", 1, MSGT.Body);
 	        timer.Reset();
 	        
             if (m_fLoggedIn == false)
@@ -134,7 +134,7 @@ namespace ArbWeb
                 m_srpt.AddMessage("Completed login.");
                 
                 timer.Stop();
-                m_srpt.LogData($"EnsureLoggedIn elapsed: {timer.MsecFloat}", 1, StatusRpt.MSGT.Body);
+                m_srpt.LogData($"EnsureLoggedIn elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using StatusBox;
+using TCore.StatusBox;
 using OpenQA.Selenium;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
@@ -68,7 +68,7 @@ namespace ArbWeb
                 rsteServer = (RosterEntry) irstServer.IrsteLookupEmail(sEmail);
                 if (rsteServer == null)
                     {
-                    m_srpt.AddMessage($"NULL Server entry for {sEmail}, SKIPPING", StatusBox.StatusRpt.MSGT.Error);
+                    m_srpt.AddMessage($"NULL Server entry for {sEmail}, SKIPPING", MSGT.Error);
                     return;
                     }
                 if (rsteNew.FEquals(rsteServer))
@@ -87,7 +87,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         bool FConfirmExistingArbiterUserAdd(RosterEntry rsteNewUser)
         {
-            m_srpt.AddMessage($"Email {rsteNewUser.Email} already in use", StatusBox.StatusRpt.MSGT.Warning);
+            m_srpt.AddMessage($"Email {rsteNewUser.Email} already in use", MSGT.Warning);
 
             // this email is member of another group.  we can't change their personal info
             // do a quick sanity match to make sure this is the same user
@@ -150,7 +150,7 @@ namespace ArbWeb
                 {
                 RosterEntry rste = (RosterEntry)irste;
                 // add the official rste
-                m_srpt.AddMessage($"Adding official '{rste.Name}', {rste.Email}", StatusBox.StatusRpt.MSGT.Body);
+                m_srpt.AddMessage($"Adding official '{rste.Name}', {rste.Email}", MSGT.Body);
                 m_srpt.PushLevel();
 
                 // go to the add user page
@@ -248,7 +248,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private static void VisitRankCallbackUpload(IRoster irst, string sRankPosition, Dictionary<string, int> mpNameRank, Dictionary<string, string> mpNameOptionValue, WebControl webControl, StatusRpt srpt)
+        private static void VisitRankCallbackUpload(IRoster irst, string sRankPosition, Dictionary<string, int> mpNameRank, Dictionary<string, string> mpNameOptionValue, WebControl webControl, StatusBox srpt)
         {
 	        BuildRankingJobs(
 		        irst,
@@ -303,7 +303,7 @@ namespace ArbWeb
                     if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_NotRanked, mpNameOptionValueUnranked[s]))
                         srpt.AddMessage(
 	                        $"Could not select an official for ranking: {s}",
-                                        StatusRpt.MSGT.Error);
+                                        MSGT.Error);
                     // throw new Exception("couldn't select an official for ranking!");
                 }
 
@@ -360,7 +360,7 @@ namespace ArbWeb
             {
                 //				MessageBox.Show("Cannot upload a quick roster.  Please perform a full roster download before uploading.\n\nIf you want to upload rankings only, please check 'Upload Rankings Only'");
                 //    			m_srpt.PopLevel();
-                m_srpt.AddMessage("Detected QuickRoster...", StatusBox.StatusRpt.MSGT.Warning);
+                m_srpt.AddMessage("Detected QuickRoster...", MSGT.Warning);
             }
 
             // compare the two rosters to find differences

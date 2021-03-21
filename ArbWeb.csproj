@@ -214,9 +214,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Content Include="App.ico" />
-    <Compile Include="..\shared\statusbox.cs">
-      <Link>statusbox.cs</Link>
-    </Compile>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -267,6 +264,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\liblet\cs\TCore.StatusBox\TCore.StatusBox.csproj">
+      <Project>{0e0148dd-5420-4f4a-b9de-313bb3ac24f7}</Project>
+      <Name>TCore.StatusBox</Name>
+    </ProjectReference>
     <ProjectReference Include="..\liblet\cs\TCore.UI\TCore.UI.csproj">
       <Project>{9213a90f-a23f-4bc5-827c-164ecb6c6cc2}</Project>
       <Name>TCore.UI</Name>
