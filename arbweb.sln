@@ -19,8 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCore.CSV", "..\liblet\cs\T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logging", "..\liblet\cs\TCore.Logging\Logging.csproj", "{EE681C45-8416-4DE7-9E62-AE1371A7DE9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCore.StatusBox", "..\liblet\cs\TCore.StatusBox\TCore.StatusBox.csproj", "{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AzureRelease|Any CPU = AzureRelease|Any CPU
@@ -114,20 +112,6 @@ Global
 		{EE681C45-8416-4DE7-9E62-AE1371A7DE9A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE681C45-8416-4DE7-9E62-AE1371A7DE9A}.SingleImage|Any CPU.ActiveCfg = AzureRelease|Any CPU
 		{EE681C45-8416-4DE7-9E62-AE1371A7DE9A}.SingleImage|Any CPU.Build.0 = AzureRelease|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.CD_ROM|Any CPU.ActiveCfg = Release|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.CD_ROM|Any CPU.Build.0 = Release|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.LocalDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.LocalDebug|Any CPU.Build.0 = Debug|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7}.SingleImage|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -137,7 +121,6 @@ Global
 		{59868345-BC40-4771-A4D7-7C6A763663F0} = {0561D059-8521-4C21-AD86-B196ED13670B}
 		{E2D2EF30-C48E-4517-93FD-590940E23CE3} = {0561D059-8521-4C21-AD86-B196ED13670B}
 		{EE681C45-8416-4DE7-9E62-AE1371A7DE9A} = {0561D059-8521-4C21-AD86-B196ED13670B}
-		{0E0148DD-5420-4F4A-B9DE-313BB3AC24F7} = {0561D059-8521-4C21-AD86-B196ED13670B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1DF2178E-48CA-4068-B185-E5C20F14B657}
