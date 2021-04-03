@@ -198,23 +198,13 @@
     <Compile Include="Games\slots.cs" />
     <Compile Include="Roster\umpire.cs" />
     <Compile Include="Support\Utils.cs" />
-    <Compile Include="WebInterop\WebContacts.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="WebInterop\WebContacts.cs" />
     <Compile Include="WebInterop\WebCore.cs" />
     <Compile Include="WebInterop\WebGames.cs" />
-    <Compile Include="WebInterop\WebNav.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebInterop\WebRoster.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebInterop\WebRosterDownload.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebInterop\WebRosterUpload.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="WebInterop\WebNav.cs" />
+    <Compile Include="WebInterop\WebRoster.cs" />
+    <Compile Include="WebInterop\WebRosterDownload.cs" />
+    <Compile Include="WebInterop\WebRosterUpload.cs" />
     <Content Include="App.ico" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>

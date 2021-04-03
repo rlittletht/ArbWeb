@@ -28,7 +28,7 @@ namespace ArbWeb
 			m_appContext.StatusReport.PushLevel();
 
 			m_appContext.EnsureLoggedIn();
-			m_appContext.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore._s_Announcements), "Couldn't nav to announcements page!");
+			Utils.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore._s_Announcements), "Couldn't nav to announcements page!");
 			m_appContext.WebControl.WaitForPageLoad();
 
 			// now we need to find the URGENT HELP NEEDED row
@@ -52,7 +52,7 @@ namespace ArbWeb
 			while (nodeFind.Name.ToLower() != "tr")
 			{
 				nodeFind = nodeFind.ParentNode;
-				m_appContext.ThrowIfNot(nodeFind != null, "Can't find HELP announcement");
+				Utils.ThrowIfNot(nodeFind != null, "Can't find HELP announcement");
 			}
 
 			m_appContext.StatusReport.LogData("Found D9UrgentHelpNeeded parent TR", 3, MSGT.Body);
@@ -67,11 +67,11 @@ namespace ArbWeb
 
 			m_appContext.StatusReport.LogData($"Extracted ID for announcment to set: {sCtl}", 3, MSGT.Body);
 
-			m_appContext.ThrowIfNot(sCtl != null, "Can't find HELP announcement");
+			Utils.ThrowIfNot(sCtl != null, "Can't find HELP announcement");
 
 			string sidControl = BuildAnnName(WebCore._sid_Announcements_Button_Edit_Prefix, WebCore._sid_Announcements_Button_Edit_Suffix, sCtl);
 
-			m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(sidControl), "Couldn't find edit button");
+			Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(sidControl), "Couldn't find edit button");
 			m_appContext.WebControl.WaitForPageLoad();
 
 			// now edit the text
@@ -82,7 +82,7 @@ namespace ArbWeb
 
 			sidControl = BuildAnnName(WebCore._sid_Announcements_Button_Save_Prefix, WebCore._sid_Announcements_Button_Save_Suffix, sCtl);
 
-			m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(sidControl), "Couldn't find save button");
+			Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(sidControl), "Couldn't find save button");
 			m_appContext.WebControl.WaitForPageLoad();
 
 			// and now save it.

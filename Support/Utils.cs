@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 
 
@@ -24,6 +25,12 @@ namespace ArbWeb
                     pls.Add(s, 0);
                 }
             return pls;
+        }
+
+        public static void ThrowIfNot(bool f, string s)
+        {
+	        if (!f)
+		        throw new Exception(s);
         }
     }
 }

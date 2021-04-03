@@ -195,11 +195,11 @@ namespace ArbWeb
             if (fNeedSave)
                 {
                 m_appContext.StatusReport.AddMessage(String.Format("Updating misc info...", sEmail));
-                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Save), "Couldn't find save button");
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Save), "Couldn't find save button");
                 }
             else
                 {
-                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
                 }
 
             return plsValue;
@@ -433,7 +433,7 @@ namespace ArbWeb
                     if (rsteNew.FHasPhoneNumber(iNextPhone))
                         {
                         // add this phone...
-                        m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
+                        Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
                         if (MatchAssignPhoneNumber(m_appContext.WebControl, rsteOut, rsteNew, iNextPhone, sNamePhoneNumberNext, sidPhoneNumberNext, sNamePhoneTypeNext, sNamePhonePublicNext))
                             fNeedSave = true;
                         }
@@ -450,11 +450,11 @@ namespace ArbWeb
             if (fNeedSave)
                 {
                 m_appContext.StatusReport.AddMessage($"Updating general info for {rsteOut.Email}...");
-                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Save), "couldn't find save button");
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Save), "couldn't find save button");
                 }
             else
                 {
-                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
                 }
         }
 

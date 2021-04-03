@@ -15,7 +15,7 @@ namespace ArbWeb.Reports
 
         private WebControl m_webControl => m_appContext.WebControl;
 		private IStatusReporter m_srpt => m_appContext.StatusReport;
-		void ThrowIfNot(bool f, string s) => m_appContext.ThrowIfNot(f, s);
+		void ThrowIfNot(bool f, string s) => Utils.ThrowIfNot(f, s);
 		void EnsureLoggedIn() => m_appContext.EnsureLoggedIn();
 
 		public OpenSlots(IAppContext appContext)

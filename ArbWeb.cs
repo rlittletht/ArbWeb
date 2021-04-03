@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using ArbWeb.Reports;
 using Microsoft.Win32;
 using TCore.StatusBox;
@@ -21,13 +22,13 @@ namespace ArbWeb
         WebControl WebControl { get; }
         void EnsureLoggedIn();
         Profile Profile { get; }
-        void ThrowIfNot(bool f, string s);
         void DoPendingQueueUIOp();
         void PopCursor();
         void PushCursor(Cursor cursor);
         CountsData GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled, int affiliationRosterIndex);
         void InvalRoster();
         Roster RstEnsure(string sRoster);
+        void EnsureWebControl();
     }
 
 	/// <summary>
@@ -112,13 +113,7 @@ namespace ArbWeb
         #endregion
 
         public StatusBox StatusReport => m_srpt;
-
-        public void ThrowIfNot(bool f, string s)
-        {
-            if (!f)
-                throw new Exception(s);
-        }
-
+		
         private bool m_fAutomateUpdateHelp = false;
         private List<string> m_plsAutomateIncludeSport = new List<string>();
         private string m_sAutomateDateStart = null;
@@ -135,7 +130,6 @@ namespace ArbWeb
         public WebControl WebControl => m_webControl;
         
         bool m_fDontUpdateProfile;
-        bool m_fLoggedIn;
         Roster m_rst;
         CountsData m_gc;
         private bool m_fAutomating = false;
@@ -217,6 +211,9 @@ namespace ArbWeb
             bool fAdmin = (String.Compare(System.Environment.MachineName, "dogmatix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
+
+        private WebNav m_webNav;
+        
         /* A W  M A I N  F O R M */
         /*----------------------------------------------------------------------------
         	%%Function: AwMainForm
@@ -234,6 +231,8 @@ namespace ArbWeb
             InitializeComponent();
 
             m_srpt = new StatusBox(m_recStatus);
+            m_webNav = new WebNav(this);
+            
             m_fDontUpdateProfile = true;
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
 
@@ -1282,7 +1281,9 @@ namespace ArbWeb
 
         private void HandleDownloadContactsClick(object sender, EventArgs e)
         {
-            DoDownloadContacts();
+			WebContacts contacts = new WebContacts(this);
+
+            contacts.DoDownloadContacts();
         }
 
         /* D O  D O W N L O A D  R O S T E R */
@@ -1518,15 +1519,32 @@ namespace ArbWeb
             m_pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
         }
 
-        #endregion
-
-        #region Support Functions
-
         /*----------------------------------------------------------------------------
+			%%Function:EnsureLoggedIn
+			%%Qualified:ArbWeb.AwMainForm.EnsureLoggedIn
+        ----------------------------------------------------------------------------*/
+        public void EnsureLoggedIn() => m_webNav.EnsureLoggedIn();
+
+		/*----------------------------------------------------------------------------
+			%%Function:EnsureWebControl
+			%%Qualified:ArbWeb.AwMainForm.EnsureWebControl
+		----------------------------------------------------------------------------*/
+        public void EnsureWebControl()
+		{
+			if (m_webControl == null)
+				m_webControl = new WebControl(m_srpt, m_cbShowBrowser.Checked);
+		}
+
+
+		#endregion
+
+		#region Support Functions
+
+		/*----------------------------------------------------------------------------
 			%%Function:SetGameFiltersFromEnumerable
 			%%Qualified:ArbWeb.AwMainForm.SetGameFiltersFromEnumerable
         ----------------------------------------------------------------------------*/
-        private void SetGameFiltersFromEnumerable(ComboBox cbx, IEnumerable<string> iens, string sNewFilter = null)
+		private void SetGameFiltersFromEnumerable(ComboBox cbx, IEnumerable<string> iens, string sNewFilter = null)
         {
             string sCurFilter = sNewFilter;
             if (sCurFilter == null && m_cbxGameFilter.SelectedItem != null)

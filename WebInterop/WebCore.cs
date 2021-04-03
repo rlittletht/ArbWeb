@@ -461,7 +461,7 @@ namespace ArbWeb
     {
         private readonly string m_sFilterOptionTextReq;
         private readonly string m_sDescription;
-        private readonly IAppContext m_iac;
+        private readonly IAppContext m_appContext;
         private readonly string m_sReportPage;
         private readonly string m_sSelectFilterControlName;
         private readonly string m_sReportPrintPagePrefix;
@@ -515,11 +515,11 @@ namespace ArbWeb
             ControlSetting<string>[] rgSelectSettings,
             string sGameFile,
             string sGameCopy,
-            IAppContext iac)
+            IAppContext appContext)
         {
             m_sFilterOptionTextReq = sFilterOptionTextReq;
             m_sDescription = sDescription;
-            m_iac = iac;
+            m_appContext = appContext;
             m_sReportPage = sReportPage;
             m_sSelectFilterControlName = sSelectFilterControlName;
             m_sidSelectFilterControl = sidSelectFilterControl;
@@ -545,10 +545,10 @@ namespace ArbWeb
             ControlSetting<bool>[] rgCheckedSettings,
             string sGameFile,
             string sGameCopy,
-            IAppContext iac)
+            IAppContext appContext)
         {
             m_sDescription = sDescription;
-            m_iac = iac;
+            m_appContext = appContext;
             m_sReportPage = sReportPage;
             m_sidReportPageLink = sidReportPageLink;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
@@ -568,8 +568,8 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void DownloadGeneric(out string sGameFileNew)
         {
-            m_iac.StatusReport.AddMessage($"Starting {m_sDescription} download...");
-            m_iac.StatusReport.PushLevel();
+            m_appContext.StatusReport.AddMessage($"Starting {m_sDescription} download...");
+            m_appContext.StatusReport.PushLevel();
             string sTempFile = Filename.SBuildTempFilename("temp", "xls");
 
             sTempFile = DownloadGenericToFile(sTempFile);
@@ -579,8 +579,8 @@ namespace ArbWeb
 
             // ok, now we have all games selected...
             // time to try to download a report
-            m_iac.StatusReport.PopLevel();
-            m_iac.StatusReport.AddMessage($"Completed downloading {m_sDescription}.");
+            m_appContext.StatusReport.PopLevel();
+            m_appContext.StatusReport.AddMessage($"Completed downloading {m_sDescription}.");
             sGameFileNew = m_sGameFile;
         }
 
@@ -664,7 +664,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private string DownloadGenericToFile(string sTempFile)
         {
-            m_iac.EnsureLoggedIn();
+            m_appContext.EnsureLoggedIn();
 
             DoLaunchDownloadGeneric(sTempFile);
 
@@ -693,12 +693,12 @@ namespace ArbWeb
             while (count < 2)
                 {
                 // ok, now we're at the main assigner page...
-                if (!m_iac.WebControl.FNavToPage(m_sReportPage))
+                if (!m_appContext.WebControl.FNavToPage(m_sReportPage))
                     throw (new Exception("could not navigate to games view"));
 
                 if (FNeedSelectReportFilter())
                     {
-                    sFilterOptionValue = m_iac.WebControl.GetOptionValueFromFilterOptionTextForControlName(m_sSelectFilterControlName, m_sFilterOptionTextReq);
+                    sFilterOptionValue = m_appContext.WebControl.GetOptionValueFromFilterOptionTextForControlName(m_sSelectFilterControlName, m_sFilterOptionTextReq);
                     if (sFilterOptionValue != null)
                         break;
                     }
@@ -718,14 +718,14 @@ namespace ArbWeb
 
                 // now set that filter
 
-                m_iac.WebControl.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
+                m_appContext.WebControl.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
 
-                if (!m_iac.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
+                if (!m_appContext.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
                     throw (new Exception("could not navigate to the reports page!"));
                 }
             else
                 {
-                m_iac.ThrowIfNot(m_iac.WebControl.FClickControlId(m_sidReportPageLink), "could not click on report link");
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(m_sidReportPageLink), "could not click on report link");
                 }
 
             // loop through the Select controls we have to set (typically, this will include the file format)
@@ -733,24 +733,24 @@ namespace ArbWeb
                 {
                 foreach (ControlSetting<string> cs in m_rgSelectSettings)
                     {
-                    m_iac.WebControl.FSetSelectedOptionTextForControlId(cs.IdControlExtra, cs.ControlValue);
+                    m_appContext.WebControl.FSetSelectedOptionTextForControlId(cs.IdControlExtra, cs.ControlValue);
                     }
                 }
 
             if (m_rgCheckedSettings != null)
                 {
                 foreach (ControlSetting<bool> cs in m_rgCheckedSettings)
-                    m_iac.WebControl.FSetCheckboxControlNameVal(cs.ControlValue, cs.ControlName);
+                    m_appContext.WebControl.FSetCheckboxControlNameVal(cs.ControlValue, cs.ControlName);
                 }
 
             // m_iac.StatusReport.LogData($"Setting clipboard data: {sTempFile}", 3, StatusRpt.MSGT.Body);
             // System.Windows.Forms.Clipboard.SetText(sTempFile);
 
             WebControl.FileDownloader downloader = new WebControl.FileDownloader(
-	            m_iac.WebControl,
+	            m_appContext.WebControl,
 	            m_sFullExpectedName,
 	            sTempFile,
-	            () => m_iac.WebControl.FClickControlName(m_sReportPrintSubmitPrintControlName));
+	            () => m_appContext.WebControl.FClickControlName(m_sReportPrintSubmitPrintControlName));
             
             downloader.GetDownloadedFile();
         }
@@ -1002,7 +1002,7 @@ namespace ArbWeb
         {
             m_iac.EnsureLoggedIn();
 
-            m_iac.ThrowIfNot(m_iac.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            Utils.ThrowIfNot(m_iac.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
 
             m_iac.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
         }

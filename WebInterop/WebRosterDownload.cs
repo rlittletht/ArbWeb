@@ -310,11 +310,11 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void DoRosterDownload(string sTempFile)
         {
-            m_appContext.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            Utils.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
             m_appContext.WebControl.WaitForPageLoad();
             
             // now we are on the PrintRoster screen
-            m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
             // check a whole bunch of config checkboxes
 
             // select All Officials
