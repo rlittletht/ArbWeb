@@ -14,7 +14,7 @@ namespace ArbWeb
     {
 	    public IAppContext m_appContext;
 
-	    private WebControl m_webControl => m_appContext.WebControlNew;
+	    private WebControl m_webControl => m_appContext.WebControl;
 	    private IStatusReporter m_srpt => m_appContext.StatusReport;
 	    
 	    public WebGames(IAppContext appContext)

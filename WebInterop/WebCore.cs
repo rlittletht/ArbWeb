@@ -693,12 +693,12 @@ namespace ArbWeb
             while (count < 2)
                 {
                 // ok, now we're at the main assigner page...
-                if (!m_iac.WebControlNew.FNavToPage(m_sReportPage))
+                if (!m_iac.WebControl.FNavToPage(m_sReportPage))
                     throw (new Exception("could not navigate to games view"));
 
                 if (FNeedSelectReportFilter())
                     {
-                    sFilterOptionValue = m_iac.WebControlNew.GetOptionValueFromFilterOptionTextForControlName(m_sSelectFilterControlName, m_sFilterOptionTextReq);
+                    sFilterOptionValue = m_iac.WebControl.GetOptionValueFromFilterOptionTextForControlName(m_sSelectFilterControlName, m_sFilterOptionTextReq);
                     if (sFilterOptionValue != null)
                         break;
                     }
@@ -718,14 +718,14 @@ namespace ArbWeb
 
                 // now set that filter
 
-                m_iac.WebControlNew.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
+                m_iac.WebControl.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
 
-                if (!m_iac.WebControlNew.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
+                if (!m_iac.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
                     throw (new Exception("could not navigate to the reports page!"));
                 }
             else
                 {
-                m_iac.ThrowIfNot(m_iac.WebControlNew.FClickControlId(m_sidReportPageLink), "could not click on report link");
+                m_iac.ThrowIfNot(m_iac.WebControl.FClickControlId(m_sidReportPageLink), "could not click on report link");
                 }
 
             // loop through the Select controls we have to set (typically, this will include the file format)
@@ -733,24 +733,24 @@ namespace ArbWeb
                 {
                 foreach (ControlSetting<string> cs in m_rgSelectSettings)
                     {
-                    m_iac.WebControlNew.FSetSelectedOptionTextForControlId(cs.IdControlExtra, cs.ControlValue);
+                    m_iac.WebControl.FSetSelectedOptionTextForControlId(cs.IdControlExtra, cs.ControlValue);
                     }
                 }
 
             if (m_rgCheckedSettings != null)
                 {
                 foreach (ControlSetting<bool> cs in m_rgCheckedSettings)
-                    m_iac.WebControlNew.FSetCheckboxControlNameVal(cs.ControlValue, cs.ControlName);
+                    m_iac.WebControl.FSetCheckboxControlNameVal(cs.ControlValue, cs.ControlName);
                 }
 
             // m_iac.StatusReport.LogData($"Setting clipboard data: {sTempFile}", 3, StatusRpt.MSGT.Body);
             // System.Windows.Forms.Clipboard.SetText(sTempFile);
 
             WebControl.FileDownloader downloader = new WebControl.FileDownloader(
-	            m_iac.WebControlNew,
+	            m_iac.WebControl,
 	            m_sFullExpectedName,
 	            sTempFile,
-	            () => m_iac.WebControlNew.FClickControlName(m_sReportPrintSubmitPrintControlName));
+	            () => m_iac.WebControl.FClickControlName(m_sReportPrintSubmitPrintControlName));
             
             downloader.GetDownloadedFile();
         }
@@ -831,7 +831,7 @@ namespace ArbWeb
         private void PopulatePglOfficialsFromPageCore(PGL pgl)
         {
 	        // grab the info from the current navigated page
-	        IWebElement table = m_iac.WebControlNew.Driver.FindElement(By.XPath("//body"));
+	        IWebElement table = m_iac.WebControl.Driver.FindElement(By.XPath("//body"));
 
 	        string sHtml = table.GetAttribute("outerHTML");
 	        HtmlAgilityPack.HtmlDocument html = new HtmlAgilityPack.HtmlDocument();
@@ -1002,9 +1002,9 @@ namespace ArbWeb
         {
             m_iac.EnsureLoggedIn();
 
-            m_iac.ThrowIfNot(m_iac.WebControlNew.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            m_iac.ThrowIfNot(m_iac.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
 
-            m_iac.WebControlNew.FSetSelectedOptionTextForControlId(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
+            m_iac.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
         }
 
         // object could be RST or PGL
@@ -1055,7 +1055,7 @@ namespace ArbWeb
 	        
 	        // figure out how many pages we have
 	        // find all of the <a> tags with an href that targets a pagination postback
-	        IList<IWebElement> anchors = m_iac.WebControlNew.Driver.FindElements(By.XPath($"//tr[@class='numericPaging']//a[contains(@href, '{WebCore._s_OfficialsView_PaginationHrefPostbackSubstr}')]"));
+	        IList<IWebElement> anchors = m_iac.WebControl.Driver.FindElements(By.XPath($"//tr[@class='numericPaging']//a[contains(@href, '{WebCore._s_OfficialsView_PaginationHrefPostbackSubstr}')]"));
 	        List<string> plsHrefs = new List<string>();
 
 	        foreach (IWebElement anchor in anchors)
@@ -1085,7 +1085,7 @@ namespace ArbWeb
 
                 try
                 {
-	                anchor = m_iac.WebControlNew.Driver.FindElement(By.XPath(sXpath));
+	                anchor = m_iac.WebControl.Driver.FindElement(By.XPath(sXpath));
                 }
                 catch
                 {

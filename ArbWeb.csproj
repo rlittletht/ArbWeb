@@ -177,26 +177,27 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="contacts.cs" />
-    <Compile Include="EditProfile.cs">
+    <Compile Include="Roster\contacts.cs" />
+    <Compile Include="Profiles\EditProfile.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditProfile.Designer.cs">
+    <Compile Include="Profiles\EditProfile.Designer.cs">
       <DependentUpon>EditProfile.cs</DependentUpon>
     </Compile>
     <Compile Include="Games\games.cs" />
     <Compile Include="Games\Roster.cs" />
-    <Compile Include="MicroTimer.cs" />
-    <Compile Include="ooxml.cs" />
-    <Compile Include="Profile.cs" />
-    <Compile Include="reports.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Support\MicroTimer.cs" />
+    <Compile Include="Support\ooxml.cs" />
+    <Compile Include="Profiles\Profile.cs" />
+    <Compile Include="Reports\NeedHelpReport.cs" />
+    <Compile Include="Reports\OpenSlots.cs" />
+    <Compile Include="Reports\SiteRosterReport.cs" />
+    <Compile Include="WebInterop\WebAnnounce.cs" />
     <Compile Include="Roster\roster.cs" />
     <Compile Include="Roster\RosterCore.cs" />
     <Compile Include="Games\slots.cs" />
     <Compile Include="Roster\umpire.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Support\Utils.cs" />
     <Compile Include="WebInterop\WebContacts.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -221,12 +222,12 @@
     <Compile Include="ArbWeb.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GenCount.cs" />
+    <Compile Include="Reports\GenCount.cs" />
     <EmbeddedResource Include="ArbWeb.resx">
       <DependentUpon>ArbWeb.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="EditProfile.resx">
+    <EmbeddedResource Include="Profiles\EditProfile.resx">
       <DependentUpon>EditProfile.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

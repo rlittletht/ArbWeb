@@ -12,13 +12,23 @@ namespace ArbWeb
     /// <summary>
     /// Summary description for AwMainForm.
     /// </summary>
-    public partial class AwMainForm : System.Windows.Forms.Form
+    public partial class WebRoster
     {
+	    private readonly IAppContext m_appContext;
+
         /*----------------------------------------------------------------------------
-        	%%Function: FetchMiscFieldsFromServer
-        	%%Qualified: ArbWeb.AwMainForm.FetchMiscFieldsFromServer
-        	%%Contact: rlittle
-        	
+			%%Function:WebRoster
+			%%Qualified:ArbWeb.WebRoster.WebRoster
+	    ----------------------------------------------------------------------------*/
+        public WebRoster(IAppContext appContext)
+	    {
+		    m_appContext = appContext;
+	    }
+	    
+	    
+        /*----------------------------------------------------------------------------
+			%%Function:FetchMiscFieldsFromServer
+			%%Qualified:ArbWeb.WebRoster.FetchMiscFieldsFromServer
         ----------------------------------------------------------------------------*/
         void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, RosterEntry rste, IRoster irstBuilding)
         {
@@ -32,13 +42,10 @@ namespace ArbWeb
                 throw new Exception("couldn't extract misc field for official");
         }
 
-        /* U P D A T E  M I S C */
         /*----------------------------------------------------------------------------
-			%%Function: UpdateMisc
-			%%Qualified: ArbWeb.AwMainForm.UpdateMisc
-			%%Contact: rlittle
-
-		----------------------------------------------------------------------------*/
+			%%Function:UpdateMisc
+			%%Qualified:ArbWeb.WebRoster.UpdateMisc
+        ----------------------------------------------------------------------------*/
         private void UpdateMisc(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, IRoster irstBuilding)
         {
             if (irst == null)
@@ -48,10 +55,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: MiscLabelFromControl
-        	%%Qualified: ArbWeb.AwMainForm.MiscLabelFromControl
-        	%%Contact: rlittle
-        	
+			%%Function:MiscLabelFromControl
+			%%Qualified:ArbWeb.WebRoster.MiscLabelFromControl
         ----------------------------------------------------------------------------*/
         private static string MiscLabelFromControl(HtmlNode input)
         {
@@ -75,6 +80,10 @@ namespace ArbWeb
 
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:IMiscFromMiscName
+			%%Qualified:ArbWeb.WebRoster.IMiscFromMiscName
+        ----------------------------------------------------------------------------*/
         static int IMiscFromMiscName(List<string> plsMiscMap, string sMiscName)
         {
             for (int i = 0; i < plsMiscMap.Count; i++)
@@ -83,11 +92,10 @@ namespace ArbWeb
 
             return -1;
         }
-        /* S Y N C  P L S  M I S C  W I T H  S E R V E R */
+
         /*----------------------------------------------------------------------------
         	%%Function: SyncPlsMiscWithServer
-        	%%Qualified: ArbWeb.AwMainForm.SyncPlsMiscWithServer
-        	%%Contact: rlittle
+			%%Qualified:ArbWeb.WebRoster.SyncPlsMiscWithServer
         	
             navigate to the custom fields page and return the values. if plsMiscNew
             is supplied, then make sure the server matches that, and return fNeedSave
@@ -107,14 +115,14 @@ namespace ArbWeb
             bool fNeedSave = false;
             string sValue;
 
-            if (!m_webControl.FNavToPage(WebCore._s_EditUser_MiscFields + sOfficialID))
+            if (!m_appContext.WebControl.FNavToPage(WebCore._s_EditUser_MiscFields + sOfficialID))
                 {
                 throw (new Exception("could not navigate to the officials page"));
                 }
 
             // misc field info.  every text input field is a misc field we want to save
             List<string> plsValue = new List<string>();
-            string sHtml = m_webControl.Driver.FindElement(By.Id(WebCore._sid_MiscFields_MainBodyContentTable)).GetAttribute("outerHTML");
+            string sHtml = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_MiscFields_MainBodyContentTable)).GetAttribute("outerHTML");
             HtmlDocument html = new HtmlDocument();
             
             html.LoadHtml(sHtml);
@@ -150,13 +158,13 @@ namespace ArbWeb
 	                        && !String.IsNullOrEmpty(sValue))
 	                    {
 		                    // null means empty which replaces non-empty
-		                    m_webControl.FSetTextForInputControlName(sName, "", false);
+		                    m_appContext.WebControl.FSetTextForInputControlName(sName, "", false);
 		                    fNeedSave = true;
 	                    }
 	                    else if (iMisc != -1
 	                             && String.Compare(plsMiscNew[iMisc], sValue, true /*ignoreCase*/) != 0)
 	                    {
-		                    m_webControl.FSetTextForInputControlName(sName, plsMiscNew[iMisc], false);
+		                    m_appContext.WebControl.FSetTextForInputControlName(sName, plsMiscNew[iMisc], false);
 		                    fNeedSave = true;
 	                    }
                     }
@@ -186,17 +194,21 @@ namespace ArbWeb
             // before we return, commit the change or cancel (so we are no longer on the page)
             if (fNeedSave)
                 {
-                m_srpt.AddMessage(String.Format("Updating misc info...", sEmail));
-                ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_MiscFields_Button_Save), "Couldn't find save button");
+                m_appContext.StatusReport.AddMessage(String.Format("Updating misc info...", sEmail));
+                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Save), "Couldn't find save button");
                 }
             else
                 {
-                ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
+                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
                 }
 
             return plsValue;
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:FIsInputNodeDisabled
+			%%Qualified:ArbWeb.WebRoster.FIsInputNodeDisabled
+        ----------------------------------------------------------------------------*/
         bool FIsInputNodeDisabled(HtmlNode input)
         {
 	        string sDisabled = input.GetAttributeValue("disabled", null);
@@ -213,12 +225,10 @@ namespace ArbWeb
 
 	        return false;
         }
-        
-        /* M A T C H  A S S I G N  T E X T */
+
         /*----------------------------------------------------------------------------
         	%%Function: MatchAssignText
-        	%%Qualified: ArbWeb.AwMainForm.MatchAssignText
-        	%%Contact: rlittle
+			%%Qualified:ArbWeb.WebRoster.MatchAssignText
         	
             Get the value for the control sMatch. Determine the current value of
             that control (which will be returned in sAssign). 
@@ -255,7 +265,7 @@ namespace ArbWeb
                             }
                         else
                         {
-	                        m_webControl.FSetTextForInputControlName(name, sNewValue, false);
+	                        m_appContext.WebControl.FSetTextForInputControlName(name, sNewValue, false);
                             fNeedSave = true;
                             }
                         }
@@ -268,11 +278,9 @@ namespace ArbWeb
         }
 
 
-        /* U P D A T E  I N F O */
         /*----------------------------------------------------------------------------
 			%%Function: UpdateInfo
-			%%Qualified: ArbWeb.AwMainForm.UpdateInfo
-			%%Contact: rlittle
+			%%Qualified:ArbWeb.WebRoster.UpdateInfo
 
 			when we leave, if rst was null, then rste will have the values as we
 			fetched from arbiter
@@ -287,11 +295,10 @@ namespace ArbWeb
                 SetServerRosterInfo(sEmail, sOfficialID, irst, irstServer, rste, fMarkOnly);
         }
 
+        
         /*----------------------------------------------------------------------------
         	%%Function: SetPhoneNames
-        	%%Qualified: ArbWeb.AwMainForm.SetPhoneNames
-        	%%Contact: rlittle
-        	
+			%%Qualified:ArbWeb.WebRoster.SetPhoneNames
         ----------------------------------------------------------------------------*/
         static void SetPhoneNames(int iPhoneRow, out string sPhoneNum, out string sidPhoneNum, out string sPhoneType, out string sPhoneCarrier, out string sPhonePublicNext)
         {
@@ -302,12 +309,9 @@ namespace ArbWeb
             sPhonePublicNext = $"{WebCore._s_EditUser_PhonePublic_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhonePublic_Suffix}";
         }
 
-        /* S Y N C  R S T E  W I T H  S E R V E R */
         /*----------------------------------------------------------------------------
-        	%%Function: SyncRsteWithServer
-        	%%Qualified: ArbWeb.AwMainForm.SyncRsteWithServer
-        	%%Contact: rlittle
-        	
+			%%Function:SyncRsteWithServer
+			%%Qualified:ArbWeb.WebRoster.SyncRsteWithServer
         ----------------------------------------------------------------------------*/
         private void SyncRsteWithServer(string sOfficialID, RosterEntry rsteOut, RosterEntry rsteNew)
         {
@@ -315,12 +319,12 @@ namespace ArbWeb
             bool fNeedSave = false;
 
             // ok, nav to the page and scrape
-            if (!m_webControl.FNavToPage(WebCore._s_EditUser + sOfficialID))
+            if (!m_appContext.WebControl.FNavToPage(WebCore._s_EditUser + sOfficialID))
                 {
                 throw (new Exception("could not navigate to the officials page"));
                 }
 
-            string sHtml = m_webControl.Driver.FindElement(By.XPath("//body")).GetAttribute("outerHTML");
+            string sHtml = m_appContext.WebControl.Driver.FindElement(By.XPath("//body")).GetAttribute("outerHTML");
             
             HtmlDocument body = new HtmlDocument();
             body.LoadHtml(sHtml);
@@ -366,7 +370,7 @@ namespace ArbWeb
                             }
                         else
                             {
-                            m_srpt.AddMessage($"NULL Email address for {rsteOut.First},{rsteOut.Last}", MSGT.Error);
+                            m_appContext.StatusReport.AddMessage($"NULL Email address for {rsteOut.First},{rsteOut.Last}", MSGT.Error);
                             }
                         }
 
@@ -412,7 +416,7 @@ namespace ArbWeb
                         {
                         // we have a phone control.  Make sure it matches.
                         // NOTE: We don't delete phone numbers, so if it turns out we don't have this number, just skip...
-                        if (MatchAssignPhoneNumber(m_webControl, rsteOut, rsteNew, iNextPhone, sNamePhoneNumberNext, sidPhoneNumberNext, sNamePhoneTypeNext, sNamePhonePublicNext))
+                        if (MatchAssignPhoneNumber(m_appContext.WebControl, rsteOut, rsteNew, iNextPhone, sNamePhoneNumberNext, sidPhoneNumberNext, sNamePhoneTypeNext, sNamePhonePublicNext))
                             fNeedSave = true;
 
                         iNextPhone++;
@@ -429,8 +433,8 @@ namespace ArbWeb
                     if (rsteNew.FHasPhoneNumber(iNextPhone))
                         {
                         // add this phone...
-                        ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
-                        if (MatchAssignPhoneNumber(m_webControl, rsteOut, rsteNew, iNextPhone, sNamePhoneNumberNext, sidPhoneNumberNext, sNamePhoneTypeNext, sNamePhonePublicNext))
+                        m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
+                        if (MatchAssignPhoneNumber(m_appContext.WebControl, rsteOut, rsteNew, iNextPhone, sNamePhoneNumberNext, sidPhoneNumberNext, sNamePhoneTypeNext, sNamePhonePublicNext))
                             fNeedSave = true;
                         }
 
@@ -440,25 +444,23 @@ namespace ArbWeb
 
             if (fFailUpdate)
                 {
-                m_srpt.AddMessage($"FAILED to update some general info!  '{rsteOut.Email}' was read only", MSGT.Error);
+                m_appContext.StatusReport.AddMessage($"FAILED to update some general info!  '{rsteOut.Email}' was read only", MSGT.Error);
                 }
 
             if (fNeedSave)
                 {
-                m_srpt.AddMessage($"Updating general info for {rsteOut.Email}...");
-                ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Save), "couldn't find save button");
+                m_appContext.StatusReport.AddMessage($"Updating general info for {rsteOut.Email}...");
+                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Save), "couldn't find save button");
                 }
             else
                 {
-                ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
+                m_appContext.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
                 }
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: MatchAssignPhoneNumber
-        	%%Qualified: ArbWeb.AwMainForm.MatchAssignPhoneNumber
-        	%%Contact: rlittle
-        	
+			%%Function:MatchAssignPhoneNumber
+			%%Qualified:ArbWeb.WebRoster.MatchAssignPhoneNumber
         ----------------------------------------------------------------------------*/
         private static bool MatchAssignPhoneNumber(
 	        WebControl webControl, 
@@ -510,11 +512,10 @@ namespace ArbWeb
         }
 
         // make the rankings on the page match the rankings in our roster
+
         /*----------------------------------------------------------------------------
-        	%%Function: BuildRankingJobs
-        	%%Qualified: ArbWeb.AwMainForm.BuildRankingJobs
-        	%%Contact: rlittle
-        	
+			%%Function:BuildRankingJobs
+			%%Qualified:ArbWeb.WebRoster.BuildRankingJobs
         ----------------------------------------------------------------------------*/
         private static void BuildRankingJobs(
             IRoster irst,
@@ -588,10 +589,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: VisitRankCallbackDownload
-        	%%Qualified: ArbWeb.AwMainForm.VisitRankCallbackDownload
-        	%%Contact: rlittle
-        	
+			%%Function:VisitRankCallbackDownload
+			%%Qualified:ArbWeb.WebRoster.VisitRankCallbackDownload
         ----------------------------------------------------------------------------*/
         private static void VisitRankCallbackDownload(
 	        IRoster irst, 
@@ -599,7 +598,7 @@ namespace ArbWeb
 	        Dictionary<string, int> mpNameRank, 
 	        Dictionary<string, string> mpNameOptionValue, 
 	        WebControl webControl,
-            StatusBox srpt)
+	        IStatusReporter srpt)
         {
 	        MicroTimer timer = new MicroTimer();
 	        
@@ -620,13 +619,11 @@ namespace ArbWeb
 	        Dictionary<string, int> mpRanked, 
 	        Dictionary<string, string> mpRankedId, 
 	        WebControl webControl,
-            StatusBox srpt);
+            IStatusReporter srpt);
 
         /*----------------------------------------------------------------------------
-        	%%Function: HandleRankings
-        	%%Qualified: ArbWeb.AwMainForm.HandleRankings
-        	%%Contact: rlittle
-        	
+			%%Function:HandleRankings
+			%%Qualified:ArbWeb.WebRoster.HandleRankings
         ----------------------------------------------------------------------------*/
         private void HandleRankings(IRoster irst, IRoster irstBuilding)
         {
@@ -635,10 +632,10 @@ namespace ArbWeb
 
             NavigateArbiterRankings();
 
-            Dictionary<string, string> mpPositionOptionsValueText = m_webControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_PosNames);
+            Dictionary<string, string> mpPositionOptionsValueText = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_PosNames);
             List<string> plsRankingPositions = RankingPositionsBuildFromRst(irst, irstBuilding, mpPositionOptionsValueText);
 
-            if (m_pr.SkipZ)
+            if (m_appContext.Profile.SkipZ)
                 {
                 List<string> plsKeysToRemove = new List<string>();
                 foreach (string sKey in mpPositionOptionsValueText.Keys)
@@ -665,11 +662,9 @@ namespace ArbWeb
 	            VisitRankings(plsRankingPositions, mpPositionOptionsValueText, VisitRankCallbackUpload, irst, false /*fVerbose*/); // true
         }
 
-        /* V I S I T  R A N K I N G S */
         /*----------------------------------------------------------------------------
 	    	%%Function: VisitRankings
-	    	%%Qualified: ArbWeb.AwMainForm.VisitRankings
-	    	%%Contact: rlittle
+			%%Qualified:ArbWeb.WebRoster.VisitRankings
          
             Visit a rankings page. Used for both upload and download, with the
             callback interface used to differentiate up/down.
@@ -678,26 +673,26 @@ namespace ArbWeb
         {
             // now, navigate to every ranked positions' page and either fetch or sync every
             // official
-            m_srpt.LogData("Visit Rankings", 3, MSGT.Header);
-            m_srpt.LogData("plsRankedPositions:", 3, MSGT.Body, plsRankedPositions);
+            m_appContext.StatusReport.LogData("Visit Rankings", 3, MSGT.Header);
+            m_appContext.StatusReport.LogData("plsRankedPositions:", 3, MSGT.Body, plsRankedPositions);
 
             foreach (string sRankPosition in plsRankedPositions)
                 {
-                m_srpt.AddMessage($"Processing ranks for {sRankPosition}...");
+                m_appContext.StatusReport.AddMessage($"Processing ranks for {sRankPosition}...");
 
                 if (!FNavigateToRankPosition(mpPositionOptionsValueText, sRankPosition))
                     {
-                    m_srpt.AddMessage("Ranks for position '{0}' do not exist on Arbiter!  Skipping...",
+                    m_appContext.StatusReport.AddMessage("Ranks for position '{0}' do not exist on Arbiter!  Skipping...",
                                       MSGT.Error);
                     continue;
                     }
 
                 BuildRankingMapFromPage(sRankPosition, out Dictionary<string, int> mpNameRank, out Dictionary<string, string> mpNameOptionValue);
 
-                m_srpt.LogData("Rankings built: mpRanked:", 5, MSGT.Body, mpNameRank);
-                m_srpt.LogData("Rankings built: mpRankedId:", 5, MSGT.Body, mpNameOptionValue);
+                m_appContext.StatusReport.LogData("Rankings built: mpRanked:", 5, MSGT.Body, mpNameRank);
+                m_appContext.StatusReport.LogData("Rankings built: mpRankedId:", 5, MSGT.Body, mpNameOptionValue);
 
-                visit(irstParam, sRankPosition, mpNameRank, mpNameOptionValue, m_webControl, m_srpt);
+                visit(irstParam, sRankPosition, mpNameRank, mpNameOptionValue, m_appContext.WebControl, m_appContext.StatusReport);
 
                 if (fVerboseLog)
                     {
@@ -709,18 +704,18 @@ namespace ArbWeb
                     BuildRankingJobs(irstParam, sRankPosition, mpNameRankCheck, out plsUnrank, out mpRank, out mpRerank);
 
                     if (plsUnrank.Count != 0)
-                        m_srpt.LogData("plsUnrank not empty: ", 3, MSGT.Error, plsUnrank);
+                        m_appContext.StatusReport.LogData("plsUnrank not empty: ", 3, MSGT.Error, plsUnrank);
                     else
-                        m_srpt.LogData("plsUnrank empty after upload", 5, MSGT.Header);
+                        m_appContext.StatusReport.LogData("plsUnrank empty after upload", 5, MSGT.Header);
 
                     if (mpRank.Count != 0)
-                        m_srpt.LogData("mpRank not empty: ", 3, MSGT.Error, mpRank);
+                        m_appContext.StatusReport.LogData("mpRank not empty: ", 3, MSGT.Error, mpRank);
                     else
-                        m_srpt.LogData("mpRank empty after upload", 5, MSGT.Header);
+                        m_appContext.StatusReport.LogData("mpRank empty after upload", 5, MSGT.Header);
                     if (mpRerank.Count != 0)
-                        m_srpt.LogData("mpRerank not empty: ", 3, MSGT.Error, mpRerank);
+                        m_appContext.StatusReport.LogData("mpRerank not empty: ", 3, MSGT.Error, mpRerank);
                     else
-                        m_srpt.LogData("mpRerank empty after upload", 5, MSGT.Header);
+                        m_appContext.StatusReport.LogData("mpRerank empty after upload", 5, MSGT.Header);
 
 
                     }
@@ -728,10 +723,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: FNavigateToRankPosition
-        	%%Qualified: ArbWeb.AwMainForm.FNavigateToRankPosition
-        	%%Contact: rlittle
-        	
+			%%Function:FNavigateToRankPosition
+			%%Qualified:ArbWeb.WebRoster.FNavigateToRankPosition
         ----------------------------------------------------------------------------*/
         private bool FNavigateToRankPosition(IDictionary<string, string> mpPositionOptionsValueText, string sRankPosition)
         {
@@ -750,18 +743,16 @@ namespace ArbWeb
             // make sure we have the right checkbox states 
             // (Show unranked only = false, Show Active only = false)
             
-            m_webControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Active);
-            m_webControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Rank);
+            m_appContext.WebControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Active);
+            m_appContext.WebControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Rank);
 
-            m_webControl.FSetSelectedOptionTextForControlId(WebCore._sid_RanksEdit_Select_PosNames, sRankPosition);
+            m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_RanksEdit_Select_PosNames, sRankPosition);
             return true;
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: BuildRankingMapFromPage
-        	%%Qualified: ArbWeb.AwMainForm.BuildRankingMapFromPage
-        	%%Contact: rlittle
-        	
+			%%Function:BuildRankingMapFromPage
+			%%Qualified:ArbWeb.WebRoster.BuildRankingMapFromPage
         ----------------------------------------------------------------------------*/
         private void BuildRankingMapFromPage(
 	        string sRankPosition,
@@ -775,14 +766,14 @@ namespace ArbWeb
 	        Dictionary<string, string> mpT;
 
 	        // unranked officials
-	        mpT = m_webControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_NotRanked);
+	        mpT = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_NotRanked);
 
 	        // for each of the option values, add the text for it (this is the name of the official)
 	        foreach (string s in mpT.Keys)
 		        plsUnranked.Add(mpT[s]);
 
 	        // ranked officials
-	        mpT = m_webControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_Ranked);
+	        mpT = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_Ranked);
 
 	        foreach (string sKey in mpT.Keys)
 	        {
@@ -803,7 +794,7 @@ namespace ArbWeb
 			        mpNameRank.Add(sName, nRank);
 		        else
 		        {
-			        m_srpt.AddMessage(
+			        m_appContext.StatusReport.AddMessage(
 				        $"Duplicate key {sName} adding rank {nRank} to rank {sRankPosition}",
 				        MSGT.Error);
 		        }
@@ -812,7 +803,7 @@ namespace ArbWeb
 			        mpNameOptionValue.Add(sName, sKey);
 		        else
 		        {
-			        m_srpt.AddMessage(
+			        m_appContext.StatusReport.AddMessage(
 				        $"Duplicate key {sName} adding rankid {sRankAndName} to rank {sRankPosition}",
 				        MSGT.Error);
 		        }
@@ -820,10 +811,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: PlsRankingsBuildFromRst
-        	%%Qualified: ArbWeb.AwMainForm.PlsRankingsBuildFromRst
-        	%%Contact: rlittle
-        	
+			%%Function:RankingPositionsBuildFromRst
+			%%Qualified:ArbWeb.WebRoster.RankingPositionsBuildFromRst
         ----------------------------------------------------------------------------*/
         private static List<string> RankingPositionsBuildFromRst(IRoster irst, IRoster irstBuilding, Dictionary<string, string> mpPositionsOptionsValueText)
         {
@@ -845,45 +834,14 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: NavigateArbiterRankings
-        	%%Qualified: ArbWeb.AwMainForm.NavigateArbiterRankings
-        	%%Contact: rlittle
-        	
+			%%Function:NavigateArbiterRankings
+			%%Qualified:ArbWeb.WebRoster.NavigateArbiterRankings
         ----------------------------------------------------------------------------*/
         private void NavigateArbiterRankings()
         {
-            if (!m_webControl.FNavToPage(WebCore._s_RanksEdit))
+            if (!m_appContext.WebControl.FNavToPage(WebCore._s_RanksEdit))
                 throw (new Exception("could not navigate to the bulk rankings page"));
         }
-
-        /*----------------------------------------------------------------------------
-			%%Function: InvalRoster
-			%%Qualified: ArbWeb.AwMainForm.InvalRoster
-			%%Contact: rlittle
-			
-		----------------------------------------------------------------------------*/
-        private void InvalRoster()
-        {
-            m_rst = null;
-        }
-
-        /*----------------------------------------------------------------------------
-            %%Function: RstEnsure
-            %%Qualified: ArbWeb.AwMainForm.RstEnsure
-            %%Contact: rlittle
-            
-        ----------------------------------------------------------------------------*/
-        private Roster RstEnsure(string sInFile)
-        {
-            if (m_rst != null)
-                return m_rst;
-
-            m_rst = new Roster();
-
-            m_rst.ReadRoster(sInFile);
-            return m_rst;
-        }
-
 
         #region Tests
 
