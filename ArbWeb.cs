@@ -21,12 +21,13 @@ namespace ArbWeb
         void EnsureLoggedIn();
         Profile Profile { get; }
         void ThrowIfNot(bool f, string s);
+        void DoPendingQueueUIOp();
     }
 
-    /// <summary>
-    /// Summary description for AwMainForm.
-    /// </summary>
-    public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch, IAppContext
+	/// <summary>
+	/// Summary description for AwMainForm.
+	/// </summary>
+	public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch, IAppContext
     {
         public AwMainForm() { } // for unit tests only
 
@@ -34,8 +35,6 @@ namespace ArbWeb
 
         private System.Windows.Forms.Button m_pbDownloadGames;
 
-        private System.Windows.Forms.ContextMenu contextMenu1;
-        private System.Windows.Forms.MenuItem menuItem1;
         object Zero = 0;
         object EmptyString = "";
         private Button button1;
@@ -134,7 +133,8 @@ namespace ArbWeb
         Roster m_rst;
         CountsData m_gc;
         private bool m_fAutomating = false;
-
+        private WebGames m_webGames;
+        
         #region Top Level Program Flow
 
         /*----------------------------------------------------------------------------
@@ -403,7 +403,7 @@ namespace ArbWeb
                 }
         }
 
-        void DoPendingQueueUIOp()
+        public void DoPendingQueueUIOp()
         {
             if (this.InvokeRequired)
                 this.Invoke(new DoPendingQueueUIOpDel(DoDoPendingQueueUIOp));
@@ -514,8 +514,6 @@ namespace ArbWeb
         {
 			System.Windows.Forms.Label label17;
 			this.m_pbDownloadGames = new System.Windows.Forms.Button();
-			this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-			this.menuItem1 = new System.Windows.Forms.MenuItem();
 			this.button1 = new System.Windows.Forms.Button();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.m_recStatus = new System.Windows.Forms.RichTextBox();
@@ -596,17 +594,6 @@ namespace ArbWeb
 			this.m_pbDownloadGames.TabIndex = 14;
 			this.m_pbDownloadGames.Text = "Download Games";
 			this.m_pbDownloadGames.Click += new System.EventHandler(this.HandleDownloadGamesClick);
-			// 
-			// contextMenu1
-			// 
-			this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.menuItem1});
-			this.contextMenu1.Popup += new System.EventHandler(this.contextMenu1_Popup);
-			// 
-			// menuItem1
-			// 
-			this.menuItem1.Index = 0;
-			this.menuItem1.Text = "Paste";
 			// 
 			// button1
 			// 
@@ -1575,8 +1562,9 @@ namespace ArbWeb
         private void RefreshGameFilters(object sender, EventArgs e)
         {
             EnsureLoggedIn();
-
-            Dictionary<string, string> mpFilters = FetchOptionValueTextMapForGameFilter();
+            EnsureWebGames();
+            
+            Dictionary<string, string> mpFilters = m_webGames.FetchOptionValueTextMapForGameFilter();
             SetGameFiltersFromEnumerable(m_cbxGameFilter, mpFilters.Values);
             m_pr.GameFilters = mpFilters.Values.ToArray();
             m_pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
@@ -1817,10 +1805,40 @@ namespace ArbWeb
             ChangeProfile(null, null);
         }
 
-        #endregion
+		#endregion
 
+		#region WebGames Integration
+		private void InvalGameCount()
+		{
+			m_gc = null;
+		}
 
-        private void AwMainForm_Move(object sender, EventArgs e)
+		private CountsData GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled)
+		{
+			if (m_gc != null)
+				return m_gc;
+
+			CountsData gc = new CountsData(m_srpt);
+
+			gc.LoadData(sRoster, sGameFile, fIncludeCanceled, Int32.Parse(m_ebAffiliationIndex.Text));
+			m_gc = gc;
+			return gc;
+		}
+
+		private void EnsureWebGames()
+		{
+			if (m_webGames == null)
+				m_webGames = new WebGames(this);
+		}
+
+		void DoDownloadGames()
+		{
+			EnsureWebGames();
+			m_webGames.DoDownloadGames((string)m_cbxGameFilter.SelectedItem);
+		}
+		#endregion
+
+		private void AwMainForm_Move(object sender, EventArgs e)
         {
             m_srpt.LogData("Moving",10,MSGT.Body);
         }

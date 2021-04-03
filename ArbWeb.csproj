@@ -184,25 +184,23 @@
     <Compile Include="EditProfile.Designer.cs">
       <DependentUpon>EditProfile.cs</DependentUpon>
     </Compile>
-    <Compile Include="games.cs" />
+    <Compile Include="Games\games.cs" />
     <Compile Include="MicroTimer.cs" />
     <Compile Include="ooxml.cs" />
     <Compile Include="Profile.cs" />
     <Compile Include="reports.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="roster.cs" />
+    <Compile Include="Roster\roster.cs" />
     <Compile Include="RosterCore.cs" />
-    <Compile Include="slots.cs" />
+    <Compile Include="Games\slots.cs" />
     <Compile Include="umpire.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WebContacts.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="WebCore.cs" />
-    <Compile Include="WebGames.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Games\WebGames.cs" />
     <Compile Include="WebNav.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -282,6 +280,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

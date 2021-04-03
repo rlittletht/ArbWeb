@@ -3,19 +3,30 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using TCore.StatusBox;
+using TCore.WebControl;
 
 namespace ArbWeb
 {
     /// <summary>
     /// Summary description for AwMainForm.
     /// </summary>
-    public partial class AwMainForm : System.Windows.Forms.Form
+    public class WebGames
     {
+	    public IAppContext m_appContext;
+
+	    private WebControl m_webControl => m_appContext.WebControlNew;
+	    private IStatusReporter m_srpt => m_appContext.StatusReport;
+	    
+	    public WebGames(IAppContext appContext)
+	    {
+		    m_appContext = appContext;
+	    }
+	    
         /*----------------------------------------------------------------------------
 			%%Function:MpFetchGameFilters
 			%%Qualified:ArbWeb.AwMainForm.MpFetchGameFilters
         ----------------------------------------------------------------------------*/
-        Dictionary<string, string> FetchOptionValueTextMapForGameFilter()
+        public Dictionary<string, string> FetchOptionValueTextMapForGameFilter()
         {
             if (!m_webControl.FNavToPage(WebCore._s_Assigning))
                 throw (new Exception("could not navigate to games view"));
@@ -44,37 +55,14 @@ namespace ArbWeb
                 DoSetText(eb, s);
         }
 
-        private void contextMenu1_Popup(object sender, System.EventArgs e)
-        {
-
-        }
-
-		private void InvalGameCount()
-		{
-			m_gc = null;
-		}
-
-		private CountsData GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled)
-		{
-			if (m_gc != null)
-				return m_gc;
-
-			CountsData gc = new CountsData(m_srpt);
-
-			gc.LoadData(sRoster, sGameFile, fIncludeCanceled, Int32.Parse(m_ebAffiliationIndex.Text));
-			m_gc = gc;
-			return gc;
-		}
-
         /*----------------------------------------------------------------------------
         	%%Function: DoDownloadGames
         	%%Qualified: ArbWeb.AwMainForm.DoDownloadGames
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void DoDownloadGames()
+        public void DoDownloadGames(string sFilterOptionTextReq)
         {
-            string sFilterOptionTextReq = (string) m_cbxGameFilter.SelectedItem;
             if (sFilterOptionTextReq == null)
                 sFilterOptionTextReq = "All Games";
 
@@ -99,18 +87,17 @@ namespace ArbWeb
                                                                               WebCore._sid_Assigning_Reports_Select_Format,
                                                                               "Excel Worksheet Format (.xls)")
                         },
-                    Profile.GameFile,
-                    Profile.GameCopy,
-                    this);
+                    m_appContext.Profile.GameFile,
+                    m_appContext.Profile.GameCopy,
+                    m_appContext);
 
-            Task tskDownloadGames = new Task(() =>
-                {
-                string sGameFileNew;
-
-                dg.DownloadGeneric(out sGameFileNew);
-                Profile.GameFile = sGameFileNew;
-                DoPendingQueueUIOp();
-                });
+            Task tskDownloadGames = new Task(
+	            () =>
+	            {
+		            dg.DownloadGeneric(out var sGameFileNew);
+		            m_appContext.Profile.GameFile = sGameFileNew;
+		            m_appContext.DoPendingQueueUIOp();
+	            });
 
             tskDownloadGames.Start();
         }
