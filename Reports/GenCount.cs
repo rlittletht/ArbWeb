@@ -62,7 +62,7 @@ namespace ArbWeb
 			m_srpt = srpt;
 		}
 
-		GameData m_gmd;
+		Schedule m_gmd;
 
 		/* L O A D  D A T A */
 		/*----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ namespace ArbWeb
 		public void LoadData(string sRoster, string sSource, bool fIncludeCanceled, int iMiscAffiliation)
 		{
 //            srpt.UnitTest();
-			m_gmd = new GameData(m_srpt);
+			m_gmd = new Schedule(m_srpt);
 		    m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
 
 			m_gmd.FLoadRoster(sRoster, iMiscAffiliation);
@@ -91,6 +91,7 @@ namespace ArbWeb
         {
             m_gmd.GenSiteRosterReport(sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd);
         }
+        
 		/* G E N  O P E N  S L O T S  R E P O R T */
 		/*----------------------------------------------------------------------------
 			%%Function: GenOpenSlotsReport
@@ -110,7 +111,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public GameSlots GamesFromFilter(string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOpenOnly, SlotAggr sa)
+        public ScheduleGames GamesFromFilter(string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOpenOnly, SlotAggr sa)
         {
             return m_gmd.GamesFromFilter(rgsSportFilter, rgsSportLevelFilter, fOpenOnly, sa);
         }

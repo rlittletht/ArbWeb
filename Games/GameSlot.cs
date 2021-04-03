@@ -6,6 +6,9 @@ namespace ArbWeb.Games
 {
     // ================================================================================
     //  G A M E  S L O T
+    //
+    // The GameSlot knows everything about that slot, including the sport, level,
+    // the official assigned to the game, etc
     // ================================================================================
     public class GameSlot // GM
     {

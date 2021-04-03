@@ -12,10 +12,10 @@ namespace ArbWeb.Games
     // ================================================================================
     //  G A M E  D A T A 
     // ================================================================================
-    public class GameData
+    public class Schedule
     {
         private Roster m_rst;
-        private GameSlots m_gms;
+        private ScheduleGames m_scheduleGames;
         private StatusBox m_srpt;
 
         public string SMiscHeader(int i)
@@ -37,7 +37,7 @@ namespace ArbWeb.Games
 
             if (f)
                 {
-                m_gms.SetMiscHeadings(m_rst.PlsMiscHeadings);
+                m_scheduleGames.SetMiscHeadings(m_rst.PlsMiscHeadings);
                 }
             return f;
         }
@@ -51,7 +51,9 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
         public bool FLoadGames(string sGames, bool fIncludeCanceled)
         {
-            return m_gms.FLoadGames(sGames, m_rst, fIncludeCanceled);
+	        GamesLoader_Arbiter loader = new GamesLoader_Arbiter(m_srpt);
+	        
+            return loader.FLoadGames(sGames, m_rst, fIncludeCanceled, m_scheduleGames);
         }
 
         /* G E N  R E P O R T */
@@ -63,13 +65,13 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
         public void GenAnalysis(string sReport)
         {
-            m_gms.ReduceTeams();
-            m_gms.GenReport(sReport);
+            m_scheduleGames.ReduceTeams();
+            m_scheduleGames.GenReport(sReport);
         }
 
         public void GenGamesReport(string sReport)
         {
-            m_gms.GenGamesReport(sReport);
+            m_scheduleGames.GenGamesReport(sReport);
         }
 
         /* G E N  O P E N  S L O T S */
@@ -81,12 +83,12 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
         public SlotAggr GenOpenSlots(DateTime dttmStart, DateTime dttmEnd)
         {
-            return m_gms.GenOpenSlots(dttmStart, dttmEnd);
+            return m_scheduleGames.GenOpenSlots(dttmStart, dttmEnd);
         }
 
         public void GenSiteRosterReport(string sReportFile, ArbWeb.Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
         {
-            m_gms.GenSiteRosterReport(sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd);
+            m_scheduleGames.GenSiteRosterReport(sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd);
         }
         /* G E N  O P E N  S L O T S */
         /*----------------------------------------------------------------------------
@@ -97,7 +99,7 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
         public void GenOpenSlotsReport(string sReport, bool fDetail, bool fFuzzyTimes, bool fDatePivot, string[] rgsSportFilter, string[] rgsSportLevelFilter, SlotAggr sa)
         {
-            m_gms.GenOpenSlotsReport(sReport, fDetail, fFuzzyTimes, fDatePivot, rgsSportFilter, rgsSportLevelFilter, sa);
+            m_scheduleGames.GenOpenSlotsReport(sReport, fDetail, fFuzzyTimes, fDatePivot, rgsSportFilter, rgsSportLevelFilter, sa);
         }
 
         /* G A M E S  F R O M  F I L T E R */
@@ -107,9 +109,9 @@ namespace ArbWeb.Games
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public GameSlots GamesFromFilter(string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOpenOnly, SlotAggr sa)
+        public ScheduleGames GamesFromFilter(string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOpenOnly, SlotAggr sa)
         {
-            return m_gms.GamesFromFilter(rgsSportFilter, rgsSportLevelFilter, fOpenOnly, sa);
+            return m_scheduleGames.GamesFromFilter(rgsSportFilter, rgsSportLevelFilter, fOpenOnly, sa);
         }
 
         /* G E T  O P E N  S L O T  S P O R T S */
@@ -121,12 +123,12 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
         public string[] GetOpenSlotSports(SlotAggr sa)
         {
-            return m_gms.GetOpenSlotSports(sa);
+            return m_scheduleGames.GetOpenSlotSports(sa);
         }
 
         public string[] GetSiteRosterSites(SlotAggr sa)
         {
-            return m_gms.GetSiteRosterSites(sa);
+            return m_scheduleGames.GetSiteRosterSites(sa);
         }
 
         /* G E T  O P E N  S L O T  S P O R T  L E V E L S */
@@ -138,7 +140,7 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
         public string[] GetOpenSlotSportLevels(SlotAggr sa)
         {
-            return m_gms.GetOpenSlotSportLevels(sa);
+            return m_scheduleGames.GetOpenSlotSportLevels(sa);
         }
 
         /* G E N  G A M E  S T A T S */
@@ -148,12 +150,12 @@ namespace ArbWeb.Games
 				%%Contact: rlittle
 
 			----------------------------------------------------------------------------*/
-        public GameData(StatusBox srpt)
+        public Schedule(StatusBox srpt)
         {
             //  m_sRoster = null;
             m_srpt = srpt;
             m_rst = new Roster(srpt);
-            m_gms = new GameSlots(srpt);
+            m_scheduleGames = new ScheduleGames(srpt);
         }
     } // END  GameData
 

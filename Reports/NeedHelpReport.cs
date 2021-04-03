@@ -42,7 +42,7 @@ namespace ArbWeb.Reports
 
             // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
             // rated for the sports we are filtered to
-            GameSlots gms = gc.GamesFromFilter(
+            ScheduleGames gms = gc.GamesFromFilter(
                 rgsSports,
                 rgsSportLevels,
                 false,

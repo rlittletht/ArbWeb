@@ -203,7 +203,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public static bool CreateMainDoc(Package pkg, string sDataSource, GameSlots gms, out string sArbiterHelpNeeded)
+        public static bool CreateMainDoc(Package pkg, string sDataSource, ScheduleGames gms, out string sArbiterHelpNeeded)
         {
             PackagePart prt;
             StringBuilder sb = new StringBuilder();
@@ -292,7 +292,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public static void CreateMailMergeDoc(string sTemplate, string sDest, string sDataSource, GameSlots gms, out string sArbiterHelpNeeded)
+        public static void CreateMailMergeDoc(string sTemplate, string sDest, string sDataSource, ScheduleGames gms, out string sArbiterHelpNeeded)
         {
             System.IO.File.Copy(sTemplate, sDest);
             Package pkg = Package.Open(sDest, FileMode.Open, FileAccess.ReadWrite, FileShare.None);

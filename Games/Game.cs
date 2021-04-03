@@ -3,23 +3,26 @@
 namespace ArbWeb.Games
 {
 	// ================================================================================
-	//  G A M E  D A T A 
+	//  G A M E
+	//
+	// A game is just a collection of GameSlot. Each GameSlot knows everything about
+	// the game (yes, its duplicated on each slot)
 	// ================================================================================
 	public class Game
 	{
 		private int m_cSlots;
 		private int m_cOpen;
 
-		private List<GameSlot> m_plgms;
+		private List<GameSlot> gameSlots;
 
 		public Game()
 		{
-			m_plgms = new List<GameSlot>();
+			gameSlots = new List<GameSlot>();
 		}
 
 		public void AddGameSlot(GameSlot gms)
 		{
-			m_plgms.Add(gms);
+			gameSlots.Add(gms);
 			m_cSlots++;
 			if (gms.Open)
 				m_cOpen++;
@@ -37,7 +40,7 @@ namespace ArbWeb.Games
 
 		public List<GameSlot> Slots
 		{
-			get { return m_plgms; }
+			get { return gameSlots; }
 		}
 	}
 }
