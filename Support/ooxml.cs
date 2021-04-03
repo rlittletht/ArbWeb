@@ -131,7 +131,7 @@ namespace ArbWeb
             {"All Stars 60' BB 9/10's", "BB 10s ALL STARS"},
             };
  
-        static string DescribeGame(GameData.Game gm, int cGames)
+        static string DescribeGame(Game gm, int cGames)
         {
             string sDesc;
             string sCount = "";
@@ -149,7 +149,7 @@ namespace ArbWeb
             return $"{sCount}{sDesc}";
         }
 
-        static string FriendlySport(GameData.Game gm)
+        static string FriendlySport(Game gm)
         {
             if (s_mpSportLevelFriendly.ContainsKey(gm.Slots[0].SportLevel))
                 return s_mpSportLevelFriendly[gm.Slots[0].SportLevel];
@@ -157,7 +157,7 @@ namespace ArbWeb
             return gm.Slots[0].SportLevel;
         }
 
-        static void WriteGame(XmlTextWriter xw, GameData.Game gm, int cGames)
+        static void WriteGame(XmlTextWriter xw, Game gm, int cGames)
         {
             StartElement(xw, "tr");
             WriteSingleParaCell(xw, "0", "auto", gm.Slots[0].Dttm.ToString("M/dd"));
@@ -170,7 +170,7 @@ namespace ArbWeb
             EndElement(xw); // tr
         }
 
-        static void AppendGameToSb(GameData.Game gm, int cGames, StringBuilder sb)
+        static void AppendGameToSb(Game gm, int cGames, StringBuilder sb)
         {
             sb.Append($"<tr><td>{gm.Slots[0].Dttm.ToString("M/dd")}<td>{gm.Slots[0].Dttm.ToString("ddd h tt")}");
             sb.Append($"<td>{FriendlySport(gm)}<td>{gm.Slots[0].SiteShort}<td class='bold'>{DescribeGame(gm, cGames)}");
@@ -203,7 +203,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public static bool CreateMainDoc(Package pkg, string sDataSource, GameData.GameSlots gms, out string sArbiterHelpNeeded)
+        public static bool CreateMainDoc(Package pkg, string sDataSource, GameSlots gms, out string sArbiterHelpNeeded)
         {
             PackagePart prt;
             StringBuilder sb = new StringBuilder();
@@ -220,21 +220,21 @@ namespace ArbWeb
             WritePara(xw, "If you can work ANY of these games, either sign up on Arbiter, or just reply to this mail and let me know which games you can do. Thanks!");
 
             StartTable(xw, 5);
-            Dictionary<string, List<GameData.Game>> mpSlotGames = new Dictionary<string, List<GameData.Game>>();
+            Dictionary<string, List<Game>> mpSlotGames = new Dictionary<string, List<Game>>();
 
-            foreach (GameData.Game gm in gms.Games.Values)
+            foreach (Game gm in gms.Games.Values)
                 {
                 if (gm.TotalSlots - gm.OpenSlots > 1)
                     continue;
 
                 string s = $"{gm.Slots[0].Dttm.ToString("yyyyMMdd:HHmm")}-{gm.Slots[0].SiteShort}-{gm.TotalSlots - gm.OpenSlots}";
                 if (!mpSlotGames.ContainsKey(s))
-                    mpSlotGames.Add(s, new List<GameData.Game>());
+                    mpSlotGames.Add(s, new List<Game>());
 
                 mpSlotGames[s].Add(gm);
                 }
 
-            foreach (List<GameData.Game> plgm in mpSlotGames.Values)
+            foreach (List<Game> plgm in mpSlotGames.Values)
                 {
                 WriteGame(xw, plgm[0], plgm.Count);
                 AppendGameToSb(plgm[0], plgm.Count, sb);
@@ -292,7 +292,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        public static void CreateMailMergeDoc(string sTemplate, string sDest, string sDataSource, GameData.GameSlots gms, out string sArbiterHelpNeeded)
+        public static void CreateMailMergeDoc(string sTemplate, string sDest, string sDataSource, GameSlots gms, out string sArbiterHelpNeeded)
         {
             System.IO.File.Copy(sTemplate, sDest);
             Package pkg = Package.Open(sDest, FileMode.Open, FileAccess.ReadWrite, FileShare.None);

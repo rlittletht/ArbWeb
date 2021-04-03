@@ -18,7 +18,7 @@
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>ph</RootNamespace>
+    <RootNamespace>ArbWeb</RootNamespace>
     <StartupObject>
     </StartupObject>
     <FileUpgradeFlags>
@@ -177,6 +177,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Games\Game.cs" />
+    <Compile Include="Games\GameSlot.cs" />
+    <Compile Include="Games\GameSlots.cs" />
     <Compile Include="Roster\contacts.cs" />
     <Compile Include="Profiles\EditProfile.cs">
       <SubType>Form</SubType>
