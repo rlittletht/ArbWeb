@@ -86,10 +86,9 @@ namespace ArbWeb.Games
             }
         }
 
-        /* S  R E P O R T */
         /*----------------------------------------------------------------------------
-            %%Function: SReport
-            %%Qualified: ArbWeb.CountsData:GameData:Game.SReport
+            %%Function: MakeCsvLine
+            %%Qualified: ArbWeb.CountsData:GameData:Game.MakeCsvLine
             %%Contact: rlittle
 
             Return a detail string suitable for saving in CSV format.

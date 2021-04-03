@@ -43,18 +43,11 @@ namespace ArbWeb.Reports
 			}
 			sw.WriteLine();
 
-			Dictionary<string, bool> mpGame = new Dictionary<string, bool>();
-
-			foreach (GameSlot gm in games.SortedGameSlots)
-			{
-				// only report each game once...
-				if (mpGame.ContainsKey(gm.GameNum))
-					continue;
-
-				mpGame.Add(gm.GameNum, true);
-
+			SimpleSchedule schedule = SimpleSchedule.BuildFromScheduleGames(games);
+			foreach (SimpleGame game in schedule.Games)
+			{ 
 				// for each game, report the information, using Legend as the sort order for everything
-				sw.WriteLine(gm.MakeCsvLine(plsLegend));
+				sw.WriteLine(game.MakeCsvLine(plsLegend));
 			}
 			sw.Close();
 		}
