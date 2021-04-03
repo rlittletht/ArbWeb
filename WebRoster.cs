@@ -813,7 +813,7 @@ namespace ArbWeb
 		        else
 		        {
 			        m_srpt.AddMessage(
-				        $"Duplicate key {sName} adding rankid {mpT[sRankAndName]} to rank {sRankPosition}",
+				        $"Duplicate key {sName} adding rankid {sRankAndName} to rank {sRankPosition}",
 				        MSGT.Error);
 		        }
 	        }
