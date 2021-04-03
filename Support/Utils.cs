@@ -32,5 +32,12 @@ namespace ArbWeb
 	        if (!f)
 		        throw new Exception(s);
         }
+
+        public static void ThrowIfNot(bool f)
+        {
+	        if (!f)
+		        throw new Exception("Unknown failure");
+        }
+
     }
 }

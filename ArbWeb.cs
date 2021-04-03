@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ArbWeb.Games;
 using ArbWeb.Reports;
 using Microsoft.Win32;
 using TCore.StatusBox;
@@ -133,7 +134,8 @@ namespace ArbWeb
         Roster m_rst;
         CountsData m_gc;
         private bool m_fAutomating = false;
-        private WebGames m_webGames;
+		private Button m_pbDiffTW;
+		private WebGames m_webGames;
         
         #region Top Level Program Flow
 
@@ -577,6 +579,7 @@ namespace ArbWeb
 			this.m_pbRefreshGameFilters = new System.Windows.Forms.Button();
 			this.pbTestDownload = new System.Windows.Forms.Button();
 			this.m_cbSkipContactDownload = new System.Windows.Forms.CheckBox();
+			this.m_pbDiffTW = new System.Windows.Forms.Button();
 			label17 = new System.Windows.Forms.Label();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -1166,7 +1169,6 @@ namespace ArbWeb
 			this.pbTestDownload.Size = new System.Drawing.Size(176, 35);
 			this.pbTestDownload.TabIndex = 95;
 			this.pbTestDownload.Text = "Test Download";
-//			this.pbTestDownload.Click += new System.EventHandler(this.DoTestDownload);
 			// 
 			// m_cbSkipContactDownload
 			// 
@@ -1178,10 +1180,21 @@ namespace ArbWeb
 			this.m_cbSkipContactDownload.Text = "Skip Contact DL";
 			this.m_cbSkipContactDownload.UseVisualStyleBackColor = true;
 			// 
+			// m_pbDiffTW
+			// 
+			this.m_pbDiffTW.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.m_pbDiffTW.Location = new System.Drawing.Point(584, 887);
+			this.m_pbDiffTW.Name = "m_pbDiffTW";
+			this.m_pbDiffTW.Size = new System.Drawing.Size(176, 35);
+			this.m_pbDiffTW.TabIndex = 97;
+			this.m_pbDiffTW.Text = "Diff TrainWreck";
+			this.m_pbDiffTW.Click += new System.EventHandler(this.DoTrainWreckDiff);
+			// 
 			// AwMainForm
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
 			this.ClientSize = new System.Drawing.Size(1174, 1173);
+			this.Controls.Add(this.m_pbDiffTW);
 			this.Controls.Add(this.m_cbSkipContactDownload);
 			this.Controls.Add(this.pbTestDownload);
 			this.Controls.Add(this.m_pbRefreshGameFilters);
@@ -1446,11 +1459,20 @@ namespace ArbWeb
             InvalGameCount();
         }
 
-        /*----------------------------------------------------------------------------
+        private void DoTrainWreckDiff(object sender, EventArgs e)
+        {
+	        string sFile = @"c:\temp\bkmrs.xlsx";
+
+	        SimpleSchedule schedule = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile);
+	        SimpleGameReport.GenSimpleGamesReport(schedule, @"c:\temp\SimpleGameReport.csv");
+        }
+        
+        
+		/*----------------------------------------------------------------------------
         	%%Function: DoGamesReport
         	%%Qualified: ArbWeb.AwMainForm.DoGamesReport
         ----------------------------------------------------------------------------*/
-        private void DoGamesReport(object sender, EventArgs e)
+		private void DoGamesReport(object sender, EventArgs e)
         {
             m_srpt.AddMessage($"Generating games report ({m_ebGameOutput.Text})...");
             m_srpt.PushLevel();

@@ -39,7 +39,7 @@ namespace ArbWeb.Games
 			%%Function:AddSimpleGame
 			%%Qualified:ArbWeb.Games.SimpleSchedule.AddSimpleGame
 		----------------------------------------------------------------------------*/
-		void AddSimpleGame(SimpleGame game)
+		public void AddSimpleGame(SimpleGame game)
 		{
 			m_gamesByNumber.Add(game.Number, game);
 			m_games.Add(game.SortKey, game);

@@ -32,6 +32,17 @@ namespace ArbWeb.Games
 			Number = game.GameNum;
 		}
 
+		public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number)
+		{
+			StartDateTime = startDateTime;
+			Site = site;
+			Level = level;
+			Home = home;
+			Away = away;
+			Number = number;
+			Sport = null;
+		}
+		
         /*----------------------------------------------------------------------------
             %%Function: MakeCsvLine
             %%Qualified: ArbWeb.CountsData:GameData:Game.MakeCsvLine

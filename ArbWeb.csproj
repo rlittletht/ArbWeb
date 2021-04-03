@@ -102,6 +102,9 @@
     <Reference Include="SeleniumExtras.WaitHelpers, Version=3.11.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\DotNetSeleniumExtras.WaitHelpers.3.11.0\lib\net45\SeleniumExtras.WaitHelpers.dll</HintPath>
     </Reference>
+    <Reference Include="StatusResult, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\TCore.StatusResult.2.0.0\lib\netstandard2.0\StatusResult.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -184,6 +187,7 @@
     <Compile Include="Games\ScheduleGames.cs" />
     <Compile Include="Games\SimpleGame.cs" />
     <Compile Include="Games\SimpleSchedule.cs" />
+    <Compile Include="Games\SimpleScheduleLoader_TrainWreck.cs" />
     <Compile Include="Games\Sport.cs" />
     <Compile Include="Reports\AnalysisReport.cs" />
     <Compile Include="Reports\SimpleGameReport.cs" />
@@ -266,6 +270,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\liblet\cs\TCore.CSV\TCore.CSV.csproj">
+      <Project>{e2d2ef30-c48e-4517-93fd-590940e23ce3}</Project>
+      <Name>TCore.CSV</Name>
+    </ProjectReference>
     <ProjectReference Include="..\liblet\cs\TCore.UI\TCore.UI.csproj">
       <Project>{9213a90f-a23f-4bc5-827c-164ecb6c6cc2}</Project>
       <Name>TCore.UI</Name>
