@@ -185,6 +185,7 @@
       <DependentUpon>EditProfile.cs</DependentUpon>
     </Compile>
     <Compile Include="Games\games.cs" />
+    <Compile Include="Games\Roster.cs" />
     <Compile Include="MicroTimer.cs" />
     <Compile Include="ooxml.cs" />
     <Compile Include="Profile.cs" />
