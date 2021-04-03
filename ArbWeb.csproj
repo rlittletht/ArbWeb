@@ -183,6 +183,8 @@
     <Compile Include="Games\GameSlot.cs" />
     <Compile Include="Games\ScheduleGames.cs" />
     <Compile Include="Games\Sport.cs" />
+    <Compile Include="Reports\AnalysisReport.cs" />
+    <Compile Include="Reports\SimpleGameReport.cs" />
     <Compile Include="Roster\contacts.cs" />
     <Compile Include="Profiles\EditProfile.cs">
       <SubType>Form</SubType>

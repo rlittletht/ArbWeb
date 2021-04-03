@@ -4,32 +4,24 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using ArbWeb.Reports;
 using NUnit.Framework;
 using TCore.StatusBox;
 
 namespace ArbWeb.Games
 {
-    // ================================================================================
-    //  G A M E  D A T A 
-    // ================================================================================
     public class Schedule
     {
         private Roster m_rst;
         private ScheduleGames m_scheduleGames;
         private StatusBox m_srpt;
 
-        public string SMiscHeader(int i)
-        {
-            return m_rst.SMiscHeader(i);
-        }
+        public ScheduleGames Games => m_scheduleGames;
 
-        /* L O A D  R O S T E R */
         /*----------------------------------------------------------------------------
-				%%Function: LoadRoster
-				%%Qualified: GenCount.CountsData:GameData.LoadRoster
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
+			%%Function:FLoadRoster
+			%%Qualified:ArbWeb.Games.Schedule.FLoadRoster
+        ----------------------------------------------------------------------------*/
         public bool FLoadRoster(string sRoster, int iMiscAffiliation)
         {
             m_rst = new Roster(m_srpt);
@@ -42,13 +34,10 @@ namespace ArbWeb.Games
             return f;
         }
 
-        /* F  L O A D  G A M E S */
         /*----------------------------------------------------------------------------
-				%%Function: FLoadGames
-				%%Qualified: ArbWeb.CountsData:GameData.FLoadGames
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
+			%%Function:FLoadGames
+			%%Qualified:ArbWeb.Games.Schedule.FLoadGames
+        ----------------------------------------------------------------------------*/
         public bool FLoadGames(string sGames, bool fIncludeCanceled)
         {
 	        GamesLoader_Arbiter loader = new GamesLoader_Arbiter(m_srpt);
@@ -56,100 +45,64 @@ namespace ArbWeb.Games
             return loader.FLoadGames(sGames, m_rst, fIncludeCanceled, m_scheduleGames);
         }
 
-        /* G E N  R E P O R T */
         /*----------------------------------------------------------------------------
-				%%Function: GenReport
-				%%Qualified: ArbWeb.CountsData:GameData.GenReport
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
+			%%Function:GenAnalysis
+			%%Qualified:ArbWeb.Games.Schedule.GenAnalysis
+        ----------------------------------------------------------------------------*/
         public void GenAnalysis(string sReport)
         {
-            m_scheduleGames.ReduceTeams();
-            m_scheduleGames.GenReport(sReport);
+            AnalysisReport.GenReport(m_scheduleGames, sReport);
         }
 
-        public void GenGamesReport(string sReport)
-        {
-            m_scheduleGames.GenGamesReport(sReport);
-        }
-
-        /* G E N  O P E N  S L O T S */
         /*----------------------------------------------------------------------------
-				%%Function: GenOpenSlots
-				%%Qualified: ArbWeb.CountsData:GameData.GenOpenSlots
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
+			%%Function:GenOpenSlots
+			%%Qualified:ArbWeb.Games.Schedule.GenOpenSlots
+        ----------------------------------------------------------------------------*/
         public SlotAggr GenOpenSlots(DateTime dttmStart, DateTime dttmEnd)
         {
             return m_scheduleGames.GenOpenSlots(dttmStart, dttmEnd);
         }
-
-        public void GenSiteRosterReport(string sReportFile, ArbWeb.Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
-        {
-            m_scheduleGames.GenSiteRosterReport(sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd);
-        }
-        /* G E N  O P E N  S L O T S */
+        
         /*----------------------------------------------------------------------------
-				%%Function: GenOpenSlots
-				%%Qualified: ArbWeb.CountsData:GameData.GenOpenSlots
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
-        public void GenOpenSlotsReport(string sReport, bool fDetail, bool fFuzzyTimes, bool fDatePivot, string[] rgsSportFilter, string[] rgsSportLevelFilter, SlotAggr sa)
-        {
-            m_scheduleGames.GenOpenSlotsReport(sReport, fDetail, fFuzzyTimes, fDatePivot, rgsSportFilter, rgsSportLevelFilter, sa);
-        }
-
-        /* G A M E S  F R O M  F I L T E R */
-        /*----------------------------------------------------------------------------
-        	%%Function: GamesFromFilter
-        	%%Qualified: ArbWeb.GameData.GamesFromFilter
-        	%%Contact: rlittle
-        	
+			%%Function:GamesFromFilter
+			%%Qualified:ArbWeb.Games.Schedule.GamesFromFilter
         ----------------------------------------------------------------------------*/
         public ScheduleGames GamesFromFilter(string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOpenOnly, SlotAggr sa)
         {
             return m_scheduleGames.GamesFromFilter(rgsSportFilter, rgsSportLevelFilter, fOpenOnly, sa);
         }
 
-        /* G E T  O P E N  S L O T  S P O R T S */
         /*----------------------------------------------------------------------------
-				%%Function: GetOpenSlotSports
-				%%Qualified: ArbWeb.CountsData:GameData.GetOpenSlotSports
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
+			%%Function:GetOpenSlotSports
+			%%Qualified:ArbWeb.Games.Schedule.GetOpenSlotSports
+        ----------------------------------------------------------------------------*/
         public string[] GetOpenSlotSports(SlotAggr sa)
         {
             return m_scheduleGames.GetOpenSlotSports(sa);
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:GetSiteRosterSites
+			%%Qualified:ArbWeb.Games.Schedule.GetSiteRosterSites
+        ----------------------------------------------------------------------------*/
         public string[] GetSiteRosterSites(SlotAggr sa)
         {
             return m_scheduleGames.GetSiteRosterSites(sa);
         }
 
-        /* G E T  O P E N  S L O T  S P O R T  L E V E L S */
         /*----------------------------------------------------------------------------
-				%%Function: GetOpenSlotSportLevels
-				%%Qualified: ArbWeb.CountsData:GameData.GetOpenSlotSportLevels
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
+			%%Function:GetOpenSlotSportLevels
+			%%Qualified:ArbWeb.Games.Schedule.GetOpenSlotSportLevels
+        ----------------------------------------------------------------------------*/
         public string[] GetOpenSlotSportLevels(SlotAggr sa)
         {
             return m_scheduleGames.GetOpenSlotSportLevels(sa);
         }
 
-        /* G E N  G A M E  S T A T S */
         /*----------------------------------------------------------------------------
-				%%Function: GameData
-				%%Qualified: GenCount.CountsData:GameData.GameData
-				%%Contact: rlittle
-
-			----------------------------------------------------------------------------*/
+			%%Function:Schedule
+			%%Qualified:ArbWeb.Games.Schedule.Schedule
+        ----------------------------------------------------------------------------*/
         public Schedule(StatusBox srpt)
         {
             //  m_sRoster = null;

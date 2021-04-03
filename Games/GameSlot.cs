@@ -88,16 +88,16 @@ namespace ArbWeb.Games
 
         /* S  R E P O R T */
         /*----------------------------------------------------------------------------
-                %%Function: SReport
-                %%Qualified: ArbWeb.CountsData:GameData:Game.SReport
-                %%Contact: rlittle
+            %%Function: SReport
+            %%Qualified: ArbWeb.CountsData:GameData:Game.SReport
+            %%Contact: rlittle
 
-                Return a detail string suitable for saving in CSV format.
+            Return a detail string suitable for saving in CSV format.
 
-                Takes the given legend and saves out our collected data according to that
-                legend.
-            ----------------------------------------------------------------------------*/
-        public string SReport(List<string> plsLegend)
+            Takes the given legend and saves out our collected data according to that
+            legend.
+        ----------------------------------------------------------------------------*/
+        public string MakeCsvLine(IEnumerable<string> legend)
         {
             Dictionary<string, string> m_mpFieldVal = new Dictionary<string, string>();
 
@@ -136,7 +136,7 @@ namespace ArbWeb.Games
             bool fFirst = true;
             string sRet = "";
 
-            foreach (string s in plsLegend)
+            foreach (string s in legend)
             {
                 if (s == "$$$MISC$$$") // expand the Misc values here
                 {

@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ArbWeb.Games;
 using TCore.StatusBox;
 using TCore.WebControl;
 using Outlook = Microsoft.Office.Interop.Outlook;
@@ -13,11 +16,10 @@ namespace ArbWeb.Reports
 	{
 		private IAppContext m_appContext;
 
-        private WebControl m_webControl => m_appContext.WebControl;
-		private IStatusReporter m_srpt => m_appContext.StatusReport;
-		void ThrowIfNot(bool f, string s) => Utils.ThrowIfNot(f, s);
-		void EnsureLoggedIn() => m_appContext.EnsureLoggedIn();
-
+		/*----------------------------------------------------------------------------
+			%%Function:OpenSlots
+			%%Qualified:ArbWeb.Reports.OpenSlots.OpenSlots
+		----------------------------------------------------------------------------*/
 		public OpenSlots(IAppContext appContext)
 		{
 			m_appContext = appContext;
@@ -141,8 +143,8 @@ namespace ArbWeb.Reports
 
             CountsData cd = await taskCalc;
 
-            m_srpt.PopLevel();
-            m_srpt.AddMessage("Updating listboxes...", MSGT.Header, false);
+            m_appContext.StatusReport.PopLevel();
+            m_appContext.StatusReport.AddMessage("Updating listboxes...", MSGT.Header, false);
             // update regenerate the listboxes...
             string[] rgsSports = WebCore.RgsFromChlbx(true, sportsListBox);
             string[] rgsSportLevels = WebCore.RgsFromChlbx(true, sportsLevelsListBox);
@@ -161,7 +163,7 @@ namespace ArbWeb.Reports
             string[] rgsRosterSites = WebCore.RgsFromChlbx(true, rosterListBox);
 
             WebCore.UpdateChlbxFromRgs(rosterListBox, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
-            m_srpt.PopLevel();
+            m_appContext.StatusReport.PopLevel();
             m_appContext.DoPendingQueueUIOp();
         }
 
@@ -181,12 +183,82 @@ namespace ArbWeb.Reports
 	        DateTime dttmEnd)
         {
 	        CountsData gc = m_appContext.GcEnsure(sRosterFile, sGameFile, fIncludeCanceled, affiliationRosterIndex);
-            m_srpt.AddMessage("Calculating slot data...", MSGT.Header, false);
+            m_appContext.StatusReport.AddMessage("Calculating slot data...", MSGT.Header, false);
 
-            m_srpt.PopLevel();
-            m_srpt.AddMessage("Calculating open slots...", MSGT.Header, false);
+            m_appContext.StatusReport.PopLevel();
+            m_appContext.StatusReport.AddMessage("Calculating open slots...", MSGT.Header, false);
             m_saOpenSlots = gc.CalcOpenSlots(dttmStart, dttmEnd); 
             return gc;
+        }
+
+        /* G E N  O P E N  S L O T S  R E P O R T  D E T A I L */
+        /*----------------------------------------------------------------------------
+                %%Function: GenOpenSlotsReportDetail
+                %%Qualified: ArbWeb.CountsData:GameData:Games.GenOpenSlotsReportDetail
+                %%Contact: rlittle
+
+                Generate a report of open slots
+            ----------------------------------------------------------------------------*/
+        private static void GenOpenSlotsReportDetail(ScheduleGames games, string sReport, string[] rgsSportFilter, string[] rgsSportLevelFilter, SlotAggr aggregation)
+        {
+            DateTime dttmStart = aggregation.DttmStart;
+            DateTime dttmEnd = aggregation.DttmEnd;
+
+            StreamWriter sw = new StreamWriter(sReport, false, Encoding.Default);
+
+            string sFormat = "<tr><td>{0}<td>{1}<td>{2}<td>{3}<td>{4}<td>{5}<td>{6}<td>{7}</tr>";
+
+            sw.WriteLine("<html><body><table>");
+            sw.WriteLine(String.Format(sFormat, "Game", "Date", "Time", "Field", "Level", "Home", "Away", "Slots"));
+
+            SortedList<string, int> plsSports = Utils.PlsUniqueFromRgs(rgsSportFilter);
+            SortedList<string, int> plsLevels = Utils.PlsUniqueFromRgs(rgsSportLevelFilter);
+
+            foreach (GameSlot gm in games.SortedGameSlots)
+            {
+                if (!gm.Open)
+                    continue;
+
+                if (DateTime.Compare(gm.Dttm, dttmStart) < 0 || DateTime.Compare(gm.Dttm, dttmEnd) > 0)
+                    continue;
+
+                if (plsSports != null && !(plsSports.ContainsKey(gm.Sport)))
+                    continue;
+
+                if (plsLevels != null && !(plsLevels.ContainsKey(gm.SportLevel)))
+                    continue;
+
+                sw.WriteLine(String.Format(sFormat, gm.GameNum, gm.Dttm.ToString("MM/dd/yy ddd"), gm.Dttm.ToString("hh:mm tt"), gm.Site,
+                    $"{gm.Sport}, {gm.Level}", gm.Home, gm.Away, gm.Pos));
+            }
+            sw.Close();
+        }
+
+        /* G E N  O P E N  S L O T S  R E P O R T */
+        /*----------------------------------------------------------------------------
+                %%Function: GenOpenSlotsReport
+                %%Qualified: ArbWeb.CountsData:GameData:Games.GenOpenSlotsReport
+                %%Contact: rlittle
+
+            ----------------------------------------------------------------------------*/
+        private static void GenOpenSlotsReport(string sReport, string[] rgsSportsFilter, string[] rgsSportLevelsFilter, bool fFuzzyTimes, bool fDatePivot, SlotAggr aggregation)
+        {
+            aggregation.GenReportBySite(sReport, fFuzzyTimes, fDatePivot, rgsSportsFilter, rgsSportLevelsFilter);
+        }
+
+        /* G E N  O P E N  S L O T S  R E P O R T */
+        /*----------------------------------------------------------------------------
+            %%Function: GenOpenSlotsReport
+            %%Qualified: ArbWeb.CountsData:GameData:Games.GenOpenSlotsReport
+            %%Contact: rlittle
+
+        ----------------------------------------------------------------------------*/
+        public static void GenOpenSlotsReport(ScheduleGames games, string sReport, bool fDetail, bool fFuzzyTimes, bool fDatePivot, string[] rgsSportFilter, string[] rgsSportLevelFilter, SlotAggr aggregation)
+        {
+	        if (fDetail)
+		        GenOpenSlotsReportDetail(games, sReport, rgsSportFilter, rgsSportLevelFilter, aggregation);
+	        else
+		        GenOpenSlotsReport(sReport, rgsSportFilter, rgsSportLevelFilter, fFuzzyTimes, fDatePivot, aggregation);
         }
 
     }
