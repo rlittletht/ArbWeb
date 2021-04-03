@@ -2,18 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using NUnit.Framework;
 
 namespace ArbWeb
 {
-
-
     // ================================================================================
     //  R O S T E R     E N T R Y 
     // ================================================================================
     public class RosterEntry : RosterEntryNameAddress, IRosterEntry // RSTE
     {
         public string m_sOfficialNumber;
+        public string m_sArbiterUserId;
         public string m_sDateOfBirth;
         public string m_sDateJoined;
         public string m_sLastSignin;
@@ -22,7 +20,7 @@ namespace ArbWeb
         public string m_sTotalGames;
         public string m_sWaitMinutes;
 
-        public bool IsUploadableQuickroster {  get { return m_rstt == Roster.RSTT.QuickFull2 || m_rstt == Roster.RSTT.QuickFull; } }
+        public bool IsUploadableQuickroster {  get { return m_rstt == Roster.RSTT.QuickFull_Signin || m_rstt == Roster.RSTT.QuickFull || m_rstt == Roster.RSTT.QuickFull2021_Signin || m_rstt == Roster.RSTT.QuickFull2021; } }
 
         public int m_cRankings;
         public Dictionary<string, int> m_mpRanking;
@@ -78,6 +76,8 @@ namespace ArbWeb
         {
             if (String.Compare(First, rste.First) != 0)
                 return false;
+            if (String.Compare(Middle, rste.Middle) != 0)
+	            return false;
             if (String.Compare(Last, rste.Last) != 0)
                 return false;
             if (String.Compare(Address1, rste.Address1) != 0)
@@ -93,7 +93,18 @@ namespace ArbWeb
             if (String.Compare(m_sOfficialNumber, rste.m_sOfficialNumber) != 0)
                 return false;
             if (String.Compare(m_sDateOfBirth, rste.m_sDateOfBirth) != 0)
-                return false;
+            {
+	            // be extra careful...this might be equivalent, but differnet date formats
+	            DateTime dttm1, dttm2;
+	            
+                if (!DateTime.TryParse(m_sDateOfBirth, out dttm1)
+                    || !DateTime.TryParse(rste.m_sDateOfBirth, out dttm2)
+                    || !dttm1.Equals(dttm2))
+                {
+                    return false;
+                }
+            }
+
 //            if (String.Compare(m_sDateJoined, rste.m_sDateJoined) != 0)
 //                return false;
             if (String.Compare(m_sGamesPerDay, rste.m_sGamesPerDay) != 0)
@@ -134,7 +145,7 @@ namespace ArbWeb
 
                     if (sOther.Length > 0)
                         sOther += ", ";
-                    sOther = String.Format("{0}{1} ({2})", sOther, sKey.Substring(sSport.Length + 2), m_mpRanking[sKey]);
+                    sOther = $"{sOther}{sKey.Substring(sSport.Length + 2)} ({m_mpRanking[sKey]})";
                     }
                 }
             return sOther;
@@ -170,6 +181,88 @@ namespace ArbWeb
             OfficialNumber = 11,
             DateJoined = 12,
             BuiltInMac = 13
+        }
+
+        public enum QuickShortColumns2021
+        {
+            FirstName = 0,
+            MiddleName = 1,
+            LastName = 2,
+            Email = 3,
+            Address1 = 4,
+            Address2 = 5,
+            City = 6,
+            State = 7,
+            PostalCode = 8,
+            CellPhone = 9,
+            WorkPhone = 10,
+            HomePhone = 11,
+            DateJoined = 12,
+            DateOfBirth = 13,
+            ArbiterUserId = 14,
+            OfficialNumber = 15,
+            BuiltInMac = 16
+        }
+
+        public enum QuickFullColumns
+        {
+            FirstName = 0,
+            LastName = 1,
+            Email = 2,
+            Address1 = 3,
+            Address2 = 4,
+            City = 5,
+            State = 6,
+            Zip = 7,
+            Phone1 = 8,
+            Phone2 = 9,
+            Phone3 = 10,
+            OfficialNumber = 11,
+            BuiltInMac = 12
+        }
+        
+        public enum QuickFull2021Columns
+        {
+	        FirstName = 0,
+	        MiddleName = 1,
+	        LastName = 2,
+	        Email = 3,
+	        Address1 = 4,
+	        Address2 = 5,
+	        City = 6,
+	        State = 7,
+	        Zip = 8,
+	        Phone1 = 9,
+	        Phone2 = 10,
+	        Phone3 = 11,
+	        DateOfBirth = 12,
+	        ArbiterUserId = 13,
+	        OfficialNumber = 14,
+	        BuiltInMac = 15
+        }
+
+        static bool FVerifyQuickShortColumns2021(string[] rgs)
+        {
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.FirstName], "FirstName", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.MiddleName], "MiddleName", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.LastName], "LastName", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.Email], "Email", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.Address1], "AddressOne", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.Address2], "AddressTwo", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.City], "City", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.State], "State", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.PostalCode], "PostalCode", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.CellPhone], "CellPhone", false) != 0) return false;
+	        // NOTE: Currently (3/15/21) Arbiter download roster MISLABELS Work and Home phones. We accommodate that
+	        // here.
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.HomePhone], "WorkPhone", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.WorkPhone], "HomePhone", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.DateJoined], "DateJoined", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.DateOfBirth], "DateOfBirth", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.ArbiterUserId], "ArbiterUserId", false) != 0) return false;
+	        if (String.Compare(rgs[(int) QuickShortColumns2021.OfficialNumber], "OfficialNumber", false) != 0) return false;
+	        
+	        return true;
         }
 
         static bool FVerifyQuickShortColumns(string[] rgs)
@@ -220,6 +313,8 @@ namespace ArbWeb
         {
             if (rstt == Roster.RSTT.QuickShort)
                 return FVerifyQuickShortColumns(rgs);
+            if (rstt == Roster.RSTT.QuickShort2021)
+	            return FVerifyQuickShortColumns2021(rgs);
 
             return true;
         }
@@ -241,7 +336,7 @@ namespace ArbWeb
 
             if (m_rstt == Roster.RSTT.QuickShort)
                 {
-                if (rgs.Length < 13)
+                if (rgs.Length < (int)QuickShortColumns.BuiltInMac)
                     throw new Exception("input line too short -- not enough fields");
 
                 First = rgs[(int)QuickShortColumns.FirstName];
@@ -263,101 +358,153 @@ namespace ArbWeb
 
                 m_mpRanking = new Dictionary<string, int>();
                 }
+            else if (m_rstt == Roster.RSTT.QuickShort2021)
+            {
+	            if (rgs.Length < (int)QuickShortColumns2021.BuiltInMac)
+		            throw new Exception("input line too short -- not enough fields");
+
+	            First = rgs[(int)QuickShortColumns2021.FirstName];
+	            Middle = rgs[(int)QuickShortColumns2021.MiddleName];
+	            Last = rgs[(int)QuickShortColumns2021.LastName];
+	            Email = rgs[(int)QuickShortColumns2021.Email];
+	            Address1 = rgs[(int)QuickShortColumns2021.Address1];
+	            Address2 = rgs[(int)QuickShortColumns2021.Address2];
+	            City = rgs[(int)QuickShortColumns2021.City];
+	            State = rgs[(int)QuickShortColumns2021.State];
+	            Zip = rgs[(int)QuickShortColumns2021.PostalCode];
+                
+	            SetNextPhoneNumber(rgs[(int)QuickShortColumns2021.HomePhone], "H");
+	            SetNextPhoneNumber(rgs[(int)QuickShortColumns2021.WorkPhone], "W");
+	            SetNextPhoneNumber(rgs[(int)QuickShortColumns2021.CellPhone], "C");
+
+	            m_sOfficialNumber = rgs[(int)QuickShortColumns2021.OfficialNumber];
+	            m_sDateJoined = rgs[(int)QuickShortColumns2021.DateJoined];
+	            m_sDateOfBirth = rgs[(int)QuickShortColumns2021.DateOfBirth];
+	            m_sArbiterUserId = rgs[(int)QuickShortColumns2021.ArbiterUserId];
+	            
+                i = (int)QuickShortColumns2021.BuiltInMac;
+
+	            m_mpRanking = new Dictionary<string, int>();
+            }
             else
-                {
-                if (m_rstt == Roster.RSTT.QuickFull)
-                    {
-                    if (rgs.Length < 17)
-                        throw new Exception("input line too short -- not enough fields");
-                    }
-                else if (m_rstt == Roster.RSTT.QuickFull2)
-                    {
-                    if (rgs.Length < 19)
-                        throw new Exception("input line too short -- not enough fields");
-                    }
-                else
-                    {
-                    if (rgs.Length < 17)
-                        throw new Exception("input line too short -- not enough fields");
-                    }
+            {
+	            if (m_rstt == Roster.RSTT.QuickFull)
+	            {
+		            if (rgs.Length < 17)
+			            throw new Exception("input line too short -- not enough fields");
+	            }
+	            else if (m_rstt == Roster.RSTT.QuickFull_Signin)
+	            {
+		            if (rgs.Length < 19)
+			            throw new Exception("input line too short -- not enough fields");
+	            }
+	            else
+	            {
+		            if (rgs.Length < 17)
+			            throw new Exception("input line too short -- not enough fields");
+	            }
 
-                First = rgs[0];
-                Last = rgs[1];
-                Email = rgs[2];
-                Address1 = rgs[3];
-                Address2 = rgs[4];
-                City = rgs[5];
-                State = rgs[6];
-                Zip = rgs[7];
-                SetNextPhoneNumber(rgs[8], "H");
-                SetNextPhoneNumber(rgs[9], "W");
-                SetNextPhoneNumber(rgs[10], "C");
+	            if (m_rstt == Roster.RSTT.QuickShort2021 || m_rstt == Roster.RSTT.QuickFull2021_Signin)
+	            {
+		            First = rgs[(int)QuickFull2021Columns.FirstName];
+		            Middle = rgs[(int)QuickFull2021Columns.MiddleName];
+                    Last = rgs[(int)QuickFull2021Columns.LastName];
+		            Email = rgs[(int)QuickFull2021Columns.Email];
+		            Address1 = rgs[(int)QuickFull2021Columns.Address1];
+		            Address2 = rgs[(int)QuickFull2021Columns.Address2];
+		            City = rgs[(int)QuickFull2021Columns.City];
+		            State = rgs[(int)QuickFull2021Columns.State];
+		            Zip = rgs[(int)QuickFull2021Columns.Zip];
+		            SetNextPhoneNumber(rgs[(int)QuickFull2021Columns.Phone1], "H");
+		            SetNextPhoneNumber(rgs[(int)QuickFull2021Columns.Phone2], "W");
+		            SetNextPhoneNumber(rgs[(int)QuickFull2021Columns.Phone3], "C");
 
-                m_sOfficialNumber = rgs[11];
-                if (m_rstt != Roster.RSTT.QuickFull && m_rstt != Roster.RSTT.QuickFull2)
-                    {
-                    throw (new Exception(
-                        "This is probably rstt.Full - this was never updated to account for the phone fields we now write out."));
-#if deadcode
-                    m_sDateOfBirth = rgs[12];
-                    m_sDateJoined = rgs[13];
-                    m_sGamesPerDay = rgs[14];
-                    m_sGamesPerWeek = rgs[15];
-                    m_sTotalGames = rgs[16];
-                    m_sWaitMinutes = rgs[17];
-
-                    m_fReady = rgs[18] == "1" ? true : false;
-                    m_fActive = rgs[19] == "1" ? true : false;
-                    i = 20;
-#endif
-                    }
-                else
-                    {
-                    // read in the misc fields
-                    i = 12;
-                    m_plsMisc = new List<string>();
-
-                    foreach (string s in plsMiscHeadings)
-                        {
-                        m_plsMisc.Add(rgs[i]);
-                        i++;
-                        }
-
-                    // now, read in the DateJoined
-                    m_sDateJoined = rgs[i++];
-                    if (m_rstt == Roster.RSTT.QuickFull2)
-                        m_sLastSignin = rgs[i++];
-
-                    // at this point, i points to the rankings...
-                    }
-
-                m_mpRanking = new Dictionary<string, int>();
-
-                if (plsRankings != null)
-                    {
-                    int iRank = 0;
-                    for (; iRank < plsRankings.Count; iRank++)
-                        {
-                        int nRank;
-                        try
-                            {
-                            if (rgs[i + iRank] == "")
-                                nRank = 0;
-                            else
-                                nRank = Int32.Parse(rgs[i + iRank]);
-                            }
-                        catch
-                            {
-                            nRank = 0;
-                            }
-                        if (nRank > 0)
-                            m_mpRanking.Add(plsRankings[iRank], nRank);
-                        }
-                    i += iRank;
-                    }
+		            m_sDateOfBirth = rgs[(int) QuickFull2021Columns.DateOfBirth];
+		            m_sArbiterUserId = rgs[(int) QuickFull2021Columns.ArbiterUserId];
+		            m_sOfficialNumber = rgs[(int)QuickFull2021Columns.OfficialNumber];
+		            
+		            i = (int)QuickFull2021Columns.BuiltInMac;
                 }
+                else
+	            {
+		            First = rgs[(int)QuickFullColumns.FirstName];
+		            Last = rgs[(int)QuickFullColumns.LastName];
+		            Email = rgs[(int)QuickFullColumns.Email];
+		            Address1 = rgs[(int)QuickFullColumns.Address1];
+		            Address2 = rgs[(int)QuickFullColumns.Address2];
+		            City = rgs[(int)QuickFullColumns.City];
+		            State = rgs[(int)QuickFullColumns.State];
+		            Zip = rgs[(int)QuickFullColumns.Zip];
+		            SetNextPhoneNumber(rgs[(int)QuickFullColumns.Phone1], "H");
+		            SetNextPhoneNumber(rgs[(int)QuickFullColumns.Phone2], "W");
+		            SetNextPhoneNumber(rgs[(int)QuickFullColumns.Phone3], "C");
 
-            if (m_rstt != Roster.RSTT.QuickFull && m_rstt != Roster.RSTT.QuickFull2)
+		            m_sOfficialNumber = rgs[(int)QuickFullColumns.OfficialNumber];
+		            
+		            i = (int)QuickFullColumns.BuiltInMac;
+	            }
+
+                if (m_rstt != Roster.RSTT.QuickFull 
+                    && m_rstt != Roster.RSTT.QuickFull_Signin
+                    && m_rstt != Roster.RSTT.QuickFull2021
+                    && m_rstt != Roster.RSTT.QuickFull2021_Signin)
+	            {
+		            throw (new Exception(
+			            "This is probably rstt.Full - this was never updated to account for the phone fields we now write out."));
+
+	            }
+	            else
+	            {
+		            // read in the misc fields
+		            m_plsMisc = new List<string>();
+
+		            foreach (string s in plsMiscHeadings)
+		            {
+			            m_plsMisc.Add(rgs[i]);
+			            i++;
+		            }
+
+		            // now, read in the DateJoined
+		            m_sDateJoined = rgs[i++];
+		            if (m_rstt == Roster.RSTT.QuickFull_Signin || m_rstt == Roster.RSTT.QuickFull2021_Signin)
+			            m_sLastSignin = rgs[i++];
+
+		            // at this point, i points to the rankings...
+	            }
+
+	            m_mpRanking = new Dictionary<string, int>();
+
+	            if (plsRankings != null)
+	            {
+		            int iRank = 0;
+		            for (; iRank < plsRankings.Count; iRank++)
+		            {
+			            int nRank;
+			            try
+			            {
+				            if (rgs[i + iRank] == "")
+					            nRank = 0;
+				            else
+					            nRank = Int32.Parse(rgs[i + iRank]);
+			            }
+			            catch
+			            {
+				            nRank = 0;
+			            }
+
+			            if (nRank > 0)
+				            m_mpRanking.Add(plsRankings[iRank], nRank);
+		            }
+
+		            i += iRank;
+	            }
+            }
+
+            if (m_rstt != Roster.RSTT.QuickFull 
+                && m_rstt != Roster.RSTT.QuickFull_Signin
+                && m_rstt != Roster.RSTT.QuickFull2021
+                && m_rstt != Roster.RSTT.QuickFull2021_Signin
+                )
                 {
                 m_plsMisc = new List<string>();
 
@@ -412,7 +559,18 @@ namespace ArbWeb
         public static List<string> PlsMiscFromHeadingLine(string[] rgs)
         {
             List<string> pls = new List<string>();
-            if (rgs[12] == "DateJoined")
+            if (rgs[15] == "OfficialNumber")
+            {
+	            // this is a simple quickroster2021 (straight from Arbiter)
+
+	            // everything past column 15 (OfficialNumber) is a misc field
+	            // everything past the 12th column is a misc field
+	            for (int i = 16; i < rgs.Length; i++)
+	            {
+		            pls.Add(rgs[i]);
+	            }
+            }
+            else if (rgs[12] == "DateJoined")
                 {
                 // this is a simple quickroster (straight from Arbiter)
 
@@ -467,9 +625,9 @@ namespace ArbWeb
         public static List<string> PlsRankingsFromHeadingLine(string[] rgs, out Roster.RSTT rstt)
         {
             // first, check to see if this is a quick roster
-            if (rgs[2] == "Address1")
+            if (rgs[2] == "Address1" || rgs[4] == "AddressOne")
                 {
-                rstt = Roster.RSTT.QuickShort;
+                rstt = rgs[2] == "Address1" ? Roster.RSTT.QuickShort : Roster.RSTT.QuickShort2021;
 
                 // there will be no ranks, but misc fields will be labeled
                 return null;
@@ -479,9 +637,38 @@ namespace ArbWeb
             // out that was based on a quick roster (it will be missing some fields, but it WILL 
             // have rankings...)
 
-            int iRank;
+            int iRank; // this is the first index for the rank
 
-            if (rgs[10] != "DateJoined" && rgs[9] != "DateJoined")
+            if (rgs[(int)QuickFull2021Columns.ArbiterUserId] == "ArbiterUserId" 
+                && rgs[(int)QuickFull2021Columns.OfficialNumber] == "OfficialNumber")
+            {
+                // this is based on a QuickRoster2021. The misc fields follow OfficialNumber
+                rstt = Roster.RSTT.QuickFull2021;
+
+                // if LastSignin is present, then this is a roster *we* wrote out and it has Rankings too
+                // we use DateJoined & LastSignIn as sentinels to separate misc fields from
+                // rankings. (we always write out DateJoined and LastSignIn *after* the misc
+                // fields we have). LastSignIn is not always there because its a special
+                // process to update...so we are tolerant of it not being there...even in 
+                // files that we wrote.
+                iRank = 0;
+                while (iRank < rgs.Length)
+                    {
+                    if (rgs[iRank] == "DateJoined")
+                        {
+                        if (iRank + 1 < rgs.Length && rgs[iRank + 1] == "LastSignin")
+                            {
+                            rstt = Roster.RSTT.QuickFull2021_Signin;
+                            iRank++;
+                            }
+                        break;
+                    }
+                    iRank++;
+                    }
+                iRank++;
+                if (iRank > rgs.Length)
+                    throw (new Exception("bad format in heading line -- found no DateJoined in a quickroster, or date joined beyond the end of the array"));
+            } else if (rgs[10] != "DateJoined" && rgs[9] != "DateJoined")
                 {
                 // this is based on a quick roster...read the misc and the rankings but remember that
                 // its a quick roster
@@ -496,7 +683,7 @@ namespace ArbWeb
                         {
                         if (iRank + 1 < rgs.Length && rgs[iRank + 1] == "LastSignin")
                             {
-                            rstt = Roster.RSTT.QuickFull2;
+                            rstt = Roster.RSTT.QuickFull_Signin;
                             iRank++;
                             }
                         break;
@@ -553,8 +740,8 @@ namespace ArbWeb
                 // be careful here -- we have to have a predictable field BEFORE the misc fields, 
                 // as well as AFTER the misc fields.  This way, we can tell the difference between
                 // misc fields and rankings
-                sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\"",
-                         "First", "Last", "Email", "Address1", "Address2", "City", "State", "Zip", "Phone1", "Phone2", "Phone3", "OfficialNumber");
+                sw.Write(
+	                $"\"{"First"}\",\"{"Middle"}\",\"{"Last"}\",\"{"Email"}\",\"{"Address1"}\",\"{"Address2"}\",\"{"City"}\",\"{"State"}\",\"{"Zip"}\",\"{"Phone1"}\",\"{"Phone2"}\",\"{"Phone3"}\",\"{"DateOfBirth"}\",\"{"ArbiterUserId"}\",\"{"OfficialNumber"}\"");
 
                 foreach (string s in plsMiscHeadings)
                     {
@@ -601,8 +788,7 @@ namespace ArbWeb
 
             if (m_rstt != Roster.RSTT.Full)
                 {
-                sw.Write("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\"",
-                         First, Last, Email, Address1, Address2, City, State, Zip, Phone1, Phone2, Phone3, m_sOfficialNumber);
+                sw.Write($"\"{First}\",\"{Middle}\",\"{Last}\",\"{Email}\",\"{Address1}\",\"{Address2}\",\"{City}\",\"{State}\",\"{Zip}\",\"{Phone1}\",\"{Phone2}\",\"{Phone3}\",\"{m_sDateOfBirth}\",\"{m_sArbiterUserId}\",\"{m_sOfficialNumber}\"");
                 }
             else
                 {
@@ -664,9 +850,13 @@ namespace ArbWeb
         {
             Full,
             QuickShort,
+            QuickShort2021, 
 //    		QuickShort2,	// this includes LastSignin
             QuickFull,
-            QuickFull2 // this includes LastSignin
+            QuickFull_Signin, // this includes LastSignin
+            QuickFull2021, // this is the 2021 format (using selenium)
+            QuickFull2021_Signin // this is the 2021 format and includes LastSignin (so we wrote it out, because we manafacture this column)
+
         }
 
         public List<IRosterEntry> Plirste
@@ -693,7 +883,7 @@ namespace ArbWeb
         }
 
         public bool IsQuick { get { return m_rstt != RSTT.Full; } }
-        public bool IsUploadableQuickroster {  get { return m_rstt == RSTT.QuickFull || m_rstt == RSTT.QuickFull2; } }
+        public bool IsUploadableQuickroster {  get { return m_rstt == RSTT.QuickFull || m_rstt == RSTT.QuickFull_Signin || m_rstt == RSTT.QuickFull2021 || m_rstt == RSTT.QuickFull2021_Signin; } }
         public RSTT Rstt { get { return m_rstt; } }
 
         public bool HasRankings { get { return m_plsRankings.Count > 0; } }
@@ -727,7 +917,16 @@ namespace ArbWeb
 
                 rgs = Csv.LineToArray(sLine);
 
-                if (fFirst && sLine.Contains("First") && sLine.Contains("Email") && sLine.Contains("Address2"))
+                if (rgs.Length > 1 && rgs[0] == "TRUE")
+                {
+                    // hacky fixup for Excel annoyance!
+                    rgs[0] = "True";
+                }
+                
+                if (fFirst 
+                    && sLine.Contains("First") 
+                    && sLine.Contains("Email") 
+                    && (sLine.Contains("Address2") || sLine.Contains("AddressTwo")))
                     {
                     // grab the list of rankings from the first line
                     m_plsRankings = RosterEntry.PlsRankingsFromHeadingLine(rgs, out m_rstt);
@@ -758,7 +957,7 @@ namespace ArbWeb
 
                 for (int i = 0; i < cMiscMax; i++)
                     {
-                    m_plsMisc.Add(String.Format("Misc{0}", i));
+                    m_plsMisc.Add($"Misc{i}");
                     }
                 }
         }

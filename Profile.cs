@@ -1,18 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
-using System.Collections.Generic;
-using System.Drawing.Design;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
-using Microsoft.Win32;
-using StatusBox;
-using mshtml;
-using System.Runtime.InteropServices;
-using TCore.CmdLine;
-using Outlook=Microsoft.Office.Interop.Outlook;
-using System.Threading.Tasks;
 using TCore.Settings;
 
 namespace ArbWeb
@@ -251,7 +238,7 @@ namespace ArbWeb
 
         public void Load(string sProfileName)
         {
-            string sRoot = String.Format("Software\\Thetasoft\\ArbWeb\\{0}", sProfileName);
+            string sRoot = $"Software\\Thetasoft\\ArbWeb\\{sProfileName}";
             m_ehProfile = new Settings(m_rgreheProfile, sRoot, sRoot);
             m_sProfileName = sProfileName;
             m_ehProfile.Load();
@@ -268,7 +255,7 @@ namespace ArbWeb
             if (m_ehProfile == null)
                 {
                 // must be a new profile
-                string sRoot = String.Format("Software\\Thetasoft\\ArbWeb\\{0}", m_sProfileName);
+                string sRoot = $"Software\\Thetasoft\\ArbWeb\\{m_sProfileName}";
                 m_ehProfile = new Settings(m_rgreheProfile, sRoot, sRoot);
                 }
 

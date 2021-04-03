@@ -476,7 +476,7 @@ namespace ArbWeb
                             int c = sc.OpenCount(sSport);
 
                             if (c > 0)
-                                sWrite += String.Format("<td>{0} umpires", sc.OpenCount(sSport));
+                                sWrite += $"<td>{sc.OpenCount(sSport)} umpires";
                             else
                                 sWrite += "<td>";
 
@@ -528,7 +528,7 @@ namespace ArbWeb
                 if (!m_rgsAxis2.ContainsKey(sAxis2Key))
                     m_rgsAxis2.Add(sAxis2Key, sAxis2);
 
-                string sKey = String.Format("({0},{1})", sAxis1, sAxis2);
+                string sKey = $"({sAxis1},{sAxis2})";
 
                 if (m_mpAxisValues.ContainsKey(sKey))
                     throw new Exception("duplicate axis value mapping " + sKey);
@@ -590,13 +590,13 @@ namespace ArbWeb
                         }
                     }
 
-                string sStyle = String.Format("style='{0}'", sFirstRowStyle);
+                string sStyle = $"style='{sFirstRowStyle}'";
                 if (fNeed2Lines)
                     {
                     string sRow1Style = "border-bottom: none;";
                     string sRow2Style = "border-top: none;";
 
-                    sStyle = String.Format("style='{0}{1}'", sFirstRowStyle, sRow1Style);
+                    sStyle = $"style='{sFirstRowStyle}{sRow1Style}'";
 
                     sw.WriteLine(String.Format("<td align=center valign=middle rowspan=2 " + sStyle + ">{0}", !fAxis1Pivot ? m_sAxis1Title : m_sAxis2Title));
 
@@ -608,7 +608,7 @@ namespace ArbWeb
                         sw.WriteLine(String.Format("<td align=center valign=middle colspan={0} " + sStyle + ">{1}", rgcColspan[i], rgsFirstLine[i]));
                         }
 
-                    sStyle = String.Format("style='{0}{1}'", sFirstRowStyle, sRow2Style);
+                    sStyle = $"style='{sFirstRowStyle}{sRow2Style}'";
                     sw.WriteLine("<tr " + sStyle + ">");
                     for (int i = 0, iMac = rgsCols.Keys.Count; i < iMac; i++)
                         {
@@ -631,7 +631,7 @@ namespace ArbWeb
                 foreach (string sRowT in rgsRows.Keys)
                     {
                     string sRow = rgsRows[sRowT];
-                    sw.WriteLine(String.Format("<tr><td>{0}", sRow));
+                    sw.WriteLine($"<tr><td>{sRow}");
 
                     foreach (string sColT in rgsCols.Keys)
                         {
@@ -639,12 +639,12 @@ namespace ArbWeb
                         string sKey;
 
                         if (fAxis1Pivot)
-                            sKey = String.Format("({0},{1})", sCol, sRow);
+                            sKey = $"({sCol},{sRow})";
                         else
-                            sKey = String.Format("({0},{1})", sRow, sCol);
+                            sKey = $"({sRow},{sCol})";
 
                         if (m_mpAxisValues.ContainsKey(sKey))
-                            sw.WriteLine(String.Format("<td>{0}", m_mpAxisValues[sKey]));
+                            sw.WriteLine($"<td>{m_mpAxisValues[sKey]}");
                         else
                             sw.WriteLine("<td>");
                         }
@@ -755,22 +755,22 @@ namespace ArbWeb
                     mpSiteCount[sSite] += c;
 
                     if (c > 0)
-                        htr.AddValue(sWrite, sKey, sSite, sSite, String.Format("{0} umps", c));
+                        htr.AddValue(sWrite, sKey, sSite, sSite, $"{c} umps");
 
                     cTotal += sc.OpenCount(sSite);
                     }
 
                 if (cTotal > 0)
                     {
-                    htr.AddValue(sWrite, sKey, "Total", "zzzTotal", String.Format("{0} umps", cTotal));
+                    htr.AddValue(sWrite, sKey, "Total", "zzzTotal", $"{cTotal} umps");
                     cTotalTotal += cTotal;
                     }
                 }
             foreach (string sSite in mpSiteCount.Keys)
                 {
-                htr.AddValue("\rTotal", "zzz\rzzzTotal", sSite, sSite, String.Format("{0} umps", mpSiteCount[sSite]));
+                htr.AddValue("\rTotal", "zzz\rzzzTotal", sSite, sSite, $"{mpSiteCount[sSite]} umps");
                 }
-            htr.AddValue("\rTotal", "zzz\rzzzTotal", "Total", "zzzTotal", String.Format("{0} umps", cTotalTotal));
+            htr.AddValue("\rTotal", "zzz\rzzzTotal", "Total", "zzzTotal", $"{cTotalTotal} umps");
             htr.GenReport(sw, fDatePivot);
             sw.Close();
         }

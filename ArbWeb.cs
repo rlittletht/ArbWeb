@@ -1,28 +1,23 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Drawing;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using Microsoft.Win32;
-using StatusBox;
-using mshtml;
-using System.Runtime.InteropServices;
+using TCore.StatusBox;
 using TCore.CmdLine;
-using Outlook=Microsoft.Office.Interop.Outlook;
-using System.Threading.Tasks;
 using TCore.Settings;
 using TCore.UI;
 using TCore.Util;
+using TCore.WebControl;
 
 namespace ArbWeb
 {
     public interface IAppContext
     {
-        StatusRpt StatusReport { get; }
-        ArbWebControl WebControl { get; }
+        StatusBox StatusReport { get; }
+        WebControl WebControlNew { get; }
         void EnsureLoggedIn();
         Profile Profile { get; }
         void ThrowIfNot(bool f, string s);
@@ -107,11 +102,11 @@ namespace ArbWeb
         private Button m_pbRefreshGameFilters;
         private Button pbTestDownload;
         private CheckBox m_cbSkipContactDownload;
-        private StatusBox.StatusRpt m_srpt;
+        private StatusBox m_srpt;
 
         #endregion
 
-        public StatusRpt StatusReport => m_srpt;
+        public StatusBox StatusReport => m_srpt;
 
         public void ThrowIfNot(bool f, string s)
         {
@@ -130,9 +125,10 @@ namespace ArbWeb
         private Settings.SettingsElt[] m_rgrehe;
         private Settings m_reh;
 
-        ArbWebControl m_awc;
-        public ArbWebControl WebControl => m_awc;
-
+        private WebControl m_webControl;
+        
+        public WebControl WebControlNew => m_webControl;
+        
         bool m_fDontUpdateProfile;
         bool m_fLoggedIn;
         Roster m_rst;
@@ -165,7 +161,7 @@ namespace ArbWeb
                         m_fForceFutureGames = true;
                         break;
                     default:
-                        sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+                        sError = $"Unknown arg: '{cls.Switch}'";
                         return false;
                     }
 
@@ -178,7 +174,7 @@ namespace ArbWeb
                 m_sAutomateDateEnd = sParam;
             else
                 {
-                sError = String.Format("Unknown arg: '{0}'", cls.Switch);
+                sError = $"Unknown arg: '{cls.Switch}'";
                 return false;
                 }
 
@@ -231,8 +227,7 @@ namespace ArbWeb
 
             InitializeComponent();
 
-            m_srpt = new StatusBox.StatusRpt(m_recStatus);
-            m_awc = new ArbWebControl(m_srpt);
+            m_srpt = new StatusBox(m_recStatus);
             m_fDontUpdateProfile = true;
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
 
@@ -264,9 +259,6 @@ namespace ArbWeb
             m_fDontUpdateProfile = false;
             EnableControls();
 
-            if (m_cbShowBrowser.Checked)
-                m_awc.Show();
-
             CmdLineConfig clcfg = new CmdLineConfig(new CmdLineSwitch[]
                                                         {
                                                         new CmdLineSwitch("H", true /*fToggle*/, false /*fReq*/,
@@ -286,14 +278,14 @@ namespace ArbWeb
             string sError = null;
 
             if (rgsCmdLine != null && rgsCmdLine.Length > 0)
-                m_srpt.AddMessage(String.Format("Commandline args: {0} {1}", rgsCmdLine.Length, rgsCmdLine[0]));
+                m_srpt.AddMessage($"Commandline args: {rgsCmdLine.Length} {rgsCmdLine[0]}");
 
             if (!cl.FParse(rgsCmdLine, this, null, out sError) || (m_fAutomateUpdateHelp && (m_sAutomateDateEnd == null || m_sAutomateDateStart == null)))
                 {
                 m_sbUsage = new StringBuilder();
 
                 cl.Usage(AppendUsageString);
-                MessageBox.Show(String.Format("Command Line error: {0}\n{1}", sError, m_sbUsage.ToString()), "ArbWeb");
+                MessageBox.Show($"Command Line error: {sError}\n{m_sbUsage.ToString()}", "ArbWeb");
                 m_fAutomating = true;
                 Close();
                 }
@@ -1183,7 +1175,7 @@ namespace ArbWeb
 			this.pbTestDownload.Size = new System.Drawing.Size(176, 35);
 			this.pbTestDownload.TabIndex = 95;
 			this.pbTestDownload.Text = "Test Download";
-			this.pbTestDownload.Click += new System.EventHandler(this.DoTestDownload);
+//			this.pbTestDownload.Click += new System.EventHandler(this.DoTestDownload);
 			// 
 			// m_cbSkipContactDownload
 			// 
@@ -1350,7 +1342,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoGenCounts(object sender, EventArgs e)
         {
-            m_srpt.AddMessage(String.Format("Generating analysis ({0})...", m_ebOutputFile.Text));
+            m_srpt.AddMessage($"Generating analysis ({m_ebOutputFile.Text})...");
             m_srpt.PushLevel();
 
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
@@ -1359,30 +1351,28 @@ namespace ArbWeb
             m_srpt.PopLevel();
             m_srpt.AddMessage("Analysis complete.");
         }
-        /* C H A N G E  S H O W  B R O W S E R */
-        /*----------------------------------------------------------------------------
+
+		/* C H A N G E  S H O W  B R O W S E R */
+		/*----------------------------------------------------------------------------
         	%%Function: ChangeShowBrowser
         	%%Qualified: ArbWeb.AwMainForm.ChangeShowBrowser
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void ChangeShowBrowser(object sender, EventArgs e)
-        {
-            if (m_cbShowBrowser.Checked)
-                m_awc.Show();
-            else
-                m_awc.Hide();
-        }
+		private void ChangeShowBrowser(object sender, EventArgs e)
+		{
+			if (m_webControl != null)
+				MessageBox.Show("This will require rebooting.");
+		}
 
-
-        /* D O  G E N E R I C  I N V A L  G C */
-        /*----------------------------------------------------------------------------
+		/* D O  G E N E R I C  I N V A L  G C */
+		/*----------------------------------------------------------------------------
         	%%Function: DoGenericInvalGc
         	%%Qualified: ArbWeb.AwMainForm.DoGenericInvalGc
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        private void DoGenericInvalGc(object sender, EventArgs e)
+		private void DoGenericInvalGc(object sender, EventArgs e)
         {
             InvalGameCount();
         }
@@ -1488,9 +1478,9 @@ namespace ArbWeb
         private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
-            string[] rgsSports = ArbWebControl.RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);
-            string[] rgsSportLevels = ArbWebControl.RgsFromChlbx(true, m_chlbxSportLevels);
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
+            string[] rgsSports = WebCore.RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);
+            string[] rgsSportLevels = WebCore.RgsFromChlbx(true, m_chlbxSportLevels);
+            WebCore.UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
         }
 
         /* M _ P B  R E L O A D _  C L I C K */
@@ -1515,7 +1505,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoGamesReport(object sender, EventArgs e)
         {
-            m_srpt.AddMessage(String.Format("Generating games report ({0})...", m_ebGameOutput.Text));
+            m_srpt.AddMessage($"Generating games report ({m_ebGameOutput.Text})...");
             m_srpt.PushLevel();
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             Roster rst = RstEnsure(m_pr.RosterWorking);
@@ -1576,13 +1566,19 @@ namespace ArbWeb
                 }
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:RefreshGameFilters
+			%%Qualified:ArbWeb.AwMainForm.RefreshGameFilters
+
+			Get the latest game filter list from arbiter			
+        ----------------------------------------------------------------------------*/
         private void RefreshGameFilters(object sender, EventArgs e)
         {
             EnsureLoggedIn();
 
-            Dictionary<string, string> mpFilters = MpFetchGameFilters();
-            SetGameFiltersFromEnumerable(m_cbxGameFilter, mpFilters.Keys);
-            m_pr.GameFilters = mpFilters.Keys.ToArray();
+            Dictionary<string, string> mpFilters = FetchOptionValueTextMapForGameFilter();
+            SetGameFiltersFromEnumerable(m_cbxGameFilter, mpFilters.Values);
+            m_pr.GameFilters = mpFilters.Values.ToArray();
             m_pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
         }
 
@@ -1631,13 +1627,13 @@ namespace ArbWeb
             if (m_pr.LogToFile)
                 {
                 m_srpt.AttachLogfile(Filename.SBuildTempFilename("arblog", "log"));
-                m_srpt.SetLogLevel(5);
-                m_srpt.SetFilter(StatusRpt.MSGT.Body);
+                m_srpt.SetLogLevel(1);
+                m_srpt.SetFilter(MSGT.Body);
                 }
             else
                 {
                 m_srpt.SetLogLevel(0);
-                m_srpt.SetFilter(StatusRpt.MSGT.Error);
+                m_srpt.SetFilter(MSGT.Error);
                 }
         }
 
@@ -1669,59 +1665,49 @@ namespace ArbWeb
 
         void SetUIForProfile(Profile pr)
         {
-            m_ebGameOutput.Text = pr.GameOutput;
-            m_ebOutputFile.Text = pr.OutputFile;
-            m_cbIncludeCanceled.Checked = pr.IncludeCanceled;
-            m_cbShowBrowser.Checked = pr.ShowBrowser;
-            try
-                {
-                m_dtpStart.Value = pr.Start;
-                }
-            catch
-                {
-                m_dtpStart.Value = DateTime.Today;
-                }
+	        m_ebGameOutput.Text = pr.GameOutput;
+	        m_ebOutputFile.Text = pr.OutputFile;
+	        m_cbIncludeCanceled.Checked = pr.IncludeCanceled;
+	        m_cbShowBrowser.Checked = pr.ShowBrowser;
+	        try
+	        {
+		        m_dtpStart.Value = pr.Start;
+	        }
+	        catch
+	        {
+		        m_dtpStart.Value = DateTime.Today;
+	        }
 
-            try
-                {
-                m_dtpEnd.Value = pr.End;
-                }
-            catch
-                {
-                m_dtpEnd.Value = DateTime.Today;
-                }
+	        try
+	        {
+		        m_dtpEnd.Value = pr.End;
+	        }
+	        catch
+	        {
+		        m_dtpEnd.Value = DateTime.Today;
+	        }
 
-            m_cbOpenSlotDetail.Checked = pr.OpenSlotDetail;
-            m_cbFuzzyTimes.Checked = pr.FuzzyTimes;
-            m_cbTestEmail.Checked = pr.TestEmail;
-            m_cbAddOfficialsOnly.Checked = pr.AddOfficialsOnly;
-            m_ebAffiliationIndex.Text = pr.AffiliationIndex;
-            m_cbSplitSports.Checked = pr.SplitSports;
-            m_cbDatePivot.Checked = pr.DatePivot;
-            m_cbFilterRank.Checked = pr.FilterRank;
-            m_cbFutureOnly.Checked = pr.FutureOnly;
-            m_cbLaunch.Checked = pr.Launch;
-            m_cbSetArbiterAnnounce.Checked = pr.SetArbiterAnnounce;
-            SetGameFiltersFromEnumerable(m_cbxGameFilter, pr.GameFilters, pr.GameFilter);
-            if (pr.IsWindowPosSet(pr.MainWindow))
-                {
-                this.StartPosition = FormStartPosition.Manual;
-                // this.Bounds = pr.MainWindow;
-                }
-            else
-                {
-                this.StartPosition = FormStartPosition.WindowsDefaultLocation;
-                }
-
-            if (pr.IsWindowPosSet(pr.DiagWindow))
-                {
-                m_awc.StartPosition = FormStartPosition.Manual;
-                m_awc.Bounds = pr.DiagWindow;
-                }
-            else
-                {
-                m_awc.StartPosition = FormStartPosition.WindowsDefaultLocation;
-                }
+	        m_cbOpenSlotDetail.Checked = pr.OpenSlotDetail;
+	        m_cbFuzzyTimes.Checked = pr.FuzzyTimes;
+	        m_cbTestEmail.Checked = pr.TestEmail;
+	        m_cbAddOfficialsOnly.Checked = pr.AddOfficialsOnly;
+	        m_ebAffiliationIndex.Text = pr.AffiliationIndex;
+	        m_cbSplitSports.Checked = pr.SplitSports;
+	        m_cbDatePivot.Checked = pr.DatePivot;
+	        m_cbFilterRank.Checked = pr.FilterRank;
+	        m_cbFutureOnly.Checked = pr.FutureOnly;
+	        m_cbLaunch.Checked = pr.Launch;
+	        m_cbSetArbiterAnnounce.Checked = pr.SetArbiterAnnounce;
+	        SetGameFiltersFromEnumerable(m_cbxGameFilter, pr.GameFilters, pr.GameFilter);
+	        if (pr.IsWindowPosSet(pr.MainWindow))
+	        {
+		        this.StartPosition = FormStartPosition.Manual;
+		        // this.Bounds = pr.MainWindow;
+	        }
+	        else
+	        {
+		        this.StartPosition = FormStartPosition.WindowsDefaultLocation;
+	        }
         }
 
         void UpdateProfileFromUI(Profile pr)
@@ -1746,7 +1732,6 @@ namespace ArbWeb
 	        pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
             // don't worry about setting GameFilters -- we already set that when we populated it.
             pr.MainWindow = this.Bounds;
-            pr.DiagWindow = m_awc.Bounds;
         }
 
 
@@ -1795,6 +1780,9 @@ namespace ArbWeb
 		private void DoSaveState(object sender, FormClosingEventArgs e)
         {
 			DoSaveStateCore();
+			m_webControl.Driver.Close();
+			m_webControl.Driver.Quit();
+			m_webControl = null;
         }
 
         /* O N  P R O F I L E  L E A V E */
@@ -1831,22 +1819,10 @@ namespace ArbWeb
 
         #endregion
 
-        private void DoTestDownload(object sender, EventArgs e)
-        {
-            var x = m_awc.Handle;
-            // let's make sure the webbrowser handle is created
-
-            m_srpt.LogData("Testing Download", 3, StatusRpt.MSGT.Header);
-
-            Task tskDownloadTest = new Task(() => TestDownload());
-
-            tskDownloadTest.Start();
-            // DownloadGames();
-        }
 
         private void AwMainForm_Move(object sender, EventArgs e)
         {
-            m_srpt.LogData("Moving",10,StatusRpt.MSGT.Body);
+            m_srpt.LogData("Moving",10,MSGT.Body);
         }
 
         private void AwMainForm_Load(object sender, EventArgs e)

@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
-using Microsoft.Win32;
-using StatusBox;
-using mshtml;
+using TCore.StatusBox;
 using System.Runtime.InteropServices;
 using Outlook=Microsoft.Office.Interop.Outlook;
 using System.Threading.Tasks;
-using TCore.Settings;
 using TCore.Util;
+using HtmlAgilityPack;
+using OpenQA.Selenium;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
 {
@@ -30,7 +28,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private static string BuildAnnName(string sPrefix, string sSuffix, string sCtl)
         {
-            return String.Format("{0}{1}{2}", sPrefix, sCtl, sSuffix);
+            return $"{sPrefix}{sCtl}{sSuffix}";
         }
 
         /* D O  G E N  M A I L  M E R G E  A N D  A N N O U C E */
@@ -44,16 +42,19 @@ namespace ArbWeb
         {
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             Roster rst = RstEnsure(m_pr.RosterWorking);
-            m_srpt.AddMessage("Generating mail merge documents...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Generating mail merge documents...", MSGT.Header, false);
 
-            m_srpt.LogData("GamesFromFilter...", 3, StatusRpt.MSGT.Header);
+            m_srpt.LogData("GamesFromFilter...", 3, MSGT.Header);
 
             // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
             // rated for the sports we are filtered to
-            GameData.GameSlots gms = gc.GamesFromFilter(ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
-                                                        ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), false, m_saOpenSlots);
+            GameData.GameSlots gms = gc.GamesFromFilter(
+	            WebCore.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+	            WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels),
+	            false,
+	            m_saOpenSlots);
 
-            m_srpt.LogData("Beginning to build rosterfiltered...", 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData("Beginning to build rosterfiltered...", 3, MSGT.Body);
             Roster rstFiltered;
 
             if (m_cbFilterRank.Checked)
@@ -62,7 +63,7 @@ namespace ArbWeb
                 rstFiltered = rst;
 
             string sCsvTemp = Filename.SBuildTempFilename("MailMergeRoster", "csv");
-            m_srpt.LogData(String.Format("Writing filtered roster to {0}", sCsvTemp), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Writing filtered roster to {sCsvTemp}", 3, MSGT.Body);
             StreamWriter sw = new StreamWriter(sCsvTemp, false, System.Text.Encoding.Default);
 
             sw.WriteLine("email,firstname,lastname");
@@ -77,20 +78,20 @@ namespace ArbWeb
             // ok, now create the mailmerge .docx
             string sTempName;
             string sArbiterHelpNeeded;
-            m_srpt.LogData("Filtered roster written", 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData("Filtered roster written", 3, MSGT.Body);
 
             string sApp = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string sFile = Path.Combine(Path.GetPathRoot(sApp),Path.GetDirectoryName(sApp), "mailmergedoc.docx");
 
             sTempName = Filename.SBuildTempFilename("mailmergedoc", "docx");
-            m_srpt.LogData(String.Format("Writing mailmergedoc to {0} using template at {1}", sTempName, sFile), 3, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"Writing mailmergedoc to {sTempName} using template at {sFile}", 3, MSGT.Body);
             OOXML.CreateMailMergeDoc(sFile, sTempName, sCsvTemp, gms, out sArbiterHelpNeeded);
 
-            m_srpt.LogData(String.Format("ArbiterHelp HTML created: {0}", sArbiterHelpNeeded), 5, StatusRpt.MSGT.Body);
+            m_srpt.LogData($"ArbiterHelp HTML created: {sArbiterHelpNeeded}", 5, MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
             if (m_cbLaunch.Checked)
                 {
-                m_srpt.AddMessage("Done, launching document...", StatusRpt.MSGT.Header, false);
+                m_srpt.AddMessage("Done, launching document...", MSGT.Header, false);
                 System.Diagnostics.Process.Start(sTempName);
                 }
             if (m_cbSetArbiterAnnounce.Checked)
@@ -108,63 +109,66 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void SetArbiterAnnounce(string sArbiterHelpNeeded)
         {
-            m_srpt.AddMessage("Starting Announcement Set...");
-            m_srpt.PushLevel();
+	        m_srpt.AddMessage("Starting Announcement Set...");
+	        m_srpt.PushLevel();
 
-            EnsureLoggedIn();
-            ThrowIfNot(m_awc.FNavToPage(WebCore._s_Announcements), "Couldn't nav to announcements page!");
-            m_awc.FWaitForNavFinish();
+	        EnsureLoggedIn();
+	        ThrowIfNot(m_webControl.FNavToPage(WebCore._s_Announcements), "Couldn't nav to announcements page!");
+	        m_webControl.WaitForPageLoad();
 
-            // now we need to find the URGENT HELP NEEDED row
-            IHTMLDocument2 oDoc2 = m_awc.Document2;
-            IHTMLElementCollection hec = (IHTMLElementCollection) oDoc2.all.tags("div");
+	        // now we need to find the URGENT HELP NEEDED row
+	        string sHtml = m_webControl.Driver.FindElement(By.XPath("//body")).GetAttribute("innerHTML");
+	        HtmlDocument html = new HtmlDocument();
+	        html.LoadHtml(sHtml);
 
-            string sCtl = null;
+	        string sXpath = "//div[@id='D9UrgentHelpNeeded']";
 
-            foreach (IHTMLElement he in hec)
-                {
-                if (he.id == "D9UrgentHelpNeeded")
-                    {
-                    m_srpt.LogData("Found D9UrgentHelpNeeded DIV, looking for parent TR element", 3, StatusRpt.MSGT.Body);
+            HtmlNode node = html.DocumentNode.SelectSingleNode(sXpath);
 
-                    IHTMLElement heFind = he;
-                    while (heFind.tagName.ToLower() != "tr")
-                        {
-                        heFind = heFind.parentElement;
-                        ThrowIfNot(heFind != null, "Can't find HELP announcement");
-                        }
-                    m_srpt.LogData("Found D9UrgentHelpNeeded parent TR", 3, StatusRpt.MSGT.Body);
-                    // ok, go up to the parent TR.
-                    // now find one of our controls and get its control number
-                    string s = heFind.innerHTML;
-                    int ich = s.IndexOf(WebCore._s_Announcements_Button_Edit_Prefix);
-                    if (ich > 0)
-                        {
-                        sCtl = s.Substring(ich + WebCore._s_Announcements_Button_Edit_Prefix.Length, 5);
-                        }
-                    m_srpt.LogData(String.Format("Extracted ID for announcment to set: {0}", sCtl), 3, StatusRpt.MSGT.Body);
-                    break;
-                    }
-                }
+	        string sCtl = null;
 
-            ThrowIfNot(sCtl != null, "Can't find HELP announcement");
+	        m_srpt.LogData("Found D9UrgentHelpNeeded DIV, looking for parent TR element", 3, MSGT.Body);
 
-            m_awc.ResetNav();
-            string sControl = BuildAnnName(WebCore._sid_Announcements_Button_Edit_Prefix, WebCore._sid_Announcements_Button_Edit_Suffix, sCtl);
 
-            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find edit button");
-            m_awc.FWaitForNavFinish();
+	        // ok, go up to the parent TR.
+
+	        HtmlNode nodeFind = node;
+
+	        while (nodeFind.Name.ToLower() != "tr")
+	        {
+		        nodeFind = nodeFind.ParentNode;
+		        ThrowIfNot(nodeFind != null, "Can't find HELP announcement");
+	        }
+
+	        m_srpt.LogData("Found D9UrgentHelpNeeded parent TR", 3, MSGT.Body);
+
+	        // now find one of our controls and get its control number
+	        string s = nodeFind.InnerHtml;
+	        int ich = s.IndexOf(WebCore._s_Announcements_Button_Edit_Prefix);
+	        if (ich > 0)
+	        {
+		        sCtl = s.Substring(ich + WebCore._s_Announcements_Button_Edit_Prefix.Length, 5);
+	        }
+
+	        m_srpt.LogData($"Extracted ID for announcment to set: {sCtl}", 3, MSGT.Body);
+        
+        ThrowIfNot(sCtl != null, "Can't find HELP announcement");
+
+		string sidControl = BuildAnnName(WebCore._sid_Announcements_Button_Edit_Prefix, WebCore._sid_Announcements_Button_Edit_Suffix, sCtl);
+
+            ThrowIfNot(m_webControl.FClickControlId(sidControl), "Couldn't find edit button");
+            m_webControl.WaitForPageLoad();
 
             // now edit the text
-            sControl = BuildAnnName(WebCore._s_Announcements_Textarea_Text_Prefix, WebCore._s_Announcements_Textarea_Text_Suffix, sCtl);
+            string sNameControl = BuildAnnName(WebCore._s_Announcements_Textarea_Text_Prefix, WebCore._s_Announcements_Textarea_Text_Suffix, sCtl);
 
-            m_awc.FSetTextareaControlText(oDoc2, sControl, sArbiterHelpNeeded, true);
-            m_awc.FWaitForNavFinish();
+            m_webControl.FSetTextAreaTextForControlName(sNameControl, sArbiterHelpNeeded, true);
+            m_webControl.WaitForPageLoad();
 
-            sControl = BuildAnnName(WebCore._sid_Announcements_Button_Save_Prefix, WebCore._sid_Announcements_Button_Save_Suffix, sCtl);
+            sidControl = BuildAnnName(WebCore._sid_Announcements_Button_Save_Prefix, WebCore._sid_Announcements_Button_Save_Suffix, sCtl);
 
-            ThrowIfNot(m_awc.FClickControl(oDoc2, sControl), "Couldn't find save button");
-            m_awc.FWaitForNavFinish();
+            ThrowIfNot(m_webControl.FClickControlId(sidControl), "Couldn't find save button");
+            m_webControl.WaitForPageLoad();
 
             // and now save it.
 
@@ -182,7 +186,7 @@ namespace ArbWeb
         private void DoGenOpenSlotsMail()
         {
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
-            string sTempFile = String.Format("{0}\\temp{1}.htm", Environment.GetEnvironmentVariable("Temp"), System.Guid.NewGuid().ToString());
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.htm";
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
             string sBcc = m_cbTestEmail.Checked ? "" : rst.SBuildAddressLine(m_ebFilter.Text);
@@ -210,20 +214,20 @@ namespace ArbWeb
                 string[] rgs;
 
                 oNote.HTMLBody += "<h1>Baseball open slots</h1>";
-                rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", false);
+                rgs = WebCore.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", false);
                 gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      rgs, WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
                 oNote.HTMLBody += SHtmlReadFile(sTempFile) + "<h1>Softball Open Slots</h1>";
-                rgs = ArbWebControl.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", true);
+                rgs = WebCore.RgsFromChlbxSport(m_cbFilterSport.Checked, m_chlbxSports, "Softball", true);
                 gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      rgs, ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      rgs, WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
                 oNote.HTMLBody += SHtmlReadFile(sTempFile);
                 }
             else
                 {
                 gc.GenOpenSlotsReport(sTempFile, m_cbOpenSlotDetail.Checked, m_cbFuzzyTimes.Checked, m_cbDatePivot.Checked,
-                                      ArbWebControl.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
-                                      ArbWebControl.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
+                                      WebCore.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+                                      WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels), m_saOpenSlots);
                 oNote.HTMLBody += SHtmlReadFile(sTempFile);
                 }
             oNote.Display(true);
@@ -249,10 +253,10 @@ namespace ArbWeb
             CountsData cd = await taskCalc;
             
             m_srpt.PopLevel();
-            m_srpt.AddMessage("Updating listboxes...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Updating listboxes...", MSGT.Header, false);
             // update regenerate the listboxes...
-            string[] rgsSports = ArbWebControl.RgsFromChlbx(true, m_chlbxSports);
-            string[] rgsSportLevels = ArbWebControl.RgsFromChlbx(true, m_chlbxSportLevels);
+            string[] rgsSports = WebCore.RgsFromChlbx(true, m_chlbxSports);
+            string[] rgsSportLevels = WebCore.RgsFromChlbx(true, m_chlbxSportLevels);
 
             bool fCheckAllSports = false;
             bool fCheckAllSportLevels = false;
@@ -263,11 +267,11 @@ namespace ArbWeb
             if (rgsSports.Length == 0 && m_chlbxSportLevels.Items.Count == 0)
                 fCheckAllSportLevels = true;
 
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
-            string[] rgsRosterSites = ArbWebControl.RgsFromChlbx(true, m_chlbxRoster);
+            WebCore.UpdateChlbxFromRgs(m_chlbxSports, cd.GetOpenSlotSports(m_saOpenSlots), rgsSports, null, fCheckAllSports);
+            WebCore.UpdateChlbxFromRgs(m_chlbxSportLevels, cd.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, fCheckAllSports ? null : rgsSports, fCheckAllSportLevels);
+            string[] rgsRosterSites = WebCore.RgsFromChlbx(true, m_chlbxRoster);
 
-            ArbWebControl.UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
+            WebCore.UpdateChlbxFromRgs(m_chlbxRoster, cd.GetSiteRosterSites(m_saOpenSlots), rgsRosterSites, null, false);
             m_srpt.PopLevel();
             DoPendingQueueUIOp();
         }
@@ -281,13 +285,13 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
         private CountsData CalcOpenSlotsWork()
         {
-            m_srpt.AddMessage("Calculating slot data...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Calculating slot data...", MSGT.Header, false);
 
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
             m_srpt.PopLevel();
-            m_srpt.AddMessage("Calculating open slots...", StatusRpt.MSGT.Header, false);
+            m_srpt.AddMessage("Calculating open slots...", MSGT.Header, false);
             m_saOpenSlots = gc.CalcOpenSlots(m_dtpStart.Value, m_dtpEnd.Value);
             return gc;
         }
@@ -295,11 +299,10 @@ namespace ArbWeb
         private void DoGenSiteRosterReport()
         {
             CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
-            string sTempFile = String.Format("{0}\\temp{1}.doc", Environment.GetEnvironmentVariable("Temp"),
-                                             System.Guid.NewGuid().ToString());
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
-            gc.GenSiteRosterReport(sTempFile, rst, ArbWebControl.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
+            gc.GenSiteRosterReport(sTempFile, rst, WebCore.RgsFromChlbx(true, m_chlbxRoster), m_dtpStart.Value, m_dtpEnd.Value);
             // launch word with the file
             Process.Start(sTempFile);
             // System.IO.File.Delete(sTempFile);

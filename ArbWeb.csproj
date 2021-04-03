@@ -27,7 +27,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -92,13 +92,15 @@
     <Reference Include="cmdline, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\TCore.CmdLine.1.0.0\lib\net40\cmdline.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.mshtml">
-      <Name>Microsoft.mshtml</Name>
-      <HintPath>C:\Program Files\Microsoft.NET\Primary Interop Assemblies\Microsoft.mshtml.dll</HintPath>
+    <Reference Include="HtmlAgilityPack, Version=1.11.31.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>packages\HtmlAgilityPack.1.11.31\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="SeleniumExtras.WaitHelpers, Version=3.11.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\DotNetSeleniumExtras.WaitHelpers.3.11.0\lib\net45\SeleniumExtras.WaitHelpers.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -163,15 +165,18 @@
     <Reference Include="TCore.Settings, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\TCore.Settings.1.0.0\lib\net45\TCore.Settings.dll</HintPath>
     </Reference>
+    <Reference Include="TCore.StatusBox, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\TCore.StatusBox.1.0.0\lib\net462\TCore.StatusBox.dll</HintPath>
+    </Reference>
+    <Reference Include="WebDriver, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Selenium.WebDriver.4.0.0-beta1\lib\net46\WebDriver.dll</HintPath>
+    </Reference>
+    <Reference Include="WebDriver.Support, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Selenium.Support.4.0.0-beta1\lib\net46\WebDriver.Support.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArbWebControl.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ArbWebControl.Designer.cs">
-      <DependentUpon>ArbWebControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="contacts.cs" />
     <Compile Include="EditProfile.cs">
       <SubType>Form</SubType>
@@ -180,6 +185,7 @@
       <DependentUpon>EditProfile.cs</DependentUpon>
     </Compile>
     <Compile Include="games.cs" />
+    <Compile Include="MicroTimer.cs" />
     <Compile Include="ooxml.cs" />
     <Compile Include="Profile.cs" />
     <Compile Include="reports.cs">
@@ -209,11 +215,7 @@
     <Compile Include="WebRosterUpload.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Win32Win.cs" />
     <Content Include="App.ico" />
-    <Compile Include="..\shared\statusbox.cs">
-      <Link>statusbox.cs</Link>
-    </Compile>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -224,9 +226,6 @@
     <EmbeddedResource Include="ArbWeb.resx">
       <DependentUpon>ArbWeb.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ArbWebControl.resx">
-      <DependentUpon>ArbWebControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditProfile.resx">
       <DependentUpon>EditProfile.cs</DependentUpon>
@@ -274,6 +273,10 @@
     <ProjectReference Include="..\liblet\cs\TCore.Util\TCore.Util.csproj">
       <Project>{59868345-bc40-4771-a4d7-7c6a763663f0}</Project>
       <Name>TCore.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\liblet\cs\TCore.WebControl\TCore.WebControl.csproj">
+      <Project>{84b4e064-d576-4f70-b54a-3899e50865f4}</Project>
+      <Name>TCore.WebControl</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

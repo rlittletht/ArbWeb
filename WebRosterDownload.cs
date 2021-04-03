@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ArbWeb;
-using mshtml;
-using Win32Win;
+using System.IO;
+using HtmlAgilityPack;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
+using SeleniumExtras.WaitHelpers;
+using TCore.StatusBox;
+using TCore.WebControl;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
 {
@@ -23,7 +24,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         void GetRosterInfoFromServer(string sEmail, string sOfficialID, RosterEntry rste)
         {
-            SyncRsteWithServer(m_awc.Document2, sOfficialID, rste, null);
+            SyncRsteWithServer(sOfficialID, rste, null);
 
             if (rste.Address1 == null || rste.Address2 == null || rste.City == null || rste.m_sDateJoined == null
                 || rste.m_sDateOfBirth == null || rste.Email == null || rste.First == null
@@ -43,11 +44,15 @@ namespace ArbWeb
         	
             Update the "last login" value.  since we are scraping the screen for this, we have to deal with pagination
         ----------------------------------------------------------------------------*/
-        private void VOPC_UpdateLastAccess(IHTMLDocument2 oDoc2, Object o)
+        private void VOPC_UpdateLastAccess(Object o)
         {
+	        MicroTimer timer = new MicroTimer();
             Roster rstBuilding = (Roster)o;
 
-            UpdateLastAccessFromCoreOfficialsPage(rstBuilding, oDoc2);
+            UpdateLastAccessFromCoreOfficialsPage(rstBuilding);
+            
+            timer.Stop();
+            m_srpt.LogData($"UpdateLastAccessFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         /*----------------------------------------------------------------------------
@@ -61,51 +66,62 @@ namespace ArbWeb
             this is n^2 for now (every non-joined official searches every roster
             entry to try to fixup)
         ----------------------------------------------------------------------------*/
-        private void FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(Roster rstBuilding,
-            IHTMLDocument2 oDoc2)
+        private void FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(Roster rstBuilding)
         {
-            IHTMLTable ihtbl;
+	        // grab the info from the current navigated page
+	        IWebElement table = m_webControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_ContentTable));
 
-            ihtbl = (IHTMLTable)oDoc2.all.item(WebCore._sid_OfficialsView_ContentTable, 0);
+	        string sHtml = table.GetAttribute("outerHTML");
+	        HtmlDocument html = new HtmlDocument();
+	        
+	        html.LoadHtml(sHtml);;
 
-            foreach (IHTMLTableRow ihtr in ihtbl.rows)
-            {
-                IHTMLElement iheRow = (IHTMLElement) ihtr;
+	        string sSelect = "//tr";
+	        HtmlNodeCollection rows = html.DocumentNode.SelectSingleNode(".").SelectNodes(sSelect);
 
-                if (iheRow.className == null || !iheRow.className.Contains("notJoinedItems"))
+	        foreach (HtmlNode row in rows)
+	        {
+		        if (!row.HasClass("notJoinedItems"))
                     continue;
 
-                IHTMLElement iheFullName = (IHTMLElement)ihtr.cells.item(2);
-                IHTMLElement iheEmail = (IHTMLElement)ihtr.cells.item(3);
+		        HtmlNodeCollection cells = row.SelectNodes("td");
 
-                if (iheEmail == null || iheFullName == null)
-                    continue;
+		        if (cells.Count < 4)
+			        continue;
+		        
+		        HtmlNode cellFullName = cells[2];
+		        HtmlNode cellEmail = cells[3];
 
-                string sEmail = iheEmail.innerText;
-                string sRosterName = iheFullName.innerText.Trim();
+		        string sEmail = cellEmail.InnerText.Trim();
+                string sRosterName = cellFullName.InnerText.Trim();
                 
                 RosterEntry rste = rstBuilding.RsteLookupRosterNameNoEmail(sRosterName);
                 if (rste == null)
                 {
                     m_srpt.AddMessage(
                         $"Could not find no email entry for nonJoinedOfficial {sRosterName} with email {sEmail}",
-                        StatusBox.StatusRpt.MSGT.Error);
+                        MSGT.Error);
 
                     continue;
                 }
 
                 m_srpt.AddMessage($"Updating email address for {sRosterName} to {sEmail}",
-                                  StatusBox.StatusRpt.MSGT.Body);
+                                  MSGT.Body);
 
                 rste.Email = sEmail;
             }
         }
 
-        private void VOPC_FixupNonJoinedEmailAddress(IHTMLDocument2 oDoc2, Object o)
+        private void VOPC_FixupNonJoinedEmailAddress(Object o)
         {
+	        MicroTimer timer = new MicroTimer();
+	        
             Roster rstBuilding = (Roster)o;
 
-            FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(rstBuilding, oDoc2);
+            FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(rstBuilding);
+            
+            timer.Stop();
+            m_srpt.LogData($"FixupEmailAddressForNotJoinedFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         /*----------------------------------------------------------------------------
@@ -115,35 +131,46 @@ namespace ArbWeb
         	
             Assuming we are on the core officials page...
         ----------------------------------------------------------------------------*/
-        private void UpdateLastAccessFromCoreOfficialsPage(Roster rstBuilding, IHTMLDocument2 oDoc2)
+        private void UpdateLastAccessFromCoreOfficialsPage(Roster rstBuilding)
         {
-            IHTMLTable ihtbl;
+	        IWebElement table = m_webControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_ContentTable));
 
-            // misc field info.  every text input field is a misc field we want to save
-            ihtbl = (IHTMLTable)oDoc2.all.item(WebCore._sid_OfficialsView_ContentTable, 0);
+	        string sHtml = table.GetAttribute("outerHTML");
+	        HtmlDocument html = new HtmlDocument();
+	        html.LoadHtml(sHtml);
 
-            foreach (IHTMLTableRow ihtr in ihtbl.rows)
-                {
-                IHTMLElement iheEmail = (IHTMLElement)ihtr.cells.item(3);
-                IHTMLElement iheSignedIn = (IHTMLElement)ihtr.cells.item(4);
+	        string sSelect = "//tr";
+	        
+	        HtmlNodeCollection rows = html.DocumentNode.SelectNodes(sSelect);
 
-                if (iheEmail == null || iheSignedIn == null)
-                    continue;
+	        foreach (HtmlNode row in rows)
+	        {
+		        sSelect = "td";
+		        HtmlNodeCollection cells = row.SelectNodes(sSelect);
+		        
+		        if (cells.Count < 5)
+			        continue;
 
-                string sEmail = iheEmail.innerText;
-                string sSignedIn = iheSignedIn.innerText;
+		        HtmlNode cellEmail = cells[3];
+		        HtmlNode cellSignedIn = cells[4];
 
+		        string sEmail = cellEmail.InnerText.Trim();
+                string sSignedIn = cellSignedIn.InnerText.Trim();
+
+                if (sEmail == "Email")
+	                continue;
+                
                 RosterEntry rste = rstBuilding.RsteLookupEmail(sEmail);
                 if (rste == null)
                     {
                     m_srpt.AddMessage(
-                        String.Format("Lookup failed during ProcessAllOfficialPages for official '{0}'({1})",
-                                      ((IHTMLElement)ihtr.cells.item(2)).innerText, sEmail), StatusBox.StatusRpt.MSGT.Error);
+	                    $"Lookup failed during ProcessAllOfficialPages for official '{cells[2].InnerText.Trim()}'({sEmail})", MSGT.Error);
                     continue;
                     }
 
-                m_srpt.AddMessage(String.Format("Updating last access for official '{0}', {1}", rste.Name, sSignedIn),
-                                  StatusBox.StatusRpt.MSGT.Body);
+                m_srpt.LogData(
+	                $"Updating last access for official '{rste.Name}', {sSignedIn}", 5,
+                                  MSGT.Body);
                 rste.m_sLastSignin = sSignedIn;
                 }
         }
@@ -158,6 +185,8 @@ namespace ArbWeb
 
             // always fixup the email addresses for non-joined officials
             {
+	            MicroTimer timer = new MicroTimer();
+	            
                 HandleGenericRoster gr = new HandleGenericRoster(
                     this,
                     !m_cbRankOnly.Checked,
@@ -166,40 +195,44 @@ namespace ArbWeb
                     null,
                     null);
                 gr.ProcessAllOfficialPages(VOPC_FixupNonJoinedEmailAddress, rstBuilding);
+
+                timer.Stop();
+                m_srpt.LogData($"ProcessAllOfficialPages For EmailFixup elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
             if (fIncludeLastAccess)
-                {
-                HandleGenericRoster gr = new HandleGenericRoster(
-                    this,
-                    !m_cbRankOnly.Checked,
-                    m_cbAddOfficialsOnly.Checked,
-                    null,
-                    null,
-                    null);
-                gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
-                }
+            {
+	            MicroTimer timer = new MicroTimer();
+	            HandleGenericRoster gr = new HandleGenericRoster(
+		            this,
+		            !m_cbRankOnly.Checked,
+		            m_cbAddOfficialsOnly.Checked,
+		            null,
+		            null,
+		            null);
+
+	            gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
+	            
+	            timer.Stop();
+	            m_srpt.LogData($"ProcessAllOfficialPages For LastAccess elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+            }
 
             if (fIncludeRankings)
-                HandleRankings(null, rstBuilding);
+            {
+	            MicroTimer timer = new MicroTimer();
+	            
+	            HandleRankings(null, rstBuilding);
+	            
+	            timer.Stop();
+	            m_srpt.LogData($"Handle rankings elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+            }
 
             return rstBuilding;
         }
 
         private Roster RosterQuickBuildFromDownloadedRoster(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess)
         {
-            Roster rst;
-
-            if (m_awc.InvokeRequired)
-            {
-                IAsyncResult rslt = m_awc.BeginInvoke(new ProcessQuickRosterOfficialsDel(DoProcessQuickRosterOfficials),
-                                                      new object[] { sDownloadedRoster, fIncludeRankings, fIncludeLastAccess });
-                rst = (Roster)m_awc.EndInvoke(rslt);
-            }
-            else
-                rst = DoProcessQuickRosterOfficials(sDownloadedRoster, fIncludeRankings, fIncludeLastAccess);
-
-            return rst;
+            return DoProcessQuickRosterOfficials(sDownloadedRoster, fIncludeRankings, fIncludeLastAccess);
         }
 
 
@@ -216,6 +249,8 @@ namespace ArbWeb
 
             PushCursor(Cursors.WaitCursor);
             string sTempFile = SRosterFileDownload();
+            // @"C:\Users\rlittle\AppData\Local\Temp\tempcd316a92-2120-4234-9427-7d3965076999.csv";
+             
 
             PopCursor();
             m_srpt.PopLevel();
@@ -261,83 +296,45 @@ namespace ArbWeb
             return rst;
         }
 
-        private delegate AutoResetEvent LaunchRosterFileDownloadDel(string sTempFile);
-
-        AutoResetEvent LaunchRosterFileDownload(string sTempFile)
+        void DoRosterDownload(string sTempFile)
         {
-            if (m_awc.InvokeRequired)
-            {
-                IAsyncResult rslt = m_awc.BeginInvoke(new LaunchRosterFileDownloadDel(DoLaunchRosterFileDownload), new object[] { sTempFile });
-                return (AutoResetEvent)m_awc.EndInvoke(rslt);
-            }
-            else
-                return DoLaunchRosterFileDownload(sTempFile);
-        }
-
-        AutoResetEvent DoLaunchRosterFileDownload(string sTempFile)
-        {
-            System.Windows.Forms.Clipboard.SetText(sTempFile);
-
-            IHTMLDocument2 oDoc2;
-            m_awc.ResetNav();
-            ThrowIfNot(m_awc.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
-            m_awc.FWaitForNavFinish();
-
-            oDoc2 = m_awc.Document2;
-
-            // from the officials view, make sure we are looking at active officials
-            m_awc.ResetNav();
-            m_awc.FSetSelectControlText(oDoc2, WebCore._s_OfficialsView_Select_Filter, WebCore._sid_OfficialsView_Select_Filter, "All Officials", true);
-            m_awc.FWaitForNavFinish();
-
-            oDoc2 = m_awc.Document2;
-            // now we have all officials showing.  download the report
-
-            // sometimes running the javascript takes a while, but the page isn't busy
-            int cTry = 3;
-            while (cTry > 0)
-            {
-                m_awc.ResetNav();
-                m_awc.ReportNavState("Before click on PrintRoster: ");
-                ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_OfficialsView_PrintRoster), "Can't click on roster control");
-                m_awc.FWaitForNavFinish();
-
-                oDoc2 = m_awc.Document2;
-                if (ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_RosterPrint_MergeStyle))
-                    break;
-
-                cTry--;
-            }
-
+            ThrowIfNot(m_webControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            m_webControl.WaitForPageLoad();
+            
             // now we are on the PrintRoster screen
-
-            // clicking on the Merge Style control will cause a page refresh
-            m_awc.ResetNav();
-            ThrowIfNot(m_awc.FClickControl(oDoc2, WebCore._sid_RosterPrint_MergeStyle), "Can't click on roster control");
-            Thread.Sleep(500);
-            m_awc.FWaitForNavFinish();
-
-            oDoc2 = m_awc.Document2;
-
-            ThrowIfNot(ArbWebControl.FCheckForControl(oDoc2, WebCore._sid_RosterPrint_DateJoined),
-                       "Couldn't find expected control on roster print config!");
-
+            ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
             // check a whole bunch of config checkboxes
-            ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_DateJoined);
-            ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_OfficialNumber);
-            ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_MiscFields);
-            ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_NonPublicPhone);
-            ArbWebControl.FSetCheckboxControlVal(oDoc2, true, WebCore._s_RosterPrint_NonPublicAddress);
 
-            m_awc.ResetNav();
+            // select All Officials
+            WebControl.FSetSelectedOptionTextForControlId(m_webControl.Driver, m_srpt, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
+            m_webControl.WaitForPageLoad();
 
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateOfBirth);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_UserID);
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_MiddleName);
+            
+//            IWebElement element = m_webControl.Driver.FindElement(By.Id(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown));
+//            m_webControl.Driver.ExecuteJavaScript("arguments[0].click();", element);
+            
+            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dropdown the menu
+            m_webControl.WaitForCondition(ExpectedConditions.ElementToBeClickable(m_webControl.Driver.FindElement(By.Id(WebCore._sid_CustomRosterPrint_SelectAllCustomFields))));
+            
+            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
+            m_webControl.WaitForPageLoad();
+            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dismiss the menu
 
-            AutoResetEvent evtDownload = new AutoResetEvent(false);
-            Win32Win.TrapFileDownload aww = new TrapFileDownload(m_srpt, "roster.csv", "roster", sTempFile, "of OfficialsView.aspx from", evtDownload);
+            WebControl.FileDownloader downloader = new WebControl.FileDownloader(
+	            m_webControl,
+	            "RosterReport.xlsx",
+	            null,
+	            () => m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_GenerateRosterReport));
 
-            ((IHTMLElement)(oDoc2.all.item(WebCore._sid_RosterPrint_BeginPrint, 0))).click();
-
-            return evtDownload;
+            string sDownloadedFile = downloader.GetDownloadedFile();
+            
+            DownloadGenericExcelReport.ConvertExcelFileToCsv(sDownloadedFile, sTempFile);
+            File.Delete(sDownloadedFile);
         }
 
         private string SRosterFileDownload()
@@ -345,12 +342,11 @@ namespace ArbWeb
             // navigate to the officials page...
             EnsureLoggedIn();
 
-            string sTempFile = String.Format("{0}\\temp{1}.csv", Environment.GetEnvironmentVariable("Temp"),
-                                             System.Guid.NewGuid().ToString());
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
 
 
-            var evtDownload = LaunchRosterFileDownload(sTempFile);
-            evtDownload.WaitOne();
+            DoRosterDownload(sTempFile);
+            
             return sTempFile;
         }
 
@@ -359,7 +355,9 @@ namespace ArbWeb
         {
             // get the last login date from the officials main page
             gr.NavigateOfficialsPageAllOfficials();
-            gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, irstBuilding);
+            throw new Exception("NYI");
+
+            // gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, irstBuilding);
         }
 
         void HandleRosterPass1VisitForUploadDownload(
@@ -422,8 +420,6 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         async void DoDownloadQuickRoster()
         {
-            var x = m_awc.Handle; // this makes sure that m_awc has a handle before we ask it if invoke is required.(forces it to get created on the correct thread)
-
             Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterWork);
 
             tsk.Start();
