@@ -193,25 +193,25 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Roster\roster.cs" />
-    <Compile Include="RosterCore.cs" />
+    <Compile Include="Roster\RosterCore.cs" />
     <Compile Include="Games\slots.cs" />
-    <Compile Include="umpire.cs" />
+    <Compile Include="Roster\umpire.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="WebContacts.cs">
+    <Compile Include="WebInterop\WebContacts.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WebCore.cs" />
-    <Compile Include="Games\WebGames.cs" />
-    <Compile Include="WebNav.cs">
+    <Compile Include="WebInterop\WebCore.cs" />
+    <Compile Include="WebInterop\WebGames.cs" />
+    <Compile Include="WebInterop\WebNav.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WebRoster.cs">
+    <Compile Include="WebInterop\WebRoster.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WebRosterDownload.cs">
+    <Compile Include="WebInterop\WebRosterDownload.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WebRosterUpload.cs">
+    <Compile Include="WebInterop\WebRosterUpload.cs">
       <SubType>Form</SubType>
     </Compile>
     <Content Include="App.ico" />
