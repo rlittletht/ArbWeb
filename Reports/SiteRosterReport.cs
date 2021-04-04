@@ -14,6 +14,7 @@ namespace ArbWeb.Reports
 	{
 		private IAppContext m_appContext;
 
+		public SiteRosterReport() { } // for unit tests
 		/*----------------------------------------------------------------------------
 			%%Function:SiteRosterReport
 			%%Qualified:ArbWeb.Reports.SiteRosterReport.SiteRosterReport

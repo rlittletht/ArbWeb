@@ -1463,8 +1463,22 @@ namespace ArbWeb
         {
 	        string sFile = @"c:\temp\bkmrs.xlsx";
 
-	        SimpleSchedule schedule = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile);
-	        SimpleGameReport.GenSimpleGamesReport(schedule, @"c:\temp\SimpleGameReport.csv");
+	        SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile);
+	        Schedule scheduleArbiter = new Schedule(m_srpt);
+	        m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
+
+	        scheduleArbiter.FLoadRoster(m_pr.RosterWorking, Int32.Parse(m_ebAffiliationIndex.Text));
+	        // m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
+
+	        m_srpt.PopLevel();
+	        m_srpt.AddMessage("Loading games...", MSGT.Header, false);
+	        scheduleArbiter.FLoadGames(m_pr.GameCopy, true/*fIncludeCancelled*/);
+	        m_srpt.PopLevel();
+
+	        SimpleSchedule scheduleRight = SimpleSchedule.BuildFromScheduleGames(scheduleArbiter.Games);
+
+	        LearnMappings.GenerateMapsFromSchedules(scheduleLeft, scheduleRight);
+	        //SimpleGameReport.GenSimpleGamesReport(schedule, @"c:\temp\SimpleGameReport.csv");
         }
         
         
@@ -1740,8 +1754,14 @@ namespace ArbWeb
 		private void DoSaveState(object sender, FormClosingEventArgs e)
         {
 			DoSaveStateCore();
-			m_webControl.Driver.Close();
-			m_webControl.Driver.Quit();
+			if (m_webControl != null)
+			{
+				if (m_webControl.Driver != null)
+				{
+					m_webControl.Driver.Close();
+					m_webControl.Driver.Quit();
+				}
+			}
 			m_webControl = null;
         }
 

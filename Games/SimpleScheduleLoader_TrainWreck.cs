@@ -13,9 +13,9 @@ namespace ArbWeb.Games
 		----------------------------------------------------------------------------*/
 		public static SimpleSchedule LoadFromExcelFile(string sExcelFile)
 		{
-			string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
+			string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp7140c22b-029e-45d0-b3da-8a3061c13d8b.csv"; //temp{System.Guid.NewGuid().ToString()}.csv";
 
-			DownloadGenericExcelReport.ConvertExcelFileToCsv(sExcelFile, sCsvFile);
+//			DownloadGenericExcelReport.ConvertExcelFileToCsv(sExcelFile, sCsvFile);
 
 			return LoadFromCsvFile(sCsvFile);
 		}

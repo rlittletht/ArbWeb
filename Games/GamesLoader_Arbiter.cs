@@ -31,7 +31,8 @@ namespace ArbWeb.Games
 
 		private IStatusReporter m_srpt;
 		private ScheduleGames m_gamesBuilding;
-		
+	
+		public GamesLoader_Arbiter() { } // for unit tests
 		public GamesLoader_Arbiter(IStatusReporter srpt)
 		{
 			m_srpt = srpt;

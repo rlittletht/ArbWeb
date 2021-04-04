@@ -16,6 +16,8 @@ namespace ArbWeb
     {
 	    private readonly IAppContext m_appContext;
 
+	    public WebRoster() { } // for unit tests
+	    
         /*----------------------------------------------------------------------------
 			%%Function:WebRoster
 			%%Qualified:ArbWeb.WebRoster.WebRoster
