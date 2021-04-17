@@ -8,6 +8,33 @@ namespace ArbWeb.Games
 	public class FuzzyMatcher
 	{
 		/*----------------------------------------------------------------------------
+			%%Function: IsGameFuzzyMatch
+			%%Qualified: ArbWeb.Games.LearnMappings.IsGameFuzzyMatch
+		----------------------------------------------------------------------------*/
+		public static int IsGameFuzzyMatch(SimpleGame gameLeft, SimpleGame gameRight)
+		{
+			int nConfidenceFuzzySiteMatch = FuzzyMatcher.IsStringFuzzyMatch(gameLeft.Site, gameRight.Site);
+
+			int numberLeft = Int32.Parse(gameLeft.Number);
+			int numberRight = Int32.Parse(gameRight.Number);
+
+			// if the numbers are an exact match, we only have to have low confidence
+			// on the site matching to believe this is a certain match. otherwise, its just a 60%
+			// match (all arbitrary numbers)
+			if (numberLeft == numberRight)
+				return nConfidenceFuzzySiteMatch >= 30 ? 100 : Math.Max(95, nConfidenceFuzzySiteMatch);
+
+			int dNum = Math.Abs(numberLeft - numberRight);
+
+
+			if (dNum == (dNum / 1000) * 1000)
+				return nConfidenceFuzzySiteMatch >= 60 ? 100 : Math.Max(95, nConfidenceFuzzySiteMatch);
+
+			return (nConfidenceFuzzySiteMatch * 95) / 100;
+		}
+		
+
+		/*----------------------------------------------------------------------------
 			%%Function: IsStringFuzzySubstringMatch
 			%%Qualified: ArbWeb.Games.FuzzyMatcher.IsStringFuzzySubstringMatch
 
@@ -169,6 +196,5 @@ namespace ArbWeb.Games
 
 			Assert.AreEqual(confidenceExpect, confidenceActual);
 		}
-
 	}
 }

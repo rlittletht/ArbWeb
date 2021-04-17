@@ -15,12 +15,21 @@ namespace ArbWeb.Games
 		
 		public DateTime StartDateTime { get; set; }
 
-		public string SortKey => $"{StartDateTime:u}-{Site}-{Sport}-{Level}-{Home}";
+		public override int GetHashCode()
+		{
+			return SortKey.GetHashCode();
+		}
+		
+		public string SortKey => $"{StartDateTime:u}-{Site?.ToUpper()}-{Sport?.ToUpper()}-{Level?.ToUpper()}-{Home?.ToUpper()}";
 		
 		public SimpleGame()
 		{
 		}
 
+		/*----------------------------------------------------------------------------
+			%%Function: SimpleGame
+			%%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
+		----------------------------------------------------------------------------*/
 		public SimpleGame(GameSlot game)
 		{
 			StartDateTime = game.Dttm;
@@ -32,6 +41,10 @@ namespace ArbWeb.Games
 			Number = game.GameNum;
 		}
 
+		/*----------------------------------------------------------------------------
+			%%Function: SimpleGame
+			%%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
+		----------------------------------------------------------------------------*/
 		public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number)
 		{
 			StartDateTime = startDateTime;
@@ -42,8 +55,57 @@ namespace ArbWeb.Games
 			Number = number;
 			Sport = null;
 		}
+
+		/*----------------------------------------------------------------------------
+			%%Function: IsEqual
+			%%Qualified: ArbWeb.Games.SimpleGame.IsEqual
+		----------------------------------------------------------------------------*/
+		public static bool AreEqual(SimpleGame left, SimpleGame right, ScheduleMaps maps)
+		{
+			if (left.StartDateTime != right.StartDateTime)
+				return false;
+
+			if (String.Compare(left.Level, right.Level, true) != 0)
+				return false;
+
+			if (!String.IsNullOrEmpty(left.Sport) && String.Compare(left.Sport, right.Sport, true) != 0)
+				return false;
+
+			string home = left.Home.ToUpper();
+			string away = left.Away.ToUpper();
+			string site = left.Site.ToUpper();
+			
+			if (maps != null)
+			{
+				home = maps.TeamsMap.ContainsKey(home) ? maps.TeamsMap[home] : left.Home;
+
+				away = maps.TeamsMap.ContainsKey(away) ? maps.TeamsMap[away] : left.Away;
+
+				site = maps.SitesMap.ContainsKey(site) ? maps.SitesMap[site] : left.Site;
+			}
+
+			if (String.Compare(home, right.Home, true) != 0)
+				return false;
+
+			if (String.Compare(away, right.Away, true) != 0)
+				return false;
+
+			if (String.Compare(site, right.Site, true) != 0)
+				return false;
+
+			return true;
+		}
+
 		
-        /*----------------------------------------------------------------------------
+		/*----------------------------------------------------------------------------
+			%%Function: IsEqual
+			%%Qualified: ArbWeb.Games.SimpleGame.IsEqual
+		----------------------------------------------------------------------------*/
+		public bool IsEqual(SimpleGame right, ScheduleMaps maps)
+		{
+			return SimpleGame.AreEqual(this, right, maps);
+		}
+		/*----------------------------------------------------------------------------
             %%Function: MakeCsvLine
             %%Qualified: ArbWeb.CountsData:GameData:Game.MakeCsvLine
             %%Contact: rlittle
@@ -53,7 +115,7 @@ namespace ArbWeb.Games
             Takes the given legend and saves out our collected data according to that
             legend.
         ----------------------------------------------------------------------------*/
-        public string MakeCsvLine(IEnumerable<string> legend)
+		public string MakeCsvLine(IEnumerable<string> legend)
         {
             Dictionary<string, string> m_mpFieldVal = new Dictionary<string, string>();
 

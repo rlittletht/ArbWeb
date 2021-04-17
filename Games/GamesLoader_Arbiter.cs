@@ -501,6 +501,13 @@ namespace ArbWeb.Games
 
                 // we've got all the info for one particular game and its officials.
 
+                if (mpNamePos.Count == 0)
+                {
+                    // invent one so we at least record this game
+                    mpNamePos.Add("!!OPEN0", "!!FAKE");
+                    mpNameStatus.Add("!!OPEN0", "!!FAKE");
+                }
+                
                 // walk through the officials that we have
                 foreach (string sName in mpNamePos.Keys)
                 {

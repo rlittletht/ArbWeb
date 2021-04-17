@@ -1477,8 +1477,10 @@ namespace ArbWeb
 
 	        SimpleSchedule scheduleRight = SimpleSchedule.BuildFromScheduleGames(scheduleArbiter.Games);
 
-	        LearnMappings.GenerateMapsFromSchedules(scheduleLeft, scheduleRight);
-	        //SimpleGameReport.GenSimpleGamesReport(schedule, @"c:\temp\SimpleGameReport.csv");
+	        //LearnMappings.GenerateMapsFromSchedules(scheduleLeft, scheduleRight);
+	        SimpleDiffSchedule diffSchedule = Differ.BuildDiffFromSchedules(scheduleLeft, scheduleRight);
+	        
+	        SimpleGameReport.GenSimpleGamesReport(diffSchedule, @"c:\temp\DiffReport.csv");
         }
         
         

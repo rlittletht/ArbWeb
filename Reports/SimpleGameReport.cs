@@ -7,6 +7,46 @@ namespace ArbWeb.Reports
 {
 	public class SimpleGameReport
 	{
+		public static void GenSimpleGamesReport(SimpleDiffSchedule schedule, string sOutputFile)
+		{
+			using (StreamWriter sw = new StreamWriter(sOutputFile, false, Encoding.Default))
+			{
+				List<string> plsLegend = new List<string>();
+
+				plsLegend.Insert(0, "Diff");
+				plsLegend.Insert(1, "Game");
+				plsLegend.Insert(2, "Date");
+				plsLegend.Insert(3, "Time");
+				plsLegend.Insert(4, "Site");
+				plsLegend.Insert(5, "Level");
+				plsLegend.Insert(6, "Home");
+				plsLegend.Insert(7, "Away");
+				plsLegend.Insert(8, "Sport");
+
+				bool fFirst = true;
+				foreach (string s in plsLegend)
+				{
+					if (!fFirst)
+					{
+						sw.Write(",");
+					}
+
+					fFirst = false;
+					sw.Write(s);
+				}
+
+				sw.WriteLine();
+
+				foreach (SimpleDiffGame game in schedule.Games)
+				{
+					// for each game, report the information, using Legend as the sort order for everything
+					sw.WriteLine(game.MakeCsvLine(plsLegend));
+				}
+
+				sw.Close();
+			}
+		}
+
 		public static void GenSimpleGamesReport(SimpleSchedule schedule, string sOutputFile)
 		{
 			using (StreamWriter sw = new StreamWriter(sOutputFile, false, Encoding.Default))

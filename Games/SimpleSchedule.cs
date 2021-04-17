@@ -13,6 +13,18 @@ namespace ArbWeb.Games
 		public IEnumerable<SimpleGame> GamesByNumber => m_gamesByNumber.Values;
 
 		/*----------------------------------------------------------------------------
+			%%Function: LookupGameNumber
+			%%Qualified: ArbWeb.Games.SimpleSchedule.LookupGameNumber
+		----------------------------------------------------------------------------*/
+		public SimpleGame LookupGameNumber(string gameNumber)
+		{
+			if (m_gamesByNumber.ContainsKey(gameNumber))
+				return m_gamesByNumber[gameNumber];
+
+			return null;
+		}
+		
+		/*----------------------------------------------------------------------------
 			%%Function:BuildFromScheduleGames
 			%%Qualified:ArbWeb.Games.SimpleSchedule.BuildFromScheduleGames
 		----------------------------------------------------------------------------*/

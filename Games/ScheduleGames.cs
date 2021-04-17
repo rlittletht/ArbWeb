@@ -73,6 +73,9 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         private void EnsureSportLevelPos(string sSport, string sLevel, string sPos)
         {
+	        if (sPos.StartsWith("!!FAKE"))
+		        return;
+	        
             Sport sport;
             bool fNewSport = false;
 

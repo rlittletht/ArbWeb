@@ -13,29 +13,67 @@ namespace ArbWeb.Games
 	{
 		public class MapAndConfidences
 		{
-			private Dictionary<string, Dictionary<string, int>> mapAndConfidencesLeftToRight = new Dictionary<string, Dictionary<string, int>>();
-			private Dictionary<string, Dictionary<string, int>> mapAndConfidencesRightToLeft = new Dictionary<string, Dictionary<string, int>>();
+			public class ConfidenceVal
+			{
+				public int Opportunities { get; set; }
+				public int Cumulative { get; set; }
+				public int Confidence => (Cumulative > 0 ? Cumulative / Opportunities : 0);
+			}
+
+			// pretty maps allow us to take the canonicalized name and map it back to
+			// the original friendly version (mixed case, likely).
+			private Dictionary<string, string> m_mapLeftPrettyName = new Dictionary<string, string>();
+			private Dictionary<string, string> m_mapRightPrettyName = new Dictionary<string, string>();
+
+			private Dictionary<string, Dictionary<string, ConfidenceVal>> m_mapAndConfidencesLeftToRight = new Dictionary<string, Dictionary<string, ConfidenceVal>>();
+			private Dictionary<string, Dictionary<string, ConfidenceVal>> m_mapAndConfidencesRightToLeft = new Dictionary<string, Dictionary<string, ConfidenceVal>>();
+
+			/*----------------------------------------------------------------------------
+				%%Function: UpdatePrettyMap
+				%%Qualified: ArbWeb.Games.LearnMappings.MapAndConfidences.UpdatePrettyMap
+			----------------------------------------------------------------------------*/
+			static void UpdatePrettyMap(Dictionary<string, string> mapPretty, string sPrettyName)
+			{
+				string sUpper = sPrettyName.ToUpper();
+
+				if (mapPretty.ContainsKey(sUpper))
+					mapPretty[sUpper] = sPrettyName;
+				else
+					mapPretty.Add(sUpper, sPrettyName);
+			}
+			
+			public void UpdateLeftPretty(string sPretty) => UpdatePrettyMap(m_mapLeftPrettyName, sPretty);
+			public void UpdateRightPretty(string sPretty) => UpdatePrettyMap(m_mapRightPrettyName, sPretty);
+
+			public string LeftPretty(string sUgly) => m_mapLeftPrettyName[sUgly];
+			public string RightPretty(string sUgly) => m_mapRightPrettyName[sUgly];
 
 			/*----------------------------------------------------------------------------
 				%%Function: Update
 				%%Qualified: ArbWeb.Games.LearnMappings.MapAndConfidences.Update
 			----------------------------------------------------------------------------*/
-			static void Update(Dictionary<string, Dictionary<string, int>> mapAndConfidences, string sLeft, string sRight, int nConfidence)
+			static void Update(Dictionary<string, Dictionary<string, ConfidenceVal>> mapAndConfidences, string sLeft, string sRight, int nConfidence)
 			{
 				if (!mapAndConfidences.ContainsKey(sLeft))
-					mapAndConfidences.Add(sLeft, new Dictionary<string, int>());
+					mapAndConfidences.Add(sLeft, new Dictionary<string, ConfidenceVal>());
 
 				if (!mapAndConfidences[sLeft].ContainsKey(sRight))
-					mapAndConfidences[sLeft].Add(sRight, 0);
+					mapAndConfidences[sLeft].Add(sRight, new ConfidenceVal());
 
 				string[] rgsKeys = mapAndConfidences[sLeft].Keys.ToArray();
 				
 				foreach (string key in rgsKeys)
 				{
 					if (key == sRight)
-						mapAndConfidences[sLeft][key] += nConfidence;
+					{
+						mapAndConfidences[sLeft][key].Cumulative += nConfidence;
+						mapAndConfidences[sLeft][key].Opportunities++;
+					}
 					else
-						mapAndConfidences[sLeft][key] -= nConfidence;
+					{
+						mapAndConfidences[sLeft][key].Cumulative -= nConfidence;
+						mapAndConfidences[sLeft][key].Opportunities++;
+					}
 				}
 			}
 			
@@ -51,11 +89,14 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
 			public void Update(string sLeft, string sRight, int nConfidence)
 			{
+				UpdateLeftPretty(sLeft);
+				UpdateRightPretty(sRight);
+				
 				sLeft = sLeft.ToUpper();
 				sRight = sRight.ToUpper();
 
-				Update(mapAndConfidencesLeftToRight, sLeft, sRight, nConfidence);
-				Update(mapAndConfidencesRightToLeft, sRight, sLeft, nConfidence);
+				Update(m_mapAndConfidencesLeftToRight, sLeft, sRight, nConfidence);
+				Update(m_mapAndConfidencesRightToLeft, sRight, sLeft, nConfidence);
 			}
 
 			/*----------------------------------------------------------------------------
@@ -66,10 +107,10 @@ namespace ArbWeb.Games
 				potential targets for it yet. Still record an empty target so we will
 				be able to know if it never gets a target
 			----------------------------------------------------------------------------*/
-			static void AddPotentialMap(Dictionary<string, Dictionary<string, int>> mapAndConfidences, string sLeft)
+			static void AddPotentialMap(Dictionary<string, Dictionary<string, ConfidenceVal>> mapAndConfidences, string sLeft)
 			{
 				if (!mapAndConfidences.ContainsKey(sLeft))
-					mapAndConfidences.Add(sLeft, new Dictionary<string, int>());
+					mapAndConfidences.Add(sLeft, new Dictionary<string, ConfidenceVal>());
 			}
 
 			/*----------------------------------------------------------------------------
@@ -82,15 +123,15 @@ namespace ArbWeb.Games
 			public void AddPotentialMap(string sLeft)
 			{
 				sLeft = sLeft.ToUpper();
-				AddPotentialMap(mapAndConfidencesLeftToRight, sLeft);
-				AddPotentialMap(mapAndConfidencesRightToLeft, sLeft);
+				AddPotentialMap(m_mapAndConfidencesLeftToRight, sLeft);
+				AddPotentialMap(m_mapAndConfidencesRightToLeft, sLeft);
 			}
 			
 			/*----------------------------------------------------------------------------
 				%%Function: WriteConfidencesToFile
 				%%Qualified: ArbWeb.Games.LearnMappings.MapAndConfidences.WriteConfidencesToFile
 			----------------------------------------------------------------------------*/
-			public static void WriteConfidencesToFile(string sOutFile, Dictionary<string, Dictionary<string, int>> mapAndConfidences)
+			public static void WriteConfidencesToFile(string sOutFile, Dictionary<string, Dictionary<string, ConfidenceVal>> mapAndConfidences)
 			{
 				using (StreamWriter sw = new StreamWriter(sOutFile, false, Encoding.Default))
 				{
@@ -100,29 +141,64 @@ namespace ArbWeb.Games
 					{
 						foreach (string keyMatch in mapAndConfidences[keyLeft].Keys)
 						{
-							int confidence = mapAndConfidences[keyLeft][keyMatch];
+							ConfidenceVal confidence = mapAndConfidences[keyLeft][keyMatch];
 							
-							sw.WriteLine($"\"{keyLeft}\",\"{keyMatch}\",\"{confidence}\"");
+							sw.WriteLine($"\"{keyLeft}\",\"{keyMatch}\",\"{confidence.Cumulative}\",\"{confidence.Confidence}");
 						}
 						
 						if (mapAndConfidences[keyLeft].Keys.Count == 0)
-							sw.WriteLine($"\"{keyLeft}\",\"***UNKNOWN***\",\"0\"");
+							sw.WriteLine($"\"{keyLeft}\",\"***UNKNOWN***\",\"0\",\"0\"");
 					}
 				}
 			}
 
+			/*----------------------------------------------------------------------------
+				%%Function: CreateMapFromLearning
+				%%Qualified: ArbWeb.Games.LearnMappings.MapAndConfidences.CreateMapFromLearning
+			----------------------------------------------------------------------------*/
 			public Dictionary<string, string> CreateMapFromLearning()
 			{
 				Dictionary<string, string> map = new Dictionary<string, string>();
 
-				foreach (string keyLeft in mapAndConfidencesLeftToRight.Keys)
+				foreach (string keyLeft in m_mapAndConfidencesLeftToRight.Keys)
 				{
 					int nConfidenceHigh = 0;
 					string sCurrentBest = null;
 
-					foreach (string keyMatch in mapAndConfidencesLeftToRight[keyLeft].Keys)
+					foreach (string keyMatch in m_mapAndConfidencesLeftToRight[keyLeft].Keys)
 					{
-						int confidence = mapAndConfidencesLeftToRight[keyLeft][keyMatch];
+						int confidence = m_mapAndConfidencesLeftToRight[keyLeft][keyMatch].Confidence;
+						
+						if (confidence > nConfidenceHigh)
+						{
+							sCurrentBest = keyMatch;
+							nConfidenceHigh = confidence;
+						}
+					}
+
+					if (sCurrentBest != null)
+						map.Add(keyLeft, RightPretty(sCurrentBest));
+				}
+
+				return map;
+			}
+
+			/*----------------------------------------------------------------------------
+				%%Function: CreateMapFromLearning
+				%%Qualified: ArbWeb.Games.LearnMappings.MapAndConfidences.CreateMapFromLearning
+			----------------------------------------------------------------------------*/
+			public Dictionary<string, string> CreateReverseMapFromLearning()
+			{
+				Dictionary<string, string> map = new Dictionary<string, string>();
+
+				foreach (string keyRight in m_mapAndConfidencesRightToLeft.Keys)
+				{
+					int nConfidenceHigh = 0;
+					string sCurrentBest = null;
+
+					foreach (string keyMatch in m_mapAndConfidencesRightToLeft[keyRight].Keys)
+					{
+						int confidence = m_mapAndConfidencesRightToLeft[keyRight][keyMatch].Confidence;
 
 						if (confidence > nConfidenceHigh)
 						{
@@ -132,7 +208,7 @@ namespace ArbWeb.Games
 					}
 
 					if (sCurrentBest != null)
-						map.Add(keyLeft, sCurrentBest);
+						map.Add(keyRight, LeftPretty(sCurrentBest));
 				}
 
 				return map;
@@ -144,14 +220,15 @@ namespace ArbWeb.Games
 			----------------------------------------------------------------------------*/
 			public void WriteConfidencesToFile(string sOutfileLTR, string sOutfileRTL)
 			{
-				WriteConfidencesToFile(sOutfileLTR, mapAndConfidencesLeftToRight);
-				WriteConfidencesToFile(sOutfileRTL, mapAndConfidencesRightToLeft);
+				WriteConfidencesToFile(sOutfileLTR, m_mapAndConfidencesLeftToRight);
+				WriteConfidencesToFile(sOutfileRTL, m_mapAndConfidencesRightToLeft);
 			}
 		}
 
-		private MapAndConfidences siteMapAndConfidences = new MapAndConfidences();
-		private MapAndConfidences teamMapAndConfidences = new MapAndConfidences();
-
+		private MapAndConfidences m_siteMapAndConfidences = new MapAndConfidences();
+		private MapAndConfidences m_teamMapAndConfidences = new MapAndConfidences();
+		private MapAndConfidences m_gameTagMapAndConfidences = new MapAndConfidences();
+		
 		/*----------------------------------------------------------------------------
 			%%Function: GroupGamesByDate
 			%%Qualified: ArbWeb.Games.LearnMappings.GroupGamesByDate
@@ -172,32 +249,6 @@ namespace ArbWeb.Games
 		}
 
 		/*----------------------------------------------------------------------------
-			%%Function: IsGameFuzzyMatch
-			%%Qualified: ArbWeb.Games.LearnMappings.IsGameFuzzyMatch
-		----------------------------------------------------------------------------*/
-		static int IsGameFuzzyMatch(SimpleGame gameLeft, SimpleGame gameRight)
-		{
-			int nConfidenceFuzzySiteMatch = FuzzyMatcher.IsStringFuzzyMatch(gameLeft.Site, gameRight.Site);
-
-			int numberLeft = Int32.Parse(gameLeft.Number);
-			int numberRight = Int32.Parse(gameRight.Number);
-
-			// if the numbers are an exact match, we only have to have low confidence
-			// on the site matching to believe this is a certain match. otherwise, its just a 60%
-			// match (all arbitrary numbers)
-			if (numberLeft == numberRight)
-				return nConfidenceFuzzySiteMatch >= 30 ? 100 : Math.Max(60, nConfidenceFuzzySiteMatch);
-			
-			int dNum = Math.Abs(numberLeft - numberRight);
-
-
-			if (dNum == (dNum / 1000) * 1000)
-				return nConfidenceFuzzySiteMatch >= 60 ? 100 : Math.Max(50, nConfidenceFuzzySiteMatch);
-
-			return nConfidenceFuzzySiteMatch;
-		}
-
-		/*----------------------------------------------------------------------------
 			%%Function: GenerateMapsFromSchedules
 			%%Qualified: ArbWeb.Games.LearnMappings.GenerateMapsFromSchedules
 		----------------------------------------------------------------------------*/
@@ -205,7 +256,6 @@ namespace ArbWeb.Games
 		{
 			// we have to find a list of games we think match... for now, that's just any game
 			// with the same slot date/time.  hopefully that's enough to build a site map
-
 			LearnMappings learner = new LearnMappings();
 			
 			// build a schedule grouped by DateTime
@@ -214,39 +264,42 @@ namespace ArbWeb.Games
 
 			foreach (SimpleGame game in scheduleLeft.Games)
 			{
+				// even if we never match, we still have sites and teams that
+				// need mapped (otherwise, we would never know about the teams/sites
+				// that were only parts of games we couldn't match)
+				learner.UpdatePossibleMaps(game);
+				
+				if (!gamesByTimeRight.ContainsKey(game.StartDateTime))
+					continue;
+				
 				foreach (SimpleGame gameMatch in gamesByTimeRight[game.StartDateTime])
 				{
-					int nConfidence = IsGameFuzzyMatch(game, gameMatch);
+					int nConfidence = FuzzyMatcher.IsGameFuzzyMatch(game, gameMatch);
 					if (nConfidence > 0)
 						learner.UpdateConfidencesForGames(game, gameMatch, nConfidence);
-
-					// even if we weren't a match, we still have sites and teams that
-					// need mapped (otherwise, we would never know about the teams/sites
-					// that were only parts of games we couldn't match)
-					learner.UpdatePossibleMaps(game);
 				}
 			}
-
-			#if false
 
 			learner.WriteLearningsToFile(
 				@"c:\temp\sitemapsLTR.csv",
 				@"c:\temp\sitemapsRTL.csv",
 				@"c:\temp\teammapsLTR.csv",
-				@"c:\temp\teammapsRTL.csv");
-			#endif
+				@"c:\temp\teammapsRTL.csv",
+				@"c:\temp\numbermapLTR.csv",
+				@"c:\temp\numbermapRTL.csv");
 
-			return new ScheduleMaps(learner.teamMapAndConfidences, learner.siteMapAndConfidences);
+			return new ScheduleMaps(learner.m_teamMapAndConfidences, learner.m_siteMapAndConfidences, learner.m_gameTagMapAndConfidences);
 		}
 
 		/*----------------------------------------------------------------------------
 			%%Function: WriteLearningsToFile
 			%%Qualified: ArbWeb.Games.LearnMappings.WriteLearningsToFile
 		----------------------------------------------------------------------------*/
-		public void WriteLearningsToFile(string sSiteFileLTR, string sSiteFileRTL, string sTeamFileLTR, string sTeamFileRTL)
+		public void WriteLearningsToFile(string sSiteFileLTR, string sSiteFileRTL, string sTeamFileLTR, string sTeamFileRTL, string sNumberFileLTR, string sNumberFileRTL)
 		{
-			siteMapAndConfidences.WriteConfidencesToFile(sSiteFileLTR, sSiteFileRTL);
-			teamMapAndConfidences.WriteConfidencesToFile(sTeamFileLTR, sTeamFileRTL);
+			m_siteMapAndConfidences.WriteConfidencesToFile(sSiteFileLTR, sSiteFileRTL);
+			m_teamMapAndConfidences.WriteConfidencesToFile(sTeamFileLTR, sTeamFileRTL);
+			m_gameTagMapAndConfidences.WriteConfidencesToFile(sNumberFileLTR, sNumberFileRTL);
 		}
 
 		/*----------------------------------------------------------------------------
@@ -255,9 +308,14 @@ namespace ArbWeb.Games
 		----------------------------------------------------------------------------*/
 		public void UpdateConfidencesForGames(SimpleGame gameLeft, SimpleGame gameRight, int nConfidence)
 		{
-			siteMapAndConfidences.Update(gameLeft.Site, gameRight.Site, nConfidence);
-			teamMapAndConfidences.Update(gameLeft.Home, gameRight.Home, nConfidence);
-			teamMapAndConfidences.Update(gameLeft.Away, gameRight.Away, nConfidence);
+			m_siteMapAndConfidences.Update(gameLeft.Site, gameRight.Site, nConfidence);
+			m_teamMapAndConfidences.Update(gameLeft.Home, gameRight.Home, nConfidence);
+			m_teamMapAndConfidences.Update(gameLeft.Away, gameRight.Away, nConfidence);
+			// only update this game mapping if we're almost certain, otherwise it will remain unmapped
+			// (the game numbers match, or the day/date/time/slot fits)
+			if (nConfidence >= 95)
+				m_gameTagMapAndConfidences.Update(gameLeft.Number, gameRight.Number, nConfidence);
+				
 		}
 
 		/*----------------------------------------------------------------------------
@@ -266,9 +324,10 @@ namespace ArbWeb.Games
 		----------------------------------------------------------------------------*/
 		public void UpdatePossibleMaps(SimpleGame game)
 		{
-			siteMapAndConfidences.AddPotentialMap(game.Site);
-			teamMapAndConfidences.AddPotentialMap(game.Home);
-			teamMapAndConfidences.AddPotentialMap(game.Away);
+			m_siteMapAndConfidences.AddPotentialMap(game.Site);
+			m_teamMapAndConfidences.AddPotentialMap(game.Home);
+			m_teamMapAndConfidences.AddPotentialMap(game.Away);
+			m_gameTagMapAndConfidences.AddPotentialMap(game.Number);
 		}
 	}
 }
