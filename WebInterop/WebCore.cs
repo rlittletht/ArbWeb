@@ -600,7 +600,9 @@ namespace ArbWeb
 
 	        if (wkb != null)
 	        {
-		        wkb.SaveAs(sTargetCsvFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlCSV, missing, missing, missing, missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, missing, missing, missing, missing, missing);
+		        Microsoft.Office.Interop.Excel.Worksheet sheet = (Microsoft.Office.Interop.Excel.Worksheet) wkb.Worksheets[1];
+		        sheet.Select(Type.Missing);
+                wkb.SaveAs(sTargetCsvFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlCSV, missing, missing, missing, missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, missing, missing, missing, missing, missing);
 		        wkb.Close(0, missing, missing);
 	        }
 	        app.Quit();

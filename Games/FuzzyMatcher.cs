@@ -234,9 +234,49 @@ namespace ArbWeb.Games
 			return nConfidenceBest;
 		}
 
+		enum Sport
+		{
+			Baseball,
+			Softball,
+			Unknown
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function: SportFromSportString
+			%%Qualified: ArbWeb.Games.FuzzyMatcher.SportFromSportString
+		----------------------------------------------------------------------------*/
+		static Sport SportFromSportString(string sSport)
+		{
+			if (string.IsNullOrEmpty(sSport))
+				return Sport.Unknown;
+			
+			sSport = sSport.ToUpper();
+
+			if (sSport.Contains("BB"))
+				return Sport.Baseball;
+			if (sSport.Contains("BASEBALL"))
+				return Sport.Baseball;
+			if (sSport.Contains("SB"))
+				return Sport.Softball;
+			if (sSport.Contains("SOFTBALL"))
+				return Sport.Softball;
+			return Sport.Unknown;
+		}
+		
 		public static int IsGameFuzzyLevelMatch(SimpleGame gameLeft, SimpleGame gameRight)
 		{
-			return IsStringFuzzySubstringMatch(gameLeft.Level.ToUpper(), gameRight.Level.ToUpper());
+			int adjust = 100;
+			
+			// first, check for sport mismatch
+			Sport sportLeft = SportFromSportString(gameLeft.Sport);
+			Sport sportRight = SportFromSportString(gameRight.Sport);
+
+			if (sportLeft == Sport.Unknown || sportRight == Sport.Unknown)
+				adjust = 50;
+			else if (sportLeft != sportRight)
+				return 0;
+			
+			return (IsStringFuzzySubstringMatch(gameLeft.Level.ToUpper(), gameRight.Level.ToUpper()) * adjust) / 100;
 		}
 
 		public enum Confidence

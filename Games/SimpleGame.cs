@@ -49,7 +49,7 @@ namespace ArbWeb.Games
 			%%Function: SimpleGame
 			%%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
 		----------------------------------------------------------------------------*/
-		public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number, string status)
+		public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number, string status, string sport)
 		{
 			StartDateTime = startDateTime;
 			Site = site;
@@ -57,7 +57,7 @@ namespace ArbWeb.Games
 			Home = home;
 			Away = away;
 			Number = number;
-			Sport = null;
+			Sport = sport;
 			Status = status;
 		}
 

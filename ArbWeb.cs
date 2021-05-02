@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Web;
 using ArbWeb.Games;
 using ArbWeb.Reports;
 using Microsoft.Identity.Client;
@@ -1206,8 +1207,8 @@ namespace ArbWeb
 			this.button4.Name = "button4";
 			this.button4.Size = new System.Drawing.Size(176, 35);
 			this.button4.TabIndex = 98;
-			this.button4.Text = "Download";
-			this.button4.Click += new System.EventHandler(this.DoDownloadSchedules);
+			this.button4.Text = "Diff\'Em All";
+			this.button4.Click += new System.EventHandler(this.DoDownloadAndDiffAllSchedules);
 			// 
 			// AwMainForm
 			// 
@@ -1482,8 +1483,9 @@ namespace ArbWeb
         private void DoTrainWreckDiff(object sender, EventArgs e)
         {
 	        // string sFile = @"c:\temp\bkmrs.xlsx";
-	        string sFile = @"c:\temp\schedtest.xlsx";
-			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile);
+	        // string sFile = @"c:\temp\schedtest.xlsx";
+	        string sFile = @"C:\Users\rlittle\AppData\Local\Temp\tempf8cd62a6-3f8f-47b4-ac14-4b66458f90c9.xlsx";
+			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile, "Baseball");
 	        Schedule scheduleArbiter = new Schedule(m_srpt);
 	        m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
 
@@ -2008,19 +2010,46 @@ namespace ArbWeb
 
         private Office365 m_spoInterop;
         
-		private async void DoDownloadSchedules(object sender, EventArgs e)
+		private async void DoDownloadAndDiffAllSchedules(object sender, EventArgs e)
 		{
 			if (m_spoInterop == null)
 				m_spoInterop = new Office365(Secrets.ApplicationClientID);
 
 			await m_spoInterop.EnsureLoggedIn();
+			string spoSite = m_pr.SchedSpoSite;
+			string spoSubsite = m_pr.SchedSpoSubsite;
 			
-			await m_spoInterop.DownloadFile(
-				"washdist9.sharepoint.com",
-				"sched",
-				"InterlockWorksheet.xlsx",
-				"c:\\temp\\downloadTry.xlsx");
+			Schedule scheduleArbiter = new Schedule(m_srpt);
+			m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
+
+			scheduleArbiter.FLoadRoster(m_pr.RosterWorking, Int32.Parse(m_ebAffiliationIndex.Text));
+			m_srpt.PopLevel();
+			m_srpt.AddMessage("Loading games...", MSGT.Header, false);
+			scheduleArbiter.FLoadGames(m_pr.GameCopy, true/*fIncludeCancelled*/);
+			m_srpt.PopLevel();
+
+			SimpleSchedule scheduleRight = SimpleSchedule.BuildFromScheduleGames(scheduleArbiter.Games);
+
+			int diffCount = 0;
 			
+			foreach (string schedule in m_pr.BaseballScheduleFiles)
+			{
+				string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
+				string sDownloadedFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.xlsx";
+				string sDiffFile = $"{Environment.GetEnvironmentVariable("Temp")}\\Diff{diffCount}-{System.Guid.NewGuid().ToString()}.csv";
+				
+				await m_spoInterop.DownloadFile(
+					spoSite,
+					spoSubsite,
+					schedule.Replace(" ", "%20"),
+					sDownloadedFile);
+				
+				SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sDownloadedFile, "Baseball");
+				
+				SimpleDiffSchedule diffSchedule = Differ.BuildDiffFromSchedules(scheduleLeft, scheduleRight);
+
+				SimpleGameReport.GenSimpleGamesReport(diffSchedule, sDiffFile);
+			}
 		}
 	}
 

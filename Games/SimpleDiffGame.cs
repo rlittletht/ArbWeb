@@ -15,7 +15,7 @@ namespace ArbWeb.Games
 			Insert
 		}
 
-		public new string SortKey => $"{StartDateTime:u}-{OpToString()}-{Site}-{Sport}-{Level}-{Home}-{Status}";
+		public new string SortKey => $"{StartDateTime:u}-{OpToString()}-{Site}-{Sport}-{Level}-{Home}-{Away}-{Status}";
 
 		private DiffOp Op { get; set; }
 

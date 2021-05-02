@@ -49,7 +49,7 @@ namespace ArbWeb.Games
 				? GameNumberMapReverse[gameRight.Number.ToUpper()]
 				: $"##{gameRight.Number}";
 
-			return new SimpleGame(gameRight.StartDateTime, siteLeft, gameRight.Level, homeLeft, awayLeft, numberLeft, gameRight.Status);
+			return new SimpleGame(gameRight.StartDateTime, siteLeft, gameRight.Level, homeLeft, awayLeft, numberLeft, gameRight.Status, gameRight.Sport);
 		}
 
 		/*----------------------------------------------------------------------------
