@@ -25,6 +25,7 @@ namespace ArbWeb.Games
         private string m_sGameNum;
         private string m_sLevel;
         private bool m_fCancelled;
+
         private List<string> m_plsMisc;
 
         public GameSlot(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, string sStatus, bool fCancelled, List<string> plsMisc)

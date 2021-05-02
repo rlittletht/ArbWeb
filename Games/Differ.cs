@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace ArbWeb.Games
 {
@@ -13,6 +14,17 @@ namespace ArbWeb.Games
 	// that are on the left but missing from the right (should be a small set), and then
 	// find those same matchups on the right that have no match on the left. Any matches
 	// are those missing games.
+	
+	// for cancelled or rained out games, we have a couple of complications:
+	// 1) the TW schedule might have the same game number more than once (for rainout resched)
+	//     (and the 2nd TW game might map to nothing in arbiter, because it wasn't rescheduled)
+	//     (OR the 2nd TW game might map to a 2nd arbiter game, but with a DIFFERENT number)
+	// 2) the TW schedule might have a game not cancelled, and arbiter marked cancelled
+	//    (this needs to be treated as a game missing on the right)
+	// 3) the TW schedule has a game marked cancelled, and arbiter has same game cancelled
+	//    (so the numbers are matched, but this is still a game missing on the right
+	//    (though it might not be there if it hasn't been rescheduled yet)
+	
 	public class Differ
 	{
 		/*----------------------------------------------------------------------------
@@ -40,12 +52,12 @@ namespace ArbWeb.Games
 			}
 			else if (gameLeft.IsEqual(gameRight, maps))
 			{
-				scheduleDiff.AddGame(new SimpleDiffGame(gameRightInTermsOfLeft, SimpleDiffGame.DiffOp.None));
+				scheduleDiff.AddGame(new SimpleDiffGame(gameLeft, SimpleDiffGame.DiffOp.None));
 			}
 			else
 			{
-				scheduleDiff.AddGame(new SimpleDiffGame(gameLeft, SimpleDiffGame.DiffOp.Insert));
-				scheduleDiff.AddGame(new SimpleDiffGame(gameRightInTermsOfLeft, SimpleDiffGame.DiffOp.Delete));
+				scheduleDiff.AddGame(new SimpleDiffGame(gameLeft, SimpleDiffGame.DiffOp.Delete));
+				scheduleDiff.AddGame(new SimpleDiffGame(gameRightInTermsOfLeft, SimpleDiffGame.DiffOp.Insert));
 			}
 		}
 		
@@ -77,12 +89,11 @@ namespace ArbWeb.Games
 			foreach (SimpleGame gameLeft in left.Games)
 			{
 				SimpleGame gameRight = maps.GameNumberMap.ContainsKey(gameLeft.Number)
-					? right.LookupGameNumber(maps.GameNumberMap[gameLeft.Number])
+					? right.FindGameByNumber(maps.GameNumberMap[gameLeft.Number], gameLeft, hashGamesUsedFromRight)
 					: null;
 
 				if (gameRight == null)
 				{
-					scheduleDiff.AddGame(new SimpleDiffGame(gameLeft, SimpleDiffGame.DiffOp.Delete));
 					// remember this game for later, so we can try to find if it moved somewhere
 					gamesMissingFromRight.Add(gameLeft);
 				}
@@ -102,38 +113,47 @@ namespace ArbWeb.Games
 
 			// it would be nice to just go through the missing game list and match by 
 			// number, but we don't have that reverse map built
-			
+
 			// sadly this will be n^2, but hopefully the missing game list is short!
 
-			foreach (SimpleGame gameRight in right.Games)
+			// if over 90% certain, we match!
+
+			int nThreshold = 90;
+
+			// first, find the matches we are almost certain about.
+			// then do it again for lower thresholds
+			while (nThreshold > 0 && gamesMissingFromRight.Count > 0)
 			{
-				for (int i = gamesMissingFromRight.Count - 1; i >= 0; i--)
+				foreach (SimpleGame gameRight in right.Games)
 				{
-					SimpleGame gameMissing = gamesMissingFromRight[i];
-
-					// if over 90% certain, we match!
-					if (FuzzyMatcher.IsGameFuzzyMatch(gameMissing, gameRight) > 90)
+					for (int i = gamesMissingFromRight.Count - 1; i >= 0; i--)
 					{
-						if (hashGamesUsedFromRight.Contains(gameRight))
-							throw new Exception("game we thought was missing was already matched in the diff");
+						SimpleGame gameMissing = gamesMissingFromRight[i];
 
-						hashGamesUsedFromRight.Add(gameRight);
-						maps.AddGameNumberMap(gameMissing.Number, gameRight.Number);
-						RecordGameDiff(scheduleDiff, maps, null, gameRight);
+						if (FuzzyMatcher.IsGameFuzzyMatch(gameMissing, gameRight) > nThreshold)
+						{
+							if (hashGamesUsedFromRight.Contains(gameRight))
+								continue; // we already matched with this one...gotta find another
 
-						gamesMissingFromRight.RemoveAt(i);
+							hashGamesUsedFromRight.Add(gameRight);
+							maps.AddGameNumberMap(gameMissing.Number, gameRight.Number);
+							RecordGameDiff(scheduleDiff, maps, gameMissing, gameRight);
+
+							gamesMissingFromRight.RemoveAt(i);
+						}
 					}
 				}
+
+				nThreshold -= 20;
 			}
 
 			// ok, what we have left are games that we couldn't match by number...
-			if (gamesMissingFromRight.Count > 0)
-				throw new Exception("Fuzzy non game number match NYI");
-			
-			foreach (SimpleGame gameRight in right.Games)
-			{
 
-			}
+			if (gamesMissingFromRight.Count > 0)
+				MessageBox.Show($"Still have {gamesMissingFromRight.Count} missing from Arbiter schedule.");
+			
+			foreach (SimpleGame gameMissing in gamesMissingFromRight)
+				scheduleDiff.AddGame(new SimpleDiffGame(gameMissing, SimpleDiffGame.DiffOp.Delete));
 
 			return scheduleDiff;
 		}

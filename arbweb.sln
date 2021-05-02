@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logging", "..\liblet\cs\TCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCore.WebControl", "..\liblet\cs\TCore.WebControl\TCore.WebControl.csproj", "{84B4E064-D576-4F70-B54A-3899E50865F4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TCore.MsalWeb", "..\liblet\cs\TCore.MsalWeb.Working\TCore.MsalWeb\TCore.MsalWeb.csproj", "{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AzureRelease|Any CPU = AzureRelease|Any CPU
@@ -111,6 +113,20 @@ Global
 		{84B4E064-D576-4F70-B54A-3899E50865F4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{84B4E064-D576-4F70-B54A-3899E50865F4}.SingleImage|Any CPU.ActiveCfg = Release|Any CPU
 		{84B4E064-D576-4F70-B54A-3899E50865F4}.SingleImage|Any CPU.Build.0 = Release|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.AzureRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.AzureRelease|Any CPU.Build.0 = Release|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.CD_ROM|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.CD_ROM|Any CPU.Build.0 = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.DVD-5|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.DVD-5|Any CPU.Build.0 = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.LocalDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.LocalDebug|Any CPU.Build.0 = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.SingleImage|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}.SingleImage|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -121,6 +137,7 @@ Global
 		{E2D2EF30-C48E-4517-93FD-590940E23CE3} = {0561D059-8521-4C21-AD86-B196ED13670B}
 		{EE681C45-8416-4DE7-9E62-AE1371A7DE9A} = {0561D059-8521-4C21-AD86-B196ED13670B}
 		{84B4E064-D576-4F70-B54A-3899E50865F4} = {0561D059-8521-4C21-AD86-B196ED13670B}
+		{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0} = {0561D059-8521-4C21-AD86-B196ED13670B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1DF2178E-48CA-4068-B185-E5C20F14B657}

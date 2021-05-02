@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
+using OpenQA.Selenium.DevTools.V86.ApplicationCache;
 
 namespace ArbWeb.Games
 {
@@ -12,6 +14,7 @@ namespace ArbWeb.Games
 		public string Away { get; set; }
 		public string Sport { get; set; }
 		public string Number { get; set; }
+		public string Status { get; set; }
 		
 		public DateTime StartDateTime { get; set; }
 
@@ -20,7 +23,7 @@ namespace ArbWeb.Games
 			return SortKey.GetHashCode();
 		}
 		
-		public string SortKey => $"{StartDateTime:u}-{Site?.ToUpper()}-{Sport?.ToUpper()}-{Level?.ToUpper()}-{Home?.ToUpper()}";
+		public string SortKey => $"{StartDateTime:u}-{Site?.ToUpper()}-{Sport?.ToUpper()}-{Level?.ToUpper()}-{Home?.ToUpper()}-{Status?.ToUpper()}";
 		
 		public SimpleGame()
 		{
@@ -39,13 +42,14 @@ namespace ArbWeb.Games
 			Away = game.Away;
 			Sport = game.Sport;
 			Number = game.GameNum;
+			Status = game.Cancelled ? "Cancelled" : "";
 		}
 
 		/*----------------------------------------------------------------------------
 			%%Function: SimpleGame
 			%%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
 		----------------------------------------------------------------------------*/
-		public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number)
+		public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number, string status)
 		{
 			StartDateTime = startDateTime;
 			Site = site;
@@ -54,6 +58,7 @@ namespace ArbWeb.Games
 			Away = away;
 			Number = number;
 			Sport = null;
+			Status = status;
 		}
 
 		/*----------------------------------------------------------------------------
@@ -93,6 +98,16 @@ namespace ArbWeb.Games
 			if (String.Compare(site, right.Site, true) != 0)
 				return false;
 
+			if (String.Compare(left.Status, right.Status, true) != 0)
+			{
+				if (String.IsNullOrEmpty(right.Status))
+				{
+					if (!left.Status.ToUpper().Contains("RESCHED"))
+						return false;
+				}
+			}
+
+			
 			return true;
 		}
 
@@ -130,7 +145,8 @@ namespace ArbWeb.Games
             m_mpFieldVal.Add("Site", Site);
             m_mpFieldVal.Add("Sport", Sport);
             m_mpFieldVal.Add("Game", Number);
-
+            m_mpFieldVal.Add("Status", Status);
+            
             // now that we have a dictionary of values, write it out
             bool fFirst = true;
             string sRet = "";

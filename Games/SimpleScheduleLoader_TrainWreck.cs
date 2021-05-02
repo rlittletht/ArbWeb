@@ -13,7 +13,9 @@ namespace ArbWeb.Games
 		----------------------------------------------------------------------------*/
 		public static SimpleSchedule LoadFromExcelFile(string sExcelFile)
 		{
-			string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp4d8417dd-2707-4d21-8b15-fd20c8c1d65e.csv";
+//			string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp4d8417dd-2707-4d21-8b15-fd20c8c1d65e.csv";
+			string sCsvFile = "C:\\Users\\rlittle\\AppData\\Local\\Temp\\tempb0cabd43-a917-4947-829a-dab77d692c83.csv";
+			
 //			string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
 
 //			DownloadGenericExcelReport.ConvertExcelFileToCsv(sExcelFile, sCsvFile);
@@ -31,6 +33,7 @@ namespace ArbWeb.Games
 			public int Home { get; set; }
 			public int Away { get; set; }
 			public int Number { get; set; }
+			public int Status { get; set; }
 
 			int LookupColumnForHeaderStrings(CsvFile csvFile, IEnumerable<string> headingNames)
 			{
@@ -69,7 +72,8 @@ namespace ArbWeb.Games
 				Home = LookupColumnForHeaderStrings(csvFile, new[] { "Home", "Home Team" });
 				Away = LookupColumnForHeaderStrings(csvFile, new[] { "Away", "Away Team", "Visitor" });
 				Number = LookupColumnForHeaderStrings(csvFile, new[] { "Game", "GameTag", "Number", "Game Number", "GameID" });
-
+				Status = LookupColumnForHeaderStrings(csvFile, new[] {"Status"});
+				
 				if (Site == -1 || Level == -1 || Home == -1 || Away == -1 || Number == -1)
 					throw new Exception("couldn't find required column");
 			}
@@ -111,7 +115,8 @@ namespace ArbWeb.Games
 					csvFile.GetValue(columnInfo.Level),
 					csvFile.GetValue(columnInfo.Home),
 					csvFile.GetValue(columnInfo.Away),
-					csvFile.GetValue(columnInfo.Number));
+					csvFile.GetValue(columnInfo.Number),
+					csvFile.GetValue(columnInfo.Status));
 
 				schedule.AddSimpleGame(game);
 			}

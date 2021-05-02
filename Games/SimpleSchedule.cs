@@ -6,22 +6,39 @@ namespace ArbWeb.Games
 	// a schedule of simple games
 	public class SimpleSchedule
 	{
-		private SortedList<string, SimpleGame> m_gamesByNumber = new SortedList<string, SimpleGame>();
+		private SortedList<string, List<SimpleGame>> m_gamesByNumber = new SortedList<string, List<SimpleGame>>();
 		private SortedList<string, SimpleGame> m_games = new SortedList<string, SimpleGame>();
 
 		public IEnumerable<SimpleGame> Games => m_games.Values;
-		public IEnumerable<SimpleGame> GamesByNumber => m_gamesByNumber.Values;
+		public IEnumerable<IEnumerable<SimpleGame>> GamesByNumber => m_gamesByNumber.Values;
 
 		/*----------------------------------------------------------------------------
 			%%Function: LookupGameNumber
 			%%Qualified: ArbWeb.Games.SimpleSchedule.LookupGameNumber
 		----------------------------------------------------------------------------*/
-		public SimpleGame LookupGameNumber(string gameNumber)
+		public SimpleGame FindGameByNumber(string gameNumber, SimpleGame gameMatch, HashSet<SimpleGame> gamesNotToConsider)
 		{
-			if (m_gamesByNumber.ContainsKey(gameNumber))
-				return m_gamesByNumber[gameNumber];
+			if (!m_gamesByNumber.ContainsKey(gameNumber))
+				return null;
 
-			return null;
+			SimpleGame gameBest = null;
+			int nConfidenceBest = 0;
+			
+			foreach (SimpleGame gameCheck in m_gamesByNumber[gameNumber])
+			{
+				if (gamesNotToConsider != null && gamesNotToConsider.Contains(gameCheck))
+					continue;
+				
+				int nConfidence = FuzzyMatcher.IsGameFuzzyMatch(gameMatch, gameCheck);
+
+				if (nConfidence > nConfidenceBest)
+				{
+					gameBest = gameCheck;
+					nConfidenceBest = nConfidence;
+				}
+			}
+
+			return gameBest;
 		}
 		
 		/*----------------------------------------------------------------------------
@@ -53,10 +70,11 @@ namespace ArbWeb.Games
 		----------------------------------------------------------------------------*/
 		public void AddSimpleGame(SimpleGame game)
 		{
-			m_gamesByNumber.Add(game.Number, game);
+			if (!m_gamesByNumber.ContainsKey(game.Number))
+				m_gamesByNumber.Add(game.Number, new List<SimpleGame>());
+			
+			m_gamesByNumber[game.Number].Add(game);
 			m_games.Add(game.SortKey, game);
 		}
-		
-		
 	}
 }

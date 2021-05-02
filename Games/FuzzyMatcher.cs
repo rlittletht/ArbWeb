@@ -13,8 +13,22 @@ namespace ArbWeb.Games
 		----------------------------------------------------------------------------*/
 		public static int IsGameFuzzyMatch(SimpleGame gameLeft, SimpleGame gameRight)
 		{
-			int nConfidenceFuzzySiteMatch = FuzzyMatcher.IsStringFuzzyMatch(gameLeft.Site, gameRight.Site);
+			int nConfidenceFuzzySiteMatch = FuzzyMatcher.IsGameFuzzySiteMatch(gameLeft, gameRight);
+			int nConfidenceFuzzyTeamMatch = IsGameFuzzyTeamsMatch(gameLeft, gameRight);
+			int nConfidenceFuzzyLevelMatch = IsGameFuzzyLevelMatch(gameLeft, gameRight);
 
+			// if the site confidence is 0 AND the teams fuzzy match is 0, then even if the
+			// game numbers "match", its a fail.
+			if (nConfidenceFuzzySiteMatch == 0 && nConfidenceFuzzyTeamMatch == 0)
+			{
+				// we have no reason to believe this is the same game
+				return 0;
+			}
+
+			// if the levels don't match, its not the same game
+			if (nConfidenceFuzzyLevelMatch == 0)
+				return 0;
+			
 			int numberLeft = Int32.Parse(gameLeft.Number);
 			int numberRight = Int32.Parse(gameRight.Number);
 
@@ -22,17 +36,29 @@ namespace ArbWeb.Games
 			// on the site matching to believe this is a certain match. otherwise, its just a 60%
 			// match (all arbitrary numbers)
 			if (numberLeft == numberRight)
-				return nConfidenceFuzzySiteMatch >= 30 ? 100 : Math.Max(95, nConfidenceFuzzySiteMatch);
+				return (nConfidenceFuzzySiteMatch * nConfidenceFuzzyTeamMatch) / 10000 >= 30 ? 100 : Math.Max(95, nConfidenceFuzzySiteMatch);
 
 			int dNum = Math.Abs(numberLeft - numberRight);
 
-
 			if (dNum == (dNum / 1000) * 1000)
-				return nConfidenceFuzzySiteMatch >= 60 ? 100 : Math.Max(95, nConfidenceFuzzySiteMatch);
+				return (nConfidenceFuzzySiteMatch * nConfidenceFuzzyTeamMatch) / 10000 >= 60 ? 100 : Math.Max(95, nConfidenceFuzzySiteMatch);
 
-			return (nConfidenceFuzzySiteMatch * 95) / 100;
+			// now a bunch of heuristics
+
+			int nOverallConfidence = 0;
+
+			nOverallConfidence = Math.Max(nOverallConfidence, (70 * nConfidenceFuzzyTeamMatch) / 100);
+			nOverallConfidence = Math.Max(nOverallConfidence, (95 * nConfidenceFuzzySiteMatch) / 100);
+
+			return nOverallConfidence;
 		}
-		
+
+		enum FieldNumberMatchState
+		{
+			None,
+			Mismatch,
+			Match
+		}
 
 		/*----------------------------------------------------------------------------
 			%%Function: IsStringFuzzySubstringMatch
@@ -62,6 +88,7 @@ namespace ArbWeb.Games
 				iLast = sLonger.IndexOf(ch, iLast);
 				if (iLast == -1)
 					break;
+				iLast++; // don't let it keep rechecking the same character!
 			}
 
 			int nConfidenceLast = 0;
@@ -74,8 +101,22 @@ namespace ArbWeb.Games
 
 			string[] rgsSubstrings = sShorter.Split(' ');
 			int matchedLen = 0;
+			FieldNumberMatchState fieldNumMatched = FieldNumberMatchState.None;
+
 			foreach (string substring in rgsSubstrings)
 			{
+				if (substring.Length == 2 && substring[0] == '#')
+				{
+					// matching a field number
+					if (sLonger.Contains(substring))
+						fieldNumMatched = FieldNumberMatchState.Match;
+					else
+						fieldNumMatched = FieldNumberMatchState.Mismatch;
+
+					// don't increase matched length for a matching field #
+					continue;
+				}
+				
 				if (sLonger.Contains(substring))
 				{
 					matchedLen += substring.Length;
@@ -101,16 +142,22 @@ namespace ArbWeb.Games
 				{
 					if (!sLonger.Contains(substring[1]))
 					{
-						matchedLen = 0;
+						fieldNumMatched = FieldNumberMatchState.Mismatch;
 						break;
 					}
 					else
 					{
-						matchedLen++;
+						fieldNumMatched = FieldNumberMatchState.Match;
+						continue;
 					}
 				}
 			}
 
+			// if we had a field number and it mismatched, then it can't be
+			// the same field
+			if (fieldNumMatched == FieldNumberMatchState.Mismatch)
+				return 0;
+			
 			if (matchedLen > 0)
 			{
 				// our confidence is based on how much of the substring was matched. 
@@ -134,7 +181,7 @@ namespace ArbWeb.Games
 			return confidence that these two strings fuzzy match (with special
 			logic for aliasing different names for facilities like "park" or "field")
 		----------------------------------------------------------------------------*/
-		public static int IsStringFuzzyMatch(string sLeft, string sRight)
+		static int IsStringFuzzyMatchForSite(string sLeft, string sRight)
 		{
 			int nConfidence = 0;
 			sLeft = sLeft.ToUpper();
@@ -159,6 +206,39 @@ namespace ArbWeb.Games
 			return nConfidence;
 		}
 
+		/*----------------------------------------------------------------------------
+			%%Function: IsGameFuzzySiteMatch
+			%%Qualified: ArbWeb.Games.FuzzyMatcher.IsGameFuzzySiteMatch
+		----------------------------------------------------------------------------*/
+		public static int IsGameFuzzySiteMatch(SimpleGame gameLeft, SimpleGame gameRight)
+		{
+			return IsStringFuzzyMatchForSite(gameLeft.Site, gameRight.Site);
+		}
+
+		public static int IsGameFuzzyTeamsMatch(SimpleGame gameLeft, SimpleGame gameRight)
+		{
+			// first see if there's a match with Home/Home and Away/Away
+
+			int nConfidenceBest = 0;
+
+			int nConfidenceHome = IsStringFuzzySubstringMatch(gameLeft.Home, gameRight.Home);
+			int nConfidenceAway = IsStringFuzzySubstringMatch(gameLeft.Away, gameRight.Away);
+
+			nConfidenceBest = (nConfidenceHome * nConfidenceAway) / 100;
+
+			nConfidenceHome = IsStringFuzzySubstringMatch(gameLeft.Home, gameRight.Away);
+			nConfidenceAway = IsStringFuzzySubstringMatch(gameLeft.Away, gameRight.Home);
+
+			nConfidenceBest = Math.Max(nConfidenceBest, (nConfidenceHome * nConfidenceAway) / 100);
+
+			return nConfidenceBest;
+		}
+
+		public static int IsGameFuzzyLevelMatch(SimpleGame gameLeft, SimpleGame gameRight)
+		{
+			return IsStringFuzzySubstringMatch(gameLeft.Level.ToUpper(), gameRight.Level.ToUpper());
+		}
+
 		public enum Confidence
 		{
 			Certain,
@@ -177,10 +257,12 @@ namespace ArbWeb.Games
 		[TestCase("Everest Field #1", "Everest Park #1", Confidence.Certain)]
 		[TestCase("hidden valley #3", "hidden valley sports complex field #3", Confidence.High)]
 		[TestCase("Big Rock 2", "Hartman Park #2", Confidence.None)]
+		[TestCase("BFH #2", "East Sammamish Park #2", Confidence.None)]
+		[TestCase("AAA", "Coast", Confidence.None)]
 		[Test]
 		public static void TestStringFuzzyMatch(string sLeft, string sRight, Confidence confidenceExpect)
 		{
-			int nConfidence = IsStringFuzzyMatch(sLeft, sRight);
+			int nConfidence = IsStringFuzzyMatchForSite(sLeft, sRight);
 			Confidence confidenceActual;
 
 			if (nConfidence == 100)

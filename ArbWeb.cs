@@ -4,16 +4,23 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Resources;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using ArbWeb.Games;
 using ArbWeb.Reports;
+using Microsoft.Identity.Client;
+using Microsoft.Vbe.Interop;
 using Microsoft.Win32;
 using TCore.StatusBox;
 using TCore.CmdLine;
+using TCore.MsalWeb;
 using TCore.Settings;
 using TCore.UI;
 using TCore.Util;
 using TCore.WebControl;
+using Application = System.Windows.Forms.Application;
 
 namespace ArbWeb
 {
@@ -135,6 +142,7 @@ namespace ArbWeb
         CountsData m_gc;
         private bool m_fAutomating = false;
 		private Button m_pbDiffTW;
+		private Button button4;
 		private WebGames m_webGames;
         
         #region Top Level Program Flow
@@ -580,6 +588,7 @@ namespace ArbWeb
 			this.pbTestDownload = new System.Windows.Forms.Button();
 			this.m_cbSkipContactDownload = new System.Windows.Forms.CheckBox();
 			this.m_pbDiffTW = new System.Windows.Forms.Button();
+			this.button4 = new System.Windows.Forms.Button();
 			label17 = new System.Windows.Forms.Label();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -1190,10 +1199,21 @@ namespace ArbWeb
 			this.m_pbDiffTW.Text = "Diff TrainWreck";
 			this.m_pbDiffTW.Click += new System.EventHandler(this.DoTrainWreckDiff);
 			// 
+			// button4
+			// 
+			this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button4.Location = new System.Drawing.Point(373, 887);
+			this.button4.Name = "button4";
+			this.button4.Size = new System.Drawing.Size(176, 35);
+			this.button4.TabIndex = 98;
+			this.button4.Text = "Download";
+			this.button4.Click += new System.EventHandler(this.DoDownloadSchedules);
+			// 
 			// AwMainForm
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
 			this.ClientSize = new System.Drawing.Size(1174, 1173);
+			this.Controls.Add(this.button4);
 			this.Controls.Add(this.m_pbDiffTW);
 			this.Controls.Add(this.m_cbSkipContactDownload);
 			this.Controls.Add(this.pbTestDownload);
@@ -1461,9 +1481,9 @@ namespace ArbWeb
 
         private void DoTrainWreckDiff(object sender, EventArgs e)
         {
-	        string sFile = @"c:\temp\bkmrs.xlsx";
-
-	        SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile);
+	        // string sFile = @"c:\temp\bkmrs.xlsx";
+	        string sFile = @"c:\temp\schedtest.xlsx";
+			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile);
 	        Schedule scheduleArbiter = new Schedule(m_srpt);
 	        m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
 
@@ -1985,6 +2005,23 @@ namespace ArbWeb
         {
             RenderSupp.RenderHeadingLine(sender, e);
         }
+
+        private Office365 m_spoInterop;
+        
+		private async void DoDownloadSchedules(object sender, EventArgs e)
+		{
+			if (m_spoInterop == null)
+				m_spoInterop = new Office365(Secrets.ApplicationClientID);
+
+			await m_spoInterop.EnsureLoggedIn();
+			
+			await m_spoInterop.DownloadFile(
+				"washdist9.sharepoint.com",
+				"sched",
+				"InterlockWorksheet.xlsx",
+				"c:\\temp\\downloadTry.xlsx");
+			
+		}
 	}
 
 }

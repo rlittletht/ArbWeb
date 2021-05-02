@@ -96,6 +96,9 @@
       <HintPath>packages\HtmlAgilityPack.1.11.31\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Identity.Client, Version=4.30.1.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Identity.Client.4.30.1\lib\net461\Microsoft.Identity.Client.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
@@ -115,6 +118,8 @@
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms">
       <Name>System.Windows.Forms</Name>
     </Reference>
@@ -180,6 +185,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Secrets.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Secrets.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SPO\Auth.cs" />
     <Compile Include="Games\Differ.cs" />
     <Compile Include="Games\DistributeTeamCount.cs" />
     <Compile Include="Games\FuzzyMatcher.cs" />
@@ -206,6 +217,7 @@
     </Compile>
     <Compile Include="Games\Schedule.cs" />
     <Compile Include="Games\Roster.cs" />
+    <Compile Include="SPO\Office365.cs" />
     <Compile Include="Support\MicroTimer.cs" />
     <Compile Include="Support\ooxml.cs" />
     <Compile Include="Profiles\Profile.cs" />
@@ -239,6 +251,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Profiles\EditProfile.resx">
       <DependentUpon>EditProfile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Secrets.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Secrets.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -279,6 +295,10 @@
     <ProjectReference Include="..\liblet\cs\TCore.CSV\TCore.CSV.csproj">
       <Project>{e2d2ef30-c48e-4517-93fd-590940e23ce3}</Project>
       <Name>TCore.CSV</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\liblet\cs\TCore.MsalWeb.Working\TCore.MsalWeb\TCore.MsalWeb.csproj">
+      <Project>{2a614abe-23ae-4064-bd31-4ea1bcc4dae0}</Project>
+      <Name>TCore.MsalWeb</Name>
     </ProjectReference>
     <ProjectReference Include="..\liblet\cs\TCore.UI\TCore.UI.csproj">
       <Project>{9213a90f-a23f-4bc5-827c-164ecb6c6cc2}</Project>

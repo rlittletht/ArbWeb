@@ -22,6 +22,7 @@ namespace ArbWeb.Reports
 				plsLegend.Insert(6, "Home");
 				plsLegend.Insert(7, "Away");
 				plsLegend.Insert(8, "Sport");
+				plsLegend.Insert(9, "Status");
 
 				bool fFirst = true;
 				foreach (string s in plsLegend)
@@ -61,6 +62,7 @@ namespace ArbWeb.Reports
 				plsLegend.Insert(5, "Home");
 				plsLegend.Insert(6, "Away");
 				plsLegend.Insert(7, "Sport");
+				plsLegend.Insert(8, "Status");
 
 				bool fFirst = true;
 				foreach (string s in plsLegend)

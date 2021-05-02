@@ -15,7 +15,7 @@ namespace ArbWeb.Games
 			Insert
 		}
 
-		public new string SortKey => $"{StartDateTime:u}-{OpToString()}-{Site}-{Sport}-{Level}-{Home}";
+		public new string SortKey => $"{StartDateTime:u}-{OpToString()}-{Site}-{Sport}-{Level}-{Home}-{Status}";
 
 		private DiffOp Op { get; set; }
 
@@ -41,6 +41,7 @@ namespace ArbWeb.Games
 			Site = game.Site;
 			Level = game.Level;
 			Sport = game.Sport;
+			Status = game.Status;
 			Op = op;
 		}
 
@@ -60,6 +61,7 @@ namespace ArbWeb.Games
 			m_mpFieldVal.Add("Site", Site);
 			m_mpFieldVal.Add("Sport", Sport);
 			m_mpFieldVal.Add("Game", Number);
+			m_mpFieldVal.Add("Status", Status);
 
 			// now that we have a dictionary of values, write it out
 			bool fFirst = true;

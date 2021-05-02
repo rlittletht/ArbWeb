@@ -71,8 +71,13 @@ namespace ArbWeb.Games
 					}
 					else
 					{
+						// reduce how certain we are (this is a penalty), but don't
+						// increase the opportunity count.
+						// (Alternatively, we could add another 100-nConfidence
+						// and increase the opportunity...because we're nConfident
+						// we were wrong 1 time, and 100-nConfident that we're right
+						// still...
 						mapAndConfidences[sLeft][key].Cumulative -= nConfidence;
-						mapAndConfidences[sLeft][key].Opportunities++;
 					}
 				}
 			}
