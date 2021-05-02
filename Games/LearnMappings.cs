@@ -233,7 +233,8 @@ namespace ArbWeb.Games
 		private MapAndConfidences m_siteMapAndConfidences = new MapAndConfidences();
 		private MapAndConfidences m_teamMapAndConfidences = new MapAndConfidences();
 		private MapAndConfidences m_gameTagMapAndConfidences = new MapAndConfidences();
-		
+		private MapAndConfidences m_sportMapAndConfidences = new MapAndConfidences();
+
 		/*----------------------------------------------------------------------------
 			%%Function: GroupGamesByDate
 			%%Qualified: ArbWeb.Games.LearnMappings.GroupGamesByDate
@@ -293,7 +294,7 @@ namespace ArbWeb.Games
 				@"c:\temp\numbermapLTR.csv",
 				@"c:\temp\numbermapRTL.csv");
 
-			return new ScheduleMaps(learner.m_teamMapAndConfidences, learner.m_siteMapAndConfidences, learner.m_gameTagMapAndConfidences);
+			return new ScheduleMaps(learner.m_teamMapAndConfidences, learner.m_siteMapAndConfidences, learner.m_gameTagMapAndConfidences, learner.m_sportMapAndConfidences);
 		}
 
 		/*----------------------------------------------------------------------------
@@ -316,6 +317,8 @@ namespace ArbWeb.Games
 			m_siteMapAndConfidences.Update(gameLeft.Site, gameRight.Site, nConfidence);
 			m_teamMapAndConfidences.Update(gameLeft.Home, gameRight.Home, nConfidence);
 			m_teamMapAndConfidences.Update(gameLeft.Away, gameRight.Away, nConfidence);
+			m_sportMapAndConfidences.Update(gameLeft.Sport, gameRight.Sport, nConfidence);
+			
 			// only update this game mapping if we're almost certain, otherwise it will remain unmapped
 			// (the game numbers match, or the day/date/time/slot fits)
 			if (nConfidence >= 95)
@@ -333,6 +336,7 @@ namespace ArbWeb.Games
 			m_teamMapAndConfidences.AddPotentialMap(game.Home);
 			m_teamMapAndConfidences.AddPotentialMap(game.Away);
 			m_gameTagMapAndConfidences.AddPotentialMap(game.Number);
+			m_sportMapAndConfidences.AddPotentialMap(game.Sport);
 		}
 	}
 }

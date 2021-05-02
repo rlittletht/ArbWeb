@@ -262,18 +262,24 @@ namespace ArbWeb.Games
 				return Sport.Softball;
 			return Sport.Unknown;
 		}
-		
-		public static int IsGameFuzzyLevelMatch(SimpleGame gameLeft, SimpleGame gameRight)
+
+		public static int IsGameFuzzySportMatch(SimpleGame gameLeft, SimpleGame gameRight)
 		{
-			int adjust = 100;
-			
-			// first, check for sport mismatch
 			Sport sportLeft = SportFromSportString(gameLeft.Sport);
 			Sport sportRight = SportFromSportString(gameRight.Sport);
 
 			if (sportLeft == Sport.Unknown || sportRight == Sport.Unknown)
-				adjust = 50;
+				return 50;
 			else if (sportLeft != sportRight)
+				return 0;
+
+			return 100;
+		}
+		public static int IsGameFuzzyLevelMatch(SimpleGame gameLeft, SimpleGame gameRight)
+		{
+			int adjust = IsGameFuzzySportMatch(gameLeft, gameRight);
+			
+			if (adjust == 0)
 				return 0;
 			
 			return (IsStringFuzzySubstringMatch(gameLeft.Level.ToUpper(), gameRight.Level.ToUpper()) * adjust) / 100;

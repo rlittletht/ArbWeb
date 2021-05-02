@@ -73,7 +73,7 @@ namespace ArbWeb.Games
 			if (String.Compare(left.Level, right.Level, true) != 0)
 				return false;
 
-			if (!String.IsNullOrEmpty(left.Sport) && String.Compare(left.Sport, right.Sport, true) != 0)
+			if (FuzzyMatcher.IsGameFuzzySportMatch(left, right) == 0)
 				return false;
 
 			string home = left.Home.ToUpper();

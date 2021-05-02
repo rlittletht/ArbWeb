@@ -8,23 +8,29 @@ namespace ArbWeb.Games
 		public Dictionary<string, string> TeamsMap { get; set; }
 		public Dictionary<string, string> SitesMap { get; set; }
 		public Dictionary<string, string> GameNumberMap { get; set; }
+		public Dictionary<string, string> SportMap { get; set; }
 		public Dictionary<string, string> TeamsMapReverse { get; set; }
 		public Dictionary<string, string> SitesMapReverse { get; set; }
 		public Dictionary<string, string> GameNumberMapReverse { get; set; }
+		public Dictionary<string, string> SportMapReverse { get; set; }
+		
 		// Also add a reverse game map so we can go right to left when diffing!
 
 		public ScheduleMaps(
 			LearnMappings.MapAndConfidences teamConfidences, 
 			LearnMappings.MapAndConfidences siteConfidences, 
-			LearnMappings.MapAndConfidences gameTagConfidences)
+			LearnMappings.MapAndConfidences gameTagConfidences,
+			LearnMappings.MapAndConfidences sportConfidences)
 		{
 			TeamsMap = teamConfidences.CreateMapFromLearning();
 			SitesMap = siteConfidences.CreateMapFromLearning();
 			GameNumberMap = gameTagConfidences.CreateMapFromLearning();
-
+			SportMap = sportConfidences.CreateMapFromLearning();
+			
 			TeamsMapReverse = teamConfidences.CreateReverseMapFromLearning();
 			SitesMapReverse = siteConfidences.CreateReverseMapFromLearning();
 			GameNumberMapReverse = gameTagConfidences.CreateReverseMapFromLearning();
+			SportMapReverse = sportConfidences.CreateReverseMapFromLearning();
 		}
 
 		/*----------------------------------------------------------------------------
@@ -49,7 +55,11 @@ namespace ArbWeb.Games
 				? GameNumberMapReverse[gameRight.Number.ToUpper()]
 				: $"##{gameRight.Number}";
 
-			return new SimpleGame(gameRight.StartDateTime, siteLeft, gameRight.Level, homeLeft, awayLeft, numberLeft, gameRight.Status, gameRight.Sport);
+			string sportLeft = SportMapReverse.ContainsKey(gameRight.Sport.ToUpper())
+				? SportMapReverse[gameRight.Sport.ToUpper()]
+				: $"##{gameRight.Number}";
+			
+			return new SimpleGame(gameRight.StartDateTime, siteLeft, gameRight.Level, homeLeft, awayLeft, numberLeft, gameRight.Status, sportLeft );
 		}
 
 		/*----------------------------------------------------------------------------
