@@ -683,6 +683,7 @@ namespace ArbWeb.Games
         {
             return Regex.Match(sLine, ".*\\*\\*\\*.*CANCEL*ED").Success
                    || Regex.Match(sLine, ".*\\*\\*\\*.*FORFEITED").Success
+                   || Regex.Match(sLine, ".*\\*\\*\\*.*POSTPONED").Success
                    || Regex.Match(sLine, ".*\\*\\*\\*.*RAINED OUT").Success
                    || Regex.Match(sLine, ".*\\*\\*\\*.*SUSPEND*ED").Success;
         }
