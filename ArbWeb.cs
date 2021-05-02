@@ -2032,7 +2032,7 @@ namespace ArbWeb
 
 			int diffCount = 0;
 			
-			foreach (string schedule in m_pr.BaseballScheduleFiles)
+			foreach (string schedule in m_pr.BaseballSchedFiles)
 			{
 				string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
 				string sDownloadedFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.xlsx";

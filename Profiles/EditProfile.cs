@@ -30,17 +30,20 @@ namespace ArbWeb
             pr.LogLevel = Int32.Parse(ep.m_ebLogLevel.Text);
             pr.SchedSpoSite = ep.m_ebSpoSite.Text;
             pr.SchedSpoSubsite = ep.m_ebSpoSubsite.Text;
+            pr.SchedDownloadFolder = ep.m_ebSchedDownloadFolder.Text;
+            pr.SchedWorkingFolder = ep.m_ebSchedWorkingFolder.Text;
+            
             List<string> schedules = new List<string>();
             foreach (ListViewItem item in ep.m_lvBaseballSchedules.Items)
 	            schedules.Add(item.Text);
 
-            pr.BaseballScheduleFiles = schedules.ToArray();
+            pr.BaseballSchedFiles = schedules.ToArray();
 
             schedules.Clear();
             foreach (ListViewItem item in ep.m_lvSoftballSchedules.Items)
 	            schedules.Add(item.Text);
 
-            pr.SoftballScheduleFiles = schedules.ToArray();
+            pr.SoftballSchedFiles = schedules.ToArray();
         }
 
         
@@ -64,14 +67,17 @@ namespace ArbWeb
             ep.m_ebLogLevel.Text = pr.LogLevel.ToString();
             ep.m_ebSpoSite.Text = pr.SchedSpoSite;
             ep.m_ebSpoSubsite.Text = pr.SchedSpoSubsite;
+            ep.m_ebSchedDownloadFolder.Text = pr.SchedDownloadFolder;
+            ep.m_ebSchedWorkingFolder.Text = pr.SchedWorkingFolder;
+            
             ep.m_lvBaseballSchedules.Items.Clear();
 
-            foreach (string s in pr.BaseballScheduleFiles)
+            foreach (string s in pr.BaseballSchedFiles)
 	            ep.m_lvBaseballSchedules.Items.Add(s);
 
             ep.m_lvSoftballSchedules.Items.Clear();
 
-            foreach (string s in pr.SoftballScheduleFiles)
+            foreach (string s in pr.SoftballSchedFiles)
 	            ep.m_lvSoftballSchedules.Items.Add(s);
 
             if (ep.ShowDialog() == DialogResult.OK)

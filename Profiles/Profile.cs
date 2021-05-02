@@ -55,10 +55,13 @@ namespace ArbWeb
             return rect.Width != 0;
         }
 
-        public string[] BaseballScheduleFiles { get; set; }
-        public string[] SoftballScheduleFiles { get; set; }
+        public string[] BaseballSchedFiles { get; set; }
+        public string[] SoftballSchedFiles { get; set; }
         public string SchedSpoSite { get; set; }
         public string SchedSpoSubsite { get; set; }
+        public string SchedDownloadFolder { get; set; }
+        public string SchedWorkingFolder { get; set; }
+        
         public int LogLevel {  get { return m_nLogLevel;} set { m_nLogLevel = value; } }
         public string[] GameFilters { get { return m_rgsGameFilters; } set { m_rgsGameFilters = value; } }
         public string GameFilter { get { return m_sGameFilter; } set { m_sGameFilter = value; } }
@@ -131,6 +134,8 @@ namespace ArbWeb
                                   new Settings.SettingsElt("LastLogLevel", Settings.Type.Int, 0, 0),
                                   new Settings.SettingsElt("SchedSpoSite", Settings.Type.Str, "", ""),
                                   new Settings.SettingsElt("SchedSpoSubsite", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("SchedDownloadFolder", Settings.Type.Str, "", ""),
+                                  new Settings.SettingsElt("SchedWorkingFolder", Settings.Type.Str, "", ""),
                                   new Settings.SettingsElt("SoftballScheduleFiles", Settings.Type.StrArray, new string[] { }, new string[] { }),
                                   new Settings.SettingsElt("BaseballScheduleFiles", Settings.Type.StrArray, new string[] { }, new string[] { }),
                                   new Settings.SettingsElt("LastMainWindowPos.Top", Settings.Type.Int, 0, 0),
@@ -184,8 +189,10 @@ namespace ArbWeb
             m_nLogLevel = m_ehProfile.NValue("LastLogLevel");
             SchedSpoSite = m_ehProfile.SValue("SchedSpoSite");
             SchedSpoSubsite = m_ehProfile.SValue("SchedSpoSubsite");
-            BaseballScheduleFiles = m_ehProfile.RgsValue("BaseballScheduleFiles");
-            SoftballScheduleFiles = m_ehProfile.RgsValue("SoftballScheduleFiles");
+            BaseballSchedFiles = m_ehProfile.RgsValue("BaseballScheduleFiles");
+            SoftballSchedFiles = m_ehProfile.RgsValue("SoftballScheduleFiles");
+            SchedDownloadFolder = m_ehProfile.SValue("SchedDownloadFolder");
+            SchedWorkingFolder = m_ehProfile.SValue("SchedWorkingFolder");
 
             m_rectMainWindow = new Rectangle(m_ehProfile.NValue("LastMainWindowPos.Left"),
                                              m_ehProfile.NValue("LastMainWindowPos.Top"),
@@ -237,8 +244,10 @@ namespace ArbWeb
             m_ehProfile.SetNValue("LastLogLevel", m_nLogLevel);
             m_ehProfile.SetSValue("SchedSpoSite", SchedSpoSite);
             m_ehProfile.SetSValue("SchedSpoSubsite", SchedSpoSubsite);
-            m_ehProfile.SetRgsValue("BaseballScheduleFiles", BaseballScheduleFiles);
-            m_ehProfile.SetRgsValue("SoftballScheduleFiles", SoftballScheduleFiles);
+            m_ehProfile.SetSValue("SchedDownloadFolder", SchedDownloadFolder);
+            m_ehProfile.SetSValue("SchedWorkingFolder", SchedWorkingFolder);
+            m_ehProfile.SetRgsValue("BaseballScheduleFiles", BaseballSchedFiles);
+            m_ehProfile.SetRgsValue("SoftballScheduleFiles", SoftballSchedFiles);
 
             m_ehProfile.SetNValue("LastMainWindowPos.Left", m_rectMainWindow.Left);
             m_ehProfile.SetNValue("LastMainWindowPos.Top", m_rectMainWindow.Top);
