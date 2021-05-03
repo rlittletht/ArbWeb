@@ -1205,7 +1205,7 @@ namespace ArbWeb
 			this.m_pbDiffTW.Size = new System.Drawing.Size(51, 35);
 			this.m_pbDiffTW.TabIndex = 97;
 			this.m_pbDiffTW.Text = "Diff";
-			this.m_pbDiffTW.Click += new System.EventHandler(this.DoTrainWreckDiff);
+			this.m_pbDiffTW.Click += new System.EventHandler(this.DiffSelectedTrainWreckSchedule);
 			// 
 			// button4
 			// 
@@ -1225,6 +1225,7 @@ namespace ArbWeb
 			this.button5.Size = new System.Drawing.Size(176, 35);
 			this.button5.TabIndex = 99;
 			this.button5.Text = "Diff \'Em All";
+			this.button5.Click += new System.EventHandler(this.DiffAllOfflineSchedules);
 			// 
 			// m_cbSchedsForDiff
 			// 
@@ -1521,12 +1522,56 @@ namespace ArbWeb
 		        m_cbSchedsForDiff.Items.Add(s);
         }
         
-        
         /*----------------------------------------------------------------------------
 			%%Function: DoTrainWreckDiff
 			%%Qualified: ArbWeb.AwMainForm.DoTrainWreckDiff
         ----------------------------------------------------------------------------*/
-        private void DoTrainWreckDiff(object sender, EventArgs e)
+        void DoTrainWreckDiff(
+	        string sScheduleLeftFile, 
+	        SimpleSchedule scheduleRight,
+	        string sSport, 
+	        string sTargetFile, 
+	        string sTargetFileWorking)
+        {
+	        m_srpt.AddMessage($"Diffing schedule for {sScheduleLeftFile.Replace("\\","\\\\")} ({sSport})...", MSGT.Body);
+	        
+			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sScheduleLeftFile, sSport);
+
+			//LearnMappings.GenerateMapsFromSchedules(scheduleLeft, scheduleRight);
+			SimpleDiffSchedule diffSchedule = Differ.BuildDiffFromSchedules(scheduleLeft, scheduleRight);
+
+			SimpleGameReport.GenSimpleGamesReport(diffSchedule, sTargetFile);
+			
+			if (sTargetFileWorking != null)
+			{
+				if (File.Exists(sTargetFileWorking))
+					File.Delete(sTargetFileWorking);
+
+				File.Copy(sTargetFile, sTargetFileWorking);
+			}
+		}
+
+        SimpleSchedule BuildArbiterSimpleScheduleForDiff()
+        {
+	        Schedule scheduleArbiter = new Schedule(m_srpt);
+	        m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
+
+	        scheduleArbiter.FLoadRoster(m_pr.RosterWorking, Int32.Parse(m_ebAffiliationIndex.Text));
+	        // m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
+
+	        m_srpt.PopLevel();
+	        m_srpt.AddMessage("Loading games...", MSGT.Header, false);
+	        scheduleArbiter.FLoadGames(m_pr.GameCopy, true/*fIncludeCancelled*/);
+	        m_srpt.PopLevel();
+
+	        return SimpleSchedule.BuildFromScheduleGames(scheduleArbiter.Games);
+		}
+        
+		/*----------------------------------------------------------------------------
+			%%Function: DoTrainWreckDiff
+			%%Qualified: ArbWeb.AwMainForm.DoTrainWreckDiff
+        ----------------------------------------------------------------------------*/
+		private void DiffSelectedTrainWreckSchedule(object sender, EventArgs e)
         {
 	        if (m_cbSchedsForDiff.SelectedIndex == -1)
 	        {
@@ -1550,28 +1595,13 @@ namespace ArbWeb
 					return;
 				}
 			}
+
+			SimpleSchedule scheduleRight = BuildArbiterSimpleScheduleForDiff();
 			
-			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile, sSport);
-	        Schedule scheduleArbiter = new Schedule(m_srpt);
-	        m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
+			DoTrainWreckDiff(sFile, scheduleRight, sSport, @"c:\temp\DiffReport.csv", null);
+		}
 
-	        scheduleArbiter.FLoadRoster(m_pr.RosterWorking, Int32.Parse(m_ebAffiliationIndex.Text));
-	        // m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
 
-	        m_srpt.PopLevel();
-	        m_srpt.AddMessage("Loading games...", MSGT.Header, false);
-	        scheduleArbiter.FLoadGames(m_pr.GameCopy, true/*fIncludeCancelled*/);
-	        m_srpt.PopLevel();
-
-	        SimpleSchedule scheduleRight = SimpleSchedule.BuildFromScheduleGames(scheduleArbiter.Games);
-
-	        //LearnMappings.GenerateMapsFromSchedules(scheduleLeft, scheduleRight);
-	        SimpleDiffSchedule diffSchedule = Differ.BuildDiffFromSchedules(scheduleLeft, scheduleRight);
-	        
-	        SimpleGameReport.GenSimpleGamesReport(diffSchedule, @"c:\temp\DiffReport.csv");
-        }
-        
-        
 		/*----------------------------------------------------------------------------
         	%%Function: DoGamesReport
         	%%Qualified: ArbWeb.AwMainForm.DoGamesReport
@@ -2092,46 +2122,42 @@ namespace ArbWeb
 				m_offline = new Offline(this);
 
 			await m_offline.DownloadAllSchedules();
-			return;
-			
-			if (m_spoInterop == null)
-				m_spoInterop = new Office365(Secrets.ApplicationClientID);
+		}
 
-			await m_spoInterop.EnsureLoggedIn();
-			string spoSite = m_pr.SchedSpoSite;
-			string spoSubsite = m_pr.SchedSpoSubsite;
-			
-			Schedule scheduleArbiter = new Schedule(m_srpt);
-			m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
+		private void DiffAllOfflineSchedules(object sender, EventArgs e)
+		{
+			if (m_offline == null)
+				m_offline = new Offline(this);
 
-			scheduleArbiter.FLoadRoster(m_pr.RosterWorking, Int32.Parse(m_ebAffiliationIndex.Text));
-			m_srpt.PopLevel();
-			m_srpt.AddMessage("Loading games...", MSGT.Header, false);
-			scheduleArbiter.FLoadGames(m_pr.GameCopy, true/*fIncludeCancelled*/);
-			m_srpt.PopLevel();
+			m_srpt.AddMessage("Diffing all offline schedules...", MSGT.Header);
+			SimpleSchedule scheduleRight = BuildArbiterSimpleScheduleForDiff();
 
-			SimpleSchedule scheduleRight = SimpleSchedule.BuildFromScheduleGames(scheduleArbiter.Games);
-
-			int diffCount = 0;
-			
-			foreach (string schedule in m_pr.BaseballSchedFiles)
+			m_srpt.AddMessage("Diffing baseball schedules...", MSGT.Header);
+			// diff baseball schedules
+			foreach (string sched in m_pr.BaseballSchedFiles)
 			{
-				string sCsvFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
-				string sDownloadedFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.xlsx";
-				string sDiffFile = $"{Environment.GetEnvironmentVariable("Temp")}\\Diff{diffCount}-{System.Guid.NewGuid().ToString()}.csv";
-				
-				await m_spoInterop.DownloadFile(
-					spoSite,
-					spoSubsite,
-					schedule.Replace(" ", "%20"),
-					sDownloadedFile);
-				
-				SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sDownloadedFile, "Baseball");
-				
-				SimpleDiffSchedule diffSchedule = Differ.BuildDiffFromSchedules(scheduleLeft, scheduleRight);
+				string sDiff, sDiffLatest, sSched, sSchedLatest;
 
-				SimpleGameReport.GenSimpleGamesReport(diffSchedule, sDiffFile);
+				(sDiff, sDiffLatest) = Offline.MakeDiffPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Baseball", sched);
+				(sSched, sSchedLatest) = Offline.MakeDownloadPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Baseball", sched);
+				
+				DoTrainWreckDiff(sSchedLatest, scheduleRight, "Baseball", sDiff, sDiffLatest);
 			}
+			m_srpt.PopLevel();
+			
+			m_srpt.AddMessage("Diffing softball schedules...", MSGT.Header);
+			// diff softball schedules
+			foreach (string sched in m_pr.SoftballSchedFiles)
+			{
+				string sDiff, sDiffLatest, sSched, sSchedLatest;
+
+				(sDiff, sDiffLatest) = Offline.MakeDiffPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Softball", sched);
+				(sSched, sSchedLatest) = Offline.MakeDownloadPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Softball", sched);
+
+				DoTrainWreckDiff(sSchedLatest, scheduleRight, "Softball", sDiff, sDiffLatest);
+			}
+			m_srpt.PopLevel();
+
 		}
 	}
 

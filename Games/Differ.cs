@@ -149,8 +149,8 @@ namespace ArbWeb.Games
 
 			// ok, what we have left are games that we couldn't match by number...
 
-			if (gamesMissingFromRight.Count > 0)
-				MessageBox.Show($"Still have {gamesMissingFromRight.Count} missing from Arbiter schedule.");
+//			if (gamesMissingFromRight.Count > 0)
+//				MessageBox.Show($"Still have {gamesMissingFromRight.Count} missing from Arbiter schedule.");
 			
 			foreach (SimpleGame gameMissing in gamesMissingFromRight)
 				scheduleDiff.AddGame(new SimpleDiffGame(gameMissing, SimpleDiffGame.DiffOp.Delete));

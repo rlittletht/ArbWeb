@@ -117,36 +117,63 @@ namespace ArbWeb.SPO
 			%%Function: MakeDatedFilename
 			%%Qualified: ArbWeb.SPO.Offline.MakeDatedFilename
 		----------------------------------------------------------------------------*/
-		static string MakeDatedFilename(string leaf, DateTime dateTime)
+		static string MakeDatedFilename(string leaf, string suffix, DateTime dateTime, string extension = null)
 		{
 			string sRoot = Path.GetFileNameWithoutExtension(leaf);
-			string sExt = Path.GetExtension(leaf);
-
-			return $"{sRoot}_{dateTime:yyMMdd}_{dateTime:HHmm}{sExt}";
+			
+			if (string.IsNullOrEmpty(suffix))
+				suffix = "";
+			
+			if (extension == null)
+				extension = Path.GetExtension(leaf);
+			
+			return $"{sRoot}{suffix}_{dateTime:yyMMdd}_{dateTime:HHmm}{extension}";
 		}
 
-		static string MakeLatestFilename(string leaf)
+		/*----------------------------------------------------------------------------
+			%%Function: MakeLatestFilename
+			%%Qualified: ArbWeb.SPO.Offline.MakeLatestFilename
+		----------------------------------------------------------------------------*/
+		static string MakeLatestFilename(string leaf, string suffix, string extension = null)
 		{
 			string sRoot = Path.GetFileNameWithoutExtension(leaf);
-			string sExt = Path.GetExtension(leaf);
+			if (extension == null)
+				extension = Path.GetExtension(leaf);
 
-			return $"{sRoot}_Latest{sExt}";
+			if (string.IsNullOrEmpty(suffix))
+				suffix = "";
+
+			return $"{sRoot}{suffix}_Latest{extension}";
 		}
 		
 		/*----------------------------------------------------------------------------
 			%%Function: MakeDownloadPath
 			%%Qualified: ArbWeb.SPO.Offline.MakeDownloadPath
 		----------------------------------------------------------------------------*/
-		static (string, string) MakeDownloadPaths(string downloadDir, string sLatestDir, string sSport, string spoPath)
+		public static (string, string) MakeDownloadPaths(string downloadDir, string sLatestDir, string sSport, string spoPath)
 		{
 			string sLeaf = Path.GetFileName(spoPath);
-			string sDated = MakeDatedFilename(sLeaf, DateTime.Now);
-			string sLatest = MakeLatestFilename(sLeaf);
+			string sDated = MakeDatedFilename(sLeaf, null, DateTime.Now);
+			string sLatest = MakeLatestFilename(sLeaf, null);
 
 			return (Path.Combine(downloadDir, sSport, sDated),
 					Path.Combine(sLatestDir, sSport, sLatest));
 		}
 		
+		/*----------------------------------------------------------------------------
+			%%Function: MakeDiffPaths
+			%%Qualified: ArbWeb.SPO.Offline.MakeDiffPaths
+		----------------------------------------------------------------------------*/
+		public static (string, string) MakeDiffPaths(string downloadDir, string sLatestDir, string sSport, string spoPath)
+		{
+			string sLeaf = Path.GetFileName(spoPath);
+			string sDated = MakeDatedFilename(sLeaf, "_Diff", DateTime.Now, ".csv");
+			string sLatest = MakeLatestFilename(sLeaf, "Diff", ".csv");
+
+			return (Path.Combine(downloadDir, sSport, sDated),
+				Path.Combine(sLatestDir, sSport, sLatest));
+		}
+
 		/*----------------------------------------------------------------------------
 			%%Function: GetSpoLeafName
 			%%Qualified: ArbWeb.SPO.Offline.GetSpoLeafName
@@ -175,7 +202,7 @@ namespace ArbWeb.SPO
 		[Test]
 		public static void TestMakeDatedFilename(string sLeafIn, string sDateTimeIn, string sExpected)
 		{
-			Assert.AreEqual(sExpected, MakeDatedFilename(sLeafIn, DateTime.Parse(sDateTimeIn)));
+			Assert.AreEqual(sExpected, MakeDatedFilename(sLeafIn, null, DateTime.Parse(sDateTimeIn)));
 		}
 	}
 }
