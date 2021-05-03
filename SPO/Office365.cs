@@ -11,7 +11,7 @@ using TCore.MsalWeb;
 
 namespace ArbWeb
 {
-	class Office365
+	public class Office365
 	{
 		IPublicClientApplication m_app;
 
@@ -43,12 +43,20 @@ namespace ArbWeb
 			public string webUrl { get; set; }
 		}
 
+		/*----------------------------------------------------------------------------
+			%%Function: Office365
+			%%Qualified: ArbWeb.Office365.Office365
+		----------------------------------------------------------------------------*/
 		public Office365(string sClientID)
 		{
 			if (m_auth == null)
 				m_auth = new Auth(sClientID, new[] {"https://graph.microsoft.com/.default" /* "Files.Read.All", "Sites.Read.All"*/});
 		}
 
+		/*----------------------------------------------------------------------------
+			%%Function: EnsureLoggedIn
+			%%Qualified: ArbWeb.Office365.EnsureLoggedIn
+		----------------------------------------------------------------------------*/
 		public async Task EnsureLoggedIn()
 		{
 			if (!m_auth.IsLoggedIn)
@@ -58,9 +66,12 @@ namespace ArbWeb
 				m_api = new WebApiInterop("https://graph.microsoft.com/v1.0", m_auth);
 		}
 		
+		/*----------------------------------------------------------------------------
+			%%Function: DownloadFile
+			%%Qualified: ArbWeb.Office365.DownloadFile
+		----------------------------------------------------------------------------*/
 		public async Task DownloadFile(string sSiteRoot, string sSubSite, string sFile, string sOutfile)
 		{ 
-		// HttpResponseMessage resp = m_api.CallService("sites/washdist9.sharepoint.com:/sites/scheduling", true);
 			SharepointSiteInfo siteInfo = m_api.CallService<SharepointSiteInfo>($"sites/{sSiteRoot}:/{sSubSite}", true);
 
 			string sQuery = $"sites/{siteInfo.id}/drive/root:/{sFile}:/content";

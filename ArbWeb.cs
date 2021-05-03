@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Web;
 using ArbWeb.Games;
 using ArbWeb.Reports;
+using ArbWeb.SPO;
 using Microsoft.Identity.Client;
 using Microsoft.Vbe.Interop;
 using Microsoft.Win32;
@@ -38,6 +39,7 @@ namespace ArbWeb
         void InvalRoster();
         Roster RstEnsure(string sRoster);
         void EnsureWebControl();
+        Office365 SpoInterop();
     }
 
 	/// <summary>
@@ -144,6 +146,8 @@ namespace ArbWeb
         private bool m_fAutomating = false;
 		private Button m_pbDiffTW;
 		private Button button4;
+		private Button button5;
+		private ComboBox m_cbSchedsForDiff;
 		private WebGames m_webGames;
         
         #region Top Level Program Flow
@@ -274,7 +278,8 @@ namespace ArbWeb
             // load MRU from registry
             m_fDontUpdateProfile = false;
             EnableControls();
-
+            RefreshSchedsToDiff();
+            
             CmdLineConfig clcfg = new CmdLineConfig(new CmdLineSwitch[]
                                                         {
                                                         new CmdLineSwitch("H", true /*fToggle*/, false /*fReq*/,
@@ -590,6 +595,8 @@ namespace ArbWeb
 			this.m_cbSkipContactDownload = new System.Windows.Forms.CheckBox();
 			this.m_pbDiffTW = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
+			this.button5 = new System.Windows.Forms.Button();
+			this.m_cbSchedsForDiff = new System.Windows.Forms.ComboBox();
 			label17 = new System.Windows.Forms.Label();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -1193,27 +1200,46 @@ namespace ArbWeb
 			// m_pbDiffTW
 			// 
 			this.m_pbDiffTW.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.m_pbDiffTW.Location = new System.Drawing.Point(584, 887);
+			this.m_pbDiffTW.Location = new System.Drawing.Point(729, 887);
 			this.m_pbDiffTW.Name = "m_pbDiffTW";
-			this.m_pbDiffTW.Size = new System.Drawing.Size(176, 35);
+			this.m_pbDiffTW.Size = new System.Drawing.Size(51, 35);
 			this.m_pbDiffTW.TabIndex = 97;
-			this.m_pbDiffTW.Text = "Diff TrainWreck";
+			this.m_pbDiffTW.Text = "Diff";
 			this.m_pbDiffTW.Click += new System.EventHandler(this.DoTrainWreckDiff);
 			// 
 			// button4
 			// 
 			this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.button4.Location = new System.Drawing.Point(373, 887);
+			this.button4.Location = new System.Drawing.Point(23, 885);
 			this.button4.Name = "button4";
 			this.button4.Size = new System.Drawing.Size(176, 35);
 			this.button4.TabIndex = 98;
-			this.button4.Text = "Diff\'Em All";
+			this.button4.Text = "Download All";
 			this.button4.Click += new System.EventHandler(this.DoDownloadAndDiffAllSchedules);
+			// 
+			// button5
+			// 
+			this.button5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button5.Location = new System.Drawing.Point(216, 885);
+			this.button5.Name = "button5";
+			this.button5.Size = new System.Drawing.Size(176, 35);
+			this.button5.TabIndex = 99;
+			this.button5.Text = "Diff \'Em All";
+			// 
+			// m_cbSchedsForDiff
+			// 
+			this.m_cbSchedsForDiff.FormattingEnabled = true;
+			this.m_cbSchedsForDiff.Location = new System.Drawing.Point(405, 894);
+			this.m_cbSchedsForDiff.Name = "m_cbSchedsForDiff";
+			this.m_cbSchedsForDiff.Size = new System.Drawing.Size(318, 28);
+			this.m_cbSchedsForDiff.TabIndex = 100;
 			// 
 			// AwMainForm
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
 			this.ClientSize = new System.Drawing.Size(1174, 1173);
+			this.Controls.Add(this.m_cbSchedsForDiff);
+			this.Controls.Add(this.button5);
 			this.Controls.Add(this.button4);
 			this.Controls.Add(this.m_pbDiffTW);
 			this.Controls.Add(this.m_cbSkipContactDownload);
@@ -1480,12 +1506,52 @@ namespace ArbWeb
             InvalGameCount();
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function: RefreshSchedsToDiff
+			%%Qualified: ArbWeb.AwMainForm.RefreshSchedsToDiff
+        ----------------------------------------------------------------------------*/
+        void RefreshSchedsToDiff()
+        {
+	        if (m_offline == null)
+		        m_offline = new Offline(this);
+
+	        m_cbSchedsForDiff.Items.Clear();
+	        
+	        foreach (string s in m_offline.GetSchedulesAvailableForDiff())
+		        m_cbSchedsForDiff.Items.Add(s);
+        }
+        
+        
+        /*----------------------------------------------------------------------------
+			%%Function: DoTrainWreckDiff
+			%%Qualified: ArbWeb.AwMainForm.DoTrainWreckDiff
+        ----------------------------------------------------------------------------*/
         private void DoTrainWreckDiff(object sender, EventArgs e)
         {
-	        // string sFile = @"c:\temp\bkmrs.xlsx";
-	        // string sFile = @"c:\temp\schedtest.xlsx";
-	        string sFile = @"C:\Users\rlittle\AppData\Local\Temp\tempc02853e0-2d90-4192-9399-49d553e7e9db.xlsx";
-			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile, "Baseball");
+	        if (m_cbSchedsForDiff.SelectedIndex == -1)
+	        {
+		        MessageBox.Show("No trainwreck schedule selected");
+		        return;
+	        }
+
+			// string sFile = @"c:\temp\bkmrs.xlsx";
+			// string sFile = @"c:\temp\schedtest.xlsx";
+			//string sFile = @"C:\Users\rlittle\AppData\Local\Temp\tempc02853e0-2d90-4192-9399-49d553e7e9db.xlsx";
+			string sFile = (string)m_cbSchedsForDiff.SelectedItem;
+
+			string sSport = "Baseball";
+
+			if (!sFile.ToUpper().Contains(sSport.ToUpper()))
+			{
+				sSport = "Softball";
+				if (!sFile.ToUpper().Contains(sSport.ToUpper()))
+				{
+					MessageBox.Show($"Can't derive sport from path name: {sFile}");
+					return;
+				}
+			}
+			
+			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sFile, sSport);
 	        Schedule scheduleArbiter = new Schedule(m_srpt);
 	        m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
 
@@ -2009,9 +2075,25 @@ namespace ArbWeb
         }
 
         private Office365 m_spoInterop;
+
+        public Office365 SpoInterop()
+        {
+	        if (m_spoInterop == null)
+		        m_spoInterop = new Office365(Secrets.ApplicationClientID);
+
+	        return m_spoInterop;
+        }
+
+        private SPO.Offline m_offline;
         
 		private async void DoDownloadAndDiffAllSchedules(object sender, EventArgs e)
 		{
+			if (m_offline == null)
+				m_offline = new Offline(this);
+
+			await m_offline.DownloadAllSchedules();
+			return;
+			
 			if (m_spoInterop == null)
 				m_spoInterop = new Office365(Secrets.ApplicationClientID);
 

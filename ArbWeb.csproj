@@ -219,6 +219,7 @@
     <Compile Include="Games\Schedule.cs" />
     <Compile Include="Games\Roster.cs" />
     <Compile Include="SPO\Office365.cs" />
+    <Compile Include="SPO\Offline.cs" />
     <Compile Include="Support\MicroTimer.cs" />
     <Compile Include="Support\ooxml.cs" />
     <Compile Include="Profiles\Profile.cs" />

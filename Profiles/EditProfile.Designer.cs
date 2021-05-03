@@ -177,7 +177,6 @@
 			// 
 			// m_pbBrowseRoster2
 			// 
-			this.m_pbBrowseRoster2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_pbBrowseRoster2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.m_pbBrowseRoster2.Location = new System.Drawing.Point(532, 284);
 			this.m_pbBrowseRoster2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -189,7 +188,6 @@
 			// 
 			// m_pbBrowseRoster
 			// 
-			this.m_pbBrowseRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_pbBrowseRoster.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.m_pbBrowseRoster.Location = new System.Drawing.Point(532, 248);
 			this.m_pbBrowseRoster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -201,7 +199,6 @@
 			// 
 			// m_pbBrowseGameFile2
 			// 
-			this.m_pbBrowseGameFile2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_pbBrowseGameFile2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(532, 209);
 			this.m_pbBrowseGameFile2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -213,7 +210,6 @@
 			// 
 			// m_pbBrowseGameFile
 			// 
-			this.m_pbBrowseGameFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_pbBrowseGameFile.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.m_pbBrowseGameFile.Location = new System.Drawing.Point(532, 175);
 			this.m_pbBrowseGameFile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -245,8 +241,6 @@
 			// 
 			// m_ebRosterWorking
 			// 
-			this.m_ebRosterWorking.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebRosterWorking.Location = new System.Drawing.Point(115, 276);
 			this.m_ebRosterWorking.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebRosterWorking.Name = "m_ebRosterWorking";
@@ -255,8 +249,6 @@
 			// 
 			// m_ebGameCopy
 			// 
-			this.m_ebGameCopy.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebGameCopy.Location = new System.Drawing.Point(115, 202);
 			this.m_ebGameCopy.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebGameCopy.Name = "m_ebGameCopy";
@@ -275,8 +267,6 @@
 			// 
 			// m_ebRoster
 			// 
-			this.m_ebRoster.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebRoster.Location = new System.Drawing.Point(115, 240);
 			this.m_ebRoster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebRoster.Name = "m_ebRoster";
@@ -295,8 +285,6 @@
 			// 
 			// m_ebGameFile
 			// 
-			this.m_ebGameFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebGameFile.Location = new System.Drawing.Point(115, 166);
 			this.m_ebGameFile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebGameFile.Name = "m_ebGameFile";
@@ -317,7 +305,7 @@
 			// 
 			// label7
 			// 
-			this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.label7.Location = new System.Drawing.Point(1, 550);
 			this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -329,6 +317,7 @@
 			// 
 			// m_cbLogToFile
 			// 
+			this.m_cbLogToFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.m_cbLogToFile.AutoSize = true;
 			this.m_cbLogToFile.Location = new System.Drawing.Point(16, 625);
 			this.m_cbLogToFile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -340,6 +329,7 @@
 			// 
 			// m_cbTestOnly
 			// 
+			this.m_cbTestOnly.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.m_cbTestOnly.AutoSize = true;
 			this.m_cbTestOnly.Location = new System.Drawing.Point(16, 590);
 			this.m_cbTestOnly.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -351,6 +341,7 @@
 			// 
 			// m_cbIgnoreZSports
 			// 
+			this.m_cbIgnoreZSports.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.m_cbIgnoreZSports.AutoSize = true;
 			this.m_cbIgnoreZSports.Location = new System.Drawing.Point(16, 661);
 			this.m_cbIgnoreZSports.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -362,6 +353,7 @@
 			// 
 			// m_cbDownloadRosterOnUpload
 			// 
+			this.m_cbDownloadRosterOnUpload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.m_cbDownloadRosterOnUpload.AutoSize = true;
 			this.m_cbDownloadRosterOnUpload.Location = new System.Drawing.Point(250, 590);
 			this.m_cbDownloadRosterOnUpload.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -373,6 +365,7 @@
 			// 
 			// label8
 			// 
+			this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label8.AutoSize = true;
 			this.label8.Location = new System.Drawing.Point(246, 626);
 			this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -383,6 +376,7 @@
 			// 
 			// m_ebLogLevel
 			// 
+			this.m_ebLogLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.m_ebLogLevel.Location = new System.Drawing.Point(335, 621);
 			this.m_ebLogLevel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebLogLevel.Name = "m_ebLogLevel";
@@ -391,7 +385,6 @@
 			// 
 			// m_pbBrowseContacts2
 			// 
-			this.m_pbBrowseContacts2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_pbBrowseContacts2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.m_pbBrowseContacts2.Location = new System.Drawing.Point(532, 356);
 			this.m_pbBrowseContacts2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -403,7 +396,6 @@
 			// 
 			// m_pbBrowseContacts
 			// 
-			this.m_pbBrowseContacts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_pbBrowseContacts.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.m_pbBrowseContacts.Location = new System.Drawing.Point(532, 322);
 			this.m_pbBrowseContacts.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -425,8 +417,6 @@
 			// 
 			// m_ebContactsWorking
 			// 
-			this.m_ebContactsWorking.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebContactsWorking.Location = new System.Drawing.Point(115, 348);
 			this.m_ebContactsWorking.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebContactsWorking.Name = "m_ebContactsWorking";
@@ -445,8 +435,6 @@
 			// 
 			// m_ebContacts
 			// 
-			this.m_ebContacts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebContacts.Location = new System.Drawing.Point(115, 313);
 			this.m_ebContacts.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebContacts.Name = "m_ebContacts";
@@ -455,6 +443,7 @@
 			// 
 			// label11
 			// 
+			this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.label11.AutoSize = true;
 			this.label11.Location = new System.Drawing.Point(599, 248);
 			this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -465,6 +454,7 @@
 			// 
 			// label12
 			// 
+			this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.label12.AutoSize = true;
 			this.label12.Location = new System.Drawing.Point(649, 278);
 			this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -475,6 +465,7 @@
 			// 
 			// label15
 			// 
+			this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.label15.AutoSize = true;
 			this.label15.Location = new System.Drawing.Point(19, 434);
 			this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -485,8 +476,7 @@
 			// 
 			// m_ebSpoSite
 			// 
-			this.m_ebSpoSite.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.m_ebSpoSite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebSpoSite.Location = new System.Drawing.Point(717, 245);
 			this.m_ebSpoSite.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebSpoSite.Name = "m_ebSpoSite";
@@ -495,8 +485,7 @@
 			// 
 			// m_ebSpoSubsite
 			// 
-			this.m_ebSpoSubsite.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.m_ebSpoSubsite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebSpoSubsite.Location = new System.Drawing.Point(717, 277);
 			this.m_ebSpoSubsite.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebSpoSubsite.Name = "m_ebSpoSubsite";
@@ -505,7 +494,7 @@
 			// 
 			// button1
 			// 
-			this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.button1.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.button1.Location = new System.Drawing.Point(459, 519);
 			this.button1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -518,7 +507,7 @@
 			// 
 			// button2
 			// 
-			this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.button2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.button2.Location = new System.Drawing.Point(521, 519);
 			this.button2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -531,6 +520,9 @@
 			// 
 			// m_lvBaseballSchedules
 			// 
+			this.m_lvBaseballSchedules.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+			this.m_lvBaseballSchedules.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this.m_lvBaseballSchedules.HideSelection = false;
 			this.m_lvBaseballSchedules.LabelEdit = true;
 			this.m_lvBaseballSchedules.Location = new System.Drawing.Point(114, 434);
@@ -539,7 +531,7 @@
 			this.m_lvBaseballSchedules.Size = new System.Drawing.Size(457, 84);
 			this.m_lvBaseballSchedules.TabIndex = 106;
 			this.m_lvBaseballSchedules.UseCompatibleStateImageBehavior = false;
-			this.m_lvBaseballSchedules.View = System.Windows.Forms.View.List;
+			this.m_lvBaseballSchedules.View = System.Windows.Forms.View.Details;
 			// 
 			// label16
 			// 
@@ -555,21 +547,24 @@
 			// 
 			// m_lvSoftballSchedules
 			// 
+			this.m_lvSoftballSchedules.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.m_lvSoftballSchedules.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this.m_lvSoftballSchedules.HideSelection = false;
 			this.m_lvSoftballSchedules.LabelEdit = true;
 			this.m_lvSoftballSchedules.Location = new System.Drawing.Point(700, 434);
 			this.m_lvSoftballSchedules.MultiSelect = false;
 			this.m_lvSoftballSchedules.Name = "m_lvSoftballSchedules";
-			this.m_lvSoftballSchedules.Size = new System.Drawing.Size(457, 84);
+			this.m_lvSoftballSchedules.Size = new System.Drawing.Size(443, 84);
 			this.m_lvSoftballSchedules.TabIndex = 111;
 			this.m_lvSoftballSchedules.UseCompatibleStateImageBehavior = false;
-			this.m_lvSoftballSchedules.View = System.Windows.Forms.View.List;
+			this.m_lvSoftballSchedules.View = System.Windows.Forms.View.Details;
 			// 
 			// button3
 			// 
-			this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.button3.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.button3.Location = new System.Drawing.Point(1109, 446);
+			this.button3.Location = new System.Drawing.Point(1093, 519);
 			this.button3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.button3.Name = "button3";
 			this.button3.Size = new System.Drawing.Size(50, 34);
@@ -580,9 +575,9 @@
 			// 
 			// button4
 			// 
-			this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.button4.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.button4.Location = new System.Drawing.Point(1047, 446);
+			this.button4.Location = new System.Drawing.Point(1031, 519);
 			this.button4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.button4.Name = "button4";
 			this.button4.Size = new System.Drawing.Size(54, 34);
@@ -593,6 +588,7 @@
 			// 
 			// label17
 			// 
+			this.label17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.label17.AutoSize = true;
 			this.label17.Location = new System.Drawing.Point(605, 434);
 			this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -603,6 +599,7 @@
 			// 
 			// label18
 			// 
+			this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.label18.AutoSize = true;
 			this.label18.Location = new System.Drawing.Point(574, 172);
 			this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -613,8 +610,7 @@
 			// 
 			// m_ebSchedDownloadFolder
 			// 
-			this.m_ebSchedDownloadFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.m_ebSchedDownloadFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebSchedDownloadFolder.Location = new System.Drawing.Point(717, 169);
 			this.m_ebSchedDownloadFolder.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebSchedDownloadFolder.Name = "m_ebSchedDownloadFolder";
@@ -623,8 +619,7 @@
 			// 
 			// m_ebSchedWorkingFolder
 			// 
-			this.m_ebSchedWorkingFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.m_ebSchedWorkingFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.m_ebSchedWorkingFolder.Location = new System.Drawing.Point(717, 202);
 			this.m_ebSchedWorkingFolder.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.m_ebSchedWorkingFolder.Name = "m_ebSchedWorkingFolder";
@@ -633,6 +628,7 @@
 			// 
 			// label19
 			// 
+			this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.label19.AutoSize = true;
 			this.label19.Location = new System.Drawing.Point(635, 206);
 			this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);

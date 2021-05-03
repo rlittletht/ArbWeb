@@ -11,6 +11,10 @@ namespace ArbWeb
         public EditProfile()
         {
             InitializeComponent();
+            m_lvBaseballSchedules.Columns.Add("Schedule");
+            m_lvBaseballSchedules.Columns[0].Width = -1;
+            m_lvSoftballSchedules.Columns.Add("Schedule");
+            m_lvSoftballSchedules.Columns[0].Width = -1;
         }
 
         static void SetProfileFromUI(Profile pr, EditProfile ep)
