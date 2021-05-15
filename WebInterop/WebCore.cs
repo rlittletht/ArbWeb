@@ -17,20 +17,20 @@ namespace ArbWeb
         // ============================================================================
         // T O P  L E V E L    
         // ============================================================================
-        public const string _s_Home = "https://www.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
-        public const string _s_Assigning = "https://www.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
-        public const string _s_RanksEdit = "https://www.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
-        public const string _s_AddUser = "https://www.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u
-        private const string _s_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010u
-        public const string _s_Announcements = "https://www.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
-        public const string _s_ContactsView = "https://www.arbitersports.com/Assigner/ContactsView.aspx"; // ok2018
+        public const string _s_Home = "https://www1.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
+        public const string _s_Assigning = "https://www1.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
+        public const string _s_RanksEdit = "https://www1.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
+        public const string _s_AddUser = "https://www1.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u
+        private const string _s_OfficialsView = "https://www1.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010u
+        public const string _s_Announcements = "https://www1.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
+        public const string _s_ContactsView = "https://www1.arbitersports.com/Assigner/ContactsView.aspx"; // ok2018
 
         // ============================================================================
         // D I R E C T  A C C E S S
         // ============================================================================
-        public const string _s_Assigning_PrintAddress = "https://www.arbitersports.com/Assigner/Games/Print.aspx?filterID="; // ok2010
-        public const string _s_EditUser_MiscFields = "https://www.arbitersports.com/Official/MiscFieldsEdit.aspx?userID="; // ok2010
-        public const string _s_EditUser = "https://www.arbitersports.com/Official/OfficialEdit.aspx?userID="; // ok2010u
+        public const string _s_Assigning_PrintAddress = "https://www1.arbitersports.com/Assigner/Games/Print.aspx?filterID="; // ok2010
+        public const string _s_EditUser_MiscFields = "https://www1.arbitersports.com/Official/MiscFieldsEdit.aspx?userID="; // ok2010
+        public const string _s_EditUser = "https://www1.arbitersports.com/Official/OfficialEdit.aspx?userID="; // ok2010u
 
         // ============================================================================
         // H O M E
@@ -140,7 +140,7 @@ namespace ArbWeb
         // ============================================================================
         // O F F I C I A L S  V I E W
         // ============================================================================
-        public const string _s_Page_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2021
+        public const string _s_Page_OfficialsView = "https://www1.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2021
         public const string _s_OfficialsView_Select_Filter = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$ddlFilter"; // ok2010
         public const string _sid_OfficialsView_Select_Filter = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_ddlFilter"; // ok2021
         
