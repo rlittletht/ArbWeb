@@ -80,7 +80,7 @@ namespace ArbWeb.Reports
             sTempName = Filename.SBuildTempFilename("mailmergedoc", "docx");
             m_appContext.StatusReport.LogData($"Writing mailmergedoc to {sTempName} using template at {sFile}", 3, MSGT.Body);
             OOXML.CreateMailMergeDoc(sFile, sTempName, sCsvTemp, gms, out sArbiterHelpNeeded);
-
+             
             m_appContext.StatusReport.LogData($"ArbiterHelp HTML created: {sArbiterHelpNeeded}", 5, MSGT.Body);
             System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
             if (fLaunch)

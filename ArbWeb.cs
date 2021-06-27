@@ -148,6 +148,8 @@ namespace ArbWeb
 		private Button button4;
 		private Button button5;
 		private ComboBox m_cbSchedsForDiff;
+		private Button button6;
+		private Button button7;
 		private WebGames m_webGames;
         
         #region Top Level Program Flow
@@ -223,7 +225,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void EnableAdminFunctions()
         {
-            bool fAdmin = (String.Compare(System.Environment.MachineName, "dogmatix", true) == 0);
+            bool fAdmin = (String.Compare(System.Environment.MachineName, "baltix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
 
@@ -597,6 +599,8 @@ namespace ArbWeb
 			this.button4 = new System.Windows.Forms.Button();
 			this.button5 = new System.Windows.Forms.Button();
 			this.m_cbSchedsForDiff = new System.Windows.Forms.ComboBox();
+			this.button6 = new System.Windows.Forms.Button();
+			this.button7 = new System.Windows.Forms.Button();
 			label17 = new System.Windows.Forms.Label();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -1235,10 +1239,32 @@ namespace ArbWeb
 			this.m_cbSchedsForDiff.Size = new System.Drawing.Size(318, 28);
 			this.m_cbSchedsForDiff.TabIndex = 100;
 			// 
+			// button6
+			// 
+			this.button6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button6.Location = new System.Drawing.Point(786, 775);
+			this.button6.Name = "button6";
+			this.button6.Size = new System.Drawing.Size(106, 40);
+			this.button6.TabIndex = 101;
+			this.button6.Text = "All Umpires";
+			this.button6.Click += new System.EventHandler(this.SelectAllNonConsultantSites);
+			// 
+			// button7
+			// 
+			this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button7.Location = new System.Drawing.Point(674, 775);
+			this.button7.Name = "button7";
+			this.button7.Size = new System.Drawing.Size(106, 40);
+			this.button7.TabIndex = 102;
+			this.button7.Text = "Select All";
+			this.button7.Click += new System.EventHandler(this.SelectAllSites);
+			// 
 			// AwMainForm
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
 			this.ClientSize = new System.Drawing.Size(1174, 1173);
+			this.Controls.Add(this.button7);
+			this.Controls.Add(this.button6);
 			this.Controls.Add(this.m_cbSchedsForDiff);
 			this.Controls.Add(this.button5);
 			this.Controls.Add(this.button4);
@@ -2158,6 +2184,26 @@ namespace ArbWeb
 			}
 			m_srpt.PopLevel();
 
+		}
+
+		private void SelectAllNonConsultantSites(object sender, EventArgs e)
+		{
+			for (int i = 0; i < m_chlbxRoster.Items.Count; i++)
+			{
+				string site = (string) m_chlbxRoster.Items[i];
+
+				m_chlbxRoster.SetItemCheckState(i, site.ToUpper().Contains("CONSULTANT") ? CheckState.Unchecked : CheckState.Checked);
+			}
+		}
+
+		private void SelectAllSites(object sender, EventArgs e)
+		{
+			for (int i = 0; i < m_chlbxRoster.Items.Count; i++)
+			{
+				string site = (string)m_chlbxRoster.Items[i];
+
+				m_chlbxRoster.SetItemCheckState(i, CheckState.Checked);
+			}
 		}
 	}
 

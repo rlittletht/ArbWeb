@@ -28,17 +28,17 @@ namespace ArbWeb.Reports
 			%%Function:DoGenSiteRosterReport
 			%%Qualified:ArbWeb.Reports.SiteRosterReport.DoGenSiteRosterReport
 		----------------------------------------------------------------------------*/
-		public  void DoGenSiteRosterReport(CountsData gc, Roster rst, string []rgsRoster, DateTime dttmStart, DateTime dttmEnd)
+		public void DoGenSiteRosterReport(CountsData gc, Roster rst, string []rgsRoster, DateTime dttmStart, DateTime dttmEnd)
 		{
 			string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
 
-			gc.GenSiteRosterReport(sTempFile, rst, rgsRoster, dttmStart, dttmEnd);
+			gc.GenSiteRosterReport(sTempFile, rst, rgsRoster, dttmStart, dttmEnd, m_appContext.Profile.NoHonorificRanks);
 			// launch word with the file
 			Process.Start(sTempFile);
 			// System.IO.File.Delete(sTempFile);
 		}
 
-        public static void GenSiteRosterReport(ScheduleGames games, string sReportFile, ArbWeb.Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd)
+        public static void GenSiteRosterReport(ScheduleGames games, string sReportFile, ArbWeb.Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd, bool noHonorificRanks)
         {
             StreamWriter sw = new StreamWriter(sReportFile, false, Encoding.Default);
             SortedList<string, int> plsSiteShort = Utils.PlsUniqueFromRgs(rgsRosterFilter);
@@ -68,7 +68,7 @@ namespace ArbWeb.Reports
             // (note how #1 sorts before Foo Field, but North Field sorts after Bar Field. This gives us an inconsistent
             // consultant sort order.
 
-            // we want these to become (not new sort order).
+            // we want these to become (note new sort order).
             //     DateTime/Foo Field Consult/Foo Field, Foo Field/ Consultants
             //     DateTime/Foo Field Game/Foo Field #1/Game 1
             //     DateTime/Bar Field Consult/Bar Field, Bar Field/Consultants
@@ -123,7 +123,7 @@ namespace ArbWeb.Reports
 
                 if (plgm.Count > 0 && plgm[0].GameNum != gm.GameNum)
                 {
-                    WriteGameRoster(sw, plgm, fHeader, rst, mpSiteRoot);
+                    WriteGameRoster(sw, plgm, fHeader, rst, mpSiteRoot, noHonorificRanks);
                     plgm.Clear();
                     fHeader = false;
                 }
@@ -134,15 +134,27 @@ namespace ArbWeb.Reports
             }
 
             if (plgm.Count > 0)
-                WriteGameRoster(sw, plgm, fHeader, rst, mpSiteRoot);
+                WriteGameRoster(sw, plgm, fHeader, rst, mpSiteRoot, noHonorificRanks);
 
             sw.WriteLine("</table></div></html>");
             sw.Close();
         }
 
-        private static void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst, Dictionary<string, string> mpSiteRoot)
+        private static void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst, Dictionary<string, string> mpSiteRoot, bool noHonorificRanks)
         {
-            string sBackground = "";
+	        HashSet<string> honorifics = new HashSet<string>();
+
+	        if (noHonorificRanks)
+	        {
+		        honorifics.Add("HP");
+		        honorifics.Add("1B");
+		        honorifics.Add("2B");
+		        honorifics.Add("3B");
+		        honorifics.Add("LINE");
+	        }
+
+
+	        string sBackground = "";
 
             if (fHeader)
             {
@@ -197,7 +209,7 @@ namespace ArbWeb.Reports
                         sPhone = rste.CellPhone;
                         sName = rste.Name;
                         nBaseRank = rste.Rank($"{gm.Sport}, {gm.Pos}");
-                        sOtherRanks = rste.OtherRanks(gm.Sport, gm.Pos, nBaseRank);
+                        sOtherRanks = rste.OtherRanks(gm.Sport, gm.Pos, nBaseRank, honorifics);
                     }
 
                     sw.WriteLine($"<td class='rosterInner'>{gm.Pos} ({nBaseRank})");

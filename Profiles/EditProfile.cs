@@ -32,6 +32,8 @@ namespace ArbWeb
             pr.SkipZ = ep.m_cbIgnoreZSports.Checked;
             pr.DownloadRosterOnUpload = ep.m_cbDownloadRosterOnUpload.Checked;
             pr.LogLevel = Int32.Parse(ep.m_ebLogLevel.Text);
+            pr.NoHonorificRanks = ep.m_cbNoHonorificRanks.Checked;
+
             pr.SchedSpoSite = ep.m_ebSpoSite.Text;
             pr.SchedSpoSubsite = ep.m_ebSpoSubsite.Text;
             pr.SchedDownloadFolder = ep.m_ebSchedDownloadFolder.Text;
@@ -68,6 +70,7 @@ namespace ArbWeb
             ep.m_cbTestOnly.Checked = pr.TestOnly;
             ep.m_cbIgnoreZSports.Checked = pr.SkipZ;
             ep.m_cbDownloadRosterOnUpload.Checked = pr.DownloadRosterOnUpload;
+            ep.m_cbNoHonorificRanks.Checked = pr.NoHonorificRanks;
             ep.m_ebLogLevel.Text = pr.LogLevel.ToString();
             ep.m_ebSpoSite.Text = pr.SchedSpoSite;
             ep.m_ebSpoSubsite.Text = pr.SchedSpoSubsite;

@@ -80,6 +80,7 @@
 			this.m_ebSchedDownloadFolder = new System.Windows.Forms.TextBox();
 			this.m_ebSchedWorkingFolder = new System.Windows.Forms.TextBox();
 			this.label19 = new System.Windows.Forms.Label();
+			this.m_cbNoHonorificRanks = new System.Windows.Forms.CheckBox();
 			label1 = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
@@ -637,11 +638,24 @@
 			this.label19.TabIndex = 115;
 			this.label19.Text = "(Working)";
 			// 
+			// m_cbNoHonorificRanks
+			// 
+			this.m_cbNoHonorificRanks.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.m_cbNoHonorificRanks.AutoSize = true;
+			this.m_cbNoHonorificRanks.Location = new System.Drawing.Point(578, 590);
+			this.m_cbNoHonorificRanks.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.m_cbNoHonorificRanks.Name = "m_cbNoHonorificRanks";
+			this.m_cbNoHonorificRanks.Size = new System.Drawing.Size(237, 24);
+			this.m_cbNoHonorificRanks.TabIndex = 116;
+			this.m_cbNoHonorificRanks.Text = "Don\'t include Honorific ranks";
+			this.m_cbNoHonorificRanks.UseVisualStyleBackColor = true;
+			// 
 			// EditProfile
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1257, 732);
+			this.Controls.Add(this.m_cbNoHonorificRanks);
 			this.Controls.Add(this.label19);
 			this.Controls.Add(this.m_ebSchedWorkingFolder);
 			this.Controls.Add(this.m_ebSchedDownloadFolder);
@@ -755,5 +769,6 @@
 		private System.Windows.Forms.TextBox m_ebSchedDownloadFolder;
 		private System.Windows.Forms.TextBox m_ebSchedWorkingFolder;
 		private System.Windows.Forms.Label label19;
+		private System.Windows.Forms.CheckBox m_cbNoHonorificRanks;
 	}
 }

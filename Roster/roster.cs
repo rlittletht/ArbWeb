@@ -130,25 +130,39 @@ namespace ArbWeb
             return m_plsConsultantPositions.Contains(sKey);
         }
 
-        public string OtherRanks(string sSport, string sPos, int nBase)
+        public string OtherRanks(string sSport, string sPos, int nBase, HashSet<string> honorificsToSkip)
         {
-            string sOther = "";
-            foreach (string sKey in m_mpRanking.Keys)
-                {
-                if (sKey.StartsWith(sSport) && !sKey.EndsWith(sPos))
-                    {
-                    if (m_mpRanking[sKey] == nBase || m_mpRanking[sKey] == 1)
-                        continue;
+	        string sOther = "";
+	        foreach (string sKey in m_mpRanking.Keys)
+	        {
+		        if (sKey.StartsWith(sSport) && !sKey.EndsWith(sPos))
+		        {
+			        if (honorificsToSkip != null)
+			        {
+				        string[] keys = sKey.Split(',');
 
-                    if (FConsultantPosition(sKey) && nBase < m_mpRanking[sKey])
-                        continue;
+				        if (keys.Length == 2)
+				        {
+					        string sPosKey = keys[1].Trim();
 
-                    if (sOther.Length > 0)
-                        sOther += ", ";
-                    sOther = $"{sOther}{sKey.Substring(sSport.Length + 2)} ({m_mpRanking[sKey]})";
-                    }
-                }
-            return sOther;
+					        if (honorificsToSkip.Contains(sPosKey.ToUpper()))
+						        continue; // skip honorific positions (like HP, 1B, 2B, 3B, Lines -- caller will supply)
+				        }
+			        }
+
+			        if (m_mpRanking[sKey] == nBase || m_mpRanking[sKey] == 1)
+				        continue;
+
+			        if (FConsultantPosition(sKey) && nBase < m_mpRanking[sKey])
+				        continue;
+
+			        if (sOther.Length > 0)
+				        sOther += ", ";
+			        sOther = $"{sOther}{sKey.Substring(sSport.Length + 2)} ({m_mpRanking[sKey]})";
+		        }
+	        }
+
+	        return sOther;
         }
 
         /* R  S  T  E */
