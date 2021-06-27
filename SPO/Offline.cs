@@ -12,9 +12,6 @@ namespace ArbWeb.SPO
 	// maintains the offline copies of the schedules
 	public class Offline
 	{
-		private string m_sDownloadDirectory;
-		private string m_sWorkingDirectory;
-		private Office365 m_spoInterop;
 		private IAppContext m_appContext;
 		
 		public Offline() { }

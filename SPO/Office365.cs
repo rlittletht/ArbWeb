@@ -13,8 +13,6 @@ namespace ArbWeb
 {
 	public class Office365
 	{
-		IPublicClientApplication m_app;
-
 		private Auth m_auth = null;
 		private WebApiInterop m_api = null;
 
