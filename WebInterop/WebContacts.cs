@@ -5,17 +5,32 @@ namespace ArbWeb
     /// <summary>
     /// Summary description for AwMainForm.
     /// </summary>
-    public partial class AwMainForm : System.Windows.Forms.Form
+    public class WebContacts
     {
-        void DoDownloadFullContacts()
+	    private readonly IAppContext m_appContext;
+
+        /*----------------------------------------------------------------------------
+			%%Function:WebContacts
+			%%Qualified:ArbWeb.WebRoster.WebContacts
+		----------------------------------------------------------------------------*/
+        public WebContacts(IAppContext appContext)
+	    {
+		    m_appContext = appContext;
+	    }
+
+        /*----------------------------------------------------------------------------
+			%%Function:DoDownloadFullContacts
+			%%Qualified:ArbWeb.WebContacts.DoDownloadFullContacts
+        ----------------------------------------------------------------------------*/
+        public void DoDownloadFullContacts()
         {
-            m_srpt.AddMessage("Starting FULL Contact download...");
-            m_srpt.PushLevel();
+            m_appContext.StatusReport.AddMessage("Starting FULL Contact download...");
+            m_appContext.StatusReport.PushLevel();
 
-            PushCursor(Cursors.WaitCursor);
-            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_pr.Contacts);
+            m_appContext.PushCursor(Cursors.WaitCursor);
+            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_appContext.Profile.Contacts);
 
-            m_pr.Contacts = sOutFile;
+            m_appContext.Profile.Contacts = sOutFile;
 #if no
             HandleGenericRoster gr = new HandleGenericRoster(this,);
 
@@ -28,7 +43,11 @@ namespace ArbWeb
 #endif // no
         }
 
-        void DoDownloadContacts()
+        /*----------------------------------------------------------------------------
+			%%Function:DoDownloadContacts
+			%%Qualified:ArbWeb.WebContacts.DoDownloadContacts
+        ----------------------------------------------------------------------------*/
+        public void DoDownloadContacts()
         {
 	        #if NYI
             var x = m_awc.Handle; // let's make sure the webbrowser handle is created

@@ -7,20 +7,27 @@ using TCore.WebControl;
 
 namespace ArbWeb
 {
-    public partial class AwMainForm
+    public class WebNav
     {
+	    private IAppContext m_appContext;
 
-        #region Navigation Support
-        /* E N S U R E  A D M I N  L O G G E D  I N */
-        /*----------------------------------------------------------------------------
-	    	%%Function: EnsureAdminLoggedIn
-	    	%%Qualified: ArbWeb.AwMainForm.EnsureAdminLoggedIn
-	    	%%Contact: rlittle
-	    	
+	    /*----------------------------------------------------------------------------
+			%%Function:WebNav
+			%%Qualified:ArbWeb.WebNav.WebNav
 	    ----------------------------------------------------------------------------*/
+	    public WebNav(IAppContext appContext)
+	    {
+		    m_appContext = appContext;
+	    }
+	    
+        #region Navigation Support
+        /*----------------------------------------------------------------------------
+			%%Function:EnsureAdminLoggedIn
+			%%Qualified:ArbWeb.WebNav.EnsureAdminLoggedIn
+        ----------------------------------------------------------------------------*/
         private void EnsureAdminLoggedIn()
         {
-	        List<IWebElement> elements = new List<IWebElement>(m_webControl.Driver.FindElements(By.ClassName("accountsGridRow")));
+	        List<IWebElement> elements = new List<IWebElement>(m_appContext.WebControl.Driver.FindElements(By.ClassName("accountsGridRow")));
 	        bool fClickedAdmin = false;
 	        
 	        foreach (IWebElement element in elements)
@@ -33,68 +40,59 @@ namespace ArbWeb
 		        }
 	        }
 	        
-            ThrowIfNot(fClickedAdmin, "Can't find Admin account link");
-            m_webControl.WaitForPageLoad(200);
+            Utils.ThrowIfNot(fClickedAdmin, "Can't find Admin account link");
+            m_appContext.WebControl.WaitForPageLoad(200);
         }
 
-        public delegate void EnsureLoggedInDel();
-
-        /* E N S U R E  L O G G E D  I N */
         /*----------------------------------------------------------------------------
-        	%%Function: EnsureLoggedIn
-        	%%Qualified: ArbWeb.AwMainForm.EnsureLoggedIn
-        	%%Contact: rlittle
-        	
+			%%Function:EnsureLoggedIn
+			%%Qualified:ArbWeb.WebNav.EnsureLoggedIn
         ----------------------------------------------------------------------------*/
         public void EnsureLoggedIn()
         {
 	        DoEnsureLoggedIn();
         }
 
-        public void EnsureWebControl()
-        {
-	        if (m_webControl == null)
-				m_webControl = new WebControl(m_srpt, m_cbShowBrowser.Checked);
-        }
-        
-        /* E N S U R E  L O G G E D  I N */
+        bool m_fLoggedIn;
+
         /*----------------------------------------------------------------------------
-        	%%Function: EnsureLoggedIn
-        	%%Qualified: ArbWeb.AwMainForm.EnsureLoggedIn
-        	%%Contact: rlittle
-        	
+			%%Function:DoEnsureLoggedIn
+			%%Qualified:ArbWeb.WebNav.DoEnsureLoggedIn
+        
+			BE CAREFUL - appContext delegates DoLogin to us, so don't get caught in
+			an infinite loop
         ----------------------------------------------------------------------------*/
         private void DoEnsureLoggedIn()
         {
 	        MicroTimer timer = new MicroTimer();
 	        
-	        EnsureWebControl();
+	        m_appContext.EnsureWebControl();
 	        
 	        timer.Stop();
-	        m_srpt.LogData($"EnsureWebControl elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+	        m_appContext.StatusReport.LogData($"EnsureWebControl elapsed: {timer.MsecFloat}", 1, MSGT.Body);
 	        timer.Reset();
 	        
             if (m_fLoggedIn == false)
             {
 	            timer.Start();
 	            
-                m_srpt.AddMessage("Logging in...");
-                m_srpt.PushLevel();
+                m_appContext.StatusReport.AddMessage("Logging in...");
+                m_appContext.StatusReport.PushLevel();
                 
                 // login to arbiter
                 // nav to the main arbiter login page
-                if (!m_webControl.FNavToPage(WebCore._s_Home))
+                if (!m_appContext.WebControl.FNavToPage(WebCore._s_Home))
                     throw (new Exception("could not navigate to arbiter homepage!"));
 
-                if (!WebControl.FCheckForControlId(m_webControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
+                if (!WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
                 {
-                    WebControl.FSetTextForInputControlName(m_webControl.Driver, WebCore._s_Home_Input_Email, m_pr.UserID, false);
-                    WebControl.FSetTextForInputControlName(m_webControl.Driver, WebCore._s_Home_Input_Password, m_pr.Password, false);
+                    WebControl.FSetTextForInputControlName(m_appContext.WebControl.Driver, WebCore._s_Home_Input_Email, m_appContext.Profile.UserID, false);
+                    WebControl.FSetTextForInputControlName(m_appContext.WebControl.Driver, WebCore._s_Home_Input_Password, m_appContext.Profile.Password, false);
 
-                    m_webControl.FClickControlName(WebCore._s_Home_Button_SignIn);
+                    m_appContext.WebControl.FClickControlName(WebCore._s_Home_Button_SignIn);
                 }
 
-                if (WebControl.FCheckForControlId(m_webControl.Driver, WebCore._sid_Home_Div_PnlAccounts))
+                if (WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Div_PnlAccounts))
                 {
                     EnsureAdminLoggedIn();
                 }
@@ -124,34 +122,22 @@ namespace ArbWeb
                 }
 #endif
 
-                if (!WebControl.FCheckForControlId(m_webControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
+                if (!WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
                     MessageBox.Show("Login failed for ArbiterOne!");
                 else
                     m_fLoggedIn = true;
 
                 // and wait for nav to complete
-                m_webControl.WaitForPageLoad(300);
-                m_srpt.PopLevel();
-                m_srpt.AddMessage("Completed login.");
+                m_appContext.WebControl.WaitForPageLoad(300);
+                m_appContext.StatusReport.PopLevel();
+                m_appContext.StatusReport.AddMessage("Completed login.");
                 
                 timer.Stop();
-                m_srpt.LogData($"EnsureLoggedIn elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+                m_appContext.StatusReport.LogData($"EnsureLoggedIn elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
         }
 
-        /*----------------------------------------------------------------------------
-        	%%Function: DebugModelessWait
-        	%%Qualified: ArbWeb.AwMainForm.DebugModelessWait
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        public static void DebugModelessWait()
-        {
-            string s;
-
-            TCore.UI.InputBox.ShowInputBoxModelessWait("DEBUG PAUSE", "Press OK or Cancel to continue", "String?", out s);
-        }
         #endregion
 
     }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using TCore.UI;
 
 namespace ArbWeb
 {
@@ -9,6 +11,10 @@ namespace ArbWeb
         public EditProfile()
         {
             InitializeComponent();
+            m_lvBaseballSchedules.Columns.Add("Schedule");
+            m_lvBaseballSchedules.Columns[0].Width = -1;
+            m_lvSoftballSchedules.Columns.Add("Schedule");
+            m_lvSoftballSchedules.Columns[0].Width = -1;
         }
 
         static void SetProfileFromUI(Profile pr, EditProfile ep)
@@ -26,9 +32,27 @@ namespace ArbWeb
             pr.SkipZ = ep.m_cbIgnoreZSports.Checked;
             pr.DownloadRosterOnUpload = ep.m_cbDownloadRosterOnUpload.Checked;
             pr.LogLevel = Int32.Parse(ep.m_ebLogLevel.Text);
+            pr.NoHonorificRanks = ep.m_cbNoHonorificRanks.Checked;
 
+            pr.SchedSpoSite = ep.m_ebSpoSite.Text;
+            pr.SchedSpoSubsite = ep.m_ebSpoSubsite.Text;
+            pr.SchedDownloadFolder = ep.m_ebSchedDownloadFolder.Text;
+            pr.SchedWorkingFolder = ep.m_ebSchedWorkingFolder.Text;
+            
+            List<string> schedules = new List<string>();
+            foreach (ListViewItem item in ep.m_lvBaseballSchedules.Items)
+	            schedules.Add(item.Text);
+
+            pr.BaseballSchedFiles = schedules.ToArray();
+
+            schedules.Clear();
+            foreach (ListViewItem item in ep.m_lvSoftballSchedules.Items)
+	            schedules.Add(item.Text);
+
+            pr.SoftballSchedFiles = schedules.ToArray();
         }
 
+        
         public static bool FShowEditProfile(Profile pr)
         {
             EditProfile ep = new EditProfile();
@@ -46,7 +70,22 @@ namespace ArbWeb
             ep.m_cbTestOnly.Checked = pr.TestOnly;
             ep.m_cbIgnoreZSports.Checked = pr.SkipZ;
             ep.m_cbDownloadRosterOnUpload.Checked = pr.DownloadRosterOnUpload;
+            ep.m_cbNoHonorificRanks.Checked = pr.NoHonorificRanks;
             ep.m_ebLogLevel.Text = pr.LogLevel.ToString();
+            ep.m_ebSpoSite.Text = pr.SchedSpoSite;
+            ep.m_ebSpoSubsite.Text = pr.SchedSpoSubsite;
+            ep.m_ebSchedDownloadFolder.Text = pr.SchedDownloadFolder;
+            ep.m_ebSchedWorkingFolder.Text = pr.SchedWorkingFolder;
+            
+            ep.m_lvBaseballSchedules.Items.Clear();
+
+            foreach (string s in pr.BaseballSchedFiles)
+	            ep.m_lvBaseballSchedules.Items.Add(s);
+
+            ep.m_lvSoftballSchedules.Items.Clear();
+
+            foreach (string s in pr.SoftballSchedFiles)
+	            ep.m_lvSoftballSchedules.Items.Add(s);
 
             if (ep.ShowDialog() == DialogResult.OK)
                 {
@@ -133,5 +172,33 @@ namespace ArbWeb
                 }
         }
 
-    }
+		private void AddBaseballScheduleFileItem(object sender, EventArgs e)
+		{
+			ListViewItem item = m_lvBaseballSchedules.Items.Add("");
+			item.BeginEdit();
+		}
+
+		private void DeleteBaseballScheduleFileItem(object sender, EventArgs e)
+		{
+			foreach (int i in m_lvBaseballSchedules.SelectedIndices)
+				m_lvBaseballSchedules.Items.RemoveAt(i);
+		}
+
+		private void RenderHeadingLine(object sender, PaintEventArgs e)
+		{
+			RenderSupp.RenderHeadingLine(sender, e);
+		}
+
+		private void AddSoftballScheduleFileItem(object sender, EventArgs e)
+		{
+			ListViewItem item = m_lvSoftballSchedules.Items.Add("");
+			item.BeginEdit();
+		}
+
+		private void DeleteSoftballScheduleFileItem(object sender, EventArgs e)
+		{
+			foreach (int i in m_lvSoftballSchedules.SelectedIndices)
+				m_lvSoftballSchedules.Items.RemoveAt(i);
+		}
+	}
 }

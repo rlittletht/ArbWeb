@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ArbWeb.Games;
 
 namespace ArbWeb
 {
@@ -21,7 +22,7 @@ namespace ArbWeb
         	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
-        public SlotCount(GameData.GameSlot gm)
+        public SlotCount(GameSlot gm)
         {
             m_dttmSlot = gm.Dttm;
             m_mpSportCount = new Dictionary<string, int>();
@@ -43,7 +44,7 @@ namespace ArbWeb
         	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
-        public void AddSlot(GameData.GameSlot gm)
+        public void AddSlot(GameSlot gm)
         {
             if (m_mpSportCount.ContainsKey(gm.Sport))
                 m_mpSportCount[gm.Sport]++;
@@ -209,7 +210,7 @@ namespace ArbWeb
     public class SlotAggr
     {
         private SortedList<DateTime, SlotCount> m_mpSlotSc;
-        private SortedList<string, GameData.GameSlot> m_plgm;
+        private SortedList<string, GameSlot> m_plgm;
         private List<string> m_plsSportLevels;
         private List<string> m_plsSports;
         private List<string> m_plsSites;
@@ -269,7 +270,7 @@ namespace ArbWeb
         	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
-        public static SlotAggr Gen(SortedList<string, GameData.GameSlot> plgm, DateTime dttmStart, DateTime dttmEnd, string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOnlyOpen)
+        public static SlotAggr Gen(SortedList<string, GameSlot> plgm, DateTime dttmStart, DateTime dttmEnd, string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOnlyOpen)
         {
             SlotAggr os = new SlotAggr();
 
@@ -281,7 +282,7 @@ namespace ArbWeb
             os.m_plsSportLevels = new List<string>();
             os.m_plsSites = new List<string>();
 
-            foreach (GameData.GameSlot gm in plgm.Values)
+            foreach (GameSlot gm in plgm.Values)
                 {
                 if (!gm.Open && fOnlyOpen)
                     continue;

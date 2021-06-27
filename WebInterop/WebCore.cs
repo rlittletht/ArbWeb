@@ -17,20 +17,20 @@ namespace ArbWeb
         // ============================================================================
         // T O P  L E V E L    
         // ============================================================================
-        public const string _s_Home = "https://www.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
-        public const string _s_Assigning = "https://www.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
-        public const string _s_RanksEdit = "https://www.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
-        public const string _s_AddUser = "https://www.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u
-        private const string _s_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010u
-        public const string _s_Announcements = "https://www.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
-        public const string _s_ContactsView = "https://www.arbitersports.com/Assigner/ContactsView.aspx"; // ok2018
+        public const string _s_Home = "https://www1.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
+        public const string _s_Assigning = "https://www1.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
+        public const string _s_RanksEdit = "https://www1.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
+        public const string _s_AddUser = "https://www1.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u
+        private const string _s_OfficialsView = "https://www1.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2010u
+        public const string _s_Announcements = "https://www1.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
+        public const string _s_ContactsView = "https://www1.arbitersports.com/Assigner/ContactsView.aspx"; // ok2018
 
         // ============================================================================
         // D I R E C T  A C C E S S
         // ============================================================================
-        public const string _s_Assigning_PrintAddress = "https://www.arbitersports.com/Assigner/Games/Print.aspx?filterID="; // ok2010
-        public const string _s_EditUser_MiscFields = "https://www.arbitersports.com/Official/MiscFieldsEdit.aspx?userID="; // ok2010
-        public const string _s_EditUser = "https://www.arbitersports.com/Official/OfficialEdit.aspx?userID="; // ok2010u
+        public const string _s_Assigning_PrintAddress = "https://www1.arbitersports.com/Assigner/Games/Print.aspx?filterID="; // ok2010
+        public const string _s_EditUser_MiscFields = "https://www1.arbitersports.com/Official/MiscFieldsEdit.aspx?userID="; // ok2010
+        public const string _s_EditUser = "https://www1.arbitersports.com/Official/OfficialEdit.aspx?userID="; // ok2010u
 
         // ============================================================================
         // H O M E
@@ -140,7 +140,7 @@ namespace ArbWeb
         // ============================================================================
         // O F F I C I A L S  V I E W
         // ============================================================================
-        public const string _s_Page_OfficialsView = "https://www.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2021
+        public const string _s_Page_OfficialsView = "https://www1.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2021
         public const string _s_OfficialsView_Select_Filter = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$ddlFilter"; // ok2010
         public const string _sid_OfficialsView_Select_Filter = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_ddlFilter"; // ok2021
         
@@ -461,7 +461,7 @@ namespace ArbWeb
     {
         private readonly string m_sFilterOptionTextReq;
         private readonly string m_sDescription;
-        private readonly IAppContext m_iac;
+        private readonly IAppContext m_appContext;
         private readonly string m_sReportPage;
         private readonly string m_sSelectFilterControlName;
         private readonly string m_sReportPrintPagePrefix;
@@ -515,11 +515,11 @@ namespace ArbWeb
             ControlSetting<string>[] rgSelectSettings,
             string sGameFile,
             string sGameCopy,
-            IAppContext iac)
+            IAppContext appContext)
         {
             m_sFilterOptionTextReq = sFilterOptionTextReq;
             m_sDescription = sDescription;
-            m_iac = iac;
+            m_appContext = appContext;
             m_sReportPage = sReportPage;
             m_sSelectFilterControlName = sSelectFilterControlName;
             m_sidSelectFilterControl = sidSelectFilterControl;
@@ -545,10 +545,10 @@ namespace ArbWeb
             ControlSetting<bool>[] rgCheckedSettings,
             string sGameFile,
             string sGameCopy,
-            IAppContext iac)
+            IAppContext appContext)
         {
             m_sDescription = sDescription;
-            m_iac = iac;
+            m_appContext = appContext;
             m_sReportPage = sReportPage;
             m_sidReportPageLink = sidReportPageLink;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
@@ -568,8 +568,8 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void DownloadGeneric(out string sGameFileNew)
         {
-            m_iac.StatusReport.AddMessage($"Starting {m_sDescription} download...");
-            m_iac.StatusReport.PushLevel();
+            m_appContext.StatusReport.AddMessage($"Starting {m_sDescription} download...");
+            m_appContext.StatusReport.PushLevel();
             string sTempFile = Filename.SBuildTempFilename("temp", "xls");
 
             sTempFile = DownloadGenericToFile(sTempFile);
@@ -579,8 +579,8 @@ namespace ArbWeb
 
             // ok, now we have all games selected...
             // time to try to download a report
-            m_iac.StatusReport.PopLevel();
-            m_iac.StatusReport.AddMessage($"Completed downloading {m_sDescription}.");
+            m_appContext.StatusReport.PopLevel();
+            m_appContext.StatusReport.AddMessage($"Completed downloading {m_sDescription}.");
             sGameFileNew = m_sGameFile;
         }
 
@@ -600,7 +600,9 @@ namespace ArbWeb
 
 	        if (wkb != null)
 	        {
-		        wkb.SaveAs(sTargetCsvFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlCSV, missing, missing, missing, missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, missing, missing, missing, missing, missing);
+		        Microsoft.Office.Interop.Excel.Worksheet sheet = (Microsoft.Office.Interop.Excel.Worksheet) wkb.Worksheets[1];
+		        sheet.Select(Type.Missing);
+                wkb.SaveAs(sTargetCsvFile, Microsoft.Office.Interop.Excel.XlFileFormat.xlCSV, missing, missing, missing, missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, missing, missing, missing, missing, missing);
 		        wkb.Close(0, missing, missing);
 	        }
 	        app.Quit();
@@ -664,7 +666,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private string DownloadGenericToFile(string sTempFile)
         {
-            m_iac.EnsureLoggedIn();
+            m_appContext.EnsureLoggedIn();
 
             DoLaunchDownloadGeneric(sTempFile);
 
@@ -693,12 +695,12 @@ namespace ArbWeb
             while (count < 2)
                 {
                 // ok, now we're at the main assigner page...
-                if (!m_iac.WebControlNew.FNavToPage(m_sReportPage))
+                if (!m_appContext.WebControl.FNavToPage(m_sReportPage))
                     throw (new Exception("could not navigate to games view"));
 
                 if (FNeedSelectReportFilter())
                     {
-                    sFilterOptionValue = m_iac.WebControlNew.GetOptionValueFromFilterOptionTextForControlName(m_sSelectFilterControlName, m_sFilterOptionTextReq);
+                    sFilterOptionValue = m_appContext.WebControl.GetOptionValueFromFilterOptionTextForControlName(m_sSelectFilterControlName, m_sFilterOptionTextReq);
                     if (sFilterOptionValue != null)
                         break;
                     }
@@ -718,14 +720,14 @@ namespace ArbWeb
 
                 // now set that filter
 
-                m_iac.WebControlNew.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
+                m_appContext.WebControl.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
 
-                if (!m_iac.WebControlNew.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
+                if (!m_appContext.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
                     throw (new Exception("could not navigate to the reports page!"));
                 }
             else
                 {
-                m_iac.ThrowIfNot(m_iac.WebControlNew.FClickControlId(m_sidReportPageLink), "could not click on report link");
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(m_sidReportPageLink), "could not click on report link");
                 }
 
             // loop through the Select controls we have to set (typically, this will include the file format)
@@ -733,24 +735,24 @@ namespace ArbWeb
                 {
                 foreach (ControlSetting<string> cs in m_rgSelectSettings)
                     {
-                    m_iac.WebControlNew.FSetSelectedOptionTextForControlId(cs.IdControlExtra, cs.ControlValue);
+                    m_appContext.WebControl.FSetSelectedOptionTextForControlId(cs.IdControlExtra, cs.ControlValue);
                     }
                 }
 
             if (m_rgCheckedSettings != null)
                 {
                 foreach (ControlSetting<bool> cs in m_rgCheckedSettings)
-                    m_iac.WebControlNew.FSetCheckboxControlNameVal(cs.ControlValue, cs.ControlName);
+                    m_appContext.WebControl.FSetCheckboxControlNameVal(cs.ControlValue, cs.ControlName);
                 }
 
             // m_iac.StatusReport.LogData($"Setting clipboard data: {sTempFile}", 3, StatusRpt.MSGT.Body);
             // System.Windows.Forms.Clipboard.SetText(sTempFile);
 
             WebControl.FileDownloader downloader = new WebControl.FileDownloader(
-	            m_iac.WebControlNew,
+	            m_appContext.WebControl,
 	            m_sFullExpectedName,
 	            sTempFile,
-	            () => m_iac.WebControlNew.FClickControlName(m_sReportPrintSubmitPrintControlName));
+	            () => m_appContext.WebControl.FClickControlName(m_sReportPrintSubmitPrintControlName));
             
             downloader.GetDownloadedFile();
         }
@@ -831,7 +833,7 @@ namespace ArbWeb
         private void PopulatePglOfficialsFromPageCore(PGL pgl)
         {
 	        // grab the info from the current navigated page
-	        IWebElement table = m_iac.WebControlNew.Driver.FindElement(By.XPath("//body"));
+	        IWebElement table = m_iac.WebControl.Driver.FindElement(By.XPath("//body"));
 
 	        string sHtml = table.GetAttribute("outerHTML");
 	        HtmlAgilityPack.HtmlDocument html = new HtmlAgilityPack.HtmlDocument();
@@ -1002,9 +1004,9 @@ namespace ArbWeb
         {
             m_iac.EnsureLoggedIn();
 
-            m_iac.ThrowIfNot(m_iac.WebControlNew.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            Utils.ThrowIfNot(m_iac.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
 
-            m_iac.WebControlNew.FSetSelectedOptionTextForControlId(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
+            m_iac.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
         }
 
         // object could be RST or PGL
@@ -1055,7 +1057,7 @@ namespace ArbWeb
 	        
 	        // figure out how many pages we have
 	        // find all of the <a> tags with an href that targets a pagination postback
-	        IList<IWebElement> anchors = m_iac.WebControlNew.Driver.FindElements(By.XPath($"//tr[@class='numericPaging']//a[contains(@href, '{WebCore._s_OfficialsView_PaginationHrefPostbackSubstr}')]"));
+	        IList<IWebElement> anchors = m_iac.WebControl.Driver.FindElements(By.XPath($"//tr[@class='numericPaging']//a[contains(@href, '{WebCore._s_OfficialsView_PaginationHrefPostbackSubstr}')]"));
 	        List<string> plsHrefs = new List<string>();
 
 	        foreach (IWebElement anchor in anchors)
@@ -1085,7 +1087,7 @@ namespace ArbWeb
 
                 try
                 {
-	                anchor = m_iac.WebControlNew.Driver.FindElement(By.XPath(sXpath));
+	                anchor = m_iac.WebControl.Driver.FindElement(By.XPath(sXpath));
                 }
                 catch
                 {

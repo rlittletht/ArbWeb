@@ -18,7 +18,7 @@
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>ph</RootNamespace>
+    <RootNamespace>ArbWeb</RootNamespace>
     <StartupObject>
     </StartupObject>
     <FileUpgradeFlags>
@@ -96,11 +96,17 @@
       <HintPath>packages\HtmlAgilityPack.1.11.31\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Identity.Client, Version=4.30.1.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Identity.Client.4.30.1\lib\net461\Microsoft.Identity.Client.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="SeleniumExtras.WaitHelpers, Version=3.11.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\DotNetSeleniumExtras.WaitHelpers.3.11.0\lib\net45\SeleniumExtras.WaitHelpers.dll</HintPath>
+    </Reference>
+    <Reference Include="StatusResult, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\TCore.StatusResult.2.0.0\lib\netstandard2.0\StatusResult.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -112,6 +118,9 @@
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms">
       <Name>System.Windows.Forms</Name>
     </Reference>
@@ -177,44 +186,59 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="contacts.cs" />
-    <Compile Include="EditProfile.cs">
+    <Compile Include="Secrets.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Secrets.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SPO\Auth.cs" />
+    <Compile Include="Games\Differ.cs" />
+    <Compile Include="Games\DistributeTeamCount.cs" />
+    <Compile Include="Games\FuzzyMatcher.cs" />
+    <Compile Include="Games\Game.cs" />
+    <Compile Include="Games\GamesLoader_Arbiter.cs" />
+    <Compile Include="Games\GameSlot.cs" />
+    <Compile Include="Games\LearnMappings.cs" />
+    <Compile Include="Games\ScheduleGames.cs" />
+    <Compile Include="Games\ScheduleMaps.cs" />
+    <Compile Include="Games\SimpleDiffGame.cs" />
+    <Compile Include="Games\SimpleGame.cs" />
+    <Compile Include="Games\SimpleSchedule.cs" />
+    <Compile Include="Games\SimpleDiffSchedule.cs" />
+    <Compile Include="Games\SimpleScheduleLoader_TrainWreck.cs" />
+    <Compile Include="Games\Sport.cs" />
+    <Compile Include="Reports\AnalysisReport.cs" />
+    <Compile Include="Reports\SimpleGameReport.cs" />
+    <Compile Include="Roster\contacts.cs" />
+    <Compile Include="Profiles\EditProfile.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditProfile.Designer.cs">
+    <Compile Include="Profiles\EditProfile.Designer.cs">
       <DependentUpon>EditProfile.cs</DependentUpon>
     </Compile>
-    <Compile Include="games.cs" />
-    <Compile Include="MicroTimer.cs" />
-    <Compile Include="ooxml.cs" />
-    <Compile Include="Profile.cs" />
-    <Compile Include="reports.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="roster.cs" />
-    <Compile Include="RosterCore.cs" />
-    <Compile Include="slots.cs" />
-    <Compile Include="umpire.cs" />
-    <Compile Include="Utils.cs" />
-    <Compile Include="WebContacts.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebCore.cs" />
-    <Compile Include="WebGames.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebNav.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebRoster.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebRosterDownload.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WebRosterUpload.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Games\Schedule.cs" />
+    <Compile Include="Games\Roster.cs" />
+    <Compile Include="SPO\Office365.cs" />
+    <Compile Include="SPO\Offline.cs" />
+    <Compile Include="Support\MicroTimer.cs" />
+    <Compile Include="Support\ooxml.cs" />
+    <Compile Include="Profiles\Profile.cs" />
+    <Compile Include="Reports\NeedHelpReport.cs" />
+    <Compile Include="Reports\OpenSlots.cs" />
+    <Compile Include="Reports\SiteRosterReport.cs" />
+    <Compile Include="WebInterop\WebAnnounce.cs" />
+    <Compile Include="Roster\roster.cs" />
+    <Compile Include="Roster\RosterCore.cs" />
+    <Compile Include="Games\slots.cs" />
+    <Compile Include="Roster\umpire.cs" />
+    <Compile Include="Support\Utils.cs" />
+    <Compile Include="WebInterop\WebContacts.cs" />
+    <Compile Include="WebInterop\WebCore.cs" />
+    <Compile Include="WebInterop\WebGames.cs" />
+    <Compile Include="WebInterop\WebNav.cs" />
+    <Compile Include="WebInterop\WebRoster.cs" />
+    <Compile Include="WebInterop\WebRosterDownload.cs" />
+    <Compile Include="WebInterop\WebRosterUpload.cs" />
     <Content Include="App.ico" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -222,13 +246,17 @@
     <Compile Include="ArbWeb.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GenCount.cs" />
+    <Compile Include="Reports\GenCount.cs" />
     <EmbeddedResource Include="ArbWeb.resx">
       <DependentUpon>ArbWeb.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="EditProfile.resx">
+    <EmbeddedResource Include="Profiles\EditProfile.resx">
       <DependentUpon>EditProfile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Secrets.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Secrets.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -266,6 +294,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\liblet\cs\TCore.CSV\TCore.CSV.csproj">
+      <Project>{e2d2ef30-c48e-4517-93fd-590940e23ce3}</Project>
+      <Name>TCore.CSV</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\liblet\cs\TCore.MsalWeb.Working\TCore.MsalWeb\TCore.MsalWeb.csproj">
+      <Project>{2a614abe-23ae-4064-bd31-4ea1bcc4dae0}</Project>
+      <Name>TCore.MsalWeb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\liblet\cs\TCore.UI\TCore.UI.csproj">
       <Project>{9213a90f-a23f-4bc5-827c-164ecb6c6cc2}</Project>
       <Name>TCore.UI</Name>
@@ -282,6 +318,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

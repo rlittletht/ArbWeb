@@ -4,29 +4,48 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Resources;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Web;
+using ArbWeb.Games;
+using ArbWeb.Reports;
+using ArbWeb.SPO;
+using Microsoft.Identity.Client;
+using Microsoft.Vbe.Interop;
 using Microsoft.Win32;
 using TCore.StatusBox;
 using TCore.CmdLine;
+using TCore.MsalWeb;
 using TCore.Settings;
 using TCore.UI;
 using TCore.Util;
 using TCore.WebControl;
+using Application = System.Windows.Forms.Application;
 
 namespace ArbWeb
 {
     public interface IAppContext
     {
         StatusBox StatusReport { get; }
-        WebControl WebControlNew { get; }
+        WebControl WebControl { get; }
         void EnsureLoggedIn();
         Profile Profile { get; }
-        void ThrowIfNot(bool f, string s);
+        void DoPendingQueueUIOp();
+        void PopCursor();
+        void PushCursor(Cursor cursor);
+        CountsData GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled, int affiliationRosterIndex);
+        void InvalRoster();
+        Roster RstEnsure(string sRoster);
+        void EnsureWebControl();
+        Office365 SpoInterop();
     }
 
-    /// <summary>
-    /// Summary description for AwMainForm.
-    /// </summary>
-    public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch, IAppContext
+	/// <summary>
+	/// Summary description for AwMainForm.
+	/// </summary>
+	public partial class AwMainForm : System.Windows.Forms.Form, TCore.CmdLine.ICmdLineDispatch, IAppContext
     {
         public AwMainForm() { } // for unit tests only
 
@@ -34,8 +53,6 @@ namespace ArbWeb
 
         private System.Windows.Forms.Button m_pbDownloadGames;
 
-        private System.Windows.Forms.ContextMenu contextMenu1;
-        private System.Windows.Forms.MenuItem menuItem1;
         object Zero = 0;
         object EmptyString = "";
         private Button button1;
@@ -107,13 +124,7 @@ namespace ArbWeb
         #endregion
 
         public StatusBox StatusReport => m_srpt;
-
-        public void ThrowIfNot(bool f, string s)
-        {
-            if (!f)
-                throw new Exception(s);
-        }
-
+		
         private bool m_fAutomateUpdateHelp = false;
         private List<string> m_plsAutomateIncludeSport = new List<string>();
         private string m_sAutomateDateStart = null;
@@ -127,14 +138,20 @@ namespace ArbWeb
 
         private WebControl m_webControl;
         
-        public WebControl WebControlNew => m_webControl;
+        public WebControl WebControl => m_webControl;
         
         bool m_fDontUpdateProfile;
-        bool m_fLoggedIn;
         Roster m_rst;
         CountsData m_gc;
         private bool m_fAutomating = false;
-
+		private Button m_pbDiffTW;
+		private Button button4;
+		private Button button5;
+		private ComboBox m_cbSchedsForDiff;
+		private Button button6;
+		private Button button7;
+		private WebGames m_webGames;
+        
         #region Top Level Program Flow
 
         /*----------------------------------------------------------------------------
@@ -208,9 +225,12 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void EnableAdminFunctions()
         {
-            bool fAdmin = (String.Compare(System.Environment.MachineName, "dogmatix", true) == 0);
+            bool fAdmin = (String.Compare(System.Environment.MachineName, "baltix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin;
         }
+
+        private WebNav m_webNav;
+        
         /* A W  M A I N  F O R M */
         /*----------------------------------------------------------------------------
         	%%Function: AwMainForm
@@ -228,6 +248,8 @@ namespace ArbWeb
             InitializeComponent();
 
             m_srpt = new StatusBox(m_recStatus);
+            m_webNav = new WebNav(this);
+            
             m_fDontUpdateProfile = true;
             RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Thetasoft\\ArbWeb");
 
@@ -258,7 +280,8 @@ namespace ArbWeb
             // load MRU from registry
             m_fDontUpdateProfile = false;
             EnableControls();
-
+            RefreshSchedsToDiff();
+            
             CmdLineConfig clcfg = new CmdLineConfig(new CmdLineSwitch[]
                                                         {
                                                         new CmdLineSwitch("H", true /*fToggle*/, false /*fReq*/,
@@ -403,7 +426,7 @@ namespace ArbWeb
                 }
         }
 
-        void DoPendingQueueUIOp()
+        public void DoPendingQueueUIOp()
         {
             if (this.InvokeRequired)
                 this.Invoke(new DoPendingQueueUIOpDel(DoDoPendingQueueUIOp));
@@ -445,7 +468,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void PushCursor(Cursor crs)
+        public void PushCursor(Cursor crs)
         {
             if (this.InvokeRequired)
                 this.BeginInvoke(new PushCursorDel(DoPushCursor), crs);
@@ -476,7 +499,7 @@ namespace ArbWeb
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
-        void PopCursor()
+        public void PopCursor()
         {
             if (this.InvokeRequired)
                 this.BeginInvoke(new PopCursorDel(DoPopCursor));
@@ -514,8 +537,6 @@ namespace ArbWeb
         {
 			System.Windows.Forms.Label label17;
 			this.m_pbDownloadGames = new System.Windows.Forms.Button();
-			this.contextMenu1 = new System.Windows.Forms.ContextMenu();
-			this.menuItem1 = new System.Windows.Forms.MenuItem();
 			this.button1 = new System.Windows.Forms.Button();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.m_recStatus = new System.Windows.Forms.RichTextBox();
@@ -574,6 +595,12 @@ namespace ArbWeb
 			this.m_pbRefreshGameFilters = new System.Windows.Forms.Button();
 			this.pbTestDownload = new System.Windows.Forms.Button();
 			this.m_cbSkipContactDownload = new System.Windows.Forms.CheckBox();
+			this.m_pbDiffTW = new System.Windows.Forms.Button();
+			this.button4 = new System.Windows.Forms.Button();
+			this.button5 = new System.Windows.Forms.Button();
+			this.m_cbSchedsForDiff = new System.Windows.Forms.ComboBox();
+			this.button6 = new System.Windows.Forms.Button();
+			this.button7 = new System.Windows.Forms.Button();
 			label17 = new System.Windows.Forms.Label();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -596,17 +623,6 @@ namespace ArbWeb
 			this.m_pbDownloadGames.TabIndex = 14;
 			this.m_pbDownloadGames.Text = "Download Games";
 			this.m_pbDownloadGames.Click += new System.EventHandler(this.HandleDownloadGamesClick);
-			// 
-			// contextMenu1
-			// 
-			this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.menuItem1});
-			this.contextMenu1.Popup += new System.EventHandler(this.contextMenu1_Popup);
-			// 
-			// menuItem1
-			// 
-			this.menuItem1.Index = 0;
-			this.menuItem1.Text = "Paste";
 			// 
 			// button1
 			// 
@@ -1042,7 +1058,6 @@ namespace ArbWeb
 			this.label18.Size = new System.Drawing.Size(1102, 28);
 			this.label18.TabIndex = 82;
 			this.label18.Tag = "Site roster report";
-			this.label18.Click += new System.EventHandler(this.label18_Click);
 			this.label18.Paint += new System.Windows.Forms.PaintEventHandler(this.RenderHeadingLine);
 			// 
 			// m_chlbxRoster
@@ -1175,7 +1190,6 @@ namespace ArbWeb
 			this.pbTestDownload.Size = new System.Drawing.Size(176, 35);
 			this.pbTestDownload.TabIndex = 95;
 			this.pbTestDownload.Text = "Test Download";
-//			this.pbTestDownload.Click += new System.EventHandler(this.DoTestDownload);
 			// 
 			// m_cbSkipContactDownload
 			// 
@@ -1187,10 +1201,74 @@ namespace ArbWeb
 			this.m_cbSkipContactDownload.Text = "Skip Contact DL";
 			this.m_cbSkipContactDownload.UseVisualStyleBackColor = true;
 			// 
+			// m_pbDiffTW
+			// 
+			this.m_pbDiffTW.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.m_pbDiffTW.Location = new System.Drawing.Point(729, 887);
+			this.m_pbDiffTW.Name = "m_pbDiffTW";
+			this.m_pbDiffTW.Size = new System.Drawing.Size(51, 35);
+			this.m_pbDiffTW.TabIndex = 97;
+			this.m_pbDiffTW.Text = "Diff";
+			this.m_pbDiffTW.Click += new System.EventHandler(this.DiffSelectedTrainWreckSchedule);
+			// 
+			// button4
+			// 
+			this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button4.Location = new System.Drawing.Point(23, 885);
+			this.button4.Name = "button4";
+			this.button4.Size = new System.Drawing.Size(176, 35);
+			this.button4.TabIndex = 98;
+			this.button4.Text = "Download All";
+			this.button4.Click += new System.EventHandler(this.DoDownloadAndDiffAllSchedules);
+			// 
+			// button5
+			// 
+			this.button5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button5.Location = new System.Drawing.Point(216, 885);
+			this.button5.Name = "button5";
+			this.button5.Size = new System.Drawing.Size(176, 35);
+			this.button5.TabIndex = 99;
+			this.button5.Text = "Diff \'Em All";
+			this.button5.Click += new System.EventHandler(this.DiffAllOfflineSchedules);
+			// 
+			// m_cbSchedsForDiff
+			// 
+			this.m_cbSchedsForDiff.FormattingEnabled = true;
+			this.m_cbSchedsForDiff.Location = new System.Drawing.Point(405, 894);
+			this.m_cbSchedsForDiff.Name = "m_cbSchedsForDiff";
+			this.m_cbSchedsForDiff.Size = new System.Drawing.Size(318, 28);
+			this.m_cbSchedsForDiff.TabIndex = 100;
+			// 
+			// button6
+			// 
+			this.button6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button6.Location = new System.Drawing.Point(786, 775);
+			this.button6.Name = "button6";
+			this.button6.Size = new System.Drawing.Size(106, 40);
+			this.button6.TabIndex = 101;
+			this.button6.Text = "All Umpires";
+			this.button6.Click += new System.EventHandler(this.SelectAllNonConsultantSites);
+			// 
+			// button7
+			// 
+			this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button7.Location = new System.Drawing.Point(674, 775);
+			this.button7.Name = "button7";
+			this.button7.Size = new System.Drawing.Size(106, 40);
+			this.button7.TabIndex = 102;
+			this.button7.Text = "Select All";
+			this.button7.Click += new System.EventHandler(this.SelectAllSites);
+			// 
 			// AwMainForm
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
 			this.ClientSize = new System.Drawing.Size(1174, 1173);
+			this.Controls.Add(this.button7);
+			this.Controls.Add(this.button6);
+			this.Controls.Add(this.m_cbSchedsForDiff);
+			this.Controls.Add(this.button5);
+			this.Controls.Add(this.button4);
+			this.Controls.Add(this.m_pbDiffTW);
 			this.Controls.Add(this.m_cbSkipContactDownload);
 			this.Controls.Add(this.pbTestDownload);
 			this.Controls.Add(this.m_pbRefreshGameFilters);
@@ -1290,7 +1368,9 @@ namespace ArbWeb
 
         private void HandleDownloadContactsClick(object sender, EventArgs e)
         {
-            DoDownloadContacts();
+			WebContacts contacts = new WebContacts(this);
+
+            contacts.DoDownloadContacts();
         }
 
         /* D O  D O W N L O A D  R O S T E R */
@@ -1302,7 +1382,8 @@ namespace ArbWeb
 	    ----------------------------------------------------------------------------*/
         private void HandleDownloadRosterClick(object sender, EventArgs e)
         {
-            DoDownloadRoster();
+			EnsureWebRoster();
+			m_webRoster.DoDownloadRoster(m_cbRankOnly.Checked, m_cbAddOfficialsOnly.Checked);
         }
 
         /* D O  D O W N L O A D  Q U I C K  R O S T E R */
@@ -1314,42 +1395,18 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void HandleDownloadQuickRosterClick(object sender, EventArgs e)
         {
-            DoDownloadQuickRoster();
+			EnsureWebRoster();
+			m_webRoster.DoDownloadQuickRoster(m_cbRankOnly.Checked, m_cbAddOfficialsOnly.Checked);
         }
 
-
-        delegate void HandleRosterDel(Roster rst, string sInFile, Roster rstServer, HandleGenericRoster.HandleRosterPostUpdateDelegate hrpu);
-
-
-        /* D O  U P L O A D  R O S T E R */
         /*----------------------------------------------------------------------------
-			%%Function: DoUploadRoster
-			%%Qualified: ArbWeb.AwMainForm.DoUploadRoster
-			%%Contact: rlittle
-			
-		----------------------------------------------------------------------------*/
+			%%Function:HandleUploadRosterClick
+			%%Qualified:ArbWeb.AwMainForm.HandleUploadRosterClick
+        ----------------------------------------------------------------------------*/
         private void HandleUploadRosterClick(object sender, EventArgs e)
         {
-            DoRosterUpload();
-        }
-
-        /* D O  G E N  C O U N T S */
-        /*----------------------------------------------------------------------------
-        	%%Function: DoGenCounts
-        	%%Qualified: ArbWeb.AwMainForm.DoGenCounts
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private void DoGenCounts(object sender, EventArgs e)
-        {
-            m_srpt.AddMessage($"Generating analysis ({m_ebOutputFile.Text})...");
-            m_srpt.PushLevel();
-
-            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
-
-            gc.GenAnalysis(m_ebOutputFile.Text);
-            m_srpt.PopLevel();
-            m_srpt.AddMessage("Analysis complete.");
+	        EnsureWebRoster();
+            m_webRoster.DoRosterUpload(m_cbRankOnly.Checked, m_cbAddOfficialsOnly.Checked);
         }
 
 		/* C H A N G E  S H O W  B R O W S E R */
@@ -1364,18 +1421,6 @@ namespace ArbWeb
 			if (m_webControl != null)
 				MessageBox.Show("This will require rebooting.");
 		}
-
-		/* D O  G E N E R I C  I N V A L  G C */
-		/*----------------------------------------------------------------------------
-        	%%Function: DoGenericInvalGc
-        	%%Qualified: ArbWeb.AwMainForm.DoGenericInvalGc
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-		private void DoGenericInvalGc(object sender, EventArgs e)
-        {
-            InvalGameCount();
-        }
 
         /* E N A B L E  C O N T R O L S */
         /*----------------------------------------------------------------------------
@@ -1427,7 +1472,15 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void GenSiteRosterReport(object sender, EventArgs e)
         {
-            DoGenSiteRosterReport();
+	        SiteRosterReport report = new SiteRosterReport(this);
+
+	        report.DoGenSiteRosterReport(
+		        GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text)),
+		        RstEnsure(m_pr.RosterWorking),
+		        WebCore.RgsFromChlbx(true, m_chlbxRoster),
+		        m_dtpStart.Value, 
+		        m_dtpEnd.Value);
+	        
         }
 
 
@@ -1440,33 +1493,20 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void GenMailMergeMail(object sender, EventArgs e)
         {
-            DoGenMailMergeAndAnnouce();
-        }
+	        NeedHelpReport report = new NeedHelpReport(this);
 
-        /* G E N  O P E N  S L O T S  M A I L */
-        /*----------------------------------------------------------------------------
-            %%Function: GenOpenSlotsMail
-            %%Qualified: ArbWeb.AwMainForm.GenOpenSlotsMail
-            %%Contact: rlittle
-            
-        ----------------------------------------------------------------------------*/
-        private void GenOpenSlotsMail(object sender, EventArgs e)
-        {
-            DoGenOpenSlotsMail();
+	        report.DoGenMailMergeAndAnnouce(
+	            GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text)),
+	            RstEnsure(m_pr.RosterWorking),
+				WebCore.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+	            WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels),
+	            m_openSlots.Aggregation,
+	            m_cbFilterRank.Checked,
+	            m_ebFilter.Text,
+	            m_cbLaunch.Checked,
+	            m_cbSetArbiterAnnounce.Checked
+				);
         }
-
-        /* C A L C  O P E N  S L O T S */
-        /*----------------------------------------------------------------------------
-        	%%Function: CalcOpenSlots
-        	%%Qualified: ArbWeb.AwMainForm.CalcOpenSlots
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private void CalcOpenSlots(object sender, EventArgs e)
-        {
-            DoCalcOpenSlots();
-        }
-
 
         /* D O  S P O R T  L E V E L  F I L T E R */
         /*----------------------------------------------------------------------------
@@ -1477,18 +1517,15 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
-            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text));
             string[] rgsSports = WebCore.RgsFromChlbx(true, m_chlbxSports, e.Index, e.CurrentValue != CheckState.Checked, null, false);
             string[] rgsSportLevels = WebCore.RgsFromChlbx(true, m_chlbxSportLevels);
-            WebCore.UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_saOpenSlots), rgsSportLevels, rgsSports, false);
+            WebCore.UpdateChlbxFromRgs(m_chlbxSportLevels, gc.GetOpenSlotSportLevels(m_openSlots.Aggregation), rgsSportLevels, rgsSports, false);
         }
 
-        /* M _ P B  R E L O A D _  C L I C K */
         /*----------------------------------------------------------------------------
-        	%%Function: m_pbReload_Click
-        	%%Qualified: ArbWeb.AwMainForm.m_pbReload_Click
-        	%%Contact: rlittle
-        	
+			%%Function:DoReloadClick
+			%%Qualified:ArbWeb.AwMainForm.DoReloadClick
         ----------------------------------------------------------------------------*/
         private void DoReloadClick(object sender, EventArgs e)
         {
@@ -1496,18 +1533,110 @@ namespace ArbWeb
             InvalGameCount();
         }
 
-        /* D O  G A M E S  R E P O R T */
         /*----------------------------------------------------------------------------
+			%%Function: RefreshSchedsToDiff
+			%%Qualified: ArbWeb.AwMainForm.RefreshSchedsToDiff
+        ----------------------------------------------------------------------------*/
+        void RefreshSchedsToDiff()
+        {
+	        if (m_offline == null)
+		        m_offline = new Offline(this);
+
+	        m_cbSchedsForDiff.Items.Clear();
+	        
+	        foreach (string s in m_offline.GetSchedulesAvailableForDiff())
+		        m_cbSchedsForDiff.Items.Add(s);
+        }
+        
+        /*----------------------------------------------------------------------------
+			%%Function: DoTrainWreckDiff
+			%%Qualified: ArbWeb.AwMainForm.DoTrainWreckDiff
+        ----------------------------------------------------------------------------*/
+        void DoTrainWreckDiff(
+	        string sScheduleLeftFile, 
+	        SimpleSchedule scheduleRight,
+	        string sSport, 
+	        string sTargetFile, 
+	        string sTargetFileWorking)
+        {
+	        m_srpt.AddMessage($"Diffing schedule for {sScheduleLeftFile.Replace("\\","\\\\")} ({sSport})...", MSGT.Body);
+	        
+			SimpleSchedule scheduleLeft = SimpleScheduleLoader_TrainWreck.LoadFromExcelFile(sScheduleLeftFile, sSport);
+
+			//LearnMappings.GenerateMapsFromSchedules(scheduleLeft, scheduleRight);
+			SimpleDiffSchedule diffSchedule = Differ.BuildDiffFromSchedules(scheduleLeft, scheduleRight);
+
+			SimpleGameReport.GenSimpleGamesReport(diffSchedule, sTargetFile);
+			
+			if (sTargetFileWorking != null)
+			{
+				if (File.Exists(sTargetFileWorking))
+					File.Delete(sTargetFileWorking);
+
+				File.Copy(sTargetFile, sTargetFileWorking);
+			}
+		}
+
+        SimpleSchedule BuildArbiterSimpleScheduleForDiff()
+        {
+	        Schedule scheduleArbiter = new Schedule(m_srpt);
+	        m_srpt.AddMessage("Loading roster...", MSGT.Header, false);
+
+	        scheduleArbiter.FLoadRoster(m_pr.RosterWorking, Int32.Parse(m_ebAffiliationIndex.Text));
+	        // m_srpt.AddMessage(String.Format("Using plsMisc[{0}] ({1}) for team affiliation", iMiscAffiliation, m_gmd.SMiscHeader(iMiscAffiliation)), StatusBox.StatusRpt.MSGT.Body);
+
+	        m_srpt.PopLevel();
+	        m_srpt.AddMessage("Loading games...", MSGT.Header, false);
+	        scheduleArbiter.FLoadGames(m_pr.GameCopy, true/*fIncludeCancelled*/);
+	        m_srpt.PopLevel();
+
+	        return SimpleSchedule.BuildFromScheduleGames(scheduleArbiter.Games);
+		}
+        
+		/*----------------------------------------------------------------------------
+			%%Function: DoTrainWreckDiff
+			%%Qualified: ArbWeb.AwMainForm.DoTrainWreckDiff
+        ----------------------------------------------------------------------------*/
+		private void DiffSelectedTrainWreckSchedule(object sender, EventArgs e)
+        {
+	        if (m_cbSchedsForDiff.SelectedIndex == -1)
+	        {
+		        MessageBox.Show("No trainwreck schedule selected");
+		        return;
+	        }
+
+			// string sFile = @"c:\temp\bkmrs.xlsx";
+			// string sFile = @"c:\temp\schedtest.xlsx";
+			//string sFile = @"C:\Users\rlittle\AppData\Local\Temp\tempc02853e0-2d90-4192-9399-49d553e7e9db.xlsx";
+			string sFile = (string)m_cbSchedsForDiff.SelectedItem;
+
+			string sSport = "Baseball";
+
+			if (!sFile.ToUpper().Contains(sSport.ToUpper()))
+			{
+				sSport = "Softball";
+				if (!sFile.ToUpper().Contains(sSport.ToUpper()))
+				{
+					MessageBox.Show($"Can't derive sport from path name: {sFile}");
+					return;
+				}
+			}
+
+			SimpleSchedule scheduleRight = BuildArbiterSimpleScheduleForDiff();
+			
+			DoTrainWreckDiff(sFile, scheduleRight, sSport, @"c:\temp\DiffReport.csv", null);
+		}
+
+
+		/*----------------------------------------------------------------------------
         	%%Function: DoGamesReport
         	%%Qualified: ArbWeb.AwMainForm.DoGamesReport
-        	%%Contact: rlittle
-        	
         ----------------------------------------------------------------------------*/
-        private void DoGamesReport(object sender, EventArgs e)
+		private void DoGamesReport(object sender, EventArgs e)
         {
             m_srpt.AddMessage($"Generating games report ({m_ebGameOutput.Text})...");
             m_srpt.PushLevel();
-            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked);
+            CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text));
             Roster rst = RstEnsure(m_pr.RosterWorking);
 
             gc.GenGamesReport(m_ebGameOutput.Text);
@@ -1515,17 +1644,6 @@ namespace ArbWeb
             m_srpt.AddMessage("Games report complete.");
         }
 
-        /* M _ C B  L O G  T O  F I L E _  C H E C K E D  C H A N G E D */
-        /*----------------------------------------------------------------------------
-        	%%Function: m_cbLogToFile_CheckedChanged
-        	%%Qualified: ArbWeb.AwMainForm.m_cbLogToFile_CheckedChanged
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private void m_cbLogToFile_CheckedChanged(object sender, EventArgs e)
-        {
-            SetupLogToFile();
-        }
 
         /* E B  F R O M  F N C */
         /*----------------------------------------------------------------------------
@@ -1575,18 +1693,40 @@ namespace ArbWeb
         private void RefreshGameFilters(object sender, EventArgs e)
         {
             EnsureLoggedIn();
-
-            Dictionary<string, string> mpFilters = FetchOptionValueTextMapForGameFilter();
+            EnsureWebGames();
+            
+            Dictionary<string, string> mpFilters = m_webGames.FetchOptionValueTextMapForGameFilter();
             SetGameFiltersFromEnumerable(m_cbxGameFilter, mpFilters.Values);
             m_pr.GameFilters = mpFilters.Values.ToArray();
             m_pr.GameFilter = (string) m_cbxGameFilter.SelectedItem;
         }
 
-        #endregion
+        /*----------------------------------------------------------------------------
+			%%Function:EnsureLoggedIn
+			%%Qualified:ArbWeb.AwMainForm.EnsureLoggedIn
+        ----------------------------------------------------------------------------*/
+        public void EnsureLoggedIn() => m_webNav.EnsureLoggedIn();
 
-        #region Support Functions
+		/*----------------------------------------------------------------------------
+			%%Function:EnsureWebControl
+			%%Qualified:ArbWeb.AwMainForm.EnsureWebControl
+		----------------------------------------------------------------------------*/
+        public void EnsureWebControl()
+		{
+			if (m_webControl == null)
+				m_webControl = new WebControl(m_srpt, m_cbShowBrowser.Checked);
+		}
 
-        private void SetGameFiltersFromEnumerable(ComboBox cbx, IEnumerable<string> iens, string sNewFilter = null)
+
+		#endregion
+
+		#region Support Functions
+
+		/*----------------------------------------------------------------------------
+			%%Function:SetGameFiltersFromEnumerable
+			%%Qualified:ArbWeb.AwMainForm.SetGameFiltersFromEnumerable
+        ----------------------------------------------------------------------------*/
+		private void SetGameFiltersFromEnumerable(ComboBox cbx, IEnumerable<string> iens, string sNewFilter = null)
         {
             string sCurFilter = sNewFilter;
             if (sCurFilter == null && m_cbxGameFilter.SelectedItem != null)
@@ -1635,26 +1775,6 @@ namespace ArbWeb
                 m_srpt.SetLogLevel(0);
                 m_srpt.SetFilter(MSGT.Error);
                 }
-        }
-
-        /* S  H T M L  R E A D  F I L E */
-        /*----------------------------------------------------------------------------
-        	%%Function: SHtmlReadFile
-        	%%Qualified: ArbWeb.AwMainForm.SHtmlReadFile
-        	%%Contact: rlittle
-        	
-        ----------------------------------------------------------------------------*/
-        private string SHtmlReadFile(string sFile)
-        {
-            string sHtml = "";
-            TextReader tr = new StreamReader(sFile);
-            string sLine;
-
-            while ((sLine = tr.ReadLine()) != null)
-                sHtml += " " + sLine;
-
-            tr.Close();
-            return sHtml;
         }
 
         #endregion
@@ -1780,8 +1900,14 @@ namespace ArbWeb
 		private void DoSaveState(object sender, FormClosingEventArgs e)
         {
 			DoSaveStateCore();
-			m_webControl.Driver.Close();
-			m_webControl.Driver.Quit();
+			if (m_webControl != null)
+			{
+				if (m_webControl.Driver != null)
+				{
+					m_webControl.Driver.Close();
+					m_webControl.Driver.Quit();
+				}
+			}
 			m_webControl = null;
         }
 
@@ -1817,27 +1943,267 @@ namespace ArbWeb
             ChangeProfile(null, null);
         }
 
-        #endregion
+		#endregion
+
+		#region WebRoster Integration
+
+		private WebRoster m_webRoster;
+		
+		/*----------------------------------------------------------------------------
+			%%Function:EnsureWebRoster
+			%%Qualified:ArbWeb.AwMainForm.EnsureWebRoster
+		----------------------------------------------------------------------------*/
+		void EnsureWebRoster()
+		{
+			if (m_webRoster == null)
+				m_webRoster = new WebRoster(this);
+		}
+
+		/*----------------------------------------------------------------------------
+	        %%Function: InvalRoster
+	        %%Qualified: ArbWeb.AwMainForm.InvalRoster
+        ----------------------------------------------------------------------------*/
+		public void InvalRoster()
+		{
+			m_rst = null;
+		}
+
+		/*----------------------------------------------------------------------------
+            %%Function: RstEnsure
+            %%Qualified: ArbWeb.AwMainForm.RstEnsure
+        ----------------------------------------------------------------------------*/
+		public Roster RstEnsure(string sInFile)
+		{
+			if (m_rst != null)
+				return m_rst;
+
+			m_rst = new Roster();
+
+			m_rst.ReadRoster(sInFile);
+			return m_rst;
+		}
+
+		#endregion
+
+		#region WebGames Integration
+
+		private void InvalGameCount()
+		{
+			m_gc = null;
+		}
+
+		public CountsData GcEnsure(string sRoster, string sGameFile, bool fIncludeCanceled, int affiliationRosterIndex)
+		{
+			if (m_gc != null)
+				return m_gc;
+
+			CountsData gc = new CountsData(m_srpt);
+
+			gc.LoadData(sRoster, sGameFile, fIncludeCanceled, affiliationRosterIndex); // Int32.Parse(m_ebAffiliationIndex.Text));
+			m_gc = gc;
+			return gc;
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function:EnsureWebGames
+			%%Qualified:ArbWeb.AwMainForm.EnsureWebGames
+		----------------------------------------------------------------------------*/
+		private void EnsureWebGames()
+		{
+			if (m_webGames == null)
+				m_webGames = new WebGames(this);
+		}
+
+		/*----------------------------------------------------------------------------
+			%%Function:DoDownloadGames
+			%%Qualified:ArbWeb.AwMainForm.DoDownloadGames
+		----------------------------------------------------------------------------*/
+		void DoDownloadGames()
+		{
+			EnsureWebGames();
+			m_webGames.DoDownloadGames((string)m_cbxGameFilter.SelectedItem);
+		}
+
+		/*----------------------------------------------------------------------------
+        	%%Function: DoGenericInvalGc
+        	%%Qualified: ArbWeb.AwMainForm.DoGenericInvalGc
+        ----------------------------------------------------------------------------*/
+		private void DoGenericInvalGc(object sender, EventArgs e)
+		{
+			InvalGameCount();
+		}
+
+		#endregion
+
+		#region OpenSlots Integration
+
+		private OpenSlots m_openSlots;
+
+		/*----------------------------------------------------------------------------
+			%%Function:EnsureOpenSlots
+			%%Qualified:ArbWeb.AwMainForm.EnsureOpenSlots
+		----------------------------------------------------------------------------*/
+		void EnsureOpenSlots()
+		{
+			if (m_openSlots == null)
+				m_openSlots = new OpenSlots(this);
+		}
+		
+		/*----------------------------------------------------------------------------
+			%%Function:DoGenCounts
+			%%Qualified:ArbWeb.AwMainForm.DoGenCounts
+        ----------------------------------------------------------------------------*/
+		private void DoGenCounts(object sender, EventArgs e)
+		{
+			m_srpt.AddMessage($"Generating analysis ({m_ebOutputFile.Text})...");
+			m_srpt.PushLevel();
+
+			CountsData gc = GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text));
+
+			gc.GenAnalysis(m_ebOutputFile.Text);
+			m_srpt.PopLevel();
+			m_srpt.AddMessage("Analysis complete.");
+		}
 
 
-        private void AwMainForm_Move(object sender, EventArgs e)
+		/* G E N  O P E N  S L O T S  M A I L */
+		/*----------------------------------------------------------------------------
+            %%Function: GenOpenSlotsMail
+            %%Qualified: ArbWeb.AwMainForm.GenOpenSlotsMail
+            %%Contact: rlittle
+            
+        ----------------------------------------------------------------------------*/
+		private void GenOpenSlotsMail(object sender, EventArgs e)
+		{
+			EnsureOpenSlots();
+
+			m_openSlots.DoGenOpenSlotsMail(
+				GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text)),
+				RstEnsure(m_pr.RosterWorking),
+				m_cbTestEmail.Checked,
+				m_ebFilter.Text,
+				m_cbSplitSports.Checked,
+				m_cbFilterSport.Checked,
+				m_cbOpenSlotDetail.Checked,
+				m_cbFuzzyTimes.Checked,
+				m_cbDatePivot.Checked,
+				m_cbFilterLevel.Checked,
+				m_chlbxSports,
+				m_chlbxSportLevels);
+		}
+
+		/* C A L C  O P E N  S L O T S */
+		/*----------------------------------------------------------------------------
+        	%%Function: CalcOpenSlots
+        	%%Qualified: ArbWeb.AwMainForm.CalcOpenSlots
+        	%%Contact: rlittle
+        	
+        ----------------------------------------------------------------------------*/
+		private void CalcOpenSlots(object sender, EventArgs e)
+		{
+			EnsureOpenSlots();
+
+			m_openSlots.DoCalcOpenSlots(
+				m_pr.RosterWorking,
+				m_pr.GameCopy,
+				m_cbIncludeCanceled.Checked,
+				Int32.Parse(m_ebAffiliationIndex.Text),
+				m_chlbxSports,
+				m_chlbxSportLevels,
+				m_chlbxRoster,
+				m_dtpStart.Value,
+				m_dtpEnd.Value);
+		}
+
+
+		#endregion
+
+		private void AwMainForm_Move(object sender, EventArgs e)
         {
             m_srpt.LogData("Moving",10,MSGT.Body);
         }
 
-        private void AwMainForm_Load(object sender, EventArgs e)
-        {
-
-        }
+        private void AwMainForm_Load(object sender, EventArgs e)  { }
 
         private void RenderHeadingLine(object sender, PaintEventArgs e)
         {
             RenderSupp.RenderHeadingLine(sender, e);
         }
 
-		private void label18_Click(object sender, EventArgs e)
-		{
+        private Office365 m_spoInterop;
 
+        public Office365 SpoInterop()
+        {
+	        if (m_spoInterop == null)
+		        m_spoInterop = new Office365(Secrets.ApplicationClientID);
+
+	        return m_spoInterop;
+        }
+
+        private SPO.Offline m_offline;
+        
+		private async void DoDownloadAndDiffAllSchedules(object sender, EventArgs e)
+		{
+			if (m_offline == null)
+				m_offline = new Offline(this);
+
+			await m_offline.DownloadAllSchedules();
+		}
+
+		private void DiffAllOfflineSchedules(object sender, EventArgs e)
+		{
+			if (m_offline == null)
+				m_offline = new Offline(this);
+
+			m_srpt.AddMessage("Diffing all offline schedules...", MSGT.Header);
+			SimpleSchedule scheduleRight = BuildArbiterSimpleScheduleForDiff();
+
+			m_srpt.AddMessage("Diffing baseball schedules...", MSGT.Header);
+			// diff baseball schedules
+			foreach (string sched in m_pr.BaseballSchedFiles)
+			{
+				string sDiff, sDiffLatest, sSched, sSchedLatest;
+
+				(sDiff, sDiffLatest) = Offline.MakeDiffPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Baseball", sched);
+				(sSched, sSchedLatest) = Offline.MakeDownloadPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Baseball", sched);
+				
+				DoTrainWreckDiff(sSchedLatest, scheduleRight, "Baseball", sDiff, sDiffLatest);
+			}
+			m_srpt.PopLevel();
+			
+			m_srpt.AddMessage("Diffing softball schedules...", MSGT.Header);
+			// diff softball schedules
+			foreach (string sched in m_pr.SoftballSchedFiles)
+			{
+				string sDiff, sDiffLatest, sSched, sSchedLatest;
+
+				(sDiff, sDiffLatest) = Offline.MakeDiffPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Softball", sched);
+				(sSched, sSchedLatest) = Offline.MakeDownloadPaths(m_pr.SchedDownloadFolder, m_pr.SchedWorkingFolder, "Softball", sched);
+
+				DoTrainWreckDiff(sSchedLatest, scheduleRight, "Softball", sDiff, sDiffLatest);
+			}
+			m_srpt.PopLevel();
+
+		}
+
+		private void SelectAllNonConsultantSites(object sender, EventArgs e)
+		{
+			for (int i = 0; i < m_chlbxRoster.Items.Count; i++)
+			{
+				string site = (string) m_chlbxRoster.Items[i];
+
+				m_chlbxRoster.SetItemCheckState(i, site.ToUpper().Contains("CONSULTANT") ? CheckState.Unchecked : CheckState.Checked);
+			}
+		}
+
+		private void SelectAllSites(object sender, EventArgs e)
+		{
+			for (int i = 0; i < m_chlbxRoster.Items.Count; i++)
+			{
+				string site = (string)m_chlbxRoster.Items[i];
+
+				m_chlbxRoster.SetItemCheckState(i, CheckState.Checked);
+			}
 		}
 	}
 

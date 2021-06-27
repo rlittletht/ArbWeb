@@ -12,14 +12,12 @@ using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
 {
-    public partial class AwMainForm : System.Windows.Forms.Form
+	public partial class WebRoster
     {
-        /* G E T  R O S T E R  I N F O  F R O M  S E R V E R */
         /*----------------------------------------------------------------------------
-        	%%Function: GetRosterInfoFromServer
-        	%%Qualified: ArbWeb.AwMainForm.GetRosterInfoFromServer
-        	%%Contact: rlittle
-        	
+			%%Function:GetRosterInfoFromServer
+			%%Qualified:ArbWeb.WebRoster.GetRosterInfoFromServer
+
             Get the roster information from the server.
         ----------------------------------------------------------------------------*/
         void GetRosterInfoFromServer(string sEmail, string sOfficialID, RosterEntry rste)
@@ -39,10 +37,10 @@ namespace ArbWeb
 
         /*----------------------------------------------------------------------------
         	%%Function: VOPC_UpdateLastAccess
-        	%%Qualified: ArbWeb.AwMainForm.VOPC_UpdateLastAccess
-        	%%Contact: rlittle
+			%%Qualified:ArbWeb.WebRoster.VOPC_UpdateLastAccess
         	
-            Update the "last login" value.  since we are scraping the screen for this, we have to deal with pagination
+            Update the "last login" value.  since we are scraping the screen for 
+			this, we have to deal with pagination
         ----------------------------------------------------------------------------*/
         private void VOPC_UpdateLastAccess(Object o)
         {
@@ -52,12 +50,12 @@ namespace ArbWeb
             UpdateLastAccessFromCoreOfficialsPage(rstBuilding);
             
             timer.Stop();
-            m_srpt.LogData($"UpdateLastAccessFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+            m_appContext.StatusReport.LogData($"UpdateLastAccessFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         /*----------------------------------------------------------------------------
         	%%Function: FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
-        	%%Qualified: ArbWeb.AwMainForm.FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
+			%%Qualified:ArbWeb.WebRoster.FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
         	
             non-joined officials won't get an email address in the downloaded
             quickroster. we can fix this up as we visit the officials page by matching
@@ -69,7 +67,7 @@ namespace ArbWeb
         private void FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(Roster rstBuilding)
         {
 	        // grab the info from the current navigated page
-	        IWebElement table = m_webControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_ContentTable));
+	        IWebElement table = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_ContentTable));
 
 	        string sHtml = table.GetAttribute("outerHTML");
 	        HtmlDocument html = new HtmlDocument();
@@ -98,20 +96,24 @@ namespace ArbWeb
                 RosterEntry rste = rstBuilding.RsteLookupRosterNameNoEmail(sRosterName);
                 if (rste == null)
                 {
-                    m_srpt.AddMessage(
+                    m_appContext.StatusReport.AddMessage(
                         $"Could not find no email entry for nonJoinedOfficial {sRosterName} with email {sEmail}",
                         MSGT.Error);
 
                     continue;
                 }
 
-                m_srpt.AddMessage($"Updating email address for {sRosterName} to {sEmail}",
+                m_appContext.StatusReport.AddMessage($"Updating email address for {sRosterName} to {sEmail}",
                                   MSGT.Body);
 
                 rste.Email = sEmail;
             }
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:VOPC_FixupNonJoinedEmailAddress
+			%%Qualified:ArbWeb.WebRoster.VOPC_FixupNonJoinedEmailAddress
+        ----------------------------------------------------------------------------*/
         private void VOPC_FixupNonJoinedEmailAddress(Object o)
         {
 	        MicroTimer timer = new MicroTimer();
@@ -121,19 +123,18 @@ namespace ArbWeb
             FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(rstBuilding);
             
             timer.Stop();
-            m_srpt.LogData($"FixupEmailAddressForNotJoinedFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+            m_appContext.StatusReport.LogData($"FixupEmailAddressForNotJoinedFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         /*----------------------------------------------------------------------------
         	%%Function: UpdateLastAccessFromCoreOfficialsPage
-        	%%Qualified: ArbWeb.AwMainForm.UpdateLastAccessFromCoreOfficialsPage
-        	%%Contact: rlittle
+			%%Qualified:ArbWeb.WebRoster.UpdateLastAccessFromCoreOfficialsPage
         	
             Assuming we are on the core officials page...
         ----------------------------------------------------------------------------*/
         private void UpdateLastAccessFromCoreOfficialsPage(Roster rstBuilding)
         {
-	        IWebElement table = m_webControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_ContentTable));
+	        IWebElement table = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_ContentTable));
 
 	        string sHtml = table.GetAttribute("outerHTML");
 	        HtmlDocument html = new HtmlDocument();
@@ -163,21 +164,23 @@ namespace ArbWeb
                 RosterEntry rste = rstBuilding.RsteLookupEmail(sEmail);
                 if (rste == null)
                     {
-                    m_srpt.AddMessage(
+                    m_appContext.StatusReport.AddMessage(
 	                    $"Lookup failed during ProcessAllOfficialPages for official '{cells[2].InnerText.Trim()}'({sEmail})", MSGT.Error);
                     continue;
                     }
 
-                m_srpt.LogData(
+                m_appContext.StatusReport.LogData(
 	                $"Updating last access for official '{rste.Name}', {sSignedIn}", 5,
                                   MSGT.Body);
                 rste.m_sLastSignin = sSignedIn;
                 }
         }
 
-        delegate Roster ProcessQuickRosterOfficialsDel(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess);
-
-        Roster DoProcessQuickRosterOfficials(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess)
+        /*----------------------------------------------------------------------------
+			%%Function:DoProcessQuickRosterOfficials
+			%%Qualified:ArbWeb.WebRoster.DoProcessQuickRosterOfficials
+        ----------------------------------------------------------------------------*/
+        Roster DoProcessQuickRosterOfficials(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess, bool fRankOnly, bool fAddOfficialsOnly)
         {
             Roster rstBuilding = new Roster();
 
@@ -188,25 +191,25 @@ namespace ArbWeb
 	            MicroTimer timer = new MicroTimer();
 	            
                 HandleGenericRoster gr = new HandleGenericRoster(
-                    this,
-                    !m_cbRankOnly.Checked,
-                    m_cbAddOfficialsOnly.Checked,
+                    m_appContext,
+                    !fRankOnly, // !m_cbRankOnly.Checked,
+                    fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked,
                     null,
                     null,
                     null);
                 gr.ProcessAllOfficialPages(VOPC_FixupNonJoinedEmailAddress, rstBuilding);
 
                 timer.Stop();
-                m_srpt.LogData($"ProcessAllOfficialPages For EmailFixup elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+                m_appContext.StatusReport.LogData($"ProcessAllOfficialPages For EmailFixup elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
             if (fIncludeLastAccess)
             {
 	            MicroTimer timer = new MicroTimer();
 	            HandleGenericRoster gr = new HandleGenericRoster(
-		            this,
-		            !m_cbRankOnly.Checked,
-		            m_cbAddOfficialsOnly.Checked,
+		            m_appContext,
+		            !fRankOnly, // !m_cbRankOnly.Checked,
+		            fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked,
 		            null,
 		            null,
 		            null);
@@ -214,7 +217,7 @@ namespace ArbWeb
 	            gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
 	            
 	            timer.Stop();
-	            m_srpt.LogData($"ProcessAllOfficialPages For LastAccess elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+	            m_appContext.StatusReport.LogData($"ProcessAllOfficialPages For LastAccess elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
             if (fIncludeRankings)
@@ -224,112 +227,118 @@ namespace ArbWeb
 	            HandleRankings(null, rstBuilding);
 	            
 	            timer.Stop();
-	            m_srpt.LogData($"Handle rankings elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+	            m_appContext.StatusReport.LogData($"Handle rankings elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
 
             return rstBuilding;
         }
 
-        private Roster RosterQuickBuildFromDownloadedRoster(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess)
+        /*----------------------------------------------------------------------------
+			%%Function:RosterQuickBuildFromDownloadedRoster
+			%%Qualified:ArbWeb.WebRoster.RosterQuickBuildFromDownloadedRoster
+        ----------------------------------------------------------------------------*/
+        private Roster RosterQuickBuildFromDownloadedRoster(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess, bool fRankOnly, bool fAddOfficialsOnly)
         {
-            return DoProcessQuickRosterOfficials(sDownloadedRoster, fIncludeRankings, fIncludeLastAccess);
+            return DoProcessQuickRosterOfficials(sDownloadedRoster, fIncludeRankings, fIncludeLastAccess, fRankOnly, fAddOfficialsOnly);
         }
 
 
         /*----------------------------------------------------------------------------
         	%%Function: DownloadQuickRosterToFile
-        	%%Qualified: ArbWeb.AwMainForm.DownloadQuickRosterToFile
-        	%%Contact: rlittle
-        	
+			%%Qualified:ArbWeb.WebRoster.DownloadQuickRosterToFile
+			
         ----------------------------------------------------------------------------*/
         string DownloadQuickRosterToFile()
         {
-            m_srpt.AddMessage("Starting Quick Roster download to temp file...");
-            m_srpt.PushLevel();
+            m_appContext.StatusReport.AddMessage("Starting Quick Roster download to temp file...");
+            m_appContext.StatusReport.PushLevel();
 
-            PushCursor(Cursors.WaitCursor);
+            m_appContext.PushCursor(Cursors.WaitCursor);
             string sTempFile = SRosterFileDownload();
-            // @"C:\Users\rlittle\AppData\Local\Temp\tempcd316a92-2120-4234-9427-7d3965076999.csv";
              
 
-            PopCursor();
-            m_srpt.PopLevel();
+            m_appContext.PopCursor();
+            m_appContext.StatusReport.PopLevel();
             return sTempFile;
         }
 
         /* D O  D O W N L O A D  Q U I C K  R O S T E R  W O R K */
         /*----------------------------------------------------------------------------
         	%%Function: DoDownloadQuickRosterWork
-        	%%Qualified: ArbWeb.AwMainForm.DoDownloadQuickRosterWork
-        	%%Contact: rlittle
-        	
+			%%Qualified:ArbWeb.WebRoster.DoDownloadQuickRosterWork
         ----------------------------------------------------------------------------*/
-        Roster DoDownloadQuickRosterWork()
+        Roster DoDownloadQuickRosterWork(bool fRankOnly, bool fAddOfficialsOnly)
         {
-            m_srpt.AddMessage("Starting Quick Roster download...");
-            m_srpt.PushLevel();
+            m_appContext.StatusReport.AddMessage("Starting Quick Roster download...");
+            m_appContext.StatusReport.PushLevel();
 
             string sTempFile = DownloadQuickRosterToFile();
 
             // now, update the last access date and fetch the rankings and update the last access date
-            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, true, true);
+            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, true, true, fRankOnly, fAddOfficialsOnly);
 
-            m_srpt.PopLevel();
+            m_appContext.StatusReport.PopLevel();
 
-            m_srpt.AddMessage("Completed Quick Roster download.");
+            m_appContext.StatusReport.AddMessage("Completed Quick Roster download.");
             return rst;
         }
 
-        Roster DoDownloadQuickRosterOfficialsOnlyWork()
+
+        /*----------------------------------------------------------------------------
+			%%Function:DoDownloadQuickRosterOfficialsOnlyWork
+			%%Qualified:ArbWeb.WebRoster.DoDownloadQuickRosterOfficialsOnlyWork
+        ----------------------------------------------------------------------------*/
+        Roster DoDownloadQuickRosterOfficialsOnlyWork(bool fRankOnly, bool fAddOfficialsOnly)
         {
-            m_srpt.AddMessage("Starting Quick Roster download (officials only, no rankings)...");
-            m_srpt.PushLevel();
+            m_appContext.StatusReport.AddMessage("Starting Quick Roster download (officials only, no rankings)...");
+            m_appContext.StatusReport.PushLevel();
 
             string sTempFile = DownloadQuickRosterToFile();
 
             // now, update the last access date and fetch the rankings and update the last access date
-            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, false, false);
+            Roster rst = RosterQuickBuildFromDownloadedRoster(sTempFile, false, false, fRankOnly, fAddOfficialsOnly);
 
-            m_srpt.PopLevel();
+            m_appContext.StatusReport.PopLevel();
 
-            m_srpt.AddMessage("Completed Quick Roster download.");
+            m_appContext.StatusReport.AddMessage("Completed Quick Roster download.");
             return rst;
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:DoRosterDownload
+			%%Qualified:ArbWeb.WebRoster.DoRosterDownload
+        ----------------------------------------------------------------------------*/
         void DoRosterDownload(string sTempFile)
         {
-            ThrowIfNot(m_webControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
-            m_webControl.WaitForPageLoad();
+            Utils.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+            m_appContext.WebControl.WaitForPageLoad();
             
             // now we are on the PrintRoster screen
-            ThrowIfNot(m_webControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsView_PrintCustomRoster, WebCore._sid_CustomRosterPrint_UserFilter), "Can't click on roster control");
             // check a whole bunch of config checkboxes
 
             // select All Officials
-            WebControl.FSetSelectedOptionTextForControlId(m_webControl.Driver, m_srpt, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
-            m_webControl.WaitForPageLoad();
+            WebControl.FSetSelectedOptionTextForControlId(m_appContext.WebControl.Driver, m_appContext.StatusReport, WebCore._sid_CustomRosterPrint_UserFilter, "All Officials");
+            m_appContext.WebControl.WaitForPageLoad();
 
-            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
-            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
-            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_DateOfBirth);
-            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_UserID);
-            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_MiddleName);
+            WebControl.FSetCheckboxControlIdVal(m_appContext.WebControl.Driver, true, WebCore._sid_CustomRosterPrint_DateJoined);
+            WebControl.FSetCheckboxControlIdVal(m_appContext.WebControl.Driver, true, WebCore._sid_CustomRosterPrint_OfficialNumber);
+            WebControl.FSetCheckboxControlIdVal(m_appContext.WebControl.Driver, true, WebCore._sid_CustomRosterPrint_DateOfBirth);
+            WebControl.FSetCheckboxControlIdVal(m_appContext.WebControl.Driver, true, WebCore._sid_CustomRosterPrint_UserID);
+            WebControl.FSetCheckboxControlIdVal(m_appContext.WebControl.Driver, true, WebCore._sid_CustomRosterPrint_MiddleName);
             
-//            IWebElement element = m_webControl.Driver.FindElement(By.Id(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown));
-//            m_webControl.Driver.ExecuteJavaScript("arguments[0].click();", element);
+            m_appContext.WebControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dropdown the menu
+            m_appContext.WebControl.WaitForCondition(ExpectedConditions.ElementToBeClickable(m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_CustomRosterPrint_SelectAllCustomFields))));
             
-            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dropdown the menu
-            m_webControl.WaitForCondition(ExpectedConditions.ElementToBeClickable(m_webControl.Driver.FindElement(By.Id(WebCore._sid_CustomRosterPrint_SelectAllCustomFields))));
-            
-            WebControl.FSetCheckboxControlIdVal(m_webControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
-            m_webControl.WaitForPageLoad();
-            m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dismiss the menu
+            WebControl.FSetCheckboxControlIdVal(m_appContext.WebControl.Driver, true, WebCore._sid_CustomRosterPrint_SelectAllCustomFields);
+            m_appContext.WebControl.WaitForPageLoad();
+            m_appContext.WebControl.FClickControlId(WebCore._sid_CustomRosterPrint_CustomFieldListDropdown); // dismiss the menu
 
             WebControl.FileDownloader downloader = new WebControl.FileDownloader(
-	            m_webControl,
+	            m_appContext.WebControl,
 	            "RosterReport.xlsx",
 	            null,
-	            () => m_webControl.FClickControlId(WebCore._sid_CustomRosterPrint_GenerateRosterReport));
+	            () => m_appContext.WebControl.FClickControlId(WebCore._sid_CustomRosterPrint_GenerateRosterReport));
 
             string sDownloadedFile = downloader.GetDownloadedFile();
             
@@ -337,10 +346,14 @@ namespace ArbWeb
             File.Delete(sDownloadedFile);
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:SRosterFileDownload
+			%%Qualified:ArbWeb.WebRoster.SRosterFileDownload
+        ----------------------------------------------------------------------------*/
         private string SRosterFileDownload()
         {
             // navigate to the officials page...
-            EnsureLoggedIn();
+            m_appContext.EnsureLoggedIn();
 
             string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.csv";
 
@@ -351,6 +364,10 @@ namespace ArbWeb
         }
 
 
+        /*----------------------------------------------------------------------------
+			%%Function:HandleRosterPostUpdateForDownload
+			%%Qualified:ArbWeb.WebRoster.HandleRosterPostUpdateForDownload
+        ----------------------------------------------------------------------------*/
         private void HandleRosterPostUpdateForDownload(HandleGenericRoster gr, IRoster irstBuilding)
         {
             // get the last login date from the officials main page
@@ -360,6 +377,10 @@ namespace ArbWeb
             // gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, irstBuilding);
         }
 
+        /*----------------------------------------------------------------------------
+			%%Function:HandleRosterPass1VisitForUploadDownload
+			%%Qualified:ArbWeb.WebRoster.HandleRosterPass1VisitForUploadDownload
+        ----------------------------------------------------------------------------*/
         void HandleRosterPass1VisitForUploadDownload(
             string sEmail,
             string sOfficialID,
@@ -381,57 +402,55 @@ namespace ArbWeb
 
         /*----------------------------------------------------------------------------
         	%%Function: DoDownloadRoster
-        	%%Qualified: ArbWeb.AwMainForm.DoDownloadRoster
-        	%%Contact: rlittle
-        	
+			%%Qualified:ArbWeb.WebRoster.DoDownloadRoster
         ----------------------------------------------------------------------------*/
-        void DoDownloadRoster()
+        public void DoDownloadRoster(bool fRankOnly, bool fAddOfficialsOnly)
         {
-            m_srpt.AddMessage("Starting FULL Roster download...");
-            m_srpt.PushLevel();
+            m_appContext.StatusReport.AddMessage("Starting FULL Roster download...");
+            m_appContext.StatusReport.PushLevel();
 
-            PushCursor(Cursors.WaitCursor);
-            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_pr.Roster);
+            m_appContext.PushCursor(Cursors.WaitCursor);
+            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_appContext.Profile.Roster);
 
-            m_pr.Roster = sOutFile;
+            m_appContext.Profile.Roster = sOutFile;
             HandleGenericRoster gr = new HandleGenericRoster(
-                this, 
-                !m_cbRankOnly.Checked, // fNeedPass1OnUpload
-                m_cbAddOfficialsOnly.Checked, // only add officials
-                new HandleGenericRoster.delDoPass1Visit(HandleRosterPass1VisitForUploadDownload), 
-                new HandleGenericRoster.delAddOfficials(AddOfficials),
-                new HandleGenericRoster.delDoPostHandleRoster(HandleRankings)
+                m_appContext,
+                !fRankOnly, // fNeedPass1OnUpload
+                fAddOfficialsOnly, // only add officials
+                HandleRosterPass1VisitForUploadDownload, 
+                AddOfficials,
+                HandleRankings
                 );
 
             Roster rstBuilding = new Roster();
             gr.GenericVisitRoster(null, rstBuilding, sOutFile, null, HandleRosterPostUpdateForDownload);
-            PopCursor();
-            m_srpt.PopLevel();
-            System.IO.File.Delete(m_pr.RosterWorking);
-            System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
-            m_srpt.AddMessage("Completed FULL Roster download.");
+            
+            m_appContext.PopCursor();
+            m_appContext.StatusReport.PopLevel();
+            System.IO.File.Delete(m_appContext.Profile.RosterWorking);
+            System.IO.File.Copy(sOutFile, m_appContext.Profile.RosterWorking);
+            m_appContext.StatusReport.AddMessage("Completed FULL Roster download.");
         }
 
         /*----------------------------------------------------------------------------
         	%%Function: DoDownloadQuickRoster
-        	%%Qualified: ArbWeb.AwMainForm.DoDownloadQuickRoster
-        	%%Contact: rlittle
-        	
+			%%Qualified:ArbWeb.WebRoster.DoDownloadQuickRoster
         ----------------------------------------------------------------------------*/
-        async void DoDownloadQuickRoster()
+        public async void DoDownloadQuickRoster(bool fRankOnly, bool fAddOfficialsOnly)
         {
-            Task<Roster> tsk = new Task<Roster>(DoDownloadQuickRosterWork);
+	        Task<Roster> tsk = new Task<Roster>(
+		        () => DoDownloadQuickRosterWork(fRankOnly, fAddOfficialsOnly));
 
             tsk.Start();
 
-            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_pr.Roster);
-            m_pr.Roster = sOutFile;
+            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_appContext.Profile.Roster);
+            m_appContext.Profile.Roster = sOutFile;
 
             Roster rst = await tsk;
 
             rst.WriteRoster(sOutFile);
-            System.IO.File.Delete(m_pr.RosterWorking);
-            System.IO.File.Copy(sOutFile, m_pr.RosterWorking);
+            System.IO.File.Delete(m_appContext.Profile.RosterWorking);
+            System.IO.File.Copy(sOutFile, m_appContext.Profile.RosterWorking);
         }
     }
 }
