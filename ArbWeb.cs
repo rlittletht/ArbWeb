@@ -1811,7 +1811,7 @@ namespace ArbWeb
 	        m_cbFuzzyTimes.Checked = pr.FuzzyTimes;
 	        m_cbTestEmail.Checked = pr.TestEmail;
 	        m_cbAddOfficialsOnly.Checked = pr.AddOfficialsOnly;
-	        m_ebAffiliationIndex.Text = pr.AffiliationIndex;
+	        m_ebAffiliationIndex.Text = pr.AffiliationIndex.ToString();
 	        m_cbSplitSports.Checked = pr.SplitSports;
 	        m_cbDatePivot.Checked = pr.DatePivot;
 	        m_cbFilterRank.Checked = pr.FilterRank;
@@ -1842,7 +1842,7 @@ namespace ArbWeb
 	        pr.FuzzyTimes = m_cbFuzzyTimes.Checked;
 	        pr.TestEmail = m_cbTestEmail.Checked;
 	        pr.AddOfficialsOnly = m_cbAddOfficialsOnly.Checked;
-	        pr.AffiliationIndex = m_ebAffiliationIndex.Text;
+	        pr.AffiliationIndex = Int32.Parse(m_ebAffiliationIndex.Text);
 	        pr.SplitSports = m_cbSplitSports.Checked;
 	        pr.DatePivot = m_cbDatePivot.Checked;
 	        pr.FilterRank = m_cbFilterRank.Checked;
