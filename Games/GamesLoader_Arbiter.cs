@@ -640,9 +640,9 @@ namespace ArbWeb.Games
             ----------------------------------------------------------------------------*/
         private static bool FMatchGameTotalLine(string[] rgsFields)
         {
-            return Regex.Match(rgsFields[13], "Total:").Success
-                   || Regex.Match(rgsFields[14], "Total:").Success
-                   || Regex.Match(rgsFields[15], "Total:").Success;
+	        return Regex.Match(rgsFields[13], "Total:").Success
+	               || Regex.Match(rgsFields[14], "Total:").Success
+	               || (rgsFields.Length >= 16 && Regex.Match(rgsFields[15], "Total:").Success);
         }
 
         /* F  M A T C H  G A M E  E M P T Y */

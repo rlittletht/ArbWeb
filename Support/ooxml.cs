@@ -220,7 +220,7 @@ namespace ArbWeb
             WritePara(xw, "If you can work ANY of these games, either sign up on Arbiter, or just reply to this mail and let me know which games you can do. Thanks!");
 
             StartTable(xw, 5);
-            Dictionary<string, List<Game>> mpSlotGames = new Dictionary<string, List<Game>>();
+            SortedDictionary<string, List<Game>> mpSlotGames = new SortedDictionary<string, List<Game>>();
 
             foreach (Game gm in gms.Games.Values)
                 {
@@ -234,6 +234,7 @@ namespace ArbWeb
                 mpSlotGames[s].Add(gm);
                 }
 
+            
             foreach (List<Game> plgm in mpSlotGames.Values)
                 {
                 WriteGame(xw, plgm[0], plgm.Count);

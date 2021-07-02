@@ -48,9 +48,12 @@ namespace ArbWeb
         // ============================================================================
         // (games view) links
         public const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2021
-        public const string _sid_Assigning_Select_Filters = "ctl00_ContentHolder_pgeGamesView_conGamesView_ddlSavedFilters"; // ok2021
+        public const string _sid_Assigning_Select_Filters = "ddlSavedFilters"; // ok2021
         public const string _s_Assigning_Reports_Select_Format = "ctl00$ContentHolder$pgePrint$conPrint$ddlFormat"; // ok2010
         public const string _s_Assigning_Reports_Submit_Print = "ctl00$ContentHolder$pgePrint$navPrint$btnBeginPrint"; // ok2010
+        public const string _sid_Assigning_GamesReport = "ctl00_ContentHolder_pgeGamesView_cmnReports_tskPrint"; // ok2021
+        public const string _sid_Assigning_Reports_Done = "ctl00_ContentHolder_pgePrint_navPrint_lnkDone"; // ok2021
+        public const string _s_Assigning_CheckAll = "ctl00$ContentHolder$pgeGamesView$conGamesView$dgGames$ctl01$chkAll"; // ok2021
 
         public const string _sid_Assigning_Reports_Select_Format = "ctl00_ContentHolder_pgePrint_conPrint_ddlFormat"; // ok2010
         
@@ -722,7 +725,9 @@ namespace ArbWeb
 
                 m_appContext.WebControl.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
 
-                if (!m_appContext.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
+                m_appContext.WebControl.FSetCheckboxControlNameVal(true, WebCore._s_Assigning_CheckAll);
+
+                if (!(m_appContext.WebControl.FClickControlId(WebCore._sid_Assigning_GamesReport, WebCore._sid_Assigning_Reports_Done)))
                     throw (new Exception("could not navigate to the reports page!"));
                 }
             else
