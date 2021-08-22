@@ -469,7 +469,7 @@ namespace ArbWeb
         private readonly string m_sSelectFilterControlName;
         private readonly string m_sReportPrintPagePrefix;
         private readonly string m_sReportPrintSubmitPrintControlName;
-        private readonly string m_sFullExpectedName;
+        private readonly string[] m_expectedFullNameTemplates;
         private readonly string m_sExpectedName;
         private readonly string m_sidReportPageLink;
         private string m_sGameFile;
@@ -512,8 +512,8 @@ namespace ArbWeb
             string sSelectFilterControlName, 
             string sidSelectFilterControl,
             string sReportPrintPagePrefix, 
-            string sReportPrintSubmitPrintControlName, 
-            string sFullExpectedName, 
+            string sReportPrintSubmitPrintControlName,
+            string[] expectedFullNameTemplates,
             string sExpectedName, 
             ControlSetting<string>[] rgSelectSettings,
             string sGameFile,
@@ -528,8 +528,8 @@ namespace ArbWeb
             m_sidSelectFilterControl = sidSelectFilterControl;
             m_sReportPrintPagePrefix = sReportPrintPagePrefix;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
-            m_sFullExpectedName = sFullExpectedName;
             m_sExpectedName = sExpectedName;
+            m_expectedFullNameTemplates = expectedFullNameTemplates;
             m_rgSelectSettings = rgSelectSettings;
             m_sGameFile = sGameFile;
             m_sGameCopy = sGameCopy;
@@ -555,7 +555,7 @@ namespace ArbWeb
             m_sReportPage = sReportPage;
             m_sidReportPageLink = sidReportPageLink;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
-            m_sFullExpectedName = sFullExpectedName;
+            m_expectedFullNameTemplates = new string[] {sFullExpectedName};
             m_sExpectedName = sExpectedName;
             m_rgSelectSettings = rgSelectSettings;
             m_rgCheckedSettings = rgCheckedSettings;
@@ -755,7 +755,7 @@ namespace ArbWeb
 
             WebControl.FileDownloader downloader = new WebControl.FileDownloader(
 	            m_appContext.WebControl,
-	            m_sFullExpectedName,
+	            m_expectedFullNameTemplates,
 	            sTempFile,
 	            () => m_appContext.WebControl.FClickControlName(m_sReportPrintSubmitPrintControlName));
             

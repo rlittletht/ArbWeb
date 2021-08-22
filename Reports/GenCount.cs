@@ -66,6 +66,8 @@ namespace ArbWeb
 
 		Schedule m_gmd;
 
+		public ScheduleGames Games => m_gmd.Games;
+
 		/* L O A D  D A T A */
 		/*----------------------------------------------------------------------------
 			%%Function: LoadData
