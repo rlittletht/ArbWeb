@@ -1,5 +1,8 @@
-﻿using HtmlAgilityPack;
+﻿using System;
+using HtmlAgilityPack;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
 using TCore.WebControl;
 
@@ -69,18 +72,32 @@ namespace ArbWeb
 
 			Utils.ThrowIfNot(sCtl != null, "Can't find HELP announcement");
 
-			string sidControl = BuildAnnName(WebCore._sid_Announcements_Button_Edit_Prefix, WebCore._sid_Announcements_Button_Edit_Suffix, sCtl);
+			string sidControl = BuildAnnouncementNameOrIdString(WebCore._sid_Announcements_Button_Edit_Prefix, WebCore._sid_Announcements_Button_Edit_Suffix, sCtl);
 
 			Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(sidControl), "Couldn't find edit button");
 			m_appContext.WebControl.WaitForPageLoad();
 
-			// now edit the text
-			string sNameControl = BuildAnnName(WebCore._s_Announcements_Textarea_Text_Prefix, WebCore._s_Announcements_Textarea_Text_Suffix, sCtl);
+			// find the CKEDITOR control, it will be a peer of the textarea control that it is editing
+            {
+    			// string sidCkeDiv = WebCore._sid_cke_Prefix + BuildAnnouncementNameOrIdString(WebCore._sid_Announcements_Textarea_Text_Prefix, WebCore._sid_Announcements_Textarea_Text_Suffix, sCtl);
 
-			m_appContext.WebControl.FSetTextAreaTextForControlName(sNameControl, sArbiterHelpNeeded, true);
+				// we need to find the id to use to click to get the source control
+
+			}
+
+			// wait for CKEDITOR to load and init...wait for the control
+            WebDriverWait wait = new WebDriverWait(m_appContext.WebControl.Driver, TimeSpan.FromSeconds(5));
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("cke_12")));
+
+            Utils.ThrowIfNot(WebControl.WaitForControl(m_appContext.WebControl.Driver, m_appContext.StatusReport, "cke_12"), "CKEDITOR never loaded");
+
+			// select source mode
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId("cke_12"), "Couldn't find <SOURCE> button");
+
+			m_appContext.WebControl.FSetTextAreaTextForControlAsChildOfDivId("cke_1_contents", sArbiterHelpNeeded, true);
 			m_appContext.WebControl.WaitForPageLoad();
 
-			sidControl = BuildAnnName(WebCore._sid_Announcements_Button_Save_Prefix, WebCore._sid_Announcements_Button_Save_Suffix, sCtl);
+			sidControl = BuildAnnouncementNameOrIdString(WebCore._sid_Announcements_Button_Save_Prefix, WebCore._sid_Announcements_Button_Save_Suffix, sCtl);
 
 			Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(sidControl), "Couldn't find save button");
 			m_appContext.WebControl.WaitForPageLoad();
@@ -92,10 +109,10 @@ namespace ArbWeb
 		}
 
 		/*----------------------------------------------------------------------------
-			%%Function:BuildAnnName
-			%%Qualified:ArbWeb.WebAnnounce.BuildAnnName
+			%%Function:BuildAnnouncementNameOrIdString
+			%%Qualified:ArbWeb.WebAnnounce.BuildAnnouncementNameOrIdString
 		----------------------------------------------------------------------------*/
-		private static string BuildAnnName(string sPrefix, string sSuffix, string sCtl)
+		private static string BuildAnnouncementNameOrIdString(string sPrefix, string sSuffix, string sCtl)
 		{
 			return $"{sPrefix}{sCtl}{sSuffix}";
 		}

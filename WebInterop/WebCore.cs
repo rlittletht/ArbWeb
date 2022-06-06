@@ -244,6 +244,10 @@ namespace ArbWeb
         private const string _s_Announcements_Button_Save_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
         private const string _s_Announcements_Button_Save_Suffix = "$btnSave";
 
+        public const string _sid_cke_Prefix = "cke_";
+        public const string _sid_Announcements_Textarea_Text_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
+        public const string _sid_Announcements_Textarea_Text_Suffix = "_txtAnnouncement";
+
         public const string _s_Announcements_Textarea_Text_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
         public const string _s_Announcements_Textarea_Text_Suffix = "$txtAnnouncement";
 
