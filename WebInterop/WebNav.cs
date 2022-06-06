@@ -122,7 +122,7 @@ namespace ArbWeb
                 }
 #endif
 
-                if (!WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
+                if (!WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_MessagingText))
                     MessageBox.Show("Login failed for ArbiterOne!");
                 else
                     m_fLoggedIn = true;

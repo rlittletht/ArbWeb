@@ -121,7 +121,7 @@ namespace ArbWeb.Games
             Dictionary<string, string> m_mpFieldVal = new Dictionary<string, string>();
 
             m_mpFieldVal.Add("UmpireName", "\"" + m_sName + "\"");
-            m_mpFieldVal.Add("Team", m_sTeam);
+            m_mpFieldVal.Add("Team", $"\"{m_sTeam}\"");
             m_mpFieldVal.Add("Email", m_sEmail);
             m_mpFieldVal.Add("Game", m_sGameNum);
             //					string sDateTime = m_dttm.ToString("M/d/yyyy ddd h:mm tt");

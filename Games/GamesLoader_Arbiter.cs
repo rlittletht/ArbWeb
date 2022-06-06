@@ -416,11 +416,11 @@ namespace ArbWeb.Games
             mpNamePos.Clear();
             mpNameStatus.Clear();
 
-            if (!(Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Baseball").Success
+            if (!(Regex.Match(sLine, ", *[ a-zA-Z0-9-/]* *Baseball").Success
                   || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
                   || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
                   || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Tourn").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Softball").Success
+                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-/]* *Softball").Success
                   || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *Postseason").Success
                   || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *All Stars").Success
                   || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Fall Ball").Success

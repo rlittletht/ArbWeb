@@ -41,7 +41,8 @@ namespace ArbWeb
         public const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
 
         public const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
-        public const string _sid_Home_Anchor_NeedHelpLink = "ctl00_PageHelpTextLink"; // ok2017
+        public const string _sid_Home_MessagingText = "ctl00_MessagingText"; // ok2022
+        public const string _sid_Home_Anchor_NeedHelpLink = "ctl00_PageHelpTextLink"; // not ok 2022
 
         // ============================================================================
         // A S S I G N I N G
