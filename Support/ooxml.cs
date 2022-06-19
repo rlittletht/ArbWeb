@@ -208,7 +208,16 @@ namespace ArbWeb
             PackagePart prt;
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<div id='D9UrgentHelpNeeded'><h1>HELP NEEDED</h1><h4> The following upcoming games URGENTLY need help! <br>Please <a href=\"https://www1.arbitersports.com/Official/SelfAssign.aspx\">SELF ASSIGN</a> now!</h4><style>    table.help td {padding-left: 2mm;padding-right: 2mm;}td.bold {font-weight: bold;}</style> <table class='help' border=1 style='border-collapse: collapse'></div>");
+            sb.Append(
+                "<div id='D9UrgentHelpNeeded'>"
+                + "<h1>HELP NEEDED</h1>"
+                + "<h4> The following upcoming games URGENTLY need help! <br>"
+                + "Please <a href=\"https://www1.arbitersports.com/Official/SelfAssign.aspx\">SELF ASSIGN</a> now!</h4>"
+                + "<style> "
+                + "table.help td {padding-left: 2mm;padding-right: 2mm;}"
+                + "td.bold {font-weight: bold;}"
+                + "</style> "
+                + "<table class='help' border=1 style='border-collapse: collapse'>");
 
             Stream stm = StmCreatePart(pkg, "/word/document.xml", s_sUriContentTypeDoc, out prt);
 
@@ -241,7 +250,7 @@ namespace ArbWeb
                 AppendGameToSb(plgm[0], plgm.Count, sb);
                 }
             EndTable(xw);
-            sb.Append("</table>");
+            sb.Append("</table></div>");
             EndElement(xw); // body
             EndElement(xw); // document
             

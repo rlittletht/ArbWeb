@@ -86,9 +86,23 @@ namespace ArbWeb.Games
 	        s = Regex.Replace(s, " JV Field$", "");
 	        s = Regex.Replace(s, " Consultants$", "");
 	        s = Regex.Replace(s, " Les Dow Field$", "");
+            s = Regex.Replace(s, " Big Rock Park$", "");
 
             s = Regex.Replace(s, " #[1-9][ ]*[69]0'$", "");
 	        s = Regex.Replace(s, " #[1-9][ ]*\\([69]0'\\)$", "");
+
+            // lastly, look for the site name repeated
+            int nLen = s.Length;
+            if (nLen % 2 == 1)
+            {
+                // even length (with a space), which means we might have a split
+                nLen /= 2;
+                string strHalf = s.Substring(0, nLen);
+                if (strHalf == s.Substring(nLen + 1))
+                {
+                    s = strHalf;
+                }
+            }
 	        return s;
         }
 
@@ -186,6 +200,9 @@ namespace ArbWeb.Games
         }
 
         [TestCase("Hartman #1", "#1")]
+        [TestCase("Homestead North", "North")]
+        [TestCase("Big Rock Big Rock", "Big Rock")]
+        [TestCase("Big Rock Sports Field Big Rock Park", "Big Rock Park")]
         [Test]
         public static void TestSubSite(string sFullName, string sExpectedSubsite)
         {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ArbWeb.Games;
+using Microsoft.Identity.Client;
 
 namespace ArbWeb.Reports
 {
@@ -86,10 +87,23 @@ namespace ArbWeb.Reports
 
 			private Dictionary<string, SortedList<string, string>> m_sites;
 
-			static string KeyForSubSite(string subsite)
+			static string KeyForSubSite(string site, string subsite)
 			{
 				if (subsite.ToUpper().Contains("CONSULTANT"))
 					return $"A-{subsite}";
+
+                if (site.ToUpper().StartsWith(subsite.ToUpper()))
+                    return $"A-{subsite}";
+
+				// if there are more than one spaces in the name, and the final
+				// space delimited substring matches the first, its also a consultant slot
+                if (subsite.IndexOf(' ') != subsite.LastIndexOf(' '))
+                {
+                    string sSub = subsite.Substring(0, subsite.LastIndexOf(' '));
+
+                    if (site.StartsWith(sSub))
+                        return $"A-{subsite}";
+                }
 
 				return $"B-{subsite}";
 			}
@@ -114,7 +128,7 @@ namespace ArbWeb.Reports
 
 							foreach (string subsite in timeSlotCoverage.SubSitesForSite(site))
 							{
-								string subsiteKey = KeyForSubSite(subsite);
+								string subsiteKey = KeyForSubSite(site, subsite);
 
 								if (!subsites.ContainsKey(subsiteKey))
 									subsites.Add(subsiteKey, subsite);
@@ -152,6 +166,17 @@ namespace ArbWeb.Reports
 				return m_sites[site].Count;
 			}
 
+			public IEnumerable<string> SubSiteKeysForSite(string site)
+            {
+                EnsureSiteInfo();
+                return m_sites[site].Keys;
+            }
+
+            public string SubsiteForSubsiteKey(string site, string key)
+            {
+                return m_sites[site][key];
+            }
+
 			public IEnumerable<string> SubSitesForSite(string site)
 			{
 				EnsureSiteInfo();
@@ -180,11 +205,21 @@ namespace ArbWeb.Reports
       col.right-bordered {border-right: 1.5pt solid black; border-top: 1.5pt solid black; border-bottom: 1.5pt solid black; }
       col.inner-bordered {border-top: 1.5pt solid black; border-bottom: 1.5pt solid black; }
       tr.rowGroup1 td.shaded { background: rgb(228,228,228) }
+    @page WordSection1
+    	{size:11.0in 8.5in;
+    	mso-page-orientation:landscape;
+    	margin:.5in .5in .5in .5in;
+    	mso-header-margin:.5in;
+    	mso-footer-margin:.5in;
+    	mso-paper-source:0;}
+    div.WordSection1
+    	{page:WordSection1;}
     </style>
     <meta http-equiv=""content-type"" content=""text/html; charset=UTF-8"">
     <title>coverage</title>
   </head>
   <body>
+    <div class=WordSection1>
 		");
 		}
 
@@ -209,8 +244,13 @@ namespace ArbWeb.Reports
 
 				bool firstSite = true;
 
-				foreach (string subsite in coverage.SubSitesForSite(site))
+				foreach (string subsiteKey in coverage.SubSiteKeysForSite(site))
 				{
+					string subsite = coverage.SubsiteForSubsiteKey(site, subsiteKey);
+
+                    if (subsiteKey.StartsWith("A-"))
+                        subsite = "Consultants";
+
 					sb.Clear();
 
 					sb.Append($"{s_borderBottom};");
@@ -375,7 +415,7 @@ namespace ArbWeb.Reports
 											sw.WriteLine("<br/>");
 
 										firstSlotRow = false;
-										sw.Write($"{rste.Name}");
+										sw.Write($"{rste.NameShort}");
 										if (slot.Status != "Accepted")
 											sw.WriteLine("*");
 										else
@@ -404,7 +444,7 @@ namespace ArbWeb.Reports
 
 				}
 				sw.WriteLine("</table>");
-				sw.WriteLine("</body></html>");
+				sw.WriteLine("</body></div></html>");
 			}
 		}
 

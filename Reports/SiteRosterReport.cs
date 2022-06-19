@@ -144,6 +144,8 @@ namespace ArbWeb.Reports
         {
 	        HashSet<string> honorifics = new HashSet<string>();
 
+            honorifics.Add("HELPER");
+
 	        if (noHonorificRanks)
 	        {
 		        honorifics.Add("HP");
