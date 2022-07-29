@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
 using TCore.WebControl;
 
@@ -27,7 +29,10 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void EnsureAdminLoggedIn()
         {
-	        List<IWebElement> elements = new List<IWebElement>(m_appContext.WebControl.Driver.FindElements(By.ClassName("accountsGridRow")));
+            WebDriverWait wait = new WebDriverWait(m_appContext.WebControl.Driver, TimeSpan.FromSeconds(2));
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("orgRole")));
+
+            List<IWebElement> elements = new List<IWebElement>(m_appContext.WebControl.Driver.FindElements(By.ClassName("orgRole")));
 	        bool fClickedAdmin = false;
 	        
 	        foreach (IWebElement element in elements)
@@ -42,6 +47,9 @@ namespace ArbWeb
 	        
             Utils.ThrowIfNot(fClickedAdmin, "Can't find Admin account link");
             m_appContext.WebControl.WaitForPageLoad(200);
+
+            WebDriverWait wait2 = new WebDriverWait(m_appContext.WebControl.Driver, TimeSpan.FromSeconds(2));
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("lnkNavTabSchedule")));
         }
 
         /*----------------------------------------------------------------------------

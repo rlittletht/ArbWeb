@@ -127,8 +127,13 @@ namespace ArbWeb
             {"All Stars SB 9/10's", "SB 10s ALL STARS"},
             {"All Stars SB 11's", "SB 11s ALL STARS"},
             {"All Stars SB Majors", "SB Majors ALL STARS"},
+            {"All Stars SB Juniors", "SB Juniors ALL STARS"},
             {"All Stars 60' BB 11's", "BB 11s ALL STARS"},
             {"All Stars 60' BB 9/10's", "BB 10s ALL STARS"},
+            {"All Stars 60' BB Majors", "BB Majors ALL STARS"},
+            {"All Stars 90' BB Intermediates", "BB Intermediate ALL STARS"},
+            {"All Stars 90' BB Juniors 90", "BB Juniors ALL STARS"},
+            {"All Stars 90' BB Seniors", "BB Seniors ALL STARS"},
             };
  
         static string DescribeGame(Game gm, int cGames)
