@@ -17,6 +17,7 @@ namespace ArbWeb
         private string m_sMiddle;
         
         public string Name => String.IsNullOrEmpty(Middle) ? $"{First} {Last}" : $"{First} {Middle} {Last}";
+        public string NameShort => $"{First} {Last}";
         public string NameRoster => String.IsNullOrEmpty(Middle) ? $"{Last}, {First}" : $"{Last}, {First} {Middle}";
         public string Email { get { return m_sEmail; } set { m_sEmail = value; } }
         public string First { get { return m_sFirst; } set { m_sFirst = value; } }

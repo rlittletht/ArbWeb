@@ -6,6 +6,8 @@ using OpenQA.Selenium;
 using TCore.StatusBox;
 using TCore.Util;
 using HtmlAgilityPack;
+using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using TCore.WebControl;
 
 namespace ArbWeb
@@ -41,16 +43,20 @@ namespace ArbWeb
         public const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
 
         public const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
-        public const string _sid_Home_Anchor_NeedHelpLink = "ctl00_PageHelpTextLink"; // ok2017
+        public const string _sid_Home_MessagingText = "ctl00_MessagingText"; // ok2022
+        public const string _sid_Home_Anchor_NeedHelpLink = "ctl00_PageHelpTextLink"; // not ok 2022
 
         // ============================================================================
         // A S S I G N I N G
         // ============================================================================
         // (games view) links
         public const string _s_Assigning_Select_Filters = "ctl00$ContentHolder$pgeGamesView$conGamesView$ddlSavedFilters"; // ok2021
-        public const string _sid_Assigning_Select_Filters = "ctl00_ContentHolder_pgeGamesView_conGamesView_ddlSavedFilters"; // ok2021
+        public const string _sid_Assigning_Select_Filters = "ddlSavedFilters"; // ok2021
         public const string _s_Assigning_Reports_Select_Format = "ctl00$ContentHolder$pgePrint$conPrint$ddlFormat"; // ok2010
         public const string _s_Assigning_Reports_Submit_Print = "ctl00$ContentHolder$pgePrint$navPrint$btnBeginPrint"; // ok2010
+        public const string _sid_Assigning_GamesReport = "ctl00_ContentHolder_pgeGamesView_cmnReports_tskPrint"; // ok2021
+        public const string _sid_Assigning_Reports_Done = "ctl00_ContentHolder_pgePrint_navPrint_lnkDone"; // ok2021
+        public const string _s_Assigning_CheckAll = "ctl00$ContentHolder$pgeGamesView$conGamesView$dgGames$ctl01$chkAll"; // ok2021
 
         public const string _sid_Assigning_Reports_Select_Format = "ctl00_ContentHolder_pgePrint_conPrint_ddlFormat"; // ok2010
         
@@ -239,6 +245,10 @@ namespace ArbWeb
         private const string _s_Announcements_Select_Filters_Suffix = "$ddlFilters";
         private const string _s_Announcements_Button_Save_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
         private const string _s_Announcements_Button_Save_Suffix = "$btnSave";
+
+        public const string _sid_cke_Prefix = "cke_";
+        public const string _sid_Announcements_Textarea_Text_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
+        public const string _sid_Announcements_Textarea_Text_Suffix = "_txtAnnouncement";
 
         public const string _s_Announcements_Textarea_Text_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
         public const string _s_Announcements_Textarea_Text_Suffix = "$txtAnnouncement";
@@ -466,7 +476,7 @@ namespace ArbWeb
         private readonly string m_sSelectFilterControlName;
         private readonly string m_sReportPrintPagePrefix;
         private readonly string m_sReportPrintSubmitPrintControlName;
-        private readonly string m_sFullExpectedName;
+        private readonly string[] m_expectedFullNameTemplates;
         private readonly string m_sExpectedName;
         private readonly string m_sidReportPageLink;
         private string m_sGameFile;
@@ -509,8 +519,8 @@ namespace ArbWeb
             string sSelectFilterControlName, 
             string sidSelectFilterControl,
             string sReportPrintPagePrefix, 
-            string sReportPrintSubmitPrintControlName, 
-            string sFullExpectedName, 
+            string sReportPrintSubmitPrintControlName,
+            string[] expectedFullNameTemplates,
             string sExpectedName, 
             ControlSetting<string>[] rgSelectSettings,
             string sGameFile,
@@ -525,8 +535,8 @@ namespace ArbWeb
             m_sidSelectFilterControl = sidSelectFilterControl;
             m_sReportPrintPagePrefix = sReportPrintPagePrefix;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
-            m_sFullExpectedName = sFullExpectedName;
             m_sExpectedName = sExpectedName;
+            m_expectedFullNameTemplates = expectedFullNameTemplates;
             m_rgSelectSettings = rgSelectSettings;
             m_sGameFile = sGameFile;
             m_sGameCopy = sGameCopy;
@@ -552,7 +562,7 @@ namespace ArbWeb
             m_sReportPage = sReportPage;
             m_sidReportPageLink = sidReportPageLink;
             m_sReportPrintSubmitPrintControlName = sReportPrintSubmitPrintControlName;
-            m_sFullExpectedName = sFullExpectedName;
+            m_expectedFullNameTemplates = new string[] {sFullExpectedName};
             m_sExpectedName = sExpectedName;
             m_rgSelectSettings = rgSelectSettings;
             m_rgCheckedSettings = rgCheckedSettings;
@@ -722,7 +732,9 @@ namespace ArbWeb
 
                 m_appContext.WebControl.FSetSelectedOptionTextForControlId(m_sidSelectFilterControl, m_sFilterOptionTextReq);
 
-                if (!m_appContext.WebControl.FNavToPage(m_sReportPrintPagePrefix + sFilterOptionValue))
+                m_appContext.WebControl.FSetCheckboxControlNameVal(true, WebCore._s_Assigning_CheckAll);
+
+                if (!(m_appContext.WebControl.FClickControlId(WebCore._sid_Assigning_GamesReport, WebCore._sid_Assigning_Reports_Done)))
                     throw (new Exception("could not navigate to the reports page!"));
                 }
             else
@@ -750,7 +762,7 @@ namespace ArbWeb
 
             WebControl.FileDownloader downloader = new WebControl.FileDownloader(
 	            m_appContext.WebControl,
-	            m_sFullExpectedName,
+	            m_expectedFullNameTemplates,
 	            sTempFile,
 	            () => m_appContext.WebControl.FClickControlName(m_sReportPrintSubmitPrintControlName));
             

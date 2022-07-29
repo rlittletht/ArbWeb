@@ -21,10 +21,6 @@ namespace ArbWeb
 		private IPublicClientApplication m_app;
 		private AuthInfo m_authInfo;
 
-		private WebApiInterop.IAccessTokenProvider m_accessTokenProviderImplementation;
-
-        private string m_sAccessToken;
-
         public Auth(string sClientID, string[] rgsScopes)
         {
             m_sClientID = sClientID;
@@ -59,7 +55,7 @@ namespace ArbWeb
                 result = await m_app.AcquireTokenSilent(m_rgsScopes, accounts.FirstOrDefault()).ExecuteAsync();
                 //result = await m_app.AcquireTokenSilentAsync(m_rgsScopes, accounts.FirstOrDefault());
             }
-            catch (MsalUiRequiredException ex)
+            catch (MsalUiRequiredException)
             {
                 result = await m_app.AcquireTokenInteractive(m_rgsScopes).ExecuteAsync();
                 //result = await m_app.AcquireTokenAsync(m_rgsScopes);

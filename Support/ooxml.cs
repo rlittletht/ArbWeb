@@ -127,8 +127,13 @@ namespace ArbWeb
             {"All Stars SB 9/10's", "SB 10s ALL STARS"},
             {"All Stars SB 11's", "SB 11s ALL STARS"},
             {"All Stars SB Majors", "SB Majors ALL STARS"},
+            {"All Stars SB Juniors", "SB Juniors ALL STARS"},
             {"All Stars 60' BB 11's", "BB 11s ALL STARS"},
             {"All Stars 60' BB 9/10's", "BB 10s ALL STARS"},
+            {"All Stars 60' BB Majors", "BB Majors ALL STARS"},
+            {"All Stars 90' BB Intermediates", "BB Intermediate ALL STARS"},
+            {"All Stars 90' BB Juniors 90", "BB Juniors ALL STARS"},
+            {"All Stars 90' BB Seniors", "BB Seniors ALL STARS"},
             };
  
         static string DescribeGame(Game gm, int cGames)
@@ -208,7 +213,16 @@ namespace ArbWeb
             PackagePart prt;
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("<div id='D9UrgentHelpNeeded'><h1>HELP NEEDED</h1><h4> The following upcoming games URGENTLY need help! <br>Please <a href=\"https://www1.arbitersports.com/Official/SelfAssign.aspx\">SELF ASSIGN</a> now!</h4><style>    table.help td {padding-left: 2mm;padding-right: 2mm;}td.bold {font-weight: bold;}</style> <table class='help' border=1 style='border-collapse: collapse'></div>");
+            sb.Append(
+                "<div id='D9UrgentHelpNeeded'>"
+                + "<h1>HELP NEEDED</h1>"
+                + "<h4> The following upcoming games URGENTLY need help! <br>"
+                + "Please <a href=\"https://www1.arbitersports.com/Official/SelfAssign.aspx\">SELF ASSIGN</a> now!</h4>"
+                + "<style> "
+                + "table.help td {padding-left: 2mm;padding-right: 2mm;}"
+                + "td.bold {font-weight: bold;}"
+                + "</style> "
+                + "<table class='help' border=1 style='border-collapse: collapse'>");
 
             Stream stm = StmCreatePart(pkg, "/word/document.xml", s_sUriContentTypeDoc, out prt);
 
@@ -220,7 +234,7 @@ namespace ArbWeb
             WritePara(xw, "If you can work ANY of these games, either sign up on Arbiter, or just reply to this mail and let me know which games you can do. Thanks!");
 
             StartTable(xw, 5);
-            Dictionary<string, List<Game>> mpSlotGames = new Dictionary<string, List<Game>>();
+            SortedDictionary<string, List<Game>> mpSlotGames = new SortedDictionary<string, List<Game>>();
 
             foreach (Game gm in gms.Games.Values)
                 {
@@ -234,13 +248,14 @@ namespace ArbWeb
                 mpSlotGames[s].Add(gm);
                 }
 
+            
             foreach (List<Game> plgm in mpSlotGames.Values)
                 {
                 WriteGame(xw, plgm[0], plgm.Count);
                 AppendGameToSb(plgm[0], plgm.Count, sb);
                 }
             EndTable(xw);
-            sb.Append("</table>");
+            sb.Append("</table></div>");
             EndElement(xw); // body
             EndElement(xw); // document
             

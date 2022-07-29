@@ -79,7 +79,7 @@ namespace ArbWeb
                     WebCore._sid_Assigning_Select_Filters,
                     WebCore._s_Assigning_PrintAddress,
                     WebCore._s_Assigning_Reports_Submit_Print,
-                    "Schedule.xls",
+                    new [] {"Schedule.xls", "Schedule{0}.xls", "Schedule({0}).xls", "Schedule ({0}).xls"},
                     "Schedule",
                     new[]
                         {

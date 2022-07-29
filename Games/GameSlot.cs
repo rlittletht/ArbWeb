@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Microsoft.Identity.Client;
+using NUnit.Framework;
 
 namespace ArbWeb.Games
 {
@@ -27,6 +29,8 @@ namespace ArbWeb.Games
         private bool m_fCancelled;
 
         private List<string> m_plsMisc;
+
+        public GameSlot() { }
 
         public GameSlot(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, string sStatus, bool fCancelled, List<string> plsMisc)
         {
@@ -63,29 +67,58 @@ namespace ArbWeb.Games
         public string Site { get { return m_sSite; } }
         public string SportLevel { get { return $"{m_sSport} {m_sLevel}"; } }
 
-        public string SiteShort
+        public string SiteShort => GetSiteShortFromSite(m_sSite);
+
+        static string GetSiteShortFromSite(string site)
         {
-            get
+	        // get rid of any trailing fields
+	        string s = Regex.Replace(site, " [A-D]$", "");
+
+	        s = Regex.Replace(s, " #[1-9]$", "");
+	        s = Regex.Replace(s, " Big$", "");
+
+	        s = Regex.Replace(s, " South$", "");
+
+	        s = Regex.Replace(s, " East$", "");
+	        s = Regex.Replace(s, " West$", "");
+	        s = Regex.Replace(s, " North$", "");
+	        s = Regex.Replace(s, " Varsity Field$", "");
+	        s = Regex.Replace(s, " JV Field$", "");
+	        s = Regex.Replace(s, " Consultants$", "");
+	        s = Regex.Replace(s, " Les Dow Field$", "");
+            s = Regex.Replace(s, " Big Rock Park$", "");
+
+            s = Regex.Replace(s, " #[1-9][ ]*[69]0'$", "");
+	        s = Regex.Replace(s, " #[1-9][ ]*\\([69]0'\\)$", "");
+
+            // lastly, look for the site name repeated
+            int nLen = s.Length;
+            if (nLen % 2 == 1)
             {
-                // get rid of any trailing fields
-                string s = Regex.Replace(m_sSite, " [A-D]$", "");
-
-                s = Regex.Replace(s, " #[1-9]$", "");
-                s = Regex.Replace(s, " Big$", "");
-
-                s = Regex.Replace(s, " South$", "");
-
-                s = Regex.Replace(s, " East$", "");
-                s = Regex.Replace(s, " West$", "");
-                s = Regex.Replace(s, " North$", "");
-                s = Regex.Replace(s, " Varsity Field$", "");
-                s = Regex.Replace(s, " JV Field$", "");
-
-                s = Regex.Replace(s, " #[1-9][ ]*[69]0'$", "");
-                s = Regex.Replace(s, " #[1-9][ ]*\\([69]0'\\)$", "");
-                return s;
+                // even length (with a space), which means we might have a split
+                nLen /= 2;
+                string strHalf = s.Substring(0, nLen);
+                if (strHalf == s.Substring(nLen + 1))
+                {
+                    s = strHalf;
+                }
             }
+	        return s;
         }
+
+        static string GetSubsiteFromSite(string site)
+        {
+	        string siteShort = GetSiteShortFromSite(site);
+
+	        if (siteShort.Length >= site.Length)
+		        return site;
+
+	        string subSite = site.Substring(siteShort.Length);
+	        return subSite.Trim();
+        }
+
+        public string SubSite => GetSubsiteFromSite(m_sSite);
+
 
         /*----------------------------------------------------------------------------
             %%Function: MakeCsvLine
@@ -102,7 +135,7 @@ namespace ArbWeb.Games
             Dictionary<string, string> m_mpFieldVal = new Dictionary<string, string>();
 
             m_mpFieldVal.Add("UmpireName", "\"" + m_sName + "\"");
-            m_mpFieldVal.Add("Team", m_sTeam);
+            m_mpFieldVal.Add("Team", $"\"{m_sTeam}\"");
             m_mpFieldVal.Add("Email", m_sEmail);
             m_mpFieldVal.Add("Game", m_sGameNum);
             //					string sDateTime = m_dttm.ToString("M/d/yyyy ddd h:mm tt");
@@ -164,6 +197,16 @@ namespace ArbWeb.Games
                     sRet += "0";
             }
             return sRet;
+        }
+
+        [TestCase("Hartman #1", "#1")]
+        [TestCase("Homestead North", "North")]
+        [TestCase("Big Rock Big Rock", "Big Rock")]
+        [TestCase("Big Rock Sports Field Big Rock Park", "Big Rock Park")]
+        [Test]
+        public static void TestSubSite(string sFullName, string sExpectedSubsite)
+        {
+	        Assert.AreEqual(sExpectedSubsite, GetSubsiteFromSite(sFullName));
         }
     }
 }

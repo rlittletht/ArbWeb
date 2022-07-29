@@ -150,6 +150,7 @@ namespace ArbWeb
 		private ComboBox m_cbSchedsForDiff;
 		private Button button6;
 		private Button button7;
+		private Button button8;
 		private WebGames m_webGames;
         
         #region Top Level Program Flow
@@ -601,6 +602,7 @@ namespace ArbWeb
 			this.m_cbSchedsForDiff = new System.Windows.Forms.ComboBox();
 			this.button6 = new System.Windows.Forms.Button();
 			this.button7 = new System.Windows.Forms.Button();
+			this.button8 = new System.Windows.Forms.Button();
 			label17 = new System.Windows.Forms.Label();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -1072,9 +1074,9 @@ namespace ArbWeb
 			// m_pbCreateRosterReport
 			// 
 			this.m_pbCreateRosterReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.m_pbCreateRosterReport.Location = new System.Drawing.Point(985, 792);
+			this.m_pbCreateRosterReport.Location = new System.Drawing.Point(985, 775);
 			this.m_pbCreateRosterReport.Name = "m_pbCreateRosterReport";
-			this.m_pbCreateRosterReport.Size = new System.Drawing.Size(176, 40);
+			this.m_pbCreateRosterReport.Size = new System.Drawing.Size(176, 26);
 			this.m_pbCreateRosterReport.TabIndex = 84;
 			this.m_pbCreateRosterReport.Text = "Create Roster";
 			this.m_pbCreateRosterReport.Click += new System.EventHandler(this.GenSiteRosterReport);
@@ -1259,10 +1261,21 @@ namespace ArbWeb
 			this.button7.Text = "Select All";
 			this.button7.Click += new System.EventHandler(this.SelectAllSites);
 			// 
+			// button8
+			// 
+			this.button8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button8.Location = new System.Drawing.Point(985, 807);
+			this.button8.Name = "button8";
+			this.button8.Size = new System.Drawing.Size(176, 26);
+			this.button8.TabIndex = 103;
+			this.button8.Text = "Coverage Report";
+			this.button8.Click += new System.EventHandler(this.DoCoverageReport);
+			// 
 			// AwMainForm
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
 			this.ClientSize = new System.Drawing.Size(1174, 1173);
+			this.Controls.Add(this.button8);
 			this.Controls.Add(this.button7);
 			this.Controls.Add(this.button6);
 			this.Controls.Add(this.m_cbSchedsForDiff);
@@ -1811,7 +1824,7 @@ namespace ArbWeb
 	        m_cbFuzzyTimes.Checked = pr.FuzzyTimes;
 	        m_cbTestEmail.Checked = pr.TestEmail;
 	        m_cbAddOfficialsOnly.Checked = pr.AddOfficialsOnly;
-	        m_ebAffiliationIndex.Text = pr.AffiliationIndex;
+	        m_ebAffiliationIndex.Text = pr.AffiliationIndex.ToString();
 	        m_cbSplitSports.Checked = pr.SplitSports;
 	        m_cbDatePivot.Checked = pr.DatePivot;
 	        m_cbFilterRank.Checked = pr.FilterRank;
@@ -1842,7 +1855,7 @@ namespace ArbWeb
 	        pr.FuzzyTimes = m_cbFuzzyTimes.Checked;
 	        pr.TestEmail = m_cbTestEmail.Checked;
 	        pr.AddOfficialsOnly = m_cbAddOfficialsOnly.Checked;
-	        pr.AffiliationIndex = m_ebAffiliationIndex.Text;
+	        pr.AffiliationIndex = Int32.Parse(m_ebAffiliationIndex.Text);
 	        pr.SplitSports = m_cbSplitSports.Checked;
 	        pr.DatePivot = m_cbDatePivot.Checked;
 	        pr.FilterRank = m_cbFilterRank.Checked;
@@ -2204,6 +2217,19 @@ namespace ArbWeb
 
 				m_chlbxRoster.SetItemCheckState(i, CheckState.Checked);
 			}
+		}
+
+		private void DoCoverageReport(object sender, EventArgs e)
+		{
+			CoverageReport report = new CoverageReport(this);
+
+			report.DoCoverageReport(
+				GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text)),
+				RstEnsure(m_pr.RosterWorking),
+				WebCore.RgsFromChlbx(true, m_chlbxRoster),
+				m_dtpStart.Value,
+				m_dtpEnd.Value);
+
 		}
 	}
 

@@ -171,8 +171,8 @@
       <Isolated>False</Isolated>
     </COMReference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="TCore.Settings, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\TCore.Settings.1.0.0\lib\net45\TCore.Settings.dll</HintPath>
+    <Reference Include="TCore.Settings, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\TCore.Settings.1.1.0\lib\net45\TCore.Settings.dll</HintPath>
     </Reference>
     <Reference Include="TCore.StatusBox, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\TCore.StatusBox.1.0.0\lib\net462\TCore.StatusBox.dll</HintPath>
@@ -186,6 +186,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Reports\CoverageReport.cs" />
     <Compile Include="Secrets.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

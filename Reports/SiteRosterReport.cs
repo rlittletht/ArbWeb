@@ -144,6 +144,8 @@ namespace ArbWeb.Reports
         {
 	        HashSet<string> honorifics = new HashSet<string>();
 
+            honorifics.Add("HELPER");
+
 	        if (noHonorificRanks)
 	        {
 		        honorifics.Add("HP");
@@ -251,7 +253,7 @@ namespace ArbWeb.Reports
             Assert.AreEqual(cchExpected, CchCommonRoot(sLeft, sRight));
         }
 
-        static Dictionary<string, string> MapCommonRootsFromList(SortedSet<string> sset)
+        public static Dictionary<string, string> MapCommonRootsFromList(SortedSet<string> sset)
         {
             Dictionary<string, string> mpRoots = new Dictionary<string, string>();
             List<string> plsPending = new List<string>();
