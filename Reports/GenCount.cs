@@ -9,7 +9,7 @@ namespace ArbWeb
 	// ================================================================================
 	//  C S V 
 	// ================================================================================
-	class Csv
+	class CsvInternal
 	{
 		public static string[] LineToArray(string line)
 		{
