@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using TCore.CSV;
 
 namespace ArbWeb
 {
@@ -496,7 +497,7 @@ namespace ArbWeb
 			            int nRank;
 			            try
 			            {
-				            if (rgs[i + iRank] == "")
+				            if (i + iRank >= rgs.Length || rgs[i + iRank] == "")
 					            nRank = 0;
 				            else
 					            nRank = Int32.Parse(rgs[i + iRank]);

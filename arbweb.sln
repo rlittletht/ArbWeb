@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCore.WebControl", "..\libl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TCore.MsalWeb", "..\liblet\cs\TCore.MsalWeb.Working\TCore.MsalWeb\TCore.MsalWeb.csproj", "{2A614ABE-23AE-4064-BD31-4EA1BCC4DAE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCore.UI", "..\liblet\cs\TCore.UI\TCore.UI.csproj", "{9213A90F-A23F-4BC5-827C-164ECB6C6CC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TCore.UI", "..\liblet\cs\TCore.UI\TCore.UI.csproj", "{9213A90F-A23F-4BC5-827C-164ECB6C6CC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
