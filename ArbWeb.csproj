@@ -241,6 +241,7 @@
     <Compile Include="WebInterop\WebRoster.cs" />
     <Compile Include="WebInterop\WebRosterDownload.cs" />
     <Compile Include="WebInterop\WebRosterUpload.cs" />
+    <Compile Include="WebInterop\WebTeams.cs" />
     <Content Include="App.ico" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>

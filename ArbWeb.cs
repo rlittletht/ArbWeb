@@ -152,6 +152,8 @@ namespace ArbWeb
 		private Button button7;
 		private Button button8;
         private Button button9;
+        private Button button10;
+        private Button button11;
         private WebGames m_webGames;
         
         #region Top Level Program Flow
@@ -242,6 +244,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public AwMainForm(string[] rgsCmdLine)
         {
+            Console.WriteLine("Testing");
             //
             // Required for Windows Form Designer support
             //
@@ -350,29 +353,29 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoCheckSportListboxes(object sender, EventArgs e)
         {
-            if (m_plsAutomateIncludeSport.Count == 0)
-                return;
+            if (m_plsAutomateIncludeSport.Count > 0)
+            {
+                m_cbFilterSport.Checked = true;
+                EnableControls();
 
-            m_cbFilterSport.Checked = true;
-            EnableControls();
-
-            // first, uncheck everone
-            for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+                // first, uncheck everone
+                for (int i = 0; i < m_chlbxSports.Items.Count; i++)
                 {
-                m_chlbxSports.SetItemChecked(i, false);
+                    m_chlbxSports.SetItemChecked(i, false);
                 }
 
-            foreach (string s in m_plsAutomateIncludeSport)
+                foreach (string s in m_plsAutomateIncludeSport)
                 {
-                // find the item in the listbox
-                for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+                    // find the item in the listbox
+                    for (int i = 0; i < m_chlbxSports.Items.Count; i++)
                     {
-                    string sItem = (string) m_chlbxSports.Items[i];
+                        string sItem = (string)m_chlbxSports.Items[i];
 
-                    if (sItem.Contains(s))
-                        m_chlbxSports.SetItemChecked(i, true);
+                        if (sItem.Contains(s))
+                            m_chlbxSports.SetItemChecked(i, true);
                     }
                 }
+            }
 
             DoPendingQueueUIOp();
         }
@@ -605,6 +608,8 @@ namespace ArbWeb
             this.button7 = new System.Windows.Forms.Button();
             this.button8 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
+            this.button10 = new System.Windows.Forms.Button();
+            this.button11 = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -1283,10 +1288,31 @@ namespace ArbWeb
             this.button9.Text = "Extract Schedule Stats";
             this.button9.Click += new System.EventHandler(this.ExtractScheduleStats);
             // 
+            // button10
+            // 
+            this.button10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button10.Location = new System.Drawing.Point(664, 886);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(240, 35);
+            this.button10.TabIndex = 105;
+            this.button10.Text = "Delete Unused Teams";
+            // 
+            // button11
+            // 
+            this.button11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button11.Location = new System.Drawing.Point(192, 886);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(176, 35);
+            this.button11.TabIndex = 106;
+            this.button11.Text = "Test Forms";
+            this.button11.Click += new System.EventHandler(this.DoDownloadForms);
+            // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
             this.ClientSize = new System.Drawing.Size(1174, 1225);
+            this.Controls.Add(this.button11);
+            this.Controls.Add(this.button10);
             this.Controls.Add(this.button9);
             this.Controls.Add(this.button8);
             this.Controls.Add(this.button7);
@@ -2173,8 +2199,16 @@ namespace ArbWeb
         }
 
         private SPO.Offline m_offline;
-        
-		private async void DoDownloadAndDiffAllSchedules(object sender, EventArgs e)
+
+        private async void DoDownloadForms(object sender, EventArgs e)
+        {
+            if (m_offline == null)
+                m_offline = new Offline(this);
+
+            await m_offline.DownloadForms();
+        }
+
+        private async void DoDownloadAndDiffAllSchedules(object sender, EventArgs e)
 		{
 			if (m_offline == null)
 				m_offline = new Offline(this);
@@ -2250,6 +2284,11 @@ namespace ArbWeb
 				m_dtpEnd.Value);
 
 		}
-	}
+
+        private void DeleteUnusedTeams(object sender, EventArgs e)
+        {
+
+        }
+    }
 
 }

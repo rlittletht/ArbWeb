@@ -20,7 +20,14 @@ namespace ArbWeb.SPO
 			m_appContext = appContext;
 		}
 
-		public async Task DownloadAllSchedules()
+        public async Task DownloadForms()
+        {
+            await m_appContext.SpoInterop().EnsureLoggedIn();
+
+            await m_appContext.SpoInterop().GetFormInfo();
+        }
+
+        public async Task DownloadAllSchedules()
 		{
 			await m_appContext.SpoInterop().EnsureLoggedIn();
 

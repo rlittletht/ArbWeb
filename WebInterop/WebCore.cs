@@ -27,6 +27,8 @@ namespace ArbWeb
         public const string _s_Announcements = "https://www1.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
         public const string _s_ContactsView = "https://www1.arbitersports.com/Assigner/ContactsView.aspx"; // ok2018
 
+        public const string _s_TeamsView = "https://www1.arbitersports.com/assigner/TeamsView.aspx"; // ok2023
+
         // ============================================================================
         // D I R E C T  A C C E S S
         // ============================================================================

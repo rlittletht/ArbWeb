@@ -70,10 +70,13 @@ namespace ArbWeb.Games
 			if (left.StartDateTime != right.StartDateTime)
 				return false;
 
-			if (String.Compare(left.Level, right.Level, true) != 0)
-				return false;
+            if (!(left.Level.ToUpper().Contains("INTERMEDIATE") && right.Level.ToUpper().Contains("INTERMEDIATE")))
+            {
+                if (String.Compare(left.Level, right.Level, true) != 0)
+                    return false;
+            }
 
-			if (FuzzyMatcher.IsGameFuzzySportMatch(left, right) == 0)
+            if (FuzzyMatcher.IsGameFuzzySportMatch(left, right) == 0)
 				return false;
 
 			string home = left.Home.ToUpper();
