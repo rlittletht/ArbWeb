@@ -40,6 +40,8 @@ namespace ArbWeb
         Roster RstEnsure(string sRoster);
         void EnsureWebControl();
         Office365 SpoInterop();
+
+        bool InAutomation { get; }
     }
 
 	/// <summary>
@@ -124,7 +126,8 @@ namespace ArbWeb
         #endregion
 
         public StatusBox StatusReport => m_srpt;
-		
+        public bool InAutomation => m_fAutomating;
+
         private bool m_fAutomateUpdateHelp = false;
         private List<string> m_plsAutomateIncludeSport = new List<string>();
         private string m_sAutomateDateStart = null;
@@ -244,7 +247,6 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public AwMainForm(string[] rgsCmdLine)
         {
-            Console.WriteLine("Testing");
             //
             // Required for Windows Form Designer support
             //
@@ -321,7 +323,11 @@ namespace ArbWeb
             if (rgsCmdLine != null && rgsCmdLine.Length > 0)
                 {
                 m_fAutomating = true;
+                m_srpt.SetConsoleMode();
+                if (!this.m_cbShowBrowser.Checked)
+                    this.Hide();
 
+                this.Hide();
                 if (m_fAutomateUpdateHelp)
                     {
                     DateTime dttmStart = DateTime.Parse(m_sAutomateDateStart);
@@ -383,6 +389,8 @@ namespace ArbWeb
         void DoExitApp(object sender, EventArgs e)
         {
             this.Close();
+            this.Dispose();
+            Environment.Exit(0);
         }
 
         #region Queued UI Op
@@ -516,6 +524,13 @@ namespace ArbWeb
 
         #endregion
 
+        private delegate void DisposeRecDel();
+
+        void DisposeRec()
+        {
+            m_recStatus.Dispose();
+        }
+
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
@@ -529,6 +544,16 @@ namespace ArbWeb
                     }
                 }
 
+            if (m_recStatus.InvokeRequired)
+            {
+                m_recStatus.Invoke(new DisposeRecDel(DisposeRec));
+            }
+            else
+            {
+                DisposeRec();
+            }
+
+            m_recStatus.Dispose();
             base.Dispose(disposing);
         }
 
@@ -1384,6 +1409,7 @@ namespace ArbWeb
             this.Text = "AwMainForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DoSaveState);
             this.Load += new System.EventHandler(this.AwMainForm_Load);
+            this.VisibleChanged += new System.EventHandler(this.OnVisibleChanged);
             this.Move += new System.EventHandler(this.AwMainForm_Move);
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -2288,6 +2314,16 @@ namespace ArbWeb
         private void DeleteUnusedTeams(object sender, EventArgs e)
         {
 
+        }
+
+        protected override void SetVisibleCore(bool value)
+        {
+            base.SetVisibleCore(!m_fAutomating || m_cbShowBrowser.Checked);
+        }
+
+        private void OnVisibleChanged(object sender, EventArgs e)
+        {
+            this.Visible = !m_fAutomating || m_cbShowBrowser.Checked;
         }
     }
 

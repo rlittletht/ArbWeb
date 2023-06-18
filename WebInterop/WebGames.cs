@@ -96,10 +96,14 @@ namespace ArbWeb
 	            {
 		            dg.DownloadGeneric(out var sGameFileNew);
 		            m_appContext.Profile.GameFile = sGameFileNew;
-		            m_appContext.DoPendingQueueUIOp();
 	            });
 
             tskDownloadGames.Start();
+            if (m_appContext.InAutomation)
+            {
+                tskDownloadGames.Wait();
+                m_appContext.DoPendingQueueUIOp();
+            }
         }
 
     }
