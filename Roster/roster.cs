@@ -126,9 +126,17 @@ namespace ArbWeb
         private readonly List<string> m_plsConsultantPositions = new List<string>
             {"Tournament Admin, Consultant", "Tournament Admin, Aunt/Uncle", "Tournament Admin, Observer", "Tournament Admin, 50/50 Raffle"};
 
+        private readonly List<string> m_plsAlwaysSkip = new List<string>
+            {"Tournament Admin, Aunt/Uncle", "Tournament Admin, Observer", "Tournament Admin, 50/50 Raffle"};
+
         bool FConsultantPosition(string sKey)
         {
             return m_plsConsultantPositions.Contains(sKey);
+        }
+
+        bool FAlwaysSkip(string sKey)
+        {
+            return m_plsAlwaysSkip.Contains(sKey);
         }
 
         public string OtherRanks(string sSport, string sPos, int nBase, HashSet<string> honorificsToSkip)
@@ -154,8 +162,11 @@ namespace ArbWeb
 			        if (m_mpRanking[sKey] == nBase || m_mpRanking[sKey] == 1)
 				        continue;
 
-			        if (FConsultantPosition(sKey) && nBase < m_mpRanking[sKey])
+			        if (FConsultantPosition(sKey) && nBase <= m_mpRanking[sKey])
 				        continue;
+
+                    if (FAlwaysSkip(sKey))
+                        continue;
 
 			        if (sOther.Length > 0)
 				        sOther += ", ";

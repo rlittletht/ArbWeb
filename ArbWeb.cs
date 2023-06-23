@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Resources;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using ArbWeb.Games;
@@ -40,6 +41,8 @@ namespace ArbWeb
         Roster RstEnsure(string sRoster);
         void EnsureWebControl();
         Office365 SpoInterop();
+
+        bool InAutomation { get; }
     }
 
 	/// <summary>
@@ -55,7 +58,7 @@ namespace ArbWeb
 
         object Zero = 0;
         object EmptyString = "";
-        private Button button1;
+        private Button m_pbGetContacts;
         private GroupBox groupBox2;
         private RichTextBox m_recStatus;
         private Button m_pbGenCounts;
@@ -117,14 +120,14 @@ namespace ArbWeb
         private Button m_pbAddProfile;
         private ComboBox m_cbxGameFilter;
         private Button m_pbRefreshGameFilters;
-        private Button pbTestDownload;
         private CheckBox m_cbSkipContactDownload;
         private StatusBox m_srpt;
 
         #endregion
 
         public StatusBox StatusReport => m_srpt;
-		
+        public bool InAutomation => m_fAutomating;
+
         private bool m_fAutomateUpdateHelp = false;
         private List<string> m_plsAutomateIncludeSport = new List<string>();
         private string m_sAutomateDateStart = null;
@@ -152,6 +155,7 @@ namespace ArbWeb
 		private Button button7;
 		private Button button8;
         private Button button9;
+        private Button m_pbDeleteUnusedTeams;
         private WebGames m_webGames;
         
         #region Top Level Program Flow
@@ -228,11 +232,18 @@ namespace ArbWeb
         public void EnableAdminFunctions()
         {
             bool fAdmin = (String.Compare(System.Environment.MachineName, "baltix", true) == 0);
-            m_pbUploadRoster.Enabled = fAdmin;
+            m_pbUploadRoster.Enabled = fAdmin && m_pr.AllowAdvancedArbiterFunctions;
         }
 
         private WebNav m_webNav;
-        
+
+        public void EnableDisableForProfile()
+        {
+            m_pbGetContacts.Enabled = m_pr.AllowAdvancedArbiterFunctions;
+            m_pbDeleteUnusedTeams.Enabled = m_pr.AllowAdvancedArbiterFunctions;
+            m_pbUploadRoster.Enabled = m_pr.AllowAdvancedArbiterFunctions;
+        }
+
         /* A W  M A I N  F O R M */
         /*----------------------------------------------------------------------------
         	%%Function: AwMainForm
@@ -318,7 +329,11 @@ namespace ArbWeb
             if (rgsCmdLine != null && rgsCmdLine.Length > 0)
                 {
                 m_fAutomating = true;
+                m_srpt.SetConsoleMode();
+                if (!this.m_cbShowBrowser.Checked)
+                    this.Hide();
 
+                this.Hide();
                 if (m_fAutomateUpdateHelp)
                     {
                     DateTime dttmStart = DateTime.Parse(m_sAutomateDateStart);
@@ -350,29 +365,29 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoCheckSportListboxes(object sender, EventArgs e)
         {
-            if (m_plsAutomateIncludeSport.Count == 0)
-                return;
+            if (m_plsAutomateIncludeSport.Count > 0)
+            {
+                m_cbFilterSport.Checked = true;
+                EnableControls();
 
-            m_cbFilterSport.Checked = true;
-            EnableControls();
-
-            // first, uncheck everone
-            for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+                // first, uncheck everone
+                for (int i = 0; i < m_chlbxSports.Items.Count; i++)
                 {
-                m_chlbxSports.SetItemChecked(i, false);
+                    m_chlbxSports.SetItemChecked(i, false);
                 }
 
-            foreach (string s in m_plsAutomateIncludeSport)
+                foreach (string s in m_plsAutomateIncludeSport)
                 {
-                // find the item in the listbox
-                for (int i = 0; i < m_chlbxSports.Items.Count; i++)
+                    // find the item in the listbox
+                    for (int i = 0; i < m_chlbxSports.Items.Count; i++)
                     {
-                    string sItem = (string) m_chlbxSports.Items[i];
+                        string sItem = (string)m_chlbxSports.Items[i];
 
-                    if (sItem.Contains(s))
-                        m_chlbxSports.SetItemChecked(i, true);
+                        if (sItem.Contains(s))
+                            m_chlbxSports.SetItemChecked(i, true);
                     }
                 }
+            }
 
             DoPendingQueueUIOp();
         }
@@ -380,6 +395,8 @@ namespace ArbWeb
         void DoExitApp(object sender, EventArgs e)
         {
             this.Close();
+            this.Dispose();
+            Environment.Exit(0);
         }
 
         #region Queued UI Op
@@ -513,6 +530,13 @@ namespace ArbWeb
 
         #endregion
 
+        private delegate void DisposeRecDel();
+
+        void DisposeRec()
+        {
+            m_recStatus.Dispose();
+        }
+
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
@@ -526,6 +550,16 @@ namespace ArbWeb
                     }
                 }
 
+            if (m_recStatus.InvokeRequired)
+            {
+                m_recStatus.Invoke(new DisposeRecDel(DisposeRec));
+            }
+            else
+            {
+                DisposeRec();
+            }
+
+            m_recStatus.Dispose();
             base.Dispose(disposing);
         }
 
@@ -539,7 +573,7 @@ namespace ArbWeb
         {
             System.Windows.Forms.Label label17;
             this.m_pbDownloadGames = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.m_pbGetContacts = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.m_recStatus = new System.Windows.Forms.RichTextBox();
             this.m_pbGenCounts = new System.Windows.Forms.Button();
@@ -595,7 +629,6 @@ namespace ArbWeb
             this.m_pbAddProfile = new System.Windows.Forms.Button();
             this.m_cbxGameFilter = new System.Windows.Forms.ComboBox();
             this.m_pbRefreshGameFilters = new System.Windows.Forms.Button();
-            this.pbTestDownload = new System.Windows.Forms.Button();
             this.m_cbSkipContactDownload = new System.Windows.Forms.CheckBox();
             this.m_pbDiffTW = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
@@ -605,14 +638,14 @@ namespace ArbWeb
             this.button7 = new System.Windows.Forms.Button();
             this.button8 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
+            this.m_pbDeleteUnusedTeams = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label17
             // 
             label17.AutoSize = true;
-            label17.Location = new System.Drawing.Point(530, 243);
+            label17.Location = new System.Drawing.Point(530, 188);
             label17.Name = "label17";
             label17.Size = new System.Drawing.Size(155, 20);
             label17.TabIndex = 76;
@@ -628,22 +661,21 @@ namespace ArbWeb
             this.m_pbDownloadGames.Text = "Download Games";
             this.m_pbDownloadGames.Click += new System.EventHandler(this.HandleDownloadGamesClick);
             // 
-            // button1
+            // m_pbGetContacts
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(985, 38);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(176, 35);
-            this.button1.TabIndex = 26;
-            this.button1.Text = "Get Contacts";
-            this.button1.Click += new System.EventHandler(this.HandleDownloadContactsClick);
+            this.m_pbGetContacts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbGetContacts.Location = new System.Drawing.Point(985, 38);
+            this.m_pbGetContacts.Name = "m_pbGetContacts";
+            this.m_pbGetContacts.Size = new System.Drawing.Size(176, 35);
+            this.m_pbGetContacts.TabIndex = 26;
+            this.m_pbGetContacts.Text = "Get Contacts";
+            this.m_pbGetContacts.Click += new System.EventHandler(this.HandleDownloadContactsClick);
             // 
             // groupBox2
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.m_recStatus);
-            this.groupBox2.Location = new System.Drawing.Point(13, 978);
+            this.groupBox2.Location = new System.Drawing.Point(14, 920);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(1148, 229);
             this.groupBox2.TabIndex = 27;
@@ -654,7 +686,7 @@ namespace ArbWeb
             // 
             this.m_recStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_recStatus.Location = new System.Drawing.Point(10, 28);
+            this.m_recStatus.Location = new System.Drawing.Point(29, 949);
             this.m_recStatus.Name = "m_recStatus";
             this.m_recStatus.Size = new System.Drawing.Size(1132, 193);
             this.m_recStatus.TabIndex = 0;
@@ -663,7 +695,7 @@ namespace ArbWeb
             // m_pbGenCounts
             // 
             this.m_pbGenCounts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbGenCounts.Location = new System.Drawing.Point(985, 314);
+            this.m_pbGenCounts.Location = new System.Drawing.Point(985, 259);
             this.m_pbGenCounts.Name = "m_pbGenCounts";
             this.m_pbGenCounts.Size = new System.Drawing.Size(176, 40);
             this.m_pbGenCounts.TabIndex = 28;
@@ -673,7 +705,7 @@ namespace ArbWeb
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(19, 314);
+            this.label1.Location = new System.Drawing.Point(19, 259);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(87, 20);
             this.label1.TabIndex = 30;
@@ -681,7 +713,7 @@ namespace ArbWeb
             // 
             // m_ebOutputFile
             // 
-            this.m_ebOutputFile.Location = new System.Drawing.Point(122, 310);
+            this.m_ebOutputFile.Location = new System.Drawing.Point(122, 255);
             this.m_ebOutputFile.Name = "m_ebOutputFile";
             this.m_ebOutputFile.Size = new System.Drawing.Size(332, 26);
             this.m_ebOutputFile.TabIndex = 29;
@@ -689,7 +721,7 @@ namespace ArbWeb
             // m_cbIncludeCanceled
             // 
             this.m_cbIncludeCanceled.AutoSize = true;
-            this.m_cbIncludeCanceled.Location = new System.Drawing.Point(502, 314);
+            this.m_cbIncludeCanceled.Location = new System.Drawing.Point(502, 259);
             this.m_cbIncludeCanceled.Name = "m_cbIncludeCanceled";
             this.m_cbIncludeCanceled.Size = new System.Drawing.Size(158, 24);
             this.m_cbIncludeCanceled.TabIndex = 31;
@@ -700,7 +732,7 @@ namespace ArbWeb
             // m_pbUploadRoster
             // 
             this.m_pbUploadRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbUploadRoster.Location = new System.Drawing.Point(805, 930);
+            this.m_pbUploadRoster.Location = new System.Drawing.Point(805, 875);
             this.m_pbUploadRoster.Name = "m_pbUploadRoster";
             this.m_pbUploadRoster.Size = new System.Drawing.Size(176, 35);
             this.m_pbUploadRoster.TabIndex = 32;
@@ -710,7 +742,7 @@ namespace ArbWeb
             // m_pbOpenSlots
             // 
             this.m_pbOpenSlots.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbOpenSlots.Location = new System.Drawing.Point(985, 386);
+            this.m_pbOpenSlots.Location = new System.Drawing.Point(985, 331);
             this.m_pbOpenSlots.Name = "m_pbOpenSlots";
             this.m_pbOpenSlots.Size = new System.Drawing.Size(176, 39);
             this.m_pbOpenSlots.TabIndex = 33;
@@ -731,7 +763,7 @@ namespace ArbWeb
             // m_cbShowBrowser
             // 
             this.m_cbShowBrowser.AutoSize = true;
-            this.m_cbShowBrowser.Location = new System.Drawing.Point(24, 155);
+            this.m_cbShowBrowser.Location = new System.Drawing.Point(26, 119);
             this.m_cbShowBrowser.Name = "m_cbShowBrowser";
             this.m_cbShowBrowser.Size = new System.Drawing.Size(162, 24);
             this.m_cbShowBrowser.TabIndex = 35;
@@ -743,7 +775,7 @@ namespace ArbWeb
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.Location = new System.Drawing.Point(8, 278);
+            this.label6.Location = new System.Drawing.Point(8, 223);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(1144, 27);
             this.label6.TabIndex = 36;
@@ -754,7 +786,7 @@ namespace ArbWeb
             // 
             this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.Location = new System.Drawing.Point(8, 354);
+            this.label7.Location = new System.Drawing.Point(8, 299);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(1144, 27);
             this.label7.TabIndex = 37;
@@ -764,7 +796,7 @@ namespace ArbWeb
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(19, 392);
+            this.label8.Location = new System.Drawing.Point(19, 337);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(83, 20);
             this.label8.TabIndex = 40;
@@ -773,7 +805,7 @@ namespace ArbWeb
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(477, 392);
+            this.label9.Location = new System.Drawing.Point(477, 337);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(77, 20);
             this.label9.TabIndex = 41;
@@ -783,7 +815,7 @@ namespace ArbWeb
             // 
             this.m_dtpStart.CustomFormat = "ddd MMM dd, yyyy";
             this.m_dtpStart.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.m_dtpStart.Location = new System.Drawing.Point(122, 386);
+            this.m_dtpStart.Location = new System.Drawing.Point(122, 331);
             this.m_dtpStart.Name = "m_dtpStart";
             this.m_dtpStart.Size = new System.Drawing.Size(246, 26);
             this.m_dtpStart.TabIndex = 42;
@@ -793,7 +825,7 @@ namespace ArbWeb
             // 
             this.m_dtpEnd.CustomFormat = "ddd MMM dd, yyyy";
             this.m_dtpEnd.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.m_dtpEnd.Location = new System.Drawing.Point(570, 386);
+            this.m_dtpEnd.Location = new System.Drawing.Point(570, 331);
             this.m_dtpEnd.Name = "m_dtpEnd";
             this.m_dtpEnd.Size = new System.Drawing.Size(246, 26);
             this.m_dtpEnd.TabIndex = 43;
@@ -801,7 +833,7 @@ namespace ArbWeb
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(66, 634);
+            this.label10.Location = new System.Drawing.Point(66, 579);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(118, 20);
             this.label10.TabIndex = 45;
@@ -809,7 +841,7 @@ namespace ArbWeb
             // 
             // m_ebFilter
             // 
-            this.m_ebFilter.Location = new System.Drawing.Point(202, 630);
+            this.m_ebFilter.Location = new System.Drawing.Point(202, 575);
             this.m_ebFilter.Name = "m_ebFilter";
             this.m_ebFilter.Size = new System.Drawing.Size(206, 26);
             this.m_ebFilter.TabIndex = 44;
@@ -817,7 +849,7 @@ namespace ArbWeb
             // m_cbOpenSlotDetail
             // 
             this.m_cbOpenSlotDetail.AutoSize = true;
-            this.m_cbOpenSlotDetail.Location = new System.Drawing.Point(674, 457);
+            this.m_cbOpenSlotDetail.Location = new System.Drawing.Point(674, 402);
             this.m_cbOpenSlotDetail.Name = "m_cbOpenSlotDetail";
             this.m_cbOpenSlotDetail.Size = new System.Drawing.Size(202, 24);
             this.m_cbOpenSlotDetail.TabIndex = 46;
@@ -846,7 +878,7 @@ namespace ArbWeb
             // button2
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(965, 517);
+            this.button2.Location = new System.Drawing.Point(965, 462);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(176, 40);
             this.button2.TabIndex = 49;
@@ -857,7 +889,7 @@ namespace ArbWeb
             // 
             this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label12.Location = new System.Drawing.Point(50, 430);
+            this.label12.Location = new System.Drawing.Point(50, 375);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(1102, 27);
             this.label12.TabIndex = 50;
@@ -867,7 +899,7 @@ namespace ArbWeb
             // m_cbFilterSport
             // 
             this.m_cbFilterSport.AutoSize = true;
-            this.m_cbFilterSport.Location = new System.Drawing.Point(54, 457);
+            this.m_cbFilterSport.Location = new System.Drawing.Point(54, 402);
             this.m_cbFilterSport.Name = "m_cbFilterSport";
             this.m_cbFilterSport.Size = new System.Drawing.Size(205, 24);
             this.m_cbFilterSport.TabIndex = 51;
@@ -879,7 +911,7 @@ namespace ArbWeb
             // 
             this.m_chlbxSports.CheckOnClick = true;
             this.m_chlbxSports.FormattingEnabled = true;
-            this.m_chlbxSports.Location = new System.Drawing.Point(70, 487);
+            this.m_chlbxSports.Location = new System.Drawing.Point(70, 432);
             this.m_chlbxSports.Name = "m_chlbxSports";
             this.m_chlbxSports.Size = new System.Drawing.Size(263, 96);
             this.m_chlbxSports.TabIndex = 52;
@@ -889,7 +921,7 @@ namespace ArbWeb
             // 
             this.m_chlbxSportLevels.CheckOnClick = true;
             this.m_chlbxSportLevels.FormattingEnabled = true;
-            this.m_chlbxSportLevels.Location = new System.Drawing.Point(389, 487);
+            this.m_chlbxSportLevels.Location = new System.Drawing.Point(389, 432);
             this.m_chlbxSportLevels.Name = "m_chlbxSportLevels";
             this.m_chlbxSportLevels.Size = new System.Drawing.Size(262, 96);
             this.m_chlbxSportLevels.TabIndex = 54;
@@ -897,7 +929,7 @@ namespace ArbWeb
             // m_cbFilterLevel
             // 
             this.m_cbFilterLevel.AutoSize = true;
-            this.m_cbFilterLevel.Location = new System.Drawing.Point(373, 457);
+            this.m_cbFilterLevel.Location = new System.Drawing.Point(373, 402);
             this.m_cbFilterLevel.Name = "m_cbFilterLevel";
             this.m_cbFilterLevel.Size = new System.Drawing.Size(240, 24);
             this.m_cbFilterLevel.TabIndex = 53;
@@ -908,7 +940,7 @@ namespace ArbWeb
             // m_cbTestEmail
             // 
             this.m_cbTestEmail.AutoSize = true;
-            this.m_cbTestEmail.Location = new System.Drawing.Point(922, 457);
+            this.m_cbTestEmail.Location = new System.Drawing.Point(922, 402);
             this.m_cbTestEmail.Name = "m_cbTestEmail";
             this.m_cbTestEmail.Size = new System.Drawing.Size(175, 24);
             this.m_cbTestEmail.TabIndex = 55;
@@ -918,7 +950,7 @@ namespace ArbWeb
             // m_pbReload
             // 
             this.m_pbReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbReload.Location = new System.Drawing.Point(985, 930);
+            this.m_pbReload.Location = new System.Drawing.Point(985, 875);
             this.m_pbReload.Name = "m_pbReload";
             this.m_pbReload.Size = new System.Drawing.Size(176, 35);
             this.m_pbReload.TabIndex = 61;
@@ -928,7 +960,7 @@ namespace ArbWeb
             // m_cbRankOnly
             // 
             this.m_cbRankOnly.AutoSize = true;
-            this.m_cbRankOnly.Location = new System.Drawing.Point(363, 155);
+            this.m_cbRankOnly.Location = new System.Drawing.Point(365, 119);
             this.m_cbRankOnly.Name = "m_cbRankOnly";
             this.m_cbRankOnly.Size = new System.Drawing.Size(192, 24);
             this.m_cbRankOnly.TabIndex = 62;
@@ -939,7 +971,7 @@ namespace ArbWeb
             // 
             this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label15.Location = new System.Drawing.Point(8, 206);
+            this.label15.Location = new System.Drawing.Point(8, 151);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(1144, 28);
             this.label15.TabIndex = 63;
@@ -949,7 +981,7 @@ namespace ArbWeb
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(19, 243);
+            this.label16.Location = new System.Drawing.Point(19, 188);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(87, 20);
             this.label16.TabIndex = 65;
@@ -957,7 +989,7 @@ namespace ArbWeb
             // 
             // m_ebGameOutput
             // 
-            this.m_ebGameOutput.Location = new System.Drawing.Point(122, 238);
+            this.m_ebGameOutput.Location = new System.Drawing.Point(122, 183);
             this.m_ebGameOutput.Name = "m_ebGameOutput";
             this.m_ebGameOutput.Size = new System.Drawing.Size(332, 26);
             this.m_ebGameOutput.TabIndex = 64;
@@ -965,7 +997,7 @@ namespace ArbWeb
             // m_pbGenGames
             // 
             this.m_pbGenGames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbGenGames.Location = new System.Drawing.Point(985, 238);
+            this.m_pbGenGames.Location = new System.Drawing.Point(985, 183);
             this.m_pbGenGames.Name = "m_pbGenGames";
             this.m_pbGenGames.Size = new System.Drawing.Size(176, 40);
             this.m_pbGenGames.TabIndex = 66;
@@ -975,7 +1007,7 @@ namespace ArbWeb
             // m_cbAddOfficialsOnly
             // 
             this.m_cbAddOfficialsOnly.AutoSize = true;
-            this.m_cbAddOfficialsOnly.Location = new System.Drawing.Point(578, 155);
+            this.m_cbAddOfficialsOnly.Location = new System.Drawing.Point(580, 119);
             this.m_cbAddOfficialsOnly.Name = "m_cbAddOfficialsOnly";
             this.m_cbAddOfficialsOnly.Size = new System.Drawing.Size(216, 24);
             this.m_cbAddOfficialsOnly.TabIndex = 67;
@@ -985,7 +1017,7 @@ namespace ArbWeb
             // m_pbBrowseGamesReport
             // 
             this.m_pbBrowseGamesReport.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGamesReport.Location = new System.Drawing.Point(456, 242);
+            this.m_pbBrowseGamesReport.Location = new System.Drawing.Point(456, 187);
             this.m_pbBrowseGamesReport.Name = "m_pbBrowseGamesReport";
             this.m_pbBrowseGamesReport.Size = new System.Drawing.Size(37, 22);
             this.m_pbBrowseGamesReport.TabIndex = 72;
@@ -996,7 +1028,7 @@ namespace ArbWeb
             // m_pbBrowseAnalysis
             // 
             this.m_pbBrowseAnalysis.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseAnalysis.Location = new System.Drawing.Point(456, 314);
+            this.m_pbBrowseAnalysis.Location = new System.Drawing.Point(456, 259);
             this.m_pbBrowseAnalysis.Name = "m_pbBrowseAnalysis";
             this.m_pbBrowseAnalysis.Size = new System.Drawing.Size(37, 22);
             this.m_pbBrowseAnalysis.TabIndex = 73;
@@ -1016,7 +1048,7 @@ namespace ArbWeb
             // 
             // m_ebAffiliationIndex
             // 
-            this.m_ebAffiliationIndex.Location = new System.Drawing.Point(709, 238);
+            this.m_ebAffiliationIndex.Location = new System.Drawing.Point(709, 183);
             this.m_ebAffiliationIndex.Name = "m_ebAffiliationIndex";
             this.m_ebAffiliationIndex.Size = new System.Drawing.Size(51, 26);
             this.m_ebAffiliationIndex.TabIndex = 77;
@@ -1026,7 +1058,7 @@ namespace ArbWeb
             // m_cbFuzzyTimes
             // 
             this.m_cbFuzzyTimes.AutoSize = true;
-            this.m_cbFuzzyTimes.Location = new System.Drawing.Point(674, 484);
+            this.m_cbFuzzyTimes.Location = new System.Drawing.Point(674, 429);
             this.m_cbFuzzyTimes.Name = "m_cbFuzzyTimes";
             this.m_cbFuzzyTimes.Size = new System.Drawing.Size(158, 24);
             this.m_cbFuzzyTimes.TabIndex = 78;
@@ -1036,7 +1068,7 @@ namespace ArbWeb
             // m_cbDatePivot
             // 
             this.m_cbDatePivot.AutoSize = true;
-            this.m_cbDatePivot.Location = new System.Drawing.Point(922, 484);
+            this.m_cbDatePivot.Location = new System.Drawing.Point(922, 429);
             this.m_cbDatePivot.Name = "m_cbDatePivot";
             this.m_cbDatePivot.Size = new System.Drawing.Size(130, 24);
             this.m_cbDatePivot.TabIndex = 79;
@@ -1046,7 +1078,7 @@ namespace ArbWeb
             // m_cbSplitSports
             // 
             this.m_cbSplitSports.AutoSize = true;
-            this.m_cbSplitSports.Location = new System.Drawing.Point(674, 513);
+            this.m_cbSplitSports.Location = new System.Drawing.Point(674, 458);
             this.m_cbSplitSports.Name = "m_cbSplitSports";
             this.m_cbSplitSports.Size = new System.Drawing.Size(230, 24);
             this.m_cbSplitSports.TabIndex = 80;
@@ -1057,7 +1089,7 @@ namespace ArbWeb
             // 
             this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label18.Location = new System.Drawing.Point(50, 716);
+            this.label18.Location = new System.Drawing.Point(50, 661);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(1102, 28);
             this.label18.TabIndex = 82;
@@ -1068,7 +1100,7 @@ namespace ArbWeb
             // 
             this.m_chlbxRoster.CheckOnClick = true;
             this.m_chlbxRoster.FormattingEnabled = true;
-            this.m_chlbxRoster.Location = new System.Drawing.Point(70, 742);
+            this.m_chlbxRoster.Location = new System.Drawing.Point(70, 687);
             this.m_chlbxRoster.Name = "m_chlbxRoster";
             this.m_chlbxRoster.Size = new System.Drawing.Size(581, 73);
             this.m_chlbxRoster.TabIndex = 83;
@@ -1076,7 +1108,7 @@ namespace ArbWeb
             // m_pbCreateRosterReport
             // 
             this.m_pbCreateRosterReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbCreateRosterReport.Location = new System.Drawing.Point(985, 775);
+            this.m_pbCreateRosterReport.Location = new System.Drawing.Point(985, 720);
             this.m_pbCreateRosterReport.Name = "m_pbCreateRosterReport";
             this.m_pbCreateRosterReport.Size = new System.Drawing.Size(176, 26);
             this.m_pbCreateRosterReport.TabIndex = 84;
@@ -1086,7 +1118,7 @@ namespace ArbWeb
             // m_cbFilterRank
             // 
             this.m_cbFilterRank.AutoSize = true;
-            this.m_cbFilterRank.Location = new System.Drawing.Point(678, 628);
+            this.m_cbFilterRank.Location = new System.Drawing.Point(678, 573);
             this.m_cbFilterRank.Name = "m_cbFilterRank";
             this.m_cbFilterRank.Size = new System.Drawing.Size(125, 24);
             this.m_cbFilterRank.TabIndex = 85;
@@ -1096,7 +1128,7 @@ namespace ArbWeb
             // m_pbMailMerge
             // 
             this.m_pbMailMerge.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbMailMerge.Location = new System.Drawing.Point(976, 678);
+            this.m_pbMailMerge.Location = new System.Drawing.Point(976, 623);
             this.m_pbMailMerge.Name = "m_pbMailMerge";
             this.m_pbMailMerge.Size = new System.Drawing.Size(176, 40);
             this.m_pbMailMerge.TabIndex = 86;
@@ -1106,7 +1138,7 @@ namespace ArbWeb
             // m_cbFutureOnly
             // 
             this.m_cbFutureOnly.AutoSize = true;
-            this.m_cbFutureOnly.Location = new System.Drawing.Point(206, 155);
+            this.m_cbFutureOnly.Location = new System.Drawing.Point(208, 119);
             this.m_cbFutureOnly.Name = "m_cbFutureOnly";
             this.m_cbFutureOnly.Size = new System.Drawing.Size(138, 24);
             this.m_cbFutureOnly.TabIndex = 87;
@@ -1117,7 +1149,7 @@ namespace ArbWeb
             // 
             this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label19.Location = new System.Drawing.Point(50, 855);
+            this.label19.Location = new System.Drawing.Point(50, 800);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(1102, 28);
             this.label19.TabIndex = 88;
@@ -1127,7 +1159,7 @@ namespace ArbWeb
             // m_cbLaunch
             // 
             this.m_cbLaunch.AutoSize = true;
-            this.m_cbLaunch.Location = new System.Drawing.Point(678, 659);
+            this.m_cbLaunch.Location = new System.Drawing.Point(678, 604);
             this.m_cbLaunch.Name = "m_cbLaunch";
             this.m_cbLaunch.Size = new System.Drawing.Size(147, 24);
             this.m_cbLaunch.TabIndex = 89;
@@ -1137,7 +1169,7 @@ namespace ArbWeb
             // m_cbSetArbiterAnnounce
             // 
             this.m_cbSetArbiterAnnounce.AutoSize = true;
-            this.m_cbSetArbiterAnnounce.Location = new System.Drawing.Point(843, 628);
+            this.m_cbSetArbiterAnnounce.Location = new System.Drawing.Point(843, 573);
             this.m_cbSetArbiterAnnounce.Name = "m_cbSetArbiterAnnounce";
             this.m_cbSetArbiterAnnounce.Size = new System.Drawing.Size(188, 24);
             this.m_cbSetArbiterAnnounce.TabIndex = 90;
@@ -1147,7 +1179,7 @@ namespace ArbWeb
             // m_pbEditProfile
             // 
             this.m_pbEditProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbEditProfile.Location = new System.Drawing.Point(390, 37);
+            this.m_pbEditProfile.Location = new System.Drawing.Point(331, 36);
             this.m_pbEditProfile.Name = "m_pbEditProfile";
             this.m_pbEditProfile.Size = new System.Drawing.Size(176, 35);
             this.m_pbEditProfile.TabIndex = 91;
@@ -1157,7 +1189,7 @@ namespace ArbWeb
             // m_pbAddProfile
             // 
             this.m_pbAddProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbAddProfile.Location = new System.Drawing.Point(577, 38);
+            this.m_pbAddProfile.Location = new System.Drawing.Point(518, 37);
             this.m_pbAddProfile.Name = "m_pbAddProfile";
             this.m_pbAddProfile.Size = new System.Drawing.Size(176, 35);
             this.m_pbAddProfile.TabIndex = 92;
@@ -1167,7 +1199,7 @@ namespace ArbWeb
             // m_cbxGameFilter
             // 
             this.m_cbxGameFilter.FormattingEnabled = true;
-            this.m_cbxGameFilter.Location = new System.Drawing.Point(674, 113);
+            this.m_cbxGameFilter.Location = new System.Drawing.Point(710, 39);
             this.m_cbxGameFilter.Name = "m_cbxGameFilter";
             this.m_cbxGameFilter.Size = new System.Drawing.Size(208, 28);
             this.m_cbxGameFilter.TabIndex = 93;
@@ -1175,7 +1207,7 @@ namespace ArbWeb
             // m_pbRefreshGameFilters
             // 
             this.m_pbRefreshGameFilters.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbRefreshGameFilters.Location = new System.Drawing.Point(886, 107);
+            this.m_pbRefreshGameFilters.Location = new System.Drawing.Point(922, 33);
             this.m_pbRefreshGameFilters.Margin = new System.Windows.Forms.Padding(0);
             this.m_pbRefreshGameFilters.Name = "m_pbRefreshGameFilters";
             this.m_pbRefreshGameFilters.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
@@ -1186,19 +1218,10 @@ namespace ArbWeb
             this.m_pbRefreshGameFilters.UseVisualStyleBackColor = true;
             this.m_pbRefreshGameFilters.Click += new System.EventHandler(this.RefreshGameFilters);
             // 
-            // pbTestDownload
-            // 
-            this.pbTestDownload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pbTestDownload.Location = new System.Drawing.Point(133, 80);
-            this.pbTestDownload.Name = "pbTestDownload";
-            this.pbTestDownload.Size = new System.Drawing.Size(176, 35);
-            this.pbTestDownload.TabIndex = 95;
-            this.pbTestDownload.Text = "Test Download";
-            // 
             // m_cbSkipContactDownload
             // 
             this.m_cbSkipContactDownload.AutoSize = true;
-            this.m_cbSkipContactDownload.Location = new System.Drawing.Point(826, 155);
+            this.m_cbSkipContactDownload.Location = new System.Drawing.Point(828, 119);
             this.m_cbSkipContactDownload.Name = "m_cbSkipContactDownload";
             this.m_cbSkipContactDownload.Size = new System.Drawing.Size(151, 24);
             this.m_cbSkipContactDownload.TabIndex = 96;
@@ -1208,7 +1231,7 @@ namespace ArbWeb
             // m_pbDiffTW
             // 
             this.m_pbDiffTW.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbDiffTW.Location = new System.Drawing.Point(729, 930);
+            this.m_pbDiffTW.Location = new System.Drawing.Point(729, 875);
             this.m_pbDiffTW.Name = "m_pbDiffTW";
             this.m_pbDiffTW.Size = new System.Drawing.Size(51, 35);
             this.m_pbDiffTW.TabIndex = 97;
@@ -1218,7 +1241,7 @@ namespace ArbWeb
             // button4
             // 
             this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button4.Location = new System.Drawing.Point(23, 928);
+            this.button4.Location = new System.Drawing.Point(23, 873);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(176, 35);
             this.button4.TabIndex = 98;
@@ -1228,7 +1251,7 @@ namespace ArbWeb
             // button5
             // 
             this.button5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button5.Location = new System.Drawing.Point(216, 928);
+            this.button5.Location = new System.Drawing.Point(216, 873);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(176, 35);
             this.button5.TabIndex = 99;
@@ -1238,7 +1261,7 @@ namespace ArbWeb
             // m_cbSchedsForDiff
             // 
             this.m_cbSchedsForDiff.FormattingEnabled = true;
-            this.m_cbSchedsForDiff.Location = new System.Drawing.Point(405, 937);
+            this.m_cbSchedsForDiff.Location = new System.Drawing.Point(405, 882);
             this.m_cbSchedsForDiff.Name = "m_cbSchedsForDiff";
             this.m_cbSchedsForDiff.Size = new System.Drawing.Size(318, 28);
             this.m_cbSchedsForDiff.TabIndex = 100;
@@ -1246,7 +1269,7 @@ namespace ArbWeb
             // button6
             // 
             this.button6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button6.Location = new System.Drawing.Point(786, 775);
+            this.button6.Location = new System.Drawing.Point(786, 720);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(106, 40);
             this.button6.TabIndex = 101;
@@ -1256,7 +1279,7 @@ namespace ArbWeb
             // button7
             // 
             this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button7.Location = new System.Drawing.Point(674, 775);
+            this.button7.Location = new System.Drawing.Point(674, 720);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(106, 40);
             this.button7.TabIndex = 102;
@@ -1266,7 +1289,7 @@ namespace ArbWeb
             // button8
             // 
             this.button8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button8.Location = new System.Drawing.Point(985, 807);
+            this.button8.Location = new System.Drawing.Point(985, 752);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(176, 26);
             this.button8.TabIndex = 103;
@@ -1276,17 +1299,29 @@ namespace ArbWeb
             // button9
             // 
             this.button9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button9.Location = new System.Drawing.Point(922, 886);
+            this.button9.Location = new System.Drawing.Point(922, 831);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(240, 35);
             this.button9.TabIndex = 104;
             this.button9.Text = "Extract Schedule Stats";
             this.button9.Click += new System.EventHandler(this.ExtractScheduleStats);
             // 
+            // m_pbDeleteUnusedTeams
+            // 
+            this.m_pbDeleteUnusedTeams.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbDeleteUnusedTeams.Location = new System.Drawing.Point(664, 831);
+            this.m_pbDeleteUnusedTeams.Name = "m_pbDeleteUnusedTeams";
+            this.m_pbDeleteUnusedTeams.Size = new System.Drawing.Size(240, 35);
+            this.m_pbDeleteUnusedTeams.TabIndex = 105;
+            this.m_pbDeleteUnusedTeams.Text = "Delete Unused Teams";
+            this.m_pbDeleteUnusedTeams.Click += new System.EventHandler(this.DeleteUnusedTeams);
+            // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
-            this.ClientSize = new System.Drawing.Size(1174, 1225);
+            this.ClientSize = new System.Drawing.Size(1174, 1154);
+            this.Controls.Add(this.m_recStatus);
+            this.Controls.Add(this.m_pbDeleteUnusedTeams);
             this.Controls.Add(this.button9);
             this.Controls.Add(this.button8);
             this.Controls.Add(this.button7);
@@ -1296,7 +1331,6 @@ namespace ArbWeb
             this.Controls.Add(this.button4);
             this.Controls.Add(this.m_pbDiffTW);
             this.Controls.Add(this.m_cbSkipContactDownload);
-            this.Controls.Add(this.pbTestDownload);
             this.Controls.Add(this.m_pbRefreshGameFilters);
             this.Controls.Add(this.m_cbxGameFilter);
             this.Controls.Add(this.m_pbAddProfile);
@@ -1352,14 +1386,14 @@ namespace ArbWeb
             this.Controls.Add(this.m_ebOutputFile);
             this.Controls.Add(this.m_pbGenCounts);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.m_pbGetContacts);
             this.Controls.Add(this.m_pbDownloadGames);
             this.Name = "AwMainForm";
             this.Text = "AwMainForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DoSaveState);
             this.Load += new System.EventHandler(this.AwMainForm_Load);
+            this.VisibleChanged += new System.EventHandler(this.OnVisibleChanged);
             this.Move += new System.EventHandler(this.AwMainForm_Move);
-            this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1860,6 +1894,8 @@ namespace ArbWeb
 	        {
 		        this.StartPosition = FormStartPosition.WindowsDefaultLocation;
 	        }
+
+            EnableDisableForProfile();
         }
 
         void UpdateProfileFromUI(Profile pr)
@@ -2173,8 +2209,16 @@ namespace ArbWeb
         }
 
         private SPO.Offline m_offline;
-        
-		private async void DoDownloadAndDiffAllSchedules(object sender, EventArgs e)
+
+        private async void DoDownloadForms(object sender, EventArgs e)
+        {
+            if (m_offline == null)
+                m_offline = new Offline(this);
+
+            await m_offline.DownloadForms();
+        }
+
+        private async void DoDownloadAndDiffAllSchedules(object sender, EventArgs e)
 		{
 			if (m_offline == null)
 				m_offline = new Offline(this);
@@ -2250,6 +2294,52 @@ namespace ArbWeb
 				m_dtpEnd.Value);
 
 		}
-	}
+
+        class StatusTester
+        {
+            public IAppContext Context { get; set; }
+
+            public StatusTester(IAppContext appContext)
+            {
+                Context = appContext;
+            }
+        }
+
+        private int countTester = 0;
+
+        void StartCounter()
+        {
+            StatusTester tester = new StatusTester(this);
+            int thisCounter = countTester++;
+
+            Task tskDownloadGames = new Task(
+                () =>
+                {
+                    int count = 20;
+                    while (count-- > 0)
+                    {
+                        tester.Context.StatusReport.AddMessage($"Counter ({thisCounter}): {count}");
+                        Thread.Sleep(1000);
+                    }
+                });
+
+            tskDownloadGames.Start();
+        }
+
+        private void DeleteUnusedTeams(object sender, EventArgs e)
+        {
+            StartCounter();
+        }
+
+        protected override void SetVisibleCore(bool value)
+        {
+            base.SetVisibleCore(!m_fAutomating || m_cbShowBrowser.Checked);
+        }
+
+        private void OnVisibleChanged(object sender, EventArgs e)
+        {
+            this.Visible = !m_fAutomating || m_cbShowBrowser.Checked;
+        }
+    }
 
 }

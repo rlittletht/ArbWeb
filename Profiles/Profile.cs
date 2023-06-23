@@ -61,6 +61,7 @@ namespace ArbWeb
 		[Setting("LastProfileWindowPos.Left", 0, 0)]                            public int ProfileWindowLeft { get; set; }
 		[Setting("LastProfileWindowPos.Width", 0, 0)]                           public int ProfileWindowWidth { get; set; }
 		[Setting("LastProfileWindowPos.Height", 0, 0)]                          public int ProfileWindowHeight { get; set; }
+		[Setting("AllowAdvancedArbiterFunctions", false, 0)]					public bool AllowAdvancedArbiterFunctions { get; set; } 
 
 		public Rectangle MainWindow { get; set; }
 		public Rectangle ProfileWindow { get; set; }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -58,7 +60,9 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void EnsureLoggedIn()
         {
-	        DoEnsureLoggedIn();
+            TaskYielder.RunTaskWithYieldingWait(
+                m_appContext,
+                DoEnsureLoggedIn);
         }
 
         bool m_fLoggedIn;
@@ -86,7 +90,6 @@ namespace ArbWeb
 	            
                 m_appContext.StatusReport.AddMessage("Logging in...");
                 m_appContext.StatusReport.PushLevel();
-                
                 // login to arbiter
                 // nav to the main arbiter login page
                 if (!m_appContext.WebControl.FNavToPage(WebCore._s_Home))

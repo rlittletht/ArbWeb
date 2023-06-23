@@ -82,9 +82,9 @@ namespace ArbWeb.Reports
             OOXML.CreateMailMergeDoc(sFile, sTempName, sCsvTemp, gms, out sArbiterHelpNeeded);
              
             m_appContext.StatusReport.LogData($"ArbiterHelp HTML created: {sArbiterHelpNeeded}", 5, MSGT.Body);
-            System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
             if (fLaunch)
             {
+                System.Windows.Forms.Clipboard.SetText(sArbiterHelpNeeded);
                 m_appContext.StatusReport.AddMessage("Done, launching document...", MSGT.Header, false);
                 System.Diagnostics.Process.Start(sTempName);
             }

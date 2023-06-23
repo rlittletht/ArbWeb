@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using TCore.StatusBox;
@@ -70,6 +71,10 @@ namespace ArbWeb
 
             m_srpt.LogData("Starting DoDownloadGames", 3, MSGT.Header);
 
+            // make sure directories exist
+            Directory.CreateDirectory(Path.GetDirectoryName(m_appContext.Profile.GameFile));
+            Directory.CreateDirectory(Path.GetDirectoryName(m_appContext.Profile.GameCopy));
+
             DownloadGenericExcelReport dg =
                 new DownloadGenericExcelReport(
                     sFilterOptionTextReq,
@@ -96,10 +101,14 @@ namespace ArbWeb
 	            {
 		            dg.DownloadGeneric(out var sGameFileNew);
 		            m_appContext.Profile.GameFile = sGameFileNew;
-		            m_appContext.DoPendingQueueUIOp();
 	            });
 
             tskDownloadGames.Start();
+            if (m_appContext.InAutomation)
+            {
+                tskDownloadGames.Wait();
+                m_appContext.DoPendingQueueUIOp();
+            }
         }
 
     }

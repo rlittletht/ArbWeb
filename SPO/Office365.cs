@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,7 +64,20 @@ namespace ArbWeb
 			if (m_api == null)
 				m_api = new WebApiInterop("https://graph.microsoft.com/v1.0", m_auth);
 		}
-		
+
+        public async Task GetFormInfo()
+        {
+            // HttpResponseMessage resp = m_api.CallServiceApiDirect("https://forms.office.com/formapi/api/forms", true);
+            HttpResponseMessage resp = m_api.CallServiceApiDirect("https://graph.microsoft.com/v1.0/me/forms", true);
+        
+            if (resp.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                throw new Exception("Service returned 'user is unauthorized'");
+            }
+
+            string json = m_api.GetContentAsString(resp);
+        }
+
 		/*----------------------------------------------------------------------------
 			%%Function: DownloadFile
 			%%Qualified: ArbWeb.Office365.DownloadFile

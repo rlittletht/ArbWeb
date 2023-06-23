@@ -104,9 +104,34 @@ namespace ArbWeb
         {
             StartElement(xw, "p");
             StartElement(xw, "r");
-            StartElement(xw, "t");
-            xw.WriteString(s);
-            EndElement(xw); // t
+            do
+            {
+                string sub;
+                bool fBreak = false;
+
+                if (s.Contains("<br/>"))
+                {
+                    sub = s.Substring(0, s.IndexOf("<br/>"));
+                    s = s.Substring(s.IndexOf("<br/>") + 5);
+                    fBreak = true;
+                }
+                else
+                {
+                    sub = s;
+                    s = "";
+                }
+
+                StartElement(xw, "t");
+                xw.WriteString(sub);
+                EndElement(xw); // t
+                if (fBreak)
+                {
+                    StartElement(xw, "br");
+                    EndElement(xw);
+                }
+
+            } while (s.Length > 0);
+
             EndElement(xw); // r
             EndElement(xw); // p
         }
@@ -124,34 +149,48 @@ namespace ArbWeb
 
         private static Dictionary<string, string> s_mpSportLevelFriendly = new Dictionary<string, string>()
             {
-            {"All Stars SB 9/10's", "SB 10s ALL STARS"},
-            {"All Stars SB 11's", "SB 11s ALL STARS"},
-            {"All Stars SB Majors", "SB Majors ALL STARS"},
-            {"All Stars SB Juniors", "SB Juniors ALL STARS"},
-            {"All Stars 60' BB 11's", "BB 11s ALL STARS"},
-            {"All Stars 60' BB 9/10's", "BB 10s ALL STARS"},
-            {"All Stars 60' BB Majors", "BB Majors ALL STARS"},
-            {"All Stars 90' BB Intermediates", "BB Intermediate ALL STARS"},
-            {"All Stars 90' BB Juniors 90", "BB Juniors ALL STARS"},
-            {"All Stars 90' BB Seniors", "BB Seniors ALL STARS"},
+            {"All Stars SB 9/10's", "SB 8/9/10s"},
+            {"All Stars SB 11's", "SB 9/10/11s"},
+            {"All Stars SB Majors", "SB Majors"},
+            {"All Stars SB Juniors", "SB Juniors"},
+            {"All Stars 60' BB 11's", "BB 9/10/11s"},
+            {"All Stars 60' BB 9/10's", "BB 8/9/10s"},
+            {"All Stars 60' BB Majors", "BB Majors"},
+            {"All Stars 90' BB Intermediate 70", "BB Intermediates"},
+            {"All Stars 90' BB Juniors 90", "BB Juniors"},
+            {"All Stars 90' BB Seniors", "BB Seniors"},
             };
- 
+
         static string DescribeGame(Game gm, int cGames)
         {
             string sDesc;
             string sCount = "";
 
+#if no
             if (cGames > 1)
                 sCount = $"{cGames} games, ";
             else
                 sCount = $"{cGames} game, ";
 
-            if (gm.TotalSlots - gm.OpenSlots == 0)
-                sDesc = "NO UMPIRES";
+            if (cGames > 1)
+            {
+                sCount = $"{cGames} games, ";
+                if (gm.TotalSlots - gm.OpenSlots == 0)
+                    sDesc = "NO UMPIRES";
+                else
+                    sDesc = $"{gm.TotalSlots - gm.OpenSlots} umpires!";
+            }
             else
-                sDesc = $"{gm.TotalSlots - gm.OpenSlots} UMPIRE";
+#endif
+            {
+                if (gm.TotalSlots - gm.OpenSlots == 0)
+                    sDesc = $"{gm.OpenSlots} umpires needed!<br/>NO UMPIRES SIGNED UP";
+                else
+                    sDesc = $"{gm.OpenSlots} umpires needed!";
+            }
+            //sDesc = $"{gm.TotalSlots - gm.OpenSlots} UMPIRE";
 
-            return $"{sCount}{sDesc}";
+        return $"{sCount}{sDesc}";
         }
 
         static string FriendlySport(Game gm)

@@ -281,7 +281,9 @@ namespace ArbWeb.Games
 			
 			if (adjust == 0)
 				return 0;
-			
+            if (gameLeft.Level.ToUpper().Contains("INTERMEDIATE") && gameRight.Level.ToUpper().Contains("INTERMEDIATE"))
+                return 100;
+
 			return (IsStringFuzzySubstringMatch(gameLeft.Level.ToUpper(), gameRight.Level.ToUpper()) * adjust) / 100;
 		}
 
