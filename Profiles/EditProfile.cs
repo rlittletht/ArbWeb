@@ -33,6 +33,7 @@ namespace ArbWeb
             pr.DownloadRosterOnUpload = ep.m_cbDownloadRosterOnUpload.Checked;
             pr.LogLevel = Int32.Parse(ep.m_ebLogLevel.Text);
             pr.NoHonorificRanks = ep.m_cbNoHonorificRanks.Checked;
+            pr.AllowAdvancedArbiterFunctions = ep.m_cbAdvancedFeatures.Checked;
 
             pr.SchedSpoSite = ep.m_ebSpoSite.Text;
             pr.SchedSpoSubsite = ep.m_ebSpoSubsite.Text;
@@ -76,7 +77,8 @@ namespace ArbWeb
             ep.m_ebSpoSubsite.Text = pr.SchedSpoSubsite;
             ep.m_ebSchedDownloadFolder.Text = pr.SchedDownloadFolder;
             ep.m_ebSchedWorkingFolder.Text = pr.SchedWorkingFolder;
-            
+            ep.m_cbAdvancedFeatures.Checked = pr.AllowAdvancedArbiterFunctions;
+
             ep.m_lvBaseballSchedules.Items.Clear();
 
             foreach (string s in pr.BaseballSchedFiles)
@@ -99,8 +101,23 @@ namespace ArbWeb
         public static string AddProfile()
         {
             EditProfile ep = new EditProfile();
+            string year = DateTime.Now.ToString("yyyy");
 
             ep.m_ebProfileName.Enabled = true;
+            ep.m_ebGameFile.Text = $"c:\\baseball\\{year}\\arb\\archive\\games_010123_0000.csv";
+            ep.m_ebGameCopy.Text = $"c:\\baseball\\{year}\\arb\\gamesLatest.csv";
+            ep.m_ebRoster.Text = $"c:\\baseball\\{year}\\arb\\archive\\roster_010123_0000.csv";
+            ep.m_ebRosterWorking.Text = $"c:\\baseball\\{year}\\arb\\rosterLatest.csv";
+            ep.m_ebContacts.Text = $"c:\\baseball\\{year}\\arb\\archive\\contacts_010123_0000.csv";
+            ep.m_ebContactsWorking.Text = $"c:\\baseball\\{year}\\arb\\contactsLatest.csv";
+            ep.m_ebSchedDownloadFolder.Text = $"c:\\baseball\\{year}\\arb\\archive\\schedules";
+            ep.m_ebSchedWorkingFolder.Text = $"c:\\baseball\\{year}\\arb";
+            ep.m_ebSpoSite.Text = "washdist9.sharepoint.com";
+            ep.m_ebSpoSubsite.Text = "sched";
+            ep.m_ebLogLevel.Text = "0";
+
+            ep.m_cbDownloadRosterOnUpload.Checked = true;
+            ep.m_cbNoHonorificRanks.Checked = true;
 
             if (ep.ShowDialog() == DialogResult.OK)
                 {

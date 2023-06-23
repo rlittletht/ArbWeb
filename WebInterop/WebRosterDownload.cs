@@ -446,6 +446,10 @@ namespace ArbWeb
             string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_appContext.Profile.Roster);
             m_appContext.Profile.Roster = sOutFile;
 
+            // make sure directories exist
+            Directory.CreateDirectory(Path.GetDirectoryName(m_appContext.Profile.Roster));
+            Directory.CreateDirectory(Path.GetDirectoryName(m_appContext.Profile.RosterWorking));
+
             Roster rst = await tsk;
 
             rst.WriteRoster(sOutFile);

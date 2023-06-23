@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using TCore.StatusBox;
@@ -69,6 +70,10 @@ namespace ArbWeb
             // let's make sure the webbrowser handle is created
 
             m_srpt.LogData("Starting DoDownloadGames", 3, MSGT.Header);
+
+            // make sure directories exist
+            Directory.CreateDirectory(Path.GetDirectoryName(m_appContext.Profile.GameFile));
+            Directory.CreateDirectory(Path.GetDirectoryName(m_appContext.Profile.GameCopy));
 
             DownloadGenericExcelReport dg =
                 new DownloadGenericExcelReport(
