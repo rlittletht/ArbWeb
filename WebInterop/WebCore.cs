@@ -40,13 +40,20 @@ namespace ArbWeb
         // H O M E
         // ============================================================================
         private const string _s_Home_Anchor_Login = "SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
-        public const string _s_Home_Input_Email = "ctl00$ContentHolder$pgeSignIn$conSignIn$txtEmail"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2016
-        public const string _s_Home_Input_Password = "txtPassword"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2016
-        public const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
+        public const string _s_Home_Input_Email = "Email"; // "ctl00$ContentHolder$pgeSignIn$conSignIn$txtEmail"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2023
+        public const string _s_Home_Input_Password = "Password"; // txtPassword"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2023
+        public const string _sid_Home_Button_SignIn = "next"; // ctl00$ucMiniLogin$SignInButton"; // ok2023
+        // public const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
+
+        public const string _sid_Home_MultiFactor_Label = "mfaEnroll_label"; // ok2023
+        public const string _sid_Home_MfaEnroll_False = "mfaEnroll_false"; // ok2023
+        public const string _sid_Home_Mfa_continue = "continue"; // ok2023
 
         public const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
         public const string _sid_Home_MessagingText = "ctl00_MessagingText"; // ok2022
         public const string _sid_Home_Anchor_NeedHelpLink = "ctl00_PageHelpTextLink"; // not ok 2022
+
+        public const string _sid_Home_LoggedInUserId = "LoggedInUserId"; // ok2023
 
         // ============================================================================
         // A S S I G N I N G

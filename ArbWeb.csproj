@@ -29,7 +29,7 @@
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
-    <PublishUrl>ftps://waws-prod-bay-001.ftp.azurewebsites.windows.net/site/wwwroot/ArbWeb/</PublishUrl>
+    <PublishUrl>ftp://waws-prod-bay-001.ftp.azurewebsites.windows.net/site/wwwroot/ArbWeb/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -42,7 +42,7 @@
     <InstallUrl>https://thetasoft.azurewebsites.net/ArbWeb/</InstallUrl>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>11</ApplicationRevision>
+    <ApplicationRevision>12</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>

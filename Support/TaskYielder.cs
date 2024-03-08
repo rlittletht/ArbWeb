@@ -66,7 +66,7 @@ namespace ArbWeb
             {
                 counter = StartCounter(context, sProgressName);
             }
-
+            
             Task task = new Task(()=>
                                  {
                                      fun();

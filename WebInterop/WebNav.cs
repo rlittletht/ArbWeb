@@ -67,6 +67,28 @@ namespace ArbWeb
 
         bool m_fLoggedIn;
 
+        void WaitForLoginPageAdvance(IEnumerable<string> ids)
+        {
+            m_appContext.WebControl.WaitForCondition(
+                    (d) =>
+                    {
+                        foreach (string id in ids)
+                        {
+                            try
+                            {
+                                d.FindElement(By.Id(id));
+                                return true;
+                            }
+                            catch
+                            {
+                            }
+                        }
+
+                        return false;
+                    },
+                    5000);
+        }
+
         /*----------------------------------------------------------------------------
 			%%Function:DoEnsureLoggedIn
 			%%Qualified:ArbWeb.WebNav.DoEnsureLoggedIn
@@ -95,17 +117,29 @@ namespace ArbWeb
                 if (!m_appContext.WebControl.FNavToPage(WebCore._s_Home))
                     throw (new Exception("could not navigate to arbiter homepage!"));
 
-                if (!WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Anchor_NeedHelpLink))
+                WaitForLoginPageAdvance(new [] { WebCore._sid_Home_LoggedInUserId, WebCore._sid_Home_Button_SignIn, WebCore._sid_Home_MultiFactor_Label, WebCore._sid_Home_Div_PnlAccounts });
+
+                if (WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Button_SignIn))
                 {
                     WebControl.FSetTextForInputControlName(m_appContext.WebControl.Driver, WebCore._s_Home_Input_Email, m_appContext.Profile.UserID, false);
                     WebControl.FSetTextForInputControlName(m_appContext.WebControl.Driver, WebCore._s_Home_Input_Password, m_appContext.Profile.Password, false);
 
-                    m_appContext.WebControl.FClickControlName(WebCore._s_Home_Button_SignIn);
+                    m_appContext.WebControl.FClickControlId(WebCore._sid_Home_Button_SignIn);
+                    WaitForLoginPageAdvance(new[] { WebCore._sid_Home_LoggedInUserId, WebCore._sid_Home_MultiFactor_Label, WebCore._sid_Home_Div_PnlAccounts });
+                }
+
+                // check for MFA panel
+                if (WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_MultiFactor_Label))
+                {
+                    m_appContext.WebControl.FClickControlId(WebCore._sid_Home_MfaEnroll_False);
+                    m_appContext.WebControl.FClickControlId(WebCore._sid_Home_Mfa_continue);
+                    WaitForLoginPageAdvance(new[] { WebCore._sid_Home_LoggedInUserId, WebCore._sid_Home_Div_PnlAccounts });
                 }
 
                 if (WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Div_PnlAccounts))
                 {
                     EnsureAdminLoggedIn();
+                    WaitForLoginPageAdvance(new[] { WebCore._sid_Home_LoggedInUserId });
                 }
 
 #if cantdo
