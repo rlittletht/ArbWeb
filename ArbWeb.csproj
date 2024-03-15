@@ -245,6 +245,7 @@
     <Compile Include="Reports\OpenSlots.cs" />
     <Compile Include="Reports\SiteRosterReport.cs" />
     <Compile Include="Support\TaskYielder.cs" />
+    <Compile Include="WebInterop\WebAdminPermissions.cs" />
     <Compile Include="WebInterop\WebAnnounce.cs" />
     <Compile Include="Roster\roster.cs" />
     <Compile Include="Roster\RosterCore.cs" />

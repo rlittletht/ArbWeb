@@ -159,6 +159,8 @@ namespace ArbWeb
         private TabPage tabPage2;
         private TabPage tabPage3;
         private Label label2;
+        private Button button10;
+        private Button button1;
         private WebGames m_webGames;
         
         #region Top Level Program Flow
@@ -636,9 +638,11 @@ namespace ArbWeb
             this.m_pbDeleteUnusedTeams = new System.Windows.Forms.Button();
             this.m_tabs = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label2 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.label2 = new System.Windows.Forms.Label();
+            this.button10 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.m_tabs.SuspendLayout();
@@ -1217,7 +1221,7 @@ namespace ArbWeb
             // m_cbSkipContactDownload
             // 
             this.m_cbSkipContactDownload.AutoSize = true;
-            this.m_cbSkipContactDownload.Location = new System.Drawing.Point(426, 142);
+            this.m_cbSkipContactDownload.Location = new System.Drawing.Point(204, 112);
             this.m_cbSkipContactDownload.Name = "m_cbSkipContactDownload";
             this.m_cbSkipContactDownload.Size = new System.Drawing.Size(151, 24);
             this.m_cbSkipContactDownload.TabIndex = 96;
@@ -1295,7 +1299,7 @@ namespace ArbWeb
             // button9
             // 
             this.button9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button9.Location = new System.Drawing.Point(882, 92);
+            this.button9.Location = new System.Drawing.Point(881, 95);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(240, 35);
             this.button9.TabIndex = 104;
@@ -1305,7 +1309,7 @@ namespace ArbWeb
             // m_pbDeleteUnusedTeams
             // 
             this.m_pbDeleteUnusedTeams.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbDeleteUnusedTeams.Location = new System.Drawing.Point(624, 92);
+            this.m_pbDeleteUnusedTeams.Location = new System.Drawing.Point(635, 95);
             this.m_pbDeleteUnusedTeams.Name = "m_pbDeleteUnusedTeams";
             this.m_pbDeleteUnusedTeams.Size = new System.Drawing.Size(240, 35);
             this.m_pbDeleteUnusedTeams.TabIndex = 105;
@@ -1363,6 +1367,17 @@ namespace ArbWeb
             this.tabPage2.Text = "Coverage Management";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.Location = new System.Drawing.Point(40, 286);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(1086, 27);
+            this.label2.TabIndex = 104;
+            this.label2.Tag = "Begging for help";
+            this.label2.Paint += new System.Windows.Forms.PaintEventHandler(this.RenderHeadingLine);
+            // 
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.m_cbIncludeCanceled);
@@ -1388,6 +1403,8 @@ namespace ArbWeb
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.button10);
+            this.tabPage3.Controls.Add(this.button1);
             this.tabPage3.Controls.Add(this.button4);
             this.tabPage3.Controls.Add(this.m_cbSkipContactDownload);
             this.tabPage3.Controls.Add(this.m_pbDiffTW);
@@ -1410,16 +1427,25 @@ namespace ArbWeb
             this.tabPage3.Text = "Schedule and Tools";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // label2
+            // button10
             // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.Location = new System.Drawing.Point(40, 286);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(1086, 27);
-            this.label2.TabIndex = 104;
-            this.label2.Tag = "Begging for help";
-            this.label2.Paint += new System.Windows.Forms.PaintEventHandler(this.RenderHeadingLine);
+            this.button10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button10.Location = new System.Drawing.Point(945, 177);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(176, 35);
+            this.button10.TabIndex = 107;
+            this.button10.Text = "Unlock Permissions";
+            this.button10.Click += new System.EventHandler(this.DoUnlockPermissions);
+            // 
+            // button1
+            // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Location = new System.Drawing.Point(765, 177);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(176, 35);
+            this.button1.TabIndex = 106;
+            this.button1.Text = "Lock Permissions";
+            this.button1.Click += new System.EventHandler(this.DoLockPermissions);
             // 
             // AwMainForm
             // 
@@ -2394,6 +2420,18 @@ namespace ArbWeb
         private void OnVisibleChanged(object sender, EventArgs e)
         {
             this.Visible = !m_fAutomating || m_cbShowBrowser.Checked;
+        }
+
+        private void DoLockPermissions(object sender, EventArgs e)
+        {
+
+        }
+
+        private void DoUnlockPermissions(object sender, EventArgs e)
+        {
+            WebAdminPermissions perms = new WebAdminPermissions(this);
+
+            perms.RemoveAdminLockout();
         }
     }
 

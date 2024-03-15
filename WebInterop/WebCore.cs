@@ -27,6 +27,8 @@ namespace ArbWeb
         public const string _s_Announcements = "https://www1.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
         public const string _s_ContactsView = "https://www1.arbitersports.com/Assigner/ContactsView.aspx"; // ok2018
 
+        public const string s_RightsEdit = "https://www1.arbitersports.com/Assigner/RightsEdit.aspx"; // ok2024
+
         public const string _s_TeamsView = "https://www1.arbitersports.com/assigner/TeamsView.aspx"; // ok2023
 
         // ============================================================================
@@ -275,6 +277,27 @@ namespace ArbWeb
         public const string _sid_Login_Anchor_TypeLink_Suffix = "_UserTypeLink";
 
         public const string s_MiscField_EditControlSubstring = "txtMiscFieldValue";
+
+        public const string s_RightsEdit_PermissionsTarget = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$ddlUserTypes"; // ok2024
+        public const string sid_RightsEdit_PermissionsTarget = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_ddlUserTypes"; // ok2024
+
+        public const string s_RightsEdit_AllowUsersTo = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$ddlRights"; // ok2024
+        public const string sid_RightsEdit_AllowUsersTo = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_ddlRights"; // ok2024
+
+        public const string s_RightsEdit_WithoutPermissions = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$lstNotAllowed"; // ok2024
+        public const string sid_RightsEdit_WithoutPermissions = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_lstNotAllowed"; // ok2024
+
+        public const string s_RightsEdit_WithPermissions = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$lstAllowed"; // ok2024
+        public const string sid_RightsEdit_WithPermissions = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_lstAllowed"; // ok2024
+
+        public const string s_RightsEdit_RemovePermission = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$btnDeny"; // ok2024
+        public const string sid_RightsEdit_RemovePermission = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_btnDeny"; // ok2024
+
+        public const string s_RightsEdit_AddPermission = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$lstAllowed"; // ok2024
+        public const string sid_RightsEdit_AddPermission = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_lstAllowed"; // ok2024
+
+//        public const string s_ = ""; // ok2024
+//        public const string sid_ = ""; // ok2024
 
         // ============================================================================
         // C O N T A C T S
