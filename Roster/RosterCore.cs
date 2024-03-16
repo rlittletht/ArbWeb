@@ -15,19 +15,64 @@ namespace ArbWeb
         private string m_sState;
         private string m_sZip;
         private string m_sMiddle;
-        
+
         public string Name => String.IsNullOrEmpty(Middle) ? $"{First} {Last}" : $"{First} {Middle} {Last}";
         public string NameShort => $"{First} {Last}";
         public string NameRoster => String.IsNullOrEmpty(Middle) ? $"{Last}, {First}" : $"{Last}, {First} {Middle}";
-        public string Email { get { return m_sEmail; } set { m_sEmail = value; } }
-        public string First { get { return m_sFirst; } set { m_sFirst = value; } }
-        public string Middle { get { return m_sMiddle; } set { m_sMiddle = value; } }
-        public string Last { get { return m_sLast; } set { m_sLast = value; } }
-        public string Address1 { get { return m_sAddress1; } set { m_sAddress1 = value; } }
-        public string Address2 { get { return m_sAddress2; } set { m_sAddress2 = value; } }
-        public string City { get { return m_sCity; } set { m_sCity = value; } }
-        public string State { get { return m_sState; } set { m_sState = value; } }
-        public string Zip { get { return m_sZip; } set { m_sZip = value; } }
+
+        public string Email
+        {
+            get { return m_sEmail; }
+            set { m_sEmail = value; }
+        }
+
+        public string First
+        {
+            get { return m_sFirst; }
+            set { m_sFirst = value; }
+        }
+
+        public string Middle
+        {
+            get { return m_sMiddle; }
+            set { m_sMiddle = value; }
+        }
+
+        public string Last
+        {
+            get { return m_sLast; }
+            set { m_sLast = value; }
+        }
+
+        public string Address1
+        {
+            get { return m_sAddress1; }
+            set { m_sAddress1 = value; }
+        }
+
+        public string Address2
+        {
+            get { return m_sAddress2; }
+            set { m_sAddress2 = value; }
+        }
+
+        public string City
+        {
+            get { return m_sCity; }
+            set { m_sCity = value; }
+        }
+
+        public string State
+        {
+            get { return m_sState; }
+            set { m_sState = value; }
+        }
+
+        public string Zip
+        {
+            get { return m_sZip; }
+            set { m_sZip = value; }
+        }
 
         /* S E T  E M A I L */
         /*----------------------------------------------------------------------------
@@ -41,15 +86,30 @@ namespace ArbWeb
             Email = s.Substring(s.IndexOf(":") + 1);
         }
     }
+
     public class RosterEntryPhones
     {
         private string m_sPhone1;
         private string m_sPhone2;
         private string m_sPhone3;
 
-        public string Phone1 { get { return m_sPhone1; } set { m_sPhone1 = value; } }
-        public string Phone2 { get { return m_sPhone2; } set { m_sPhone2 = value; } }
-        public string Phone3 { get { return m_sPhone3; } set { m_sPhone3 = value; } }
+        public string Phone1
+        {
+            get { return m_sPhone1; }
+            set { m_sPhone1 = value; }
+        }
+
+        public string Phone2
+        {
+            get { return m_sPhone2; }
+            set { m_sPhone2 = value; }
+        }
+
+        public string Phone3
+        {
+            get { return m_sPhone3; }
+            set { m_sPhone3 = value; }
+        }
 
         public string CellPhone
         {
@@ -77,26 +137,26 @@ namespace ArbWeb
             sType = null;
 
             if (String.IsNullOrEmpty(sNumberRaw))
-                {
+            {
                 return;
-                }
+            }
 
             if (sNumberRaw.StartsWith("C:"))
-                {
+            {
                 sType = "Cellular";
-                }
+            }
             else if (sNumberRaw.StartsWith("W:"))
-                {
+            {
                 sType = "Work";
-                }
+            }
             else if (sNumberRaw.StartsWith("H"))
-                {
+            {
                 sType = "Home";
-                }
+            }
             else
-                {
+            {
                 throw new Exception("Unknown phone type");
-                }
+            }
 
             sNumber = sNumberRaw.Substring(2);
         }
@@ -126,12 +186,13 @@ namespace ArbWeb
             Assert.AreEqual(sNumberExpected, sNumberActual);
             Assert.AreEqual(sTypeExpected, sTypeActual);
         }
+
         string NumberRawForPhone(int iPhone)
         {
             string sNumberRaw = null;
 
             switch (iPhone)
-                {
+            {
                 case 1:
                     sNumberRaw = Phone1;
                     break;
@@ -141,10 +202,11 @@ namespace ArbWeb
                 case 3:
                     sNumberRaw = Phone3;
                     break;
-                }
+            }
 
             return sNumberRaw;
         }
+
         public void GetPhoneNumber(int iPhone, out string sNumber, out string sType)
         {
             string sNumberRaw = NumberRawForPhone(iPhone);
@@ -156,7 +218,7 @@ namespace ArbWeb
             string sNumberRaw = SConstructPhoneNumberFromParts(sPhoneNumber, sTypeDefault);
 
             switch (iPhone)
-                {
+            {
                 case 1:
                     Phone1 = sNumberRaw;
                     break;
@@ -166,7 +228,7 @@ namespace ArbWeb
                 case 3:
                     Phone3 = sNumberRaw;
                     break;
-                }
+            }
         }
 
         public void SetNextPhoneNumber(string sPhoneNumber, string sTypeDefault)

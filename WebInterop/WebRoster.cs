@@ -14,27 +14,29 @@ namespace ArbWeb
     /// </summary>
     public partial class WebRoster
     {
-	    private readonly IAppContext m_appContext;
+        private readonly IAppContext m_appContext;
 
-	    public WebRoster() { } // for unit tests
-	    
+        public WebRoster()
+        {
+        } // for unit tests
+
         /*----------------------------------------------------------------------------
 			%%Function:WebRoster
 			%%Qualified:ArbWeb.WebRoster.WebRoster
 	    ----------------------------------------------------------------------------*/
         public WebRoster(IAppContext appContext)
-	    {
-		    m_appContext = appContext;
-	    }
-	    
-	    
+        {
+            m_appContext = appContext;
+        }
+
+
         /*----------------------------------------------------------------------------
 			%%Function:FetchMiscFieldsFromServer
 			%%Qualified:ArbWeb.WebRoster.FetchMiscFieldsFromServer
         ----------------------------------------------------------------------------*/
         void FetchMiscFieldsFromServer(string sEmail, string sOfficialID, RosterEntry rste, IRoster irstBuilding)
         {
-            Roster rstBuilding = (Roster) irstBuilding;
+            Roster rstBuilding = (Roster)irstBuilding;
             List<string> plsMiscBuilding = rstBuilding.PlsMisc;
 
             rste.m_plsMisc = SyncPlsMiscWithServer(sEmail, sOfficialID, null, null, ref plsMiscBuilding);
@@ -62,24 +64,23 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private static string MiscLabelFromControl(HtmlNode input)
         {
-	        HtmlNode parent = input;
+            HtmlNode parent = input;
             do
             {
-	            parent = parent.ParentNode;
-                } while (parent != null && String.Compare(parent.Name, "TR", StringComparison.InvariantCultureIgnoreCase) != 0);
+                parent = parent.ParentNode;
+            } while (parent != null && String.Compare(parent.Name, "TR", StringComparison.InvariantCultureIgnoreCase) != 0);
 
             if (parent == null)
                 return null;
 
             // now, find the first TD child
             foreach (HtmlNode child in parent.ChildNodes)
-                {
+            {
                 if (String.Compare(child.Name, "TD", StringComparison.InvariantCultureIgnoreCase) == 0)
                     return child.InnerText.Trim();
-                }
+            }
 
             return null;
-
         }
 
         /*----------------------------------------------------------------------------
@@ -108,101 +109,101 @@ namespace ArbWeb
             we have a correct order map for the pls that we return to the caller.
         ----------------------------------------------------------------------------*/
         private List<string> SyncPlsMiscWithServer(
-	        string sEmail, 
-	        string sOfficialID, 
-	        List<string> plsMiscNew, 
-	        List<string> plsMiscMapNew,
+            string sEmail,
+            string sOfficialID,
+            List<string> plsMiscNew,
+            List<string> plsMiscMapNew,
             ref List<string> plsMiscMapServer)
         {
             bool fNeedSave = false;
             string sValue;
 
             if (!m_appContext.WebControl.FNavToPage(WebCore._s_EditUser_MiscFields + sOfficialID))
-                {
+            {
                 throw (new Exception("could not navigate to the officials page"));
-                }
+            }
 
             // misc field info.  every text input field is a misc field we want to save
             List<string> plsValue = new List<string>();
             string sHtml = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_MiscFields_MainBodyContentTable)).GetAttribute("outerHTML");
             HtmlDocument html = new HtmlDocument();
-            
+
             html.LoadHtml(sHtml);
             sValue = null;
 
             HtmlNodeCollection inputs = html.DocumentNode.SelectNodes(
-	            $"//input[@type='text' and contains(@name, '{WebCore.s_MiscField_EditControlSubstring}')]");
+                $"//input[@type='text' and contains(@name, '{WebCore.s_MiscField_EditControlSubstring}')]");
 //            IList <IWebElement> inputs =
 //	            m_webControl.Driver.FindElements(By.XPath($"//input[@type='text' and contains(@name, '{WebCore.s_MiscField_EditControlSubstring}')]";
 
-            
+
             foreach (HtmlNode input in inputs)
+            {
+                // figure out which misc field this is
+                string sMiscLabel = MiscLabelFromControl(input);
+
+                // cool, extract the value
+                sValue = input.GetAttributeValue("value", null);
+                string sName = input.GetAttributeValue("name", null);
+
+                if (sValue == null)
+                    sValue = "";
+
+                if (plsMiscNew != null)
                 {
-                    // figure out which misc field this is
-                    string sMiscLabel = MiscLabelFromControl(input);
+                    int iMisc = IMiscFromMiscName(plsMiscMapNew, sMiscLabel);
 
-                    // cool, extract the value
-                    sValue = input.GetAttributeValue("value", null);
-                    string sName = input.GetAttributeValue("name", null);
-                    
-                    if (sValue == null)
-                        sValue = "";
+                    if (iMisc == -1)
+                        throw new Exception(
+                            "couldn't find misc field name! (OR maybe this is a new misc field that the roster doesn't know about, in which case we should just set it to empty, but this isn't debugged yet so we don't trust that decision yet, hence the exception");
 
-                    if (plsMiscNew != null)
+                    if (iMisc == -1 // couldn't find this server misc field in the roster's list of misc fields...set to empty
+                        && !String.IsNullOrEmpty(sValue))
                     {
-	                    int iMisc = IMiscFromMiscName(plsMiscMapNew, sMiscLabel);
+                        // null means empty which replaces non-empty
+                        m_appContext.WebControl.FSetTextForInputControlName(sName, "", false);
+                        fNeedSave = true;
+                    }
+                    else if (iMisc != -1
+                             && String.Compare(plsMiscNew[iMisc], sValue, true /*ignoreCase*/) != 0)
+                    {
+                        m_appContext.WebControl.FSetTextForInputControlName(sName, plsMiscNew[iMisc], false);
+                        fNeedSave = true;
+                    }
+                }
 
-	                    if (iMisc == -1)
-		                    throw new Exception(
-			                    "couldn't find misc field name! (OR maybe this is a new misc field that the roster doesn't know about, in which case we should just set it to empty, but this isn't debugged yet so we don't trust that decision yet, hence the exception");
+                // we always keep the server plsMiscMap up to date
+                int iMiscServer = IMiscFromMiscName(plsMiscMapServer, sMiscLabel);
 
-	                    if (iMisc == -1 // couldn't find this server misc field in the roster's list of misc fields...set to empty
-	                        && !String.IsNullOrEmpty(sValue))
-	                    {
-		                    // null means empty which replaces non-empty
-		                    m_appContext.WebControl.FSetTextForInputControlName(sName, "", false);
-		                    fNeedSave = true;
-	                    }
-	                    else if (iMisc != -1
-	                             && String.Compare(plsMiscNew[iMisc], sValue, true /*ignoreCase*/) != 0)
-	                    {
-		                    m_appContext.WebControl.FSetTextForInputControlName(sName, plsMiscNew[iMisc], false);
-		                    fNeedSave = true;
-	                    }
+                if (iMiscServer == -1)
+                {
+                    plsValue.Add(sValue);
+                    plsMiscMapServer.Add(sMiscLabel);
+                }
+                else
+                {
+                    if (plsValue.Count <= iMiscServer)
+                    {
+                        while (plsValue.Count <= iMiscServer)
+                            plsValue.Add("");
                     }
 
-                    // we always keep the server plsMiscMap up to date
-                    int iMiscServer = IMiscFromMiscName(plsMiscMapServer, sMiscLabel);
-
-                    if (iMiscServer == -1)
-                        {
-                        plsValue.Add(sValue);
-                        plsMiscMapServer.Add(sMiscLabel);
-                        }
-                    else
-                        {
-                        if (plsValue.Count <= iMiscServer)
-                            {
-                            while (plsValue.Count <= iMiscServer)
-                                plsValue.Add("");
-                            }
-
-                        plsValue[iMiscServer] = sValue;
-                        }
-
-                    // don't break here -- just get the next misc value...
+                    plsValue[iMiscServer] = sValue;
                 }
+
+                // don't break here -- just get the next misc value...
+            }
 
             // before we return, commit the change or cancel (so we are no longer on the page)
             if (fNeedSave)
-                {
+            {
                 m_appContext.StatusReport.AddMessage(String.Format("Updating misc info...", sEmail));
                 Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Save), "Couldn't find save button");
-                }
+            }
             else
-                {
+            {
                 Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_MiscFields_Button_Cancel), "Couldn't find cancel button");
-                }
+            }
 
             return plsValue;
         }
@@ -213,19 +214,19 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         bool FIsInputNodeDisabled(HtmlNode input)
         {
-	        string sDisabled = input.GetAttributeValue("disabled", null);
+            string sDisabled = input.GetAttributeValue("disabled", null);
 
-	        if (sDisabled == null)
-		        return false;
+            if (sDisabled == null)
+                return false;
 
-	        if (String.Compare(sDisabled, "true", true) == 0
-	            || String.Compare(sDisabled, "on", true) == 0
-	            || sDisabled == "1")
-	        {
-		        return true;
-	        }
+            if (String.Compare(sDisabled, "true", true) == 0
+                || String.Compare(sDisabled, "on", true) == 0
+                || sDisabled == "1")
+            {
+                return true;
+            }
 
-	        return false;
+            return false;
         }
 
         /*----------------------------------------------------------------------------
@@ -243,38 +244,38 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private bool MatchAssignText(HtmlNode input, string sMatch, string sNewValue, out string sAssign, ref bool fNeedSave, ref bool fFailAssign)
         {
-	        string name = input.GetAttributeValue("name", null);
-	        string value = input.GetAttributeValue("value", null);
-	        
+            string name = input.GetAttributeValue("name", null);
+            string value = input.GetAttributeValue("value", null);
+
             sAssign = null;
             if (name.Contains(sMatch))
-                {
+            {
                 sAssign = value;
 
                 if (sAssign == null)
                     sAssign = "";
 
                 if (sNewValue != null)
-                    {
+                {
                     // check to see if it matches what we have
                     // find a match on email address first
                     if (sNewValue != null
                         && String.Compare(sNewValue, sAssign, true /*ignoreCase*/) != 0)
-                        {
+                    {
                         if (FIsInputNodeDisabled(input))
-                            {
+                        {
                             fFailAssign = true;
-                            }
+                        }
                         else
                         {
-	                        m_appContext.WebControl.FSetTextForInputControlName(name, sNewValue, false);
+                            m_appContext.WebControl.FSetTextForInputControlName(name, sNewValue, false);
                             fNeedSave = true;
-                            }
                         }
                     }
+                }
 
                 return true;
-                }
+            }
 
             return false;
         }
@@ -297,12 +298,13 @@ namespace ArbWeb
                 SetServerRosterInfo(sEmail, sOfficialID, irst, irstServer, rste, fMarkOnly);
         }
 
-        
+
         /*----------------------------------------------------------------------------
         	%%Function: SetPhoneNames
 			%%Qualified:ArbWeb.WebRoster.SetPhoneNames
         ----------------------------------------------------------------------------*/
-        static void SetPhoneNames(int iPhoneRow, out string sPhoneNum, out string sidPhoneNum, out string sPhoneType, out string sPhoneCarrier, out string sPhonePublicNext)
+        static void SetPhoneNames(
+            int iPhoneRow, out string sPhoneNum, out string sidPhoneNum, out string sPhoneType, out string sPhoneCarrier, out string sPhonePublicNext)
         {
             sPhoneNum = $"{WebCore._s_EditUser_PhoneNumber_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhoneNumber_Suffix}";
             sidPhoneNum = $"{WebCore._sid_EditUser_PhoneNumber_Prefix}ctl{iPhoneRow:00}{WebCore._sid_EditUser_PhoneNumber_Suffix}";
@@ -322,12 +324,12 @@ namespace ArbWeb
 
             // ok, nav to the page and scrape
             if (!m_appContext.WebControl.FNavToPage(WebCore._s_EditUser + sOfficialID))
-                {
+            {
                 throw (new Exception("could not navigate to the officials page"));
-                }
+            }
 
             string sHtml = m_appContext.WebControl.Driver.FindElement(By.XPath("//body")).GetAttribute("outerHTML");
-            
+
             HtmlDocument body = new HtmlDocument();
             body.LoadHtml(sHtml);
 
@@ -339,48 +341,54 @@ namespace ArbWeb
             string sNamePhoneCarrierNext;
             string sNamePhonePublicNext;
             int iNextPhone = 1;
-            SetPhoneNames(iNextPhone, out sNamePhoneNumberNext, out sidPhoneNumberNext, out sNamePhoneTypeNext, out sNamePhoneCarrierNext, out sNamePhonePublicNext);
+            SetPhoneNames(
+                iNextPhone,
+                out sNamePhoneNumberNext,
+                out sidPhoneNumberNext,
+                out sNamePhoneTypeNext,
+                out sNamePhoneCarrierNext,
+                out sNamePhonePublicNext);
 
             foreach (HtmlNode input in inputs)
             {
-	            string type = input.GetAttributeValue("type", null);
-	            string name = input.GetAttributeValue("name", null);
-	            string value = input.GetAttributeValue("value", null);// checked for checkbox
-	            
+                string type = input.GetAttributeValue("type", null);
+                string name = input.GetAttributeValue("name", null);
+                string value = input.GetAttributeValue("value", null); // checked for checkbox
+
                 if (String.Compare(type, "checkbox", true) == 0)
                 {
-	                string checkedAttr = input.GetAttributeValue("checked", null);
-	                
+                    string checkedAttr = input.GetAttributeValue("checked", null);
+
                     // checkboxes are either ready or active
                     if (name.Contains("Active"))
                         rsteOut.m_fActive = String.Compare(checkedAttr, "checked", true) == 0;
                     else if (name.Contains("Ready"))
                         rsteOut.m_fReady = String.Compare(checkedAttr, "checked", true) == 0;
-                    }
+                }
 
                 if (String.Compare(type, "text", true) == 0 && name != null)
-                    {
+                {
                     if (name.Contains(WebCore._s_EditUser_Email))
-                        {
+                    {
 //						if (ihie.value == null && rsteOut.m_sEmail != null && rsteOut.m_sEmail != "")
                         // continue;
 
                         if (value != null && rsteOut.Email != null)
-                            {
+                        {
                             if (String.Compare(value, rsteOut.Email, true) != 0)
                                 throw new Exception("email addresses don't match!");
-                            }
-                        else
-                            {
-                            m_appContext.StatusReport.AddMessage($"NULL Email address for {rsteOut.First},{rsteOut.Last}", MSGT.Error);
-                            }
                         }
+                        else
+                        {
+                            m_appContext.StatusReport.AddMessage($"NULL Email address for {rsteOut.First},{rsteOut.Last}", MSGT.Error);
+                        }
+                    }
 
                     string s; // add middle name
                     if (MatchAssignText(input, WebCore._s_EditUser_FirstName, rsteNew?.First, out s, ref fNeedSave, ref fFailUpdate))
                         rsteOut.First = s;
                     if (MatchAssignText(input, WebCore._s_EditUser_MiddleName, rsteNew?.Middle, out s, ref fNeedSave, ref fFailUpdate))
-	                    rsteOut.Middle = s;
+                        rsteOut.Middle = s;
                     if (MatchAssignText(input, WebCore._s_EditUser_LastName, rsteNew?.Last, out s, ref fNeedSave, ref fFailUpdate))
                         rsteOut.Last = s;
                     if (MatchAssignText(input, WebCore._s_EditUser_Address1, rsteNew?.Address1, out s, ref fNeedSave, ref fFailUpdate))
@@ -401,7 +409,7 @@ namespace ArbWeb
 
 
                     if (rsteNew == null || rsteNew.IsUploadableQuickroster)
-                        {
+                    {
                         if (MatchAssignText(input, WebCore._s_EditUser_DateOfBirth, rsteNew?.m_sDateOfBirth, out s, ref fNeedSave, ref fFailUpdate))
                             rsteOut.m_sDateOfBirth = s;
                         if (MatchAssignText(input, WebCore._s_EditUser_GamesPerDay, rsteNew?.m_sGamesPerDay, out s, ref fNeedSave, ref fFailUpdate))
@@ -412,52 +420,82 @@ namespace ArbWeb
                             rsteOut.m_sTotalGames = s;
                         if (MatchAssignText(input, WebCore._s_EditUser_WaitMinutes, rsteNew?.m_sWaitMinutes, out s, ref fNeedSave, ref fFailUpdate))
                             rsteOut.m_sWaitMinutes = s;
-                        }
+                    }
 
                     if (name.Contains(sNamePhoneNumberNext))
-                        {
+                    {
                         // we have a phone control.  Make sure it matches.
                         // NOTE: We don't delete phone numbers, so if it turns out we don't have this number, just skip...
-                        if (MatchAssignPhoneNumber(m_appContext.WebControl, rsteOut, rsteNew, iNextPhone, sNamePhoneNumberNext, sidPhoneNumberNext, sNamePhoneTypeNext, sNamePhonePublicNext))
+                        if (MatchAssignPhoneNumber(
+                                m_appContext.WebControl,
+                                rsteOut,
+                                rsteNew,
+                                iNextPhone,
+                                sNamePhoneNumberNext,
+                                sidPhoneNumberNext,
+                                sNamePhoneTypeNext,
+                                sNamePhonePublicNext))
                             fNeedSave = true;
 
                         iNextPhone++;
-                        SetPhoneNames(iNextPhone, out sNamePhoneNumberNext, out sidPhoneNumberNext, out sNamePhoneTypeNext, out sNamePhoneCarrierNext, out sNamePhonePublicNext);
-                        }
+                        SetPhoneNames(
+                            iNextPhone,
+                            out sNamePhoneNumberNext,
+                            out sidPhoneNumberNext,
+                            out sNamePhoneTypeNext,
+                            out sNamePhoneCarrierNext,
+                            out sNamePhonePublicNext);
                     }
                 }
+            }
 
             if (iNextPhone < 4 && rsteNew != null)
-                {
+            {
                 while (iNextPhone < 4)
-                    {
-                    SetPhoneNames(iNextPhone, out sNamePhoneNumberNext, out sidPhoneNumberNext, out sNamePhoneTypeNext, out sNamePhoneCarrierNext, out sNamePhonePublicNext);
+                {
+                    SetPhoneNames(
+                        iNextPhone,
+                        out sNamePhoneNumberNext,
+                        out sidPhoneNumberNext,
+                        out sNamePhoneTypeNext,
+                        out sNamePhoneCarrierNext,
+                        out sNamePhonePublicNext);
                     if (rsteNew.FHasPhoneNumber(iNextPhone))
-                        {
+                    {
                         // add this phone...
-                        Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext), "could not add new phone number");
-                        if (MatchAssignPhoneNumber(m_appContext.WebControl, rsteOut, rsteNew, iNextPhone, sNamePhoneNumberNext, sidPhoneNumberNext, sNamePhoneTypeNext, sNamePhonePublicNext))
+                        Utils.ThrowIfNot(
+                            m_appContext.WebControl.FClickControlId(WebCore._sid_EditUser_PhoneNumber_AddNew, sidPhoneNumberNext),
+                            "could not add new phone number");
+                        if (MatchAssignPhoneNumber(
+                                m_appContext.WebControl,
+                                rsteOut,
+                                rsteNew,
+                                iNextPhone,
+                                sNamePhoneNumberNext,
+                                sidPhoneNumberNext,
+                                sNamePhoneTypeNext,
+                                sNamePhonePublicNext))
                             fNeedSave = true;
-                        }
+                    }
 
                     iNextPhone++;
-                    }
                 }
+            }
 
             if (fFailUpdate)
-                {
+            {
                 m_appContext.StatusReport.AddMessage($"FAILED to update some general info!  '{rsteOut.Email}' was read only", MSGT.Error);
-                }
+            }
 
             if (fNeedSave)
-                {
+            {
                 m_appContext.StatusReport.AddMessage($"Updating general info for {rsteOut.Email}...");
                 Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Save), "couldn't find save button");
-                }
+            }
             else
-                {
+            {
                 Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_OfficialsEdit_Button_Cancel), "Couldn't find cancel button!");
-                }
+            }
         }
 
         /*----------------------------------------------------------------------------
@@ -465,14 +503,14 @@ namespace ArbWeb
 			%%Qualified:ArbWeb.WebRoster.MatchAssignPhoneNumber
         ----------------------------------------------------------------------------*/
         private static bool MatchAssignPhoneNumber(
-	        WebControl webControl, 
-	        RosterEntry rsteOut, 
-	        RosterEntry rsteNew, 
-	        int iNextPhone, 
-	        string sNamePhoneNumberNext,
-            string sidPhoneNumberNext, 
-	        string sNamePhoneTypeNext, 
-	        string sNamePhonePublicNext)
+            WebControl webControl,
+            RosterEntry rsteOut,
+            RosterEntry rsteNew,
+            int iNextPhone,
+            string sNamePhoneNumberNext,
+            string sidPhoneNumberNext,
+            string sNamePhoneTypeNext,
+            string sNamePhonePublicNext)
         {
             string sNumberNew = null;
             string sTypeNew = null;
@@ -484,15 +522,15 @@ namespace ArbWeb
 
             // handle the phone number
             if (rsteNew != null)
-                {
+            {
                 rsteNew.GetPhoneNumber(iNextPhone, out sNumberNew, out sTypeNew);
                 if (webControl.FSetTextForInputControlName(sNamePhoneNumberNext, sNumberNew, true))
-                    {
+                {
                     // new numbers are public by default
                     webControl.FSetCheckboxControlNameVal(true, sNamePhonePublicNext);
                     fNeedSave = true;
-                    }
                 }
+            }
 
             // handle the type
             // get the selected item first
@@ -503,12 +541,12 @@ namespace ArbWeb
             rsteOut.SetPhoneNumber(iNextPhone, sNumber, sTypeOptionText);
 
             if (rsteNew != null && String.Compare(sTypeOptionText, sTypeNew) != 0)
-                {
+            {
                 // now set the type if we have a new number
                 string sNewTypeOptionValue = webControl.GetOptionValueForSelectControlNameOptionText(sNamePhoneTypeNext, sTypeNew);
                 webControl.FSetSelectedOptionValueForControlName(sNamePhoneTypeNext, sNewTypeOptionValue);
                 fNeedSave = true;
-                }
+            }
 
             return fNeedSave;
         }
@@ -548,46 +586,46 @@ namespace ArbWeb
 
             // first, unrank any officials that should now become unranked
             foreach (RosterEntry rste in plirste)
-                {
+            {
                 string sReversed = $"{rste.Last}, {rste.First}";
 
                 if (!rste.FRanked(sRankPosition))
-                    {
+                {
                     if (mpRanked.ContainsKey(sReversed))
-                        {
+                    {
                         // need to unrank
                         plsUnrank.Add(sReversed);
-                        }
+                    }
 
                     // else, we're cool..we're both unranked
-                    }
+                }
                 else
-                    {
+                {
                     int nRank = rste.Rank(sRankPosition);
 
                     // see if we need to rank or rerank
                     if (mpRanked.ContainsKey(sReversed))
-                        {
+                    {
                         // may need to rerank
                         if (mpRanked[sReversed] != nRank)
-                            {
+                        {
                             // need to rerank
                             if (!mpRerank.ContainsKey(nRank))
                                 mpRerank.Add(nRank, new List<string>());
 
                             mpRerank[nRank].Add(sReversed);
-                            }
                         }
+                    }
                     else
-                        {
+                    {
                         // need to rank
                         if (!mpRank.ContainsKey(nRank))
                             mpRank.Add(nRank, new List<string>());
 
                         mpRank[nRank].Add(sReversed);
-                        }
                     }
                 }
+            }
         }
 
         /*----------------------------------------------------------------------------
@@ -595,32 +633,32 @@ namespace ArbWeb
 			%%Qualified:ArbWeb.WebRoster.VisitRankCallbackDownload
         ----------------------------------------------------------------------------*/
         private static void VisitRankCallbackDownload(
-	        IRoster irst, 
-	        string sRank, 
-	        Dictionary<string, int> mpNameRank, 
-	        Dictionary<string, string> mpNameOptionValue, 
-	        WebControl webControl,
-	        IStatusReporter srpt)
+            IRoster irst,
+            string sRank,
+            Dictionary<string, int> mpNameRank,
+            Dictionary<string, string> mpNameOptionValue,
+            WebControl webControl,
+            IStatusReporter srpt)
         {
-	        MicroTimer timer = new MicroTimer();
-	        
+            MicroTimer timer = new MicroTimer();
+
             // don't do anything with unranked
             // just add the rankings
             foreach (string s in mpNameRank.Keys)
             {
-	            ((Roster)irst).FAddRanking(s, sRank, mpNameRank[s]);
+                ((Roster)irst).FAddRanking(s, sRank, mpNameRank[s]);
             }
-            
+
             timer.Stop();
             srpt.LogData($"VisitRankingDownload({sRank}: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         private delegate void VisitRankCallback(
-	        IRoster irst, 
-	        string sRank, 
-	        Dictionary<string, int> mpRanked, 
-	        Dictionary<string, string> mpRankedId, 
-	        WebControl webControl,
+            IRoster irst,
+            string sRank,
+            Dictionary<string, int> mpRanked,
+            Dictionary<string, string> mpRankedId,
+            WebControl webControl,
             IStatusReporter srpt);
 
         /*----------------------------------------------------------------------------
@@ -634,17 +672,18 @@ namespace ArbWeb
 
             NavigateArbiterRankings();
 
-            Dictionary<string, string> mpPositionOptionsValueText = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_PosNames);
+            Dictionary<string, string> mpPositionOptionsValueText =
+                m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_PosNames);
             List<string> plsRankingPositions = RankingPositionsBuildFromRst(irst, irstBuilding, mpPositionOptionsValueText);
 
             if (m_appContext.Profile.SkipZ)
-                {
+            {
                 List<string> plsKeysToRemove = new List<string>();
                 foreach (string sKey in mpPositionOptionsValueText.Keys)
-                    {
+                {
                     if (mpPositionOptionsValueText[sKey].StartsWith("z"))
                         plsKeysToRemove.Add(sKey);
-                    }
+                }
 
                 foreach (string sKey in plsKeysToRemove)
                     mpPositionOptionsValueText.Remove(sKey);
@@ -652,16 +691,16 @@ namespace ArbWeb
                 int i = plsRankingPositions.Count;
 
                 while (--i >= 0)
-                    {
+                {
                     if (plsRankingPositions[i].StartsWith("z"))
                         plsRankingPositions.RemoveAt(i);
-                    }
                 }
+            }
 
             if (irst == null)
-	            VisitRankings(plsRankingPositions, mpPositionOptionsValueText, VisitRankCallbackDownload, irstBuilding, false /*fVerbose*/);
+                VisitRankings(plsRankingPositions, mpPositionOptionsValueText, VisitRankCallbackDownload, irstBuilding, false /*fVerbose*/);
             else
-	            VisitRankings(plsRankingPositions, mpPositionOptionsValueText, VisitRankCallbackUpload, irst, false /*fVerbose*/); // true
+                VisitRankings(plsRankingPositions, mpPositionOptionsValueText, VisitRankCallbackUpload, irst, false /*fVerbose*/); // true
         }
 
         /*----------------------------------------------------------------------------
@@ -671,7 +710,9 @@ namespace ArbWeb
             Visit a rankings page. Used for both upload and download, with the
             callback interface used to differentiate up/down.
 	    ----------------------------------------------------------------------------*/
-        private void VisitRankings(List<string> plsRankedPositions, IDictionary<string, string> mpPositionOptionsValueText, VisitRankCallback visit, IRoster irstParam, bool fVerboseLog)
+        private void VisitRankings(
+            List<string> plsRankedPositions, IDictionary<string, string> mpPositionOptionsValueText, VisitRankCallback visit, IRoster irstParam,
+            bool fVerboseLog)
         {
             // now, navigate to every ranked positions' page and either fetch or sync every
             // official
@@ -679,15 +720,16 @@ namespace ArbWeb
             m_appContext.StatusReport.LogData("plsRankedPositions:", 3, MSGT.Body, plsRankedPositions);
 
             foreach (string sRankPosition in plsRankedPositions)
-                {
+            {
                 m_appContext.StatusReport.AddMessage($"Processing ranks for {sRankPosition}...");
 
                 if (!FNavigateToRankPosition(mpPositionOptionsValueText, sRankPosition))
-                    {
-                    m_appContext.StatusReport.AddMessage("Ranks for position '{0}' do not exist on Arbiter!  Skipping...",
-                                      MSGT.Error);
+                {
+                    m_appContext.StatusReport.AddMessage(
+                        "Ranks for position '{0}' do not exist on Arbiter!  Skipping...",
+                        MSGT.Error);
                     continue;
-                    }
+                }
 
                 BuildRankingMapFromPage(sRankPosition, out Dictionary<string, int> mpNameRank, out Dictionary<string, string> mpNameOptionValue);
 
@@ -697,7 +739,7 @@ namespace ArbWeb
                 visit(irstParam, sRankPosition, mpNameRank, mpNameOptionValue, m_appContext.WebControl, m_appContext.StatusReport);
 
                 if (fVerboseLog)
-                    {
+                {
                     BuildRankingMapFromPage(sRankPosition, out Dictionary<string, int> mpNameRankCheck, out Dictionary<string, string> _);
 
                     List<string> plsUnrank;
@@ -718,10 +760,8 @@ namespace ArbWeb
                         m_appContext.StatusReport.LogData("mpRerank not empty: ", 3, MSGT.Error, mpRerank);
                     else
                         m_appContext.StatusReport.LogData("mpRerank empty after upload", 5, MSGT.Header);
-
-
-                    }
                 }
+            }
         }
 
         /*----------------------------------------------------------------------------
@@ -730,21 +770,21 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private bool FNavigateToRankPosition(IDictionary<string, string> mpPositionOptionsValueText, string sRankPosition)
         {
-			// make sure we have the position
-			bool fFound = false;
-			
-			foreach (string s in mpPositionOptionsValueText.Values)
-			{
-				if (String.Compare(s, sRankPosition, true) == 0)
-					fFound = true;
-			}
-			
+            // make sure we have the position
+            bool fFound = false;
+
+            foreach (string s in mpPositionOptionsValueText.Values)
+            {
+                if (String.Compare(s, sRankPosition, true) == 0)
+                    fFound = true;
+            }
+
             if (!fFound)
                 return false;
 
             // make sure we have the right checkbox states 
             // (Show unranked only = false, Show Active only = false)
-            
+
             m_appContext.WebControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Active);
             m_appContext.WebControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Rank);
 
@@ -757,59 +797,59 @@ namespace ArbWeb
 			%%Qualified:ArbWeb.WebRoster.BuildRankingMapFromPage
         ----------------------------------------------------------------------------*/
         private void BuildRankingMapFromPage(
-	        string sRankPosition,
-	        out Dictionary<string, int> mpNameRank,
-	        out Dictionary<string, string> mpNameOptionValue)
+            string sRankPosition,
+            out Dictionary<string, int> mpNameRank,
+            out Dictionary<string, string> mpNameOptionValue)
         {
-	        List<string> plsUnranked = new List<string>();
-	        mpNameRank = new Dictionary<string, int>();
-	        mpNameOptionValue = new Dictionary<string, string>();
+            List<string> plsUnranked = new List<string>();
+            mpNameRank = new Dictionary<string, int>();
+            mpNameOptionValue = new Dictionary<string, string>();
 
-	        Dictionary<string, string> mpT;
+            Dictionary<string, string> mpT;
 
-	        // unranked officials
-	        mpT = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_NotRanked);
+            // unranked officials
+            mpT = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_NotRanked);
 
-	        // for each of the option values, add the text for it (this is the name of the official)
-	        foreach (string s in mpT.Keys)
-		        plsUnranked.Add(mpT[s]);
+            // for each of the option values, add the text for it (this is the name of the official)
+            foreach (string s in mpT.Keys)
+                plsUnranked.Add(mpT[s]);
 
-	        // ranked officials
-	        mpT = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_Ranked);
+            // ranked officials
+            mpT = m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_Ranked);
 
-	        foreach (string sKey in mpT.Keys)
-	        {
-		        string sRankAndName = mpT[sKey];
-		        
-		        int iColon = sRankAndName.IndexOf(":");
-		        if (iColon == -1)
-			        throw new Exception("bad format for ranked official on arbiter!");
+            foreach (string sKey in mpT.Keys)
+            {
+                string sRankAndName = mpT[sKey];
 
-		        int nRank = Int32.Parse(sRankAndName.Substring(0, iColon));
+                int iColon = sRankAndName.IndexOf(":");
+                if (iColon == -1)
+                    throw new Exception("bad format for ranked official on arbiter!");
 
-		        int iStart = iColon + 1;
-		        while (Char.IsWhiteSpace(sRankAndName.Substring(iStart, 1)[0]))
-			        iStart++;
+                int nRank = Int32.Parse(sRankAndName.Substring(0, iColon));
 
-		        string sName = sRankAndName.Substring(iStart);
-		        if (!mpNameRank.ContainsKey(sName))
-			        mpNameRank.Add(sName, nRank);
-		        else
-		        {
-			        m_appContext.StatusReport.AddMessage(
-				        $"Duplicate key {sName} adding rank {nRank} to rank {sRankPosition}",
-				        MSGT.Error);
-		        }
+                int iStart = iColon + 1;
+                while (Char.IsWhiteSpace(sRankAndName.Substring(iStart, 1)[0]))
+                    iStart++;
 
-		        if (!mpNameOptionValue.ContainsKey(sName))
-			        mpNameOptionValue.Add(sName, sKey);
-		        else
-		        {
-			        m_appContext.StatusReport.AddMessage(
-				        $"Duplicate key {sName} adding rankid {sRankAndName} to rank {sRankPosition}",
-				        MSGT.Error);
-		        }
-	        }
+                string sName = sRankAndName.Substring(iStart);
+                if (!mpNameRank.ContainsKey(sName))
+                    mpNameRank.Add(sName, nRank);
+                else
+                {
+                    m_appContext.StatusReport.AddMessage(
+                        $"Duplicate key {sName} adding rank {nRank} to rank {sRankPosition}",
+                        MSGT.Error);
+                }
+
+                if (!mpNameOptionValue.ContainsKey(sName))
+                    mpNameOptionValue.Add(sName, sKey);
+                else
+                {
+                    m_appContext.StatusReport.AddMessage(
+                        $"Duplicate key {sName} adding rankid {sRankAndName} to rank {sRankPosition}",
+                        MSGT.Error);
+                }
+            }
         }
 
         /*----------------------------------------------------------------------------
@@ -820,7 +860,7 @@ namespace ArbWeb
         {
             List<string> plsRankingPositions;
             if (irst == null)
-                {
+            {
                 // now, build up our plsRankedPositions
                 plsRankingPositions = new List<string>();
 
@@ -828,7 +868,7 @@ namespace ArbWeb
                     plsRankingPositions.Add(mpPositionsOptionsValueText[s]);
 
                 ((Roster)irstBuilding).PlsRankings = plsRankingPositions;
-                }
+            }
             else
                 plsRankingPositions = ((Roster)irst).PlsRankings;
 
@@ -845,15 +885,18 @@ namespace ArbWeb
                 throw (new Exception("could not navigate to the bulk rankings page"));
         }
 
-        #region Tests
+#region Tests
 
-        [TestCase(1, "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$txtPhone",
+        [TestCase(
+            1,
+            "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$txtPhone",
             "ctl00_ContentHolder_pgeOfficialEdit_conOfficialEdit_uclPhones_rptPhone_ctl01_txtPhone",
             "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$ddlPhoneType",
             "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$ddlCarrier",
             "ctl00$ContentHolder$pgeOfficialEdit$conOfficialEdit$uclPhones$rptPhone$ctl01$chkPublic")]
         [Test]
-        public static void TestSetPhoneNames(int iPhoneRow, string sExpectedNum, string sidExpectedNum, string sExpectedType, string sExpectedCarrier, string sExpectedPublic)
+        public static void TestSetPhoneNames(
+            int iPhoneRow, string sExpectedNum, string sidExpectedNum, string sExpectedType, string sExpectedCarrier, string sExpectedPublic)
         {
             string sidNumActual, sNumActual, sTypeActual, sCarrierActual, sPublicActual;
 
@@ -864,7 +907,6 @@ namespace ArbWeb
             Assert.AreEqual(sExpectedPublic, sPublicActual);
         }
 
-        #endregion
+#endregion
     }
-
 }

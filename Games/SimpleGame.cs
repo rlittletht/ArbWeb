@@ -4,70 +4,70 @@ using System.Net.NetworkInformation;
 
 namespace ArbWeb.Games
 {
-	// these are just simple games - no slot information
-	public class SimpleGame
-	{
-		public string Site { get; set; }
-		public string Level { get; set; }
-		public string Home { get; set; }
-		public string Away { get; set; }
-		public string Sport { get; set; }
-		public string Number { get; set; }
-		public string Status { get; set; }
-		
-		public DateTime StartDateTime { get; set; }
+    // these are just simple games - no slot information
+    public class SimpleGame
+    {
+        public string Site { get; set; }
+        public string Level { get; set; }
+        public string Home { get; set; }
+        public string Away { get; set; }
+        public string Sport { get; set; }
+        public string Number { get; set; }
+        public string Status { get; set; }
 
-		public override int GetHashCode()
-		{
-			return SortKey.GetHashCode();
-		}
-		
-		public string SortKey => $"{StartDateTime:u}-{Site?.ToUpper()}-{Sport?.ToUpper()}-{Level?.ToUpper()}-{Home?.ToUpper()}-{Status?.ToUpper()}";
-		
-		public SimpleGame()
-		{
-		}
+        public DateTime StartDateTime { get; set; }
 
-		/*----------------------------------------------------------------------------
-			%%Function: SimpleGame
-			%%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
-		----------------------------------------------------------------------------*/
-		public SimpleGame(GameSlot game)
-		{
-			StartDateTime = game.Dttm;
-			Site = game.Site;
-			Level = game.Level;
-			Home = game.Home;
-			Away = game.Away;
-			Sport = game.Sport;
-			Number = game.GameNum;
-			Status = game.Cancelled ? "Cancelled" : "";
-		}
+        public override int GetHashCode()
+        {
+            return SortKey.GetHashCode();
+        }
 
-		/*----------------------------------------------------------------------------
-			%%Function: SimpleGame
-			%%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
-		----------------------------------------------------------------------------*/
-		public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number, string status, string sport)
-		{
-			StartDateTime = startDateTime;
-			Site = site;
-			Level = level;
-			Home = home;
-			Away = away;
-			Number = number;
-			Sport = sport;
-			Status = status;
-		}
+        public string SortKey => $"{StartDateTime:u}-{Site?.ToUpper()}-{Sport?.ToUpper()}-{Level?.ToUpper()}-{Home?.ToUpper()}-{Status?.ToUpper()}";
 
-		/*----------------------------------------------------------------------------
-			%%Function: IsEqual
-			%%Qualified: ArbWeb.Games.SimpleGame.IsEqual
-		----------------------------------------------------------------------------*/
-		public static bool AreEqual(SimpleGame left, SimpleGame right, ScheduleMaps maps)
-		{
-			if (left.StartDateTime != right.StartDateTime)
-				return false;
+        public SimpleGame()
+        {
+        }
+
+        /*----------------------------------------------------------------------------
+            %%Function: SimpleGame
+            %%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
+        ----------------------------------------------------------------------------*/
+        public SimpleGame(GameSlot game)
+        {
+            StartDateTime = game.Dttm;
+            Site = game.Site;
+            Level = game.Level;
+            Home = game.Home;
+            Away = game.Away;
+            Sport = game.Sport;
+            Number = game.GameNum;
+            Status = game.Cancelled ? "Cancelled" : "";
+        }
+
+        /*----------------------------------------------------------------------------
+            %%Function: SimpleGame
+            %%Qualified: ArbWeb.Games.SimpleGame.SimpleGame
+        ----------------------------------------------------------------------------*/
+        public SimpleGame(DateTime startDateTime, string site, string level, string home, string away, string number, string status, string sport)
+        {
+            StartDateTime = startDateTime;
+            Site = site;
+            Level = level;
+            Home = home;
+            Away = away;
+            Number = number;
+            Sport = sport;
+            Status = status;
+        }
+
+        /*----------------------------------------------------------------------------
+            %%Function: IsEqual
+            %%Qualified: ArbWeb.Games.SimpleGame.IsEqual
+        ----------------------------------------------------------------------------*/
+        public static bool AreEqual(SimpleGame left, SimpleGame right, ScheduleMaps maps)
+        {
+            if (left.StartDateTime != right.StartDateTime)
+                return false;
 
             if (!(left.Level.ToUpper().Contains("INTERMEDIATE") && right.Level.ToUpper().Contains("INTERMEDIATE")))
             {
@@ -76,53 +76,54 @@ namespace ArbWeb.Games
             }
 
             if (FuzzyMatcher.IsGameFuzzySportMatch(left, right) == 0)
-				return false;
+                return false;
 
-			string home = left.Home.ToUpper();
-			string away = left.Away.ToUpper();
-			string site = left.Site.ToUpper();
-			
-			if (maps != null)
-			{
-				home = maps.TeamsMap.ContainsKey(home) ? maps.TeamsMap[home] : left.Home;
+            string home = left.Home.ToUpper();
+            string away = left.Away.ToUpper();
+            string site = left.Site.ToUpper();
 
-				away = maps.TeamsMap.ContainsKey(away) ? maps.TeamsMap[away] : left.Away;
+            if (maps != null)
+            {
+                home = maps.TeamsMap.ContainsKey(home) ? maps.TeamsMap[home] : left.Home;
 
-				site = maps.SitesMap.ContainsKey(site) ? maps.SitesMap[site] : left.Site;
-			}
+                away = maps.TeamsMap.ContainsKey(away) ? maps.TeamsMap[away] : left.Away;
 
-			if (String.Compare(home, right.Home, true) != 0)
-				return false;
+                site = maps.SitesMap.ContainsKey(site) ? maps.SitesMap[site] : left.Site;
+            }
 
-			if (String.Compare(away, right.Away, true) != 0)
-				return false;
+            if (String.Compare(home, right.Home, true) != 0)
+                return false;
 
-			if (String.Compare(site, right.Site, true) != 0)
-				return false;
+            if (String.Compare(away, right.Away, true) != 0)
+                return false;
 
-			if (String.Compare(left.Status, right.Status, true) != 0)
-			{
-				if (String.IsNullOrEmpty(right.Status))
-				{
-					if (!left.Status.ToUpper().Contains("RESCHED"))
-						return false;
-				}
-			}
+            if (String.Compare(site, right.Site, true) != 0)
+                return false;
 
-			
-			return true;
-		}
+            if (String.Compare(left.Status, right.Status, true) != 0)
+            {
+                if (String.IsNullOrEmpty(right.Status))
+                {
+                    if (!left.Status.ToUpper().Contains("RESCHED"))
+                        return false;
+                }
+            }
 
-		
-		/*----------------------------------------------------------------------------
-			%%Function: IsEqual
-			%%Qualified: ArbWeb.Games.SimpleGame.IsEqual
-		----------------------------------------------------------------------------*/
-		public bool IsEqual(SimpleGame right, ScheduleMaps maps)
-		{
-			return SimpleGame.AreEqual(this, right, maps);
-		}
-		/*----------------------------------------------------------------------------
+
+            return true;
+        }
+
+
+        /*----------------------------------------------------------------------------
+            %%Function: IsEqual
+            %%Qualified: ArbWeb.Games.SimpleGame.IsEqual
+        ----------------------------------------------------------------------------*/
+        public bool IsEqual(SimpleGame right, ScheduleMaps maps)
+        {
+            return SimpleGame.AreEqual(this, right, maps);
+        }
+
+        /*----------------------------------------------------------------------------
             %%Function: MakeCsvLine
             %%Qualified: ArbWeb.CountsData:GameData:Game.MakeCsvLine
             %%Contact: rlittle
@@ -132,7 +133,7 @@ namespace ArbWeb.Games
             Takes the given legend and saves out our collected data according to that
             legend.
         ----------------------------------------------------------------------------*/
-		public string MakeCsvLine(IEnumerable<string> legend)
+        public string MakeCsvLine(IEnumerable<string> legend)
         {
             Dictionary<string, string> m_mpFieldVal = new Dictionary<string, string>();
 
@@ -148,7 +149,7 @@ namespace ArbWeb.Games
             m_mpFieldVal.Add("Sport", Sport);
             m_mpFieldVal.Add("Game", Number);
             m_mpFieldVal.Add("Status", Status);
-            
+
             // now that we have a dictionary of values, write it out
             bool fFirst = true;
             string sRet = "";
@@ -159,6 +160,7 @@ namespace ArbWeb.Games
                 {
                     sRet += ",";
                 }
+
                 fFirst = false;
 
                 if (m_mpFieldVal.ContainsKey(s))
@@ -166,6 +168,7 @@ namespace ArbWeb.Games
                 else
                     sRet += "0";
             }
+
             return sRet;
         }
     }

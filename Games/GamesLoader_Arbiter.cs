@@ -8,46 +8,49 @@ using TCore.StatusBox;
 
 namespace ArbWeb.Games
 {
-	public class GamesLoader_Arbiter
-	{
-		private const int icolGameLevelDefault = 6;
-		private const int icolGameDateTimeDefault = 2;
-		private const int icolGameHomeColumnDeltaFromSportLevel = 14 - icolGameLevelDefault;
-		private const int icolGameSiteDeltaFromSportLevel = 11 - icolGameLevelDefault;
-		private const int icolGameAwayDeltaFromSportLevel = 19 - icolGameLevelDefault;
-		private const int icolOfficialDeltaFromSportLevel = 5 - icolGameLevelDefault; // yes this is a negative delta
-		private const int icolSlotStatusDeltaFromSportLevel = 17 - icolGameLevelDefault; // THIS IS UNVERIFIED!
-		private const int icolGameGameBase = 0;
+    public class GamesLoader_Arbiter
+    {
+        private const int icolGameLevelDefault = 6;
+        private const int icolGameDateTimeDefault = 2;
+        private const int icolGameHomeColumnDeltaFromSportLevel = 14 - icolGameLevelDefault;
+        private const int icolGameSiteDeltaFromSportLevel = 11 - icolGameLevelDefault;
+        private const int icolGameAwayDeltaFromSportLevel = 19 - icolGameLevelDefault;
+        private const int icolOfficialDeltaFromSportLevel = 5 - icolGameLevelDefault; // yes this is a negative delta
+        private const int icolSlotStatusDeltaFromSportLevel = 17 - icolGameLevelDefault; // THIS IS UNVERIFIED!
+        private const int icolGameGameBase = 0;
 
-		private int GameGameColumn => icolGameGameBase;
-		private int GameSiteColumn => icolGameSiteDeltaFromSportLevel + GameLevelColumn;
-		private int GameHomeColumn => icolGameHomeColumnDeltaFromSportLevel + GameLevelColumn;
-		private int GameAwayColumn => icolGameAwayDeltaFromSportLevel + GameLevelColumn;
-		private int OfficialColumn => icolOfficialDeltaFromSportLevel + GameLevelColumn;
-		private int SlotStatusColumn => icolSlotStatusDeltaFromSportLevel + GameLevelColumn;
+        private int GameGameColumn => icolGameGameBase;
+        private int GameSiteColumn => icolGameSiteDeltaFromSportLevel + GameLevelColumn;
+        private int GameHomeColumn => icolGameHomeColumnDeltaFromSportLevel + GameLevelColumn;
+        private int GameAwayColumn => icolGameAwayDeltaFromSportLevel + GameLevelColumn;
+        private int OfficialColumn => icolOfficialDeltaFromSportLevel + GameLevelColumn;
+        private int SlotStatusColumn => icolSlotStatusDeltaFromSportLevel + GameLevelColumn;
 
-		private int GameLevelColumn { get; set; }
-		private int GameDateTimeColumn { get; set; }
+        private int GameLevelColumn { get; set; }
+        private int GameDateTimeColumn { get; set; }
 
-		private IStatusReporter m_srpt;
-		private ScheduleGames m_gamesBuilding;
-	
-		public GamesLoader_Arbiter() { } // for unit tests
-		public GamesLoader_Arbiter(IStatusReporter srpt)
-		{
-			m_srpt = srpt;
-		}
+        private IStatusReporter m_srpt;
+        private ScheduleGames m_gamesBuilding;
 
-		public enum ReadState
-		{
-			ScanForHeader = 1,
-			ScanForGame = 2,
-			ReadingGame1 = 3,
-			ReadingGame2 = 4,
-			ReadingOfficials1 = 5,
-			ReadingOfficials2 = 6,
-			ReadingComments = 7,
-		};
+        public GamesLoader_Arbiter()
+        {
+        } // for unit tests
+
+        public GamesLoader_Arbiter(IStatusReporter srpt)
+        {
+            m_srpt = srpt;
+        }
+
+        public enum ReadState
+        {
+            ScanForHeader = 1,
+            ScanForGame = 2,
+            ReadingGame1 = 3,
+            ReadingGame2 = 4,
+            ReadingOfficials1 = 5,
+            ReadingOfficials2 = 6,
+            ReadingComments = 7,
+        };
 
 
         /* F  L O A D  G A M E S */
@@ -60,8 +63,8 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         public bool FLoadGames(string sGamesReport, Roster rst, bool fIncludeCanceled, ScheduleGames games)
         {
-	        m_gamesBuilding = games;
-	        
+            m_gamesBuilding = games;
+
             using (TextReader tr = new StreamReader(sGamesReport))
             {
                 string sLine;
@@ -145,37 +148,85 @@ namespace ArbWeb.Games
                     }
 
                     if (rs == ReadState.ReadingGame2)
-                        rs = RsHandleReadingGame2(rgsFields, ref sGame, ref sDateTime, ref sLevel, ref sSite,
-                            ref sHome, ref sAway, rs);
+                        rs = RsHandleReadingGame2(
+                            rgsFields,
+                            ref sGame,
+                            ref sDateTime,
+                            ref sLevel,
+                            ref sSite,
+                            ref sHome,
+                            ref sAway,
+                            rs);
 
                     if (rs == ReadState.ReadingOfficials2)
-                        rs = RsHandleReadingOfficials2(rst, rgsFields, mpNamePos, mpNameStatus, sNameLast, sPosLast,
-                            sStatusLast, rs);
+                        rs = RsHandleReadingOfficials2(
+                            rst,
+                            rgsFields,
+                            mpNamePos,
+                            mpNameStatus,
+                            sNameLast,
+                            sPosLast,
+                            sStatusLast,
+                            rs);
 
                     if (rs == ReadState.ReadingOfficials1)
-                        rs = RsHandleReadingOfficials1(rst, fIncludeCanceled, sLine, rgsFields, mpNamePos,
-                            mpNameStatus, fCanceled, sSite, sGame,
-                            sHome, sAway, sLevel, sSport, rs, ref sPosLast, ref sNameLast, ref sStatusLast,
-                            ref sDateTime, ref fOpenSlot, ref ump);
+                        rs = RsHandleReadingOfficials1(
+                            rst,
+                            fIncludeCanceled,
+                            sLine,
+                            rgsFields,
+                            mpNamePos,
+                            mpNameStatus,
+                            fCanceled,
+                            sSite,
+                            sGame,
+                            sHome,
+                            sAway,
+                            sLevel,
+                            sSport,
+                            rs,
+                            ref sPosLast,
+                            ref sNameLast,
+                            ref sStatusLast,
+                            ref sDateTime,
+                            ref fOpenSlot,
+                            ref ump);
 
                     if (FMatchGameArbiterFooter(sLine))
                     {
                         Debug.Assert(
-                            rs == ReadState.ReadingComments || rs == ReadState.ScanForHeader ||
-                            rs == ReadState.ScanForGame,
+                            rs == ReadState.ReadingComments || rs == ReadState.ScanForHeader || rs == ReadState.ScanForGame,
                             $"Page break at illegal position: state = {rs}");
                         rs = ReadState.ScanForHeader;
                         continue;
                     }
 
                     if (rs == ReadState.ScanForGame)
-                        rs = RsHandleScanForGame(ref sGame, mpNamePos, mpNameStatus, sLine, ref sDateTime,
-                            ref sSport, ref sLevel, ref sSite,
-                            ref sHome, ref sAway, ref fCanceled, ref fIgnore, rs);
+                        rs = RsHandleScanForGame(
+                            ref sGame,
+                            mpNamePos,
+                            mpNameStatus,
+                            sLine,
+                            ref sDateTime,
+                            ref sSport,
+                            ref sLevel,
+                            ref sSite,
+                            ref sHome,
+                            ref sAway,
+                            ref fCanceled,
+                            ref fIgnore,
+                            rs);
 
                     if (rs == ReadState.ReadingGame1)
-                        rs = RsHandleReadingGame1(ref sGame, rgsFields, ref sDateTime, ref sSport, ref sSite,
-                            ref sHome, ref sAway, rs);
+                        rs = RsHandleReadingGame1(
+                            ref sGame,
+                            rgsFields,
+                            ref sDateTime,
+                            ref sSport,
+                            ref sSite,
+                            ref sHome,
+                            ref sAway,
+                            rs);
                 }
             }
 
@@ -244,7 +295,8 @@ namespace ArbWeb.Games
                 %%Contact: rlittle
 
             ----------------------------------------------------------------------------*/
-        private ReadState RsHandleReadingGame1(ref string sGame, string[] rgsFields, ref string sDateTime, ref string sSport,
+        private ReadState RsHandleReadingGame1(
+            ref string sGame, string[] rgsFields, ref string sDateTime, ref string sSport,
             ref string sSite, ref string sHome, ref string sAway, ReadState rs)
         {
             // reading the first line of the game.  We should always get the sport and the first part of the team names here
@@ -279,6 +331,7 @@ namespace ArbWeb.Games
                 else
                     s = sAppend;
             }
+
             return s;
         }
 
@@ -347,7 +400,6 @@ namespace ArbWeb.Games
         }
 
 
-
         /* R E V E R S E  N A M E */
         /*----------------------------------------------------------------------------
             %%Function: ReverseName
@@ -360,23 +412,24 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         public static string ReverseName(Roster rst, string s)
         {
-	        string sReverse, sFallback;
+            string sReverse, sFallback;
 
-	        sFallback = sReverse = ReverseNameSimple(s);
-	        if (rst == null)
-		        return sFallback;
+            sFallback = sReverse = ReverseNameSimple(s);
+            if (rst == null)
+                return sFallback;
 
-	        if (rst.UmpireLookup(sReverse) != null)
-		        return sReverse;
+            if (rst.UmpireLookup(sReverse) != null)
+                return sReverse;
 
-	        sReverse = ReverseNameParenthetical(s);
-	        if (rst.UmpireLookup(sReverse) != null)
-		        return sReverse;
+            sReverse = ReverseNameParenthetical(s);
+            if (rst.UmpireLookup(sReverse) != null)
+                return sReverse;
 
-	        return sFallback;
+            return sFallback;
         }
-        
-        #region Tests
+
+#region Tests
+
         [Test]
         [TestCase("Rob Little", "Little,Rob")]
         [TestCase("Martin van Doren", "van Doren,Martin")]
@@ -391,7 +444,7 @@ namespace ArbWeb.Games
             Assert.AreEqual(sExpected, sActual);
         }
 
-        #endregion
+#endregion
 
         /* R S  H A N D L E  S C A N  F O R  G A M E */
         /*----------------------------------------------------------------------------
@@ -400,7 +453,8 @@ namespace ArbWeb.Games
                 %%Contact: rlittle
 
             ----------------------------------------------------------------------------*/
-        private static ReadState RsHandleScanForGame(ref string sGame, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sLine, ref string sDateTime,
+        private static ReadState RsHandleScanForGame(
+            ref string sGame, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sLine, ref string sDateTime,
             ref string sSport, ref string sLevel, ref string sSite, ref string sHome,
             ref string sAway, ref bool fCanceled, ref bool fIgnore, ReadState rs)
         {
@@ -417,18 +471,18 @@ namespace ArbWeb.Games
             mpNameStatus.Clear();
 
             if (!(Regex.Match(sLine, ", *[ a-zA-Z0-9-/]* *Baseball").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Tourn").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-/]* *Softball").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *Postseason").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *All Stars").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Fall Ball").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Administrative").Success
-                  || Regex.Match(sLine, ", *50/50").Success
-                  || Regex.Match(sLine, ",_Events*").Success
-                  || Regex.Match(sLine, ",zEvents*").Success
-                  || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Training").Success))
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Interlock").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Tourn").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-/]* *Softball").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *Postseason").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *All Stars").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Fall Ball").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Administrative").Success
+                    || Regex.Match(sLine, ", *50/50").Success
+                    || Regex.Match(sLine, ",_Events*").Success
+                    || Regex.Match(sLine, ",zEvents*").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Training").Success))
                 Debug.Assert(false, $"failed to find game as expected!: {sLine} ({rs}");
             rs = ReadState.ReadingGame1;
             // fallthrough to ReadingGame1
@@ -454,7 +508,8 @@ namespace ArbWeb.Games
                 %%Contact: rlittle
 
             ----------------------------------------------------------------------------*/
-        private ReadState RsHandleReadingOfficials1(Roster rst, bool fIncludeCanceled, string sLine, string[] rgsFields,
+        private ReadState RsHandleReadingOfficials1(
+            Roster rst, bool fIncludeCanceled, string sLine, string[] rgsFields,
             Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, bool fCanceled, string sSite, string sGame,
             string sHome, string sAway, string sLevel, string sSport, ReadState rs,
             ref string sPosLast, ref string sStatusLast, ref string sNameLast, ref string sDateTime, ref bool fOpenSlot, ref Umpire ump)
@@ -492,6 +547,7 @@ namespace ArbWeb.Games
                     return rs;
                 }
             }
+
             // otherwise we're done!!
             //						m_srpt.AddMessage("recording results...");
             if (!fCanceled || fIncludeCanceled)
@@ -507,7 +563,7 @@ namespace ArbWeb.Games
                     mpNamePos.Add("!!OPEN0", "!!FAKE");
                     mpNameStatus.Add("!!OPEN0", "!!FAKE");
                 }
-                
+
                 // walk through the officials that we have
                 foreach (string sName in mpNamePos.Keys)
                 {
@@ -534,7 +590,7 @@ namespace ArbWeb.Games
                             if (sName != "")
                                 m_srpt.AddMessage(
                                     $"Cannot find info for Umpire: {sName}",
-                                                  MSGT.Error);
+                                    MSGT.Error);
                             sEmail = "";
                             sTeam = "";
                         }
@@ -545,15 +601,30 @@ namespace ArbWeb.Games
                             plsMisc = ump.PlsMisc;
                         }
                     }
+
                     if (sPos != "Training")
                     {
                         if (sDateTime.EndsWith("TBA"))
                             sDateTime = sDateTime.Substring(0, sDateTime.Length - 4) + "00:00";
-                        m_gamesBuilding.AddGame(DateTime.Parse(sDateTime), sSite, sNameUse, sTeam, sEmail, sGame, sHome, sAway, sLevel, sSport,
-                                sPos, sStatus, fCanceled, plsMisc);
+                        m_gamesBuilding.AddGame(
+                            DateTime.Parse(sDateTime),
+                            sSite,
+                            sNameUse,
+                            sTeam,
+                            sEmail,
+                            sGame,
+                            sHome,
+                            sAway,
+                            sLevel,
+                            sSport,
+                            sPos,
+                            sStatus,
+                            fCanceled,
+                            plsMisc);
                     }
                 }
             }
+
             rs = ReadState.ScanForGame;
             return rs;
         }
@@ -562,6 +633,7 @@ namespace ArbWeb.Games
         {
             return String.IsNullOrWhiteSpace(s);
         }
+
         /* R S  H A N D L E  R E A D I N G  G A M E  2 */
         /*----------------------------------------------------------------------------
                 %%Function: RsHandleReadingOfficials2
@@ -569,7 +641,8 @@ namespace ArbWeb.Games
                 %%Contact: rlittle
 
             ----------------------------------------------------------------------------*/
-        private static ReadState RsHandleReadingOfficials2(Roster rst, string[] rgsFields, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sNameLast,
+        private static ReadState RsHandleReadingOfficials2(
+            Roster rst, string[] rgsFields, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sNameLast,
             string sPosLast, string sStatusLast, ReadState rs)
         {
             // we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
@@ -585,6 +658,7 @@ namespace ArbWeb.Games
                 mpNameStatus.Add(sName, sStatusLast);
                 return rs;
             }
+
             rs = ReadState.ReadingOfficials1;
             // fallthrough to reading officials
             return rs;
@@ -597,7 +671,8 @@ namespace ArbWeb.Games
                 %%Contact: rlittle
 
             ----------------------------------------------------------------------------*/
-        private ReadState RsHandleReadingGame2(string[] rgsFields, ref string sGame, ref string sDateTime, ref string sLevel,
+        private ReadState RsHandleReadingGame2(
+            string[] rgsFields, ref string sGame, ref string sDateTime, ref string sLevel,
             ref string sSite, ref string sHome, ref string sAway, ReadState rs)
         {
             // we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
@@ -613,6 +688,7 @@ namespace ArbWeb.Games
                 sAway = AppendCheck(sAway, rgsFields[GameAwayColumn]);
                 return rs;
             }
+
             rs = ReadState.ReadingOfficials1;
             // fallthrough to reading officials
             return rs;
@@ -628,7 +704,7 @@ namespace ArbWeb.Games
         private static bool FMatchGameCommentContinuation(string sLine)
         {
             return Regex.Match(sLine, ",,,,,,,,,,,,,,,,,$").Success
-                   && !Regex.Match(sLine, "^\\*\\*\\*").Success;
+                && !Regex.Match(sLine, "^\\*\\*\\*").Success;
         }
 
         /* F  M A T C H  G A M E  T O T A L  L I N E */
@@ -640,9 +716,9 @@ namespace ArbWeb.Games
             ----------------------------------------------------------------------------*/
         private static bool FMatchGameTotalLine(string[] rgsFields)
         {
-	        return Regex.Match(rgsFields[13], "Total:").Success
-	               || Regex.Match(rgsFields[14], "Total:").Success
-	               || (rgsFields.Length >= 16 && Regex.Match(rgsFields[15], "Total:").Success);
+            return Regex.Match(rgsFields[13], "Total:").Success
+                || Regex.Match(rgsFields[14], "Total:").Success
+                || (rgsFields.Length >= 16 && Regex.Match(rgsFields[15], "Total:").Success);
         }
 
         /* F  M A T C H  G A M E  E M P T Y */
@@ -655,7 +731,7 @@ namespace ArbWeb.Games
         private static bool FMatchGameEmpty(string sLine)
         {
             return Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,,").Success
-                   || Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,").Success;
+                || Regex.Match(sLine, "^,,,,,,,,,,,,,,,,,").Success;
         }
 
         /* F  M A T C H  G A M E  C O M M E N T */
@@ -668,8 +744,8 @@ namespace ArbWeb.Games
         private static bool FMatchGameComment(string sLine)
         {
             return Regex.Match(sLine, "^\"*\\[.*by.*\\]").Success
-                   || Regex.Match(sLine, "^[ \t]*\\[.*/.*/.*by.*\\]").Success
-                   || Regex.Match(sLine, "^Comments: ").Success;
+                || Regex.Match(sLine, "^[ \t]*\\[.*/.*/.*by.*\\]").Success
+                || Regex.Match(sLine, "^Comments: ").Success;
         }
 
         /* F  M A T C H  G A M E  C A N C E L L E D */
@@ -682,10 +758,10 @@ namespace ArbWeb.Games
         private static bool FMatchGameCancelled(string sLine)
         {
             return Regex.Match(sLine, ".*\\*\\*\\*.*CANCEL*ED").Success
-                   || Regex.Match(sLine, ".*\\*\\*\\*.*FORFEITED").Success
-                   || Regex.Match(sLine, ".*\\*\\*\\*.*POSTPONED").Success
-                   || Regex.Match(sLine, ".*\\*\\*\\*.*RAINED OUT").Success
-                   || Regex.Match(sLine, ".*\\*\\*\\*.*SUSPEND*ED").Success;
+                || Regex.Match(sLine, ".*\\*\\*\\*.*FORFEITED").Success
+                || Regex.Match(sLine, ".*\\*\\*\\*.*POSTPONED").Success
+                || Regex.Match(sLine, ".*\\*\\*\\*.*RAINED OUT").Success
+                || Regex.Match(sLine, ".*\\*\\*\\*.*SUSPEND*ED").Success;
         }
     }
 }

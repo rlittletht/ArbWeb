@@ -4,9 +4,8 @@ using ArbWeb.Games;
 
 namespace ArbWeb.Reports
 {
-	public class AnalysisReport
-	{
-
+    public class AnalysisReport
+    {
         /* G E N  R E P O R T */
         /*----------------------------------------------------------------------------
             %%Function: GenReport
@@ -31,6 +30,7 @@ namespace ArbWeb.Reports
                     {
                         sw.Write(",\"{0}\"", sMisc);
                     }
+
                     continue;
                 }
 
@@ -42,6 +42,7 @@ namespace ArbWeb.Reports
                 fFirst = false;
                 sw.Write(s);
             }
+
             sw.WriteLine();
 
             foreach (GameSlot gm in games.SortedGameSlots)
@@ -52,8 +53,8 @@ namespace ArbWeb.Reports
                 // for each game, report the information, using Legend as the sort order for everything
                 sw.WriteLine(gm.MakeCsvLine(games.AnalysisLegend));
             }
+
             sw.Close();
         }
-
     }
 }

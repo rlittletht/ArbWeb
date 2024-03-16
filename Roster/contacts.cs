@@ -27,14 +27,25 @@ namespace ArbWeb
         string m_sLastSignin;
         private List<TeamRelationship> m_plTeamRelationships;
 
-        public string Title { get { return m_sTitle; } set { m_sTitle = value; } }
-        public string LastSignin { get { return m_sLastSignin; } set { m_sLastSignin = value; } }
+        public string Title
+        {
+            get { return m_sTitle; }
+            set { m_sTitle = value; }
+        }
+
+        public string LastSignin
+        {
+            get { return m_sLastSignin; }
+            set { m_sLastSignin = value; }
+        }
+
         public List<TeamRelationship> TeamRelationships => m_plTeamRelationships;
 
         public ContactEntry()
         {
             m_plTeamRelationships = new List<TeamRelationship>();
         }
+
         public bool FEquals(ContactEntry rste)
         {
             if (String.Compare(First, rste.First) != 0)
@@ -72,7 +83,7 @@ namespace ArbWeb
 
         public enum ReadState
         {
-            ScanForHeader = 1,  // discard everything looking for header "Roster of Contacts"
+            ScanForHeader = 1, // discard everything looking for header "Roster of Contacts"
             ScanForContact = 2, // discard everything scanning for a contact (value in first column)
             ReadingContact1 = 3, // Reading the first line of the contact (after scanning)
             ReadingContact2 = 4, // maybe reading a continuation of the contact line, OR start sites, OR start teams
@@ -95,10 +106,10 @@ namespace ArbWeb
         }
 
         ReadState RsHandleReadingContact1(
-            string sLine, 
-            string[] rgsFields, 
-            ReadState rs, 
-            out string sName, 
+            string sLine,
+            string[] rgsFields,
+            ReadState rs,
+            out string sName,
             out string sAddressComplete,
             out string sPhone1,
             out string sPhone2,
@@ -191,6 +202,6 @@ namespace ArbWeb
             return true;
 
         }
-#endif 
+#endif
     }
 }

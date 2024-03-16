@@ -15,9 +15,14 @@ namespace ArbWeb.Games
     // ================================================================================
     public class ScheduleGames // GMSS
     {
-        public ScheduleGames() { } // just for unit tests
+        public ScheduleGames()
+        {
+        } // just for unit tests
 
-        public SortedList<string, Game> Games { get { return m_plgmSorted; } }
+        public SortedList<string, Game> Games
+        {
+            get { return m_plgmSorted; }
+        }
 
         private SortedList<string, Game> m_plgmSorted;
         private Dictionary<string, Game> m_mpnumgm;
@@ -37,8 +42,8 @@ namespace ArbWeb.Games
 
         public IEnumerable<string> AnalysisLegend => m_plsAnalysisLegend;
         public IEnumerable<string> MiscHeadings => m_plsMiscHeadings;
-        
-        
+
+
         /*----------------------------------------------------------------------------
 			%%Function:SetMiscHeadings
 			%%Qualified:ArbWeb.Games.ScheduleGames.SetMiscHeadings
@@ -74,9 +79,9 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         private void EnsureSportLevelPos(string sSport, string sLevel, string sPos)
         {
-	        if (sPos.StartsWith("!!FAKE"))
-		        return;
-	        
+            if (sPos.StartsWith("!!FAKE"))
+                return;
+
             Sport sport;
             bool fNewSport = false;
 
@@ -115,19 +120,19 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         public void AddStaticLegendColumns()
         {
-	        m_plsAnalysisLegend.Sort();
-	        m_plsAnalysisLegend.Insert(0, "UmpireName");
-	        m_plsAnalysisLegend.Insert(1, "Team");
-	        m_plsAnalysisLegend.Insert(2, "Email");
-	        m_plsAnalysisLegend.Insert(3, "Game");
-	        m_plsAnalysisLegend.Insert(4, "DateTime");
-	        m_plsAnalysisLegend.Insert(5, "Level");
-	        m_plsAnalysisLegend.Insert(6, "Home");
-	        m_plsAnalysisLegend.Insert(7, "Away");
-	        m_plsAnalysisLegend.Insert(8, "Description");
-	        m_plsAnalysisLegend.Insert(9, "Cancelled");
-	        m_plsAnalysisLegend.Insert(10, "Total");
-	        m_plsAnalysisLegend.Add("$$$MISC$$$"); // want this at the end!
+            m_plsAnalysisLegend.Sort();
+            m_plsAnalysisLegend.Insert(0, "UmpireName");
+            m_plsAnalysisLegend.Insert(1, "Team");
+            m_plsAnalysisLegend.Insert(2, "Email");
+            m_plsAnalysisLegend.Insert(3, "Game");
+            m_plsAnalysisLegend.Insert(4, "DateTime");
+            m_plsAnalysisLegend.Insert(5, "Level");
+            m_plsAnalysisLegend.Insert(6, "Home");
+            m_plsAnalysisLegend.Insert(7, "Away");
+            m_plsAnalysisLegend.Insert(8, "Description");
+            m_plsAnalysisLegend.Insert(9, "Cancelled");
+            m_plsAnalysisLegend.Insert(10, "Total");
+            m_plsAnalysisLegend.Add("$$$MISC$$$"); // want this at the end!
         }
 
         /*----------------------------------------------------------------------------
@@ -139,7 +144,9 @@ namespace ArbWeb.Games
             This handles ensuring the the sport/level/pos information has been added
             to the legend, so we can build the detail lines later
         ----------------------------------------------------------------------------*/
-        public void AddGame(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, string sStatus, bool fCancelled, List<string> plsMisc)
+        public void AddGame(
+            DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport,
+            string sPos, string sStatus, bool fCancelled, List<string> plsMisc)
         {
             GameSlot gm = new GameSlot(dttm, sSite, sName, sTeam, sEmail, sGameNum, sHome, sAway, sLevel, sSport, sPos, sStatus, fCancelled, plsMisc);
             AddGame(gm);
@@ -155,7 +162,8 @@ namespace ArbWeb.Games
 
             m_plgmsSorted.Add($"{gms.Name}_{gms.Dttm.ToString("yyyyMMdd:HH:mm")}_{m_plgmsSorted.Count}", gms);
             m_plgmsSortedGameNum.Add(
-                $"{gms.Dttm.ToString("yyyyMMdd:HH:mm")}_{gms.Site}_{gms.Sport}_{gms.Level}_{gms.GameNum}_{m_plgmsSortedGameNum.Count}", gms);
+                $"{gms.Dttm.ToString("yyyyMMdd:HH:mm")}_{gms.Site}_{gms.Sport}_{gms.Level}_{gms.GameNum}_{m_plgmsSortedGameNum.Count}",
+                gms);
 
 
             if (!m_mpnumgm.ContainsKey(gms.GameNum))
@@ -179,6 +187,7 @@ namespace ArbWeb.Games
                 else
                     m_mpTeamCount.Add(sTeamSport, 1);
             }
+
             EnsureSportLevelPos(gms.Sport, gms.Level, gms.Pos);
         }
 
@@ -383,6 +392,7 @@ namespace ArbWeb.Games
 
                 gms.AddGame(gm);
             }
+
             return gms;
         }
 
@@ -419,6 +429,7 @@ namespace ArbWeb.Games
                     pls.Add(sPosRank);
                 }
             }
+
             return pls;
         }
 
@@ -428,7 +439,7 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         public SlotAggr GenOpenSlots(DateTime dttmStart, DateTime dttmEnd)
         {
-	        return SlotAggr.Gen(m_plgmsSorted, dttmStart, dttmEnd, null, null, true);
+            return SlotAggr.Gen(m_plgmsSorted, dttmStart, dttmEnd, null, null, true);
         }
 
         /*----------------------------------------------------------------------------
@@ -462,6 +473,7 @@ namespace ArbWeb.Games
                 if (!plsSites.Contains(gm.SiteShort))
                     plsSites.Add(gm.SiteShort);
             }
+
             return plsSites.ToArray();
         }
 
@@ -476,7 +488,7 @@ namespace ArbWeb.Games
             return rgs;
         }
 
-        #region Tests
+#region Tests
 
         private void UnitTest()
         {
@@ -652,10 +664,8 @@ namespace ArbWeb.Games
             Debug.Assert(TeamCount("Softball Eagles#-#Baseball") == 4);
             Debug.Assert(TeamCount("Softball Eagles#-#Softball") == 10);
             m_mpTeamCount = mpTeamCountSav;
-
         }
 
 #endregion
-
     }
 }

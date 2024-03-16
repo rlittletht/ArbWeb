@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ArbWeb.Games
 {
-    public class DistributeTeamCount   // DTC
+    public class DistributeTeamCount // DTC
     {
         private class DND
         {
@@ -28,9 +28,21 @@ namespace ArbWeb.Games
                 m_dc -= c;
             }
 
-            public int Count { get { return m_c + m_dc; } }
-            public string Name { get { return m_sTeam; } }
-            public int DCount { get { return m_dc; } set { m_dc = value; } }
+            public int Count
+            {
+                get { return m_c + m_dc; }
+            }
+
+            public string Name
+            {
+                get { return m_sTeam; }
+            }
+
+            public int DCount
+            {
+                get { return m_dc; }
+                set { m_dc = value; }
+            }
         };
 
         private List<DND> m_pldnd;
@@ -49,6 +61,7 @@ namespace ArbWeb.Games
 
                 return dnd.Name;
             }
+
             throw new Exception("could not find team->dtc mapping");
         }
 
@@ -62,6 +75,7 @@ namespace ArbWeb.Games
                     return;
                 }
             }
+
             throw new Exception("could not find team->dtc mapping");
         }
 
@@ -79,6 +93,7 @@ namespace ArbWeb.Games
                     break;
                 }
             }
+
             if (i >= m_pldnd.Count)
                 m_pldnd.Add(new DND(sTeam, c));
         }
@@ -206,18 +221,17 @@ namespace ArbWeb.Games
 
         private static void UpdateTeamCount(Dictionary<string, int> mpTeamCount, string sTeam, string sSport, int dCount)
         {
-	        string sTeamSport = $"{sTeam}#-#{sSport}";
+            string sTeamSport = $"{sTeam}#-#{sSport}";
 
-	        if (!mpTeamCount.ContainsKey(sTeam))
-		        mpTeamCount.Add(sTeam, dCount);
-	        else
-		        mpTeamCount[sTeam] += dCount;
+            if (!mpTeamCount.ContainsKey(sTeam))
+                mpTeamCount.Add(sTeam, dCount);
+            else
+                mpTeamCount[sTeam] += dCount;
 
-	        if (!mpTeamCount.ContainsKey(sTeamSport))
-		        mpTeamCount.Add(sTeamSport, dCount);
-	        else
-		        mpTeamCount[sTeamSport] += dCount;
+            if (!mpTeamCount.ContainsKey(sTeamSport))
+                mpTeamCount.Add(sTeamSport, dCount);
+            else
+                mpTeamCount[sTeamSport] += dCount;
         }
     }
-
 }

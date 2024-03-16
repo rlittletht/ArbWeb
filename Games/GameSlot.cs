@@ -30,9 +30,13 @@ namespace ArbWeb.Games
 
         private List<string> m_plsMisc;
 
-        public GameSlot() { }
+        public GameSlot()
+        {
+        }
 
-        public GameSlot(DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport, string sPos, string sStatus, bool fCancelled, List<string> plsMisc)
+        public GameSlot(
+            DateTime dttm, string sSite, string sName, string sTeam, string sEmail, string sGameNum, string sHome, string sAway, string sLevel, string sSport,
+            string sPos, string sStatus, bool fCancelled, List<string> plsMisc)
         {
             m_dttm = dttm;
             m_sSite = sSite;
@@ -50,46 +54,111 @@ namespace ArbWeb.Games
             m_plsMisc = plsMisc;
         }
 
-        public string Status { get { return m_sStatus; } }
-        public string Email { get { return m_sEmail; } }
-        public string Name { get { return m_sName; } }
-        public List<string> PlsMisc { get { return m_plsMisc; } set { m_plsMisc = value; } }
-        public string Team { get { return m_sTeam; } set { m_sTeam = value; } }
-        public bool Open { get { return m_sName == null; } }
-        public string Home { get { return m_sHome; } }
-        public string Away { get { return m_sAway; } }
-        public string GameNum { get { return m_sGameNum; } }
-        public bool Cancelled { get { return m_fCancelled; } }
-        public string Level { get { return m_sLevel; } }
-        public string Sport { get { return m_sSport; } }
-        public string Pos { get { return m_sPos; } }
-        public DateTime Dttm { get { return m_dttm; } }
-        public string Site { get { return m_sSite; } }
-        public string SportLevel { get { return $"{m_sSport} {m_sLevel}"; } }
+        public string Status
+        {
+            get { return m_sStatus; }
+        }
+
+        public string Email
+        {
+            get { return m_sEmail; }
+        }
+
+        public string Name
+        {
+            get { return m_sName; }
+        }
+
+        public List<string> PlsMisc
+        {
+            get { return m_plsMisc; }
+            set { m_plsMisc = value; }
+        }
+
+        public string Team
+        {
+            get { return m_sTeam; }
+            set { m_sTeam = value; }
+        }
+
+        public bool Open
+        {
+            get { return m_sName == null; }
+        }
+
+        public string Home
+        {
+            get { return m_sHome; }
+        }
+
+        public string Away
+        {
+            get { return m_sAway; }
+        }
+
+        public string GameNum
+        {
+            get { return m_sGameNum; }
+        }
+
+        public bool Cancelled
+        {
+            get { return m_fCancelled; }
+        }
+
+        public string Level
+        {
+            get { return m_sLevel; }
+        }
+
+        public string Sport
+        {
+            get { return m_sSport; }
+        }
+
+        public string Pos
+        {
+            get { return m_sPos; }
+        }
+
+        public DateTime Dttm
+        {
+            get { return m_dttm; }
+        }
+
+        public string Site
+        {
+            get { return m_sSite; }
+        }
+
+        public string SportLevel
+        {
+            get { return $"{m_sSport} {m_sLevel}"; }
+        }
 
         public string SiteShort => GetSiteShortFromSite(m_sSite);
 
         static string GetSiteShortFromSite(string site)
         {
-	        // get rid of any trailing fields
-	        string s = Regex.Replace(site, " [A-D]$", "");
+            // get rid of any trailing fields
+            string s = Regex.Replace(site, " [A-D]$", "");
 
-	        s = Regex.Replace(s, " #[1-9]$", "");
-	        s = Regex.Replace(s, " Big$", "");
+            s = Regex.Replace(s, " #[1-9]$", "");
+            s = Regex.Replace(s, " Big$", "");
 
-	        s = Regex.Replace(s, " South$", "");
+            s = Regex.Replace(s, " South$", "");
 
-	        s = Regex.Replace(s, " East$", "");
-	        s = Regex.Replace(s, " West$", "");
-	        s = Regex.Replace(s, " North$", "");
-	        s = Regex.Replace(s, " Varsity Field$", "");
-	        s = Regex.Replace(s, " JV Field$", "");
-	        s = Regex.Replace(s, " Consultants$", "");
-	        s = Regex.Replace(s, " Les Dow Field$", "");
+            s = Regex.Replace(s, " East$", "");
+            s = Regex.Replace(s, " West$", "");
+            s = Regex.Replace(s, " North$", "");
+            s = Regex.Replace(s, " Varsity Field$", "");
+            s = Regex.Replace(s, " JV Field$", "");
+            s = Regex.Replace(s, " Consultants$", "");
+            s = Regex.Replace(s, " Les Dow Field$", "");
             s = Regex.Replace(s, " Big Rock Park$", "");
 
             s = Regex.Replace(s, " #[1-9][ ]*[69]0'$", "");
-	        s = Regex.Replace(s, " #[1-9][ ]*\\([69]0'\\)$", "");
+            s = Regex.Replace(s, " #[1-9][ ]*\\([69]0'\\)$", "");
 
             // lastly, look for the site name repeated
             int nLen = s.Length;
@@ -103,18 +172,19 @@ namespace ArbWeb.Games
                     s = strHalf;
                 }
             }
-	        return s;
+
+            return s;
         }
 
         static string GetSubsiteFromSite(string site)
         {
-	        string siteShort = GetSiteShortFromSite(site);
+            string siteShort = GetSiteShortFromSite(site);
 
-	        if (siteShort.Length >= site.Length)
-		        return site;
+            if (siteShort.Length >= site.Length)
+                return site;
 
-	        string subSite = site.Substring(siteShort.Length);
-	        return subSite.Trim();
+            string subSite = site.Substring(siteShort.Length);
+            return subSite.Trim();
         }
 
         public string SubSite => GetSubsiteFromSite(m_sSite);
@@ -182,6 +252,7 @@ namespace ArbWeb.Games
                     {
                         sRet += ",\"" + sMisc + "\"";
                     }
+
                     continue;
                 }
 
@@ -189,6 +260,7 @@ namespace ArbWeb.Games
                 {
                     sRet += ",";
                 }
+
                 fFirst = false;
 
                 if (m_mpFieldVal.ContainsKey(s))
@@ -196,6 +268,7 @@ namespace ArbWeb.Games
                 else
                     sRet += "0";
             }
+
             return sRet;
         }
 
@@ -206,7 +279,7 @@ namespace ArbWeb.Games
         [Test]
         public static void TestSubSite(string sFullName, string sExpectedSubsite)
         {
-	        Assert.AreEqual(sExpectedSubsite, GetSubsiteFromSite(sFullName));
+            Assert.AreEqual(sExpectedSubsite, GetSubsiteFromSite(sFullName));
         }
     }
 }

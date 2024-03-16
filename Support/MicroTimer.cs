@@ -46,10 +46,7 @@ namespace ArbWeb
 
         public long Microsec
         {
-            get
-            {
-                return m_sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L));
-            }
+            get { return m_sw.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L)); }
         }
 
         public long Msec()
@@ -60,11 +57,9 @@ namespace ArbWeb
 
         public double MsecFloat
         {
-            get
-            {
-                return ((double)Microsec) / 1000.0;
-            }
+            get { return ((double)Microsec) / 1000.0; }
         }
+
         public string Elapsed()
         {
             if (m_sw.IsRunning)
@@ -84,6 +79,5 @@ namespace ArbWeb
 
             return Msec().ToString();
         }
-
     }
 }

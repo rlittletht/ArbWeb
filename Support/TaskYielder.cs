@@ -42,7 +42,8 @@ namespace ArbWeb
                         counter.Context.StatusReport.AddMessage($"{sProgressName}: {count++}");
                         Thread.Sleep(1000);
                     }
-                }, counter.Token);
+                },
+                counter.Token);
 
             task.Start();
 
@@ -66,11 +67,8 @@ namespace ArbWeb
             {
                 counter = StartCounter(context, sProgressName);
             }
-            
-            Task task = new Task(()=>
-                                 {
-                                     fun();
-                                 });
+
+            Task task = new Task(() => { fun(); });
 
             task.Start();
 

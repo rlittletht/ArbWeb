@@ -54,6 +54,7 @@ namespace ArbWeb
 
             announce.UpdateArbiterAnnouncement(s_announceDiv, announceText, true, false, "None");
         }
+
         public void RemoveAdminLockout()
         {
             SetLockoutState(false);

@@ -44,7 +44,7 @@ namespace ArbWeb.Games
             // we want to build a map of Sport+Level to Site Short Names
             ScheduleGames games = sched.Games;
             Dictionary<string, Dictionary<string, int>> mpSportLevelsSites = new Dictionary<string, Dictionary<string, int>>();
-            
+
             foreach (Game game in games.Games.Values)
             {
                 if (game.Slots.Count == 0)
@@ -79,7 +79,6 @@ namespace ArbWeb.Games
                 sw.Flush();
                 sw.Close();
             }
-
         }
     }
 }

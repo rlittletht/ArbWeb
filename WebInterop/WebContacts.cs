@@ -7,16 +7,16 @@ namespace ArbWeb
     /// </summary>
     public class WebContacts
     {
-	    private readonly IAppContext m_appContext;
+        private readonly IAppContext m_appContext;
 
         /*----------------------------------------------------------------------------
 			%%Function:WebContacts
 			%%Qualified:ArbWeb.WebRoster.WebContacts
 		----------------------------------------------------------------------------*/
         public WebContacts(IAppContext appContext)
-	    {
-		    m_appContext = appContext;
-	    }
+        {
+            m_appContext = appContext;
+        }
 
         /*----------------------------------------------------------------------------
 			%%Function:DoDownloadFullContacts
@@ -49,7 +49,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void DoDownloadContacts()
         {
-	        #if NYI
+#if NYI
             var x = m_awc.Handle; // let's make sure the webbrowser handle is created
 
             m_srpt.LogData("Starting DoDownloadContacts", 3, StatusRpt.MSGT.Header);
@@ -95,7 +95,7 @@ namespace ArbWeb
                 });
 
             tskDownloadContacts.Start();
-            #endif
+#endif
         }
     }
 }

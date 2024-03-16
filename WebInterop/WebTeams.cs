@@ -47,8 +47,6 @@ namespace ArbWeb
                     plsHrefs.Add(href);
                 }
             }
-
-
         }
     }
 }

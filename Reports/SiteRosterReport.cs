@@ -10,35 +10,39 @@ using TCore.WebControl;
 
 namespace ArbWeb.Reports
 {
-	public class SiteRosterReport
-	{
-		private IAppContext m_appContext;
+    public class SiteRosterReport
+    {
+        private IAppContext m_appContext;
 
-		public SiteRosterReport() { } // for unit tests
-		/*----------------------------------------------------------------------------
-			%%Function:SiteRosterReport
-			%%Qualified:ArbWeb.Reports.SiteRosterReport.SiteRosterReport
-		----------------------------------------------------------------------------*/
-		public SiteRosterReport(IAppContext appContext)
-		{
-			m_appContext = appContext;
-		}
+        public SiteRosterReport()
+        {
+        } // for unit tests
 
-		/*----------------------------------------------------------------------------
-			%%Function:DoGenSiteRosterReport
-			%%Qualified:ArbWeb.Reports.SiteRosterReport.DoGenSiteRosterReport
-		----------------------------------------------------------------------------*/
-		public void DoGenSiteRosterReport(CountsData gc, Roster rst, string []rgsRoster, DateTime dttmStart, DateTime dttmEnd)
-		{
-			string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
+        /*----------------------------------------------------------------------------
+            %%Function:SiteRosterReport
+            %%Qualified:ArbWeb.Reports.SiteRosterReport.SiteRosterReport
+        ----------------------------------------------------------------------------*/
+        public SiteRosterReport(IAppContext appContext)
+        {
+            m_appContext = appContext;
+        }
 
-			gc.GenSiteRosterReport(sTempFile, rst, rgsRoster, dttmStart, dttmEnd, m_appContext.Profile.NoHonorificRanks);
-			// launch word with the file
-			Process.Start(sTempFile);
-			// System.IO.File.Delete(sTempFile);
-		}
+        /*----------------------------------------------------------------------------
+            %%Function:DoGenSiteRosterReport
+            %%Qualified:ArbWeb.Reports.SiteRosterReport.DoGenSiteRosterReport
+        ----------------------------------------------------------------------------*/
+        public void DoGenSiteRosterReport(CountsData gc, Roster rst, string[] rgsRoster, DateTime dttmStart, DateTime dttmEnd)
+        {
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
 
-        public static void GenSiteRosterReport(ScheduleGames games, string sReportFile, ArbWeb.Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd, bool noHonorificRanks)
+            gc.GenSiteRosterReport(sTempFile, rst, rgsRoster, dttmStart, dttmEnd, m_appContext.Profile.NoHonorificRanks);
+            // launch word with the file
+            Process.Start(sTempFile);
+            // System.IO.File.Delete(sTempFile);
+        }
+
+        public static void GenSiteRosterReport(
+            ScheduleGames games, string sReportFile, ArbWeb.Roster rst, string[] rgsRosterFilter, DateTime dttmStart, DateTime dttmEnd, bool noHonorificRanks)
         {
             StreamWriter sw = new StreamWriter(sReportFile, false, Encoding.Default);
             SortedList<string, int> plsSiteShort = Utils.PlsUniqueFromRgs(rgsRosterFilter);
@@ -46,7 +50,8 @@ namespace ArbWeb.Reports
 
             sw.WriteLine("<html>");
             sw.WriteLine("<head><style>");
-            sw.WriteLine(".rosterOuter, .rosterInner, td.rosterInnerName { margin-left: 5pt; font-family: 'Calibri'; font-size: 11pt; border-collapse: collapse; border-spacing: 0pt; }");
+            sw.WriteLine(
+                ".rosterOuter, .rosterInner, td.rosterInnerName { margin-left: 5pt; font-family: 'Calibri'; font-size: 11pt; border-collapse: collapse; border-spacing: 0pt; }");
             sw.WriteLine("td.rosterOuter { border-top: .5pt solid black; border-bottom: .5pt solid black; }");
             sw.WriteLine("table.rosterInner { width: 100%;}");
             sw.WriteLine("table.rosterOuter { width: 100%; max-width: 7.5in;}");
@@ -107,7 +112,8 @@ namespace ArbWeb.Reports
                     sType = $"{sSite}Game";
 
                 mpgames.Add(
-                    $"{gm.Dttm.ToString("yyyyMMdd:HH:mm")}_{sType}_{gm.Site}_{gm.Sport}_{gm.Level}_{gm.GameNum}_{mpgames.Count}", gm);
+                    $"{gm.Dttm.ToString("yyyyMMdd:HH:mm")}_{sType}_{gm.Site}_{gm.Sport}_{gm.Level}_{gm.GameNum}_{mpgames.Count}",
+                    gm);
             }
             // at this point we are ready to generate the report
 
@@ -140,28 +146,30 @@ namespace ArbWeb.Reports
             sw.Close();
         }
 
-        private static void WriteGameRoster(StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst, Dictionary<string, string> mpSiteRoot, bool noHonorificRanks)
+        private static void WriteGameRoster(
+            StreamWriter sw, List<GameSlot> plgm, bool fHeader, ArbWeb.Roster rst, Dictionary<string, string> mpSiteRoot, bool noHonorificRanks)
         {
-	        HashSet<string> honorifics = new HashSet<string>();
+            HashSet<string> honorifics = new HashSet<string>();
 
             honorifics.Add("HELPER");
 
-	        if (noHonorificRanks)
-	        {
-		        honorifics.Add("HP");
-		        honorifics.Add("1B");
-		        honorifics.Add("2B");
-		        honorifics.Add("3B");
-		        honorifics.Add("LINE");
-	        }
+            if (noHonorificRanks)
+            {
+                honorifics.Add("HP");
+                honorifics.Add("1B");
+                honorifics.Add("2B");
+                honorifics.Add("3B");
+                honorifics.Add("LINE");
+            }
 
 
-	        string sBackground = "";
+            string sBackground = "";
 
             if (fHeader)
             {
                 sBackground = " style='background: #c0c0c0'";
             }
+
             sw.WriteLine($"<tr{sBackground}>");
             sw.WriteLine($"<td class='rosterOuter'>{plgm[0].GameNum}");
             sw.WriteLine($"<td class='rosterOuter'>{plgm[0].Dttm.ToString("ddd M/dd")}");
@@ -221,6 +229,7 @@ namespace ArbWeb.Reports
                     sw.WriteLine($"<td class='rosterInner'>{gm.Status}");
                 }
             }
+
             sw.WriteLine("</table>");
         }
 
@@ -323,6 +332,5 @@ namespace ArbWeb.Reports
 
             Assert.AreEqual(mpExpected, mpActual);
         }
-
     }
 }

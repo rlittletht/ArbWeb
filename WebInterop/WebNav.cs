@@ -13,18 +13,19 @@ namespace ArbWeb
 {
     public class WebNav
     {
-	    private IAppContext m_appContext;
+        private IAppContext m_appContext;
 
-	    /*----------------------------------------------------------------------------
-			%%Function:WebNav
-			%%Qualified:ArbWeb.WebNav.WebNav
-	    ----------------------------------------------------------------------------*/
-	    public WebNav(IAppContext appContext)
-	    {
-		    m_appContext = appContext;
-	    }
-	    
-        #region Navigation Support
+        /*----------------------------------------------------------------------------
+            %%Function:WebNav
+            %%Qualified:ArbWeb.WebNav.WebNav
+        ----------------------------------------------------------------------------*/
+        public WebNav(IAppContext appContext)
+        {
+            m_appContext = appContext;
+        }
+
+#region Navigation Support
+
         /*----------------------------------------------------------------------------
 			%%Function:EnsureAdminLoggedIn
 			%%Qualified:ArbWeb.WebNav.EnsureAdminLoggedIn
@@ -35,18 +36,18 @@ namespace ArbWeb
             wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("orgRole")));
 
             List<IWebElement> elements = new List<IWebElement>(m_appContext.WebControl.Driver.FindElements(By.ClassName("orgRole")));
-	        bool fClickedAdmin = false;
-	        
-	        foreach (IWebElement element in elements)
-	        {
-		        if (element.Text.Contains("Admin"))
-		        {
-			        element.Click();
-			        fClickedAdmin = true;
-			        break;
-		        }
-	        }
-	        
+            bool fClickedAdmin = false;
+
+            foreach (IWebElement element in elements)
+            {
+                if (element.Text.Contains("Admin"))
+                {
+                    element.Click();
+                    fClickedAdmin = true;
+                    break;
+                }
+            }
+
             Utils.ThrowIfNot(fClickedAdmin, "Can't find Admin account link");
             m_appContext.WebControl.WaitForPageLoad(200);
 
@@ -70,23 +71,23 @@ namespace ArbWeb
         void WaitForLoginPageAdvance(IEnumerable<string> ids)
         {
             m_appContext.WebControl.WaitForCondition(
-                    (d) =>
+                (d) =>
+                {
+                    foreach (string id in ids)
                     {
-                        foreach (string id in ids)
+                        try
                         {
-                            try
-                            {
-                                d.FindElement(By.Id(id));
-                                return true;
-                            }
-                            catch
-                            {
-                            }
+                            d.FindElement(By.Id(id));
+                            return true;
                         }
+                        catch
+                        {
+                        }
+                    }
 
-                        return false;
-                    },
-                    5000);
+                    return false;
+                },
+                5000);
         }
 
         /*----------------------------------------------------------------------------
@@ -98,18 +99,18 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DoEnsureLoggedIn()
         {
-	        MicroTimer timer = new MicroTimer();
-	        
-	        m_appContext.EnsureWebControl();
-	        
-	        timer.Stop();
-	        m_appContext.StatusReport.LogData($"EnsureWebControl elapsed: {timer.MsecFloat}", 1, MSGT.Body);
-	        timer.Reset();
-	        
+            MicroTimer timer = new MicroTimer();
+
+            m_appContext.EnsureWebControl();
+
+            timer.Stop();
+            m_appContext.StatusReport.LogData($"EnsureWebControl elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+            timer.Reset();
+
             if (m_fLoggedIn == false)
             {
-	            timer.Start();
-	            
+                timer.Start();
+
                 m_appContext.StatusReport.AddMessage("Logging in...");
                 m_appContext.StatusReport.PushLevel();
                 // login to arbiter
@@ -117,12 +118,21 @@ namespace ArbWeb
                 if (!m_appContext.WebControl.FNavToPage(WebCore._s_Home))
                     throw (new Exception("could not navigate to arbiter homepage!"));
 
-                WaitForLoginPageAdvance(new [] { WebCore._sid_Home_LoggedInUserId, WebCore._sid_Home_Button_SignIn, WebCore._sid_Home_MultiFactor_Label, WebCore._sid_Home_Div_PnlAccounts });
+                WaitForLoginPageAdvance(
+                    new[]
+                    {
+                        WebCore._sid_Home_LoggedInUserId, WebCore._sid_Home_Button_SignIn, WebCore._sid_Home_MultiFactor_Label,
+                        WebCore._sid_Home_Div_PnlAccounts
+                    });
 
                 if (WebControl.FCheckForControlId(m_appContext.WebControl.Driver, WebCore._sid_Home_Button_SignIn))
                 {
                     WebControl.FSetTextForInputControlName(m_appContext.WebControl.Driver, WebCore._s_Home_Input_Email, m_appContext.Profile.UserID, false);
-                    WebControl.FSetTextForInputControlName(m_appContext.WebControl.Driver, WebCore._s_Home_Input_Password, m_appContext.Profile.Password, false);
+                    WebControl.FSetTextForInputControlName(
+                        m_appContext.WebControl.Driver,
+                        WebCore._s_Home_Input_Password,
+                        m_appContext.Profile.Password,
+                        false);
 
                     m_appContext.WebControl.FClickControlId(WebCore._sid_Home_Button_SignIn);
                     WaitForLoginPageAdvance(new[] { WebCore._sid_Home_LoggedInUserId, WebCore._sid_Home_MultiFactor_Label, WebCore._sid_Home_Div_PnlAccounts });
@@ -176,14 +186,12 @@ namespace ArbWeb
                 m_appContext.WebControl.WaitForPageLoad(300);
                 m_appContext.StatusReport.PopLevel();
                 m_appContext.StatusReport.AddMessage("Completed login.");
-                
+
                 timer.Stop();
                 m_appContext.StatusReport.LogData($"EnsureLoggedIn elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
-
         }
 
-        #endregion
-
+#endregion
     }
 }

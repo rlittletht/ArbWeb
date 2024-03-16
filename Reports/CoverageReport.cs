@@ -9,94 +9,96 @@ using Microsoft.Identity.Client;
 
 namespace ArbWeb.Reports
 {
-	public class CoverageReport
-	{
-		private IAppContext m_appContext;
+    public class CoverageReport
+    {
+        private IAppContext m_appContext;
 
-		public CoverageReport() { } // for unit tests
+        public CoverageReport()
+        {
+        } // for unit tests
 
-		public CoverageReport(IAppContext appContext)
-		{
-			m_appContext = appContext;
-		}
+        public CoverageReport(IAppContext appContext)
+        {
+            m_appContext = appContext;
+        }
 
-		class TimeSlotCoverage
-		{
-			private Dictionary<string, Dictionary<string, List<GameSlot>>> m_slotsBySite =
-				new Dictionary<string, Dictionary<string, List<GameSlot>>>();
+        class TimeSlotCoverage
+        {
+            private Dictionary<string, Dictionary<string, List<GameSlot>>> m_slotsBySite =
+                new Dictionary<string, Dictionary<string, List<GameSlot>>>();
 
-			public TimeSlotCoverage()
-			{
-			}
+            public TimeSlotCoverage()
+            {
+            }
 
-			public void AddSlot(GameSlot slot)
-			{
-				string site = slot.SiteShort;
-				string subsite = slot.SubSite;
+            public void AddSlot(GameSlot slot)
+            {
+                string site = slot.SiteShort;
+                string subsite = slot.SubSite;
 
-				if (!m_slotsBySite.ContainsKey(site))
-				{
-					Dictionary<string, List<GameSlot>> newSlots = new Dictionary<string, List<GameSlot>>();
-					m_slotsBySite.Add(site, newSlots);
-				}
+                if (!m_slotsBySite.ContainsKey(site))
+                {
+                    Dictionary<string, List<GameSlot>> newSlots = new Dictionary<string, List<GameSlot>>();
+                    m_slotsBySite.Add(site, newSlots);
+                }
 
-				if (!m_slotsBySite[site].ContainsKey(subsite))
-					m_slotsBySite[site].Add(subsite, new List<GameSlot>());
+                if (!m_slotsBySite[site].ContainsKey(subsite))
+                    m_slotsBySite[site].Add(subsite, new List<GameSlot>());
 
-				m_slotsBySite[site][subsite].Add(slot);
-			}
+                m_slotsBySite[site][subsite].Add(slot);
+            }
 
-			public IEnumerable<string> Sites => m_slotsBySite.Keys;
+            public IEnumerable<string> Sites => m_slotsBySite.Keys;
 
-			public IEnumerable<string> SubSitesForSite(string site)
-			{
-				return m_slotsBySite[site].Keys;
-			}
+            public IEnumerable<string> SubSitesForSite(string site)
+            {
+                return m_slotsBySite[site].Keys;
+            }
 
-			public bool HasSite(string site) => m_slotsBySite.ContainsKey(site);
+            public bool HasSite(string site) => m_slotsBySite.ContainsKey(site);
 
-			public bool HasSubSite(string site, string subsite) =>
-				m_slotsBySite.ContainsKey(site) && m_slotsBySite[site].ContainsKey(subsite);
+            public bool HasSubSite(string site, string subsite) => m_slotsBySite.ContainsKey(site) && m_slotsBySite[site].ContainsKey(subsite);
 
-			public IEnumerable<GameSlot> Slots(string site, string subsite) => m_slotsBySite[site][subsite];
-		}
+            public IEnumerable<GameSlot> Slots(string site, string subsite) => m_slotsBySite[site][subsite];
+        }
 
-		class Coverage
-		{
-			Dictionary<DateTime, Dictionary<TimeSpan, TimeSlotCoverage>> m_coverage =
-				new Dictionary<DateTime, Dictionary<TimeSpan, TimeSlotCoverage>>();
+        class Coverage
+        {
+            Dictionary<DateTime, Dictionary<TimeSpan, TimeSlotCoverage>> m_coverage =
+                new Dictionary<DateTime, Dictionary<TimeSpan, TimeSlotCoverage>>();
 
-			private Dictionary<string, string> m_siteRootMapping;
+            private Dictionary<string, string> m_siteRootMapping;
 
-			public Coverage()
-			{}
+            public Coverage()
+            {
+            }
 
-			public void AddSlot(GameSlot slot)
-			{
-				DateTime date = slot.Dttm.Date;
-				TimeSpan time = slot.Dttm.TimeOfDay;
+            public void AddSlot(GameSlot slot)
+            {
+                DateTime date = slot.Dttm.Date;
+                TimeSpan time = slot.Dttm.TimeOfDay;
 
-				if (!m_coverage.ContainsKey(date))
-					m_coverage.Add(date, new Dictionary<TimeSpan, TimeSlotCoverage>());
+                if (!m_coverage.ContainsKey(date))
+                    m_coverage.Add(date, new Dictionary<TimeSpan, TimeSlotCoverage>());
 
-				if (!m_coverage[date].ContainsKey(time))
-					m_coverage[date].Add(time, new TimeSlotCoverage());
+                if (!m_coverage[date].ContainsKey(time))
+                    m_coverage[date].Add(time, new TimeSlotCoverage());
 
-				m_coverage[date][time].AddSlot(slot);
-			}
+                m_coverage[date][time].AddSlot(slot);
+            }
 
-			private Dictionary<string, SortedList<string, string>> m_sites;
+            private Dictionary<string, SortedList<string, string>> m_sites;
 
-			static string KeyForSubSite(string site, string subsite)
-			{
-				if (subsite.ToUpper().Contains("CONSULTANT"))
-					return $"A-{subsite}";
+            static string KeyForSubSite(string site, string subsite)
+            {
+                if (subsite.ToUpper().Contains("CONSULTANT"))
+                    return $"A-{subsite}";
 
                 if (site.ToUpper().StartsWith(subsite.ToUpper()))
                     return $"A-{subsite}";
 
-				// if there are more than one spaces in the name, and the final
-				// space delimited substring matches the first, its also a consultant slot
+                // if there are more than one spaces in the name, and the final
+                // space delimited substring matches the first, its also a consultant slot
                 if (subsite.IndexOf(' ') != subsite.LastIndexOf(' '))
                 {
                     string sSub = subsite.Substring(0, subsite.LastIndexOf(' '));
@@ -105,68 +107,68 @@ namespace ArbWeb.Reports
                         return $"A-{subsite}";
                 }
 
-				return $"B-{subsite}";
-			}
+                return $"B-{subsite}";
+            }
 
-			void EnsureSiteInfo()
-			{
-				if (m_sites != null)
-					return;
+            void EnsureSiteInfo()
+            {
+                if (m_sites != null)
+                    return;
 
-				m_sites = new Dictionary<string, SortedList<string,string>>();
+                m_sites = new Dictionary<string, SortedList<string, string>>();
 
-				foreach (Dictionary<TimeSpan, TimeSlotCoverage> timeCoverages in m_coverage.Values)
-				{
-					foreach (TimeSlotCoverage timeSlotCoverage in timeCoverages.Values)
-					{
-						foreach (string site in timeSlotCoverage.Sites)
-						{
-							if (!m_sites.ContainsKey(site))
-								m_sites.Add(site, new SortedList<string,string>());
+                foreach (Dictionary<TimeSpan, TimeSlotCoverage> timeCoverages in m_coverage.Values)
+                {
+                    foreach (TimeSlotCoverage timeSlotCoverage in timeCoverages.Values)
+                    {
+                        foreach (string site in timeSlotCoverage.Sites)
+                        {
+                            if (!m_sites.ContainsKey(site))
+                                m_sites.Add(site, new SortedList<string, string>());
 
-							SortedList<string, string> subsites = m_sites[site];
+                            SortedList<string, string> subsites = m_sites[site];
 
-							foreach (string subsite in timeSlotCoverage.SubSitesForSite(site))
-							{
-								string subsiteKey = KeyForSubSite(site, subsite);
+                            foreach (string subsite in timeSlotCoverage.SubSitesForSite(site))
+                            {
+                                string subsiteKey = KeyForSubSite(site, subsite);
 
-								if (!subsites.ContainsKey(subsiteKey))
-									subsites.Add(subsiteKey, subsite);
-							}
-						}
-					}
-				}
-			}
+                                if (!subsites.ContainsKey(subsiteKey))
+                                    subsites.Add(subsiteKey, subsite);
+                            }
+                        }
+                    }
+                }
+            }
 
-			public IEnumerable<DateTime> Dates => m_coverage.Keys;
-			public IEnumerable<TimeSpan> TimeSlots(DateTime date) => m_coverage[date].Keys;
+            public IEnumerable<DateTime> Dates => m_coverage.Keys;
+            public IEnumerable<TimeSpan> TimeSlots(DateTime date) => m_coverage[date].Keys;
 
-			public TimeSlotCoverage TimeSlotCoverage(DateTime date, TimeSpan time) => m_coverage[date][time];
+            public TimeSlotCoverage TimeSlotCoverage(DateTime date, TimeSpan time) => m_coverage[date][time];
 
-			public int GetSitesCount()
-			{
-				EnsureSiteInfo();
+            public int GetSitesCount()
+            {
+                EnsureSiteInfo();
 
-				return m_sites.Keys.Count;
-			}
+                return m_sites.Keys.Count;
+            }
 
-			public IEnumerable<string> Sites
-			{
-				get
-				{
-					EnsureSiteInfo();
-					return m_sites.Keys;
-				}
-			}
+            public IEnumerable<string> Sites
+            {
+                get
+                {
+                    EnsureSiteInfo();
+                    return m_sites.Keys;
+                }
+            }
 
-			public int GetSubsitesCountForSite(string site)
-			{
-				EnsureSiteInfo();
+            public int GetSubsitesCountForSite(string site)
+            {
+                EnsureSiteInfo();
 
-				return m_sites[site].Count;
-			}
+                return m_sites[site].Count;
+            }
 
-			public IEnumerable<string> SubSiteKeysForSite(string site)
+            public IEnumerable<string> SubSiteKeysForSite(string site)
             {
                 EnsureSiteInfo();
                 return m_sites[site].Keys;
@@ -177,23 +179,24 @@ namespace ArbWeb.Reports
                 return m_sites[site][key];
             }
 
-			public IEnumerable<string> SubSitesForSite(string site)
-			{
-				EnsureSiteInfo();
-				return m_sites[site].Values;
-			}
+            public IEnumerable<string> SubSitesForSite(string site)
+            {
+                EnsureSiteInfo();
+                return m_sites[site].Values;
+            }
 
 
-			public int GetTimeslotCountForDate(DateTime date)
-			{
-				return m_coverage[date].Keys.Count;
-			}
-		}
+            public int GetTimeslotCountForDate(DateTime date)
+            {
+                return m_coverage[date].Keys.Count;
+            }
+        }
 
 
-		void WriteHeader(StreamWriter sw)
-		{
-			sw.WriteLine(@"
+        void WriteHeader(StreamWriter sw)
+        {
+            sw.WriteLine(
+                @"
 <!DOCTYPE html>
 <html>
   <head>
@@ -221,166 +224,167 @@ namespace ArbWeb.Reports
   <body>
     <div class=WordSection1>
 		");
-		}
+        }
 
-		void WriteCoverageHeaders(StreamWriter sw, Coverage coverage)
-		{
-			sw.WriteLine("<tr class='heading'>");
-			sw.WriteLine("<td rowspan=2>Day</td>");
-			sw.WriteLine("<td rowspan=2>Time</td>");
+        void WriteCoverageHeaders(StreamWriter sw, Coverage coverage)
+        {
+            sw.WriteLine("<tr class='heading'>");
+            sw.WriteLine("<td rowspan=2>Day</td>");
+            sw.WriteLine("<td rowspan=2>Time</td>");
 
-			foreach (string site in coverage.Sites)
-			{
-				sw.WriteLine($"<td colspan={coverage.GetSubsitesCountForSite(site)} style='{s_borderTop};{s_borderLeft};{s_borderRight}'>{site}</td>");
-			}
-			sw.WriteLine("</tr>");
+            foreach (string site in coverage.Sites)
+            {
+                sw.WriteLine($"<td colspan={coverage.GetSubsitesCountForSite(site)} style='{s_borderTop};{s_borderLeft};{s_borderRight}'>{site}</td>");
+            }
 
-			sw.WriteLine("<tr class='heading'>");
-			StringBuilder sb = new StringBuilder();
+            sw.WriteLine("</tr>");
 
-			foreach (string site in coverage.Sites)
-			{
-				string subsiteLast = coverage.SubSitesForSite(site).Last();
+            sw.WriteLine("<tr class='heading'>");
+            StringBuilder sb = new StringBuilder();
 
-				bool firstSite = true;
+            foreach (string site in coverage.Sites)
+            {
+                string subsiteLast = coverage.SubSitesForSite(site).Last();
 
-				foreach (string subsiteKey in coverage.SubSiteKeysForSite(site))
-				{
-					string subsite = coverage.SubsiteForSubsiteKey(site, subsiteKey);
+                bool firstSite = true;
+
+                foreach (string subsiteKey in coverage.SubSiteKeysForSite(site))
+                {
+                    string subsite = coverage.SubsiteForSubsiteKey(site, subsiteKey);
 
                     if (subsiteKey.StartsWith("A-"))
                         subsite = "Consultants";
 
-					sb.Clear();
+                    sb.Clear();
 
-					sb.Append($"{s_borderBottom};");
+                    sb.Append($"{s_borderBottom};");
 
-					if (firstSite)
-						sb.Append($"{s_borderLeft};");
+                    if (firstSite)
+                        sb.Append($"{s_borderLeft};");
 
-					firstSite = false;
+                    firstSite = false;
 
-					if (subsiteLast == subsite)
-						sb.Append($"{s_borderRight};");
+                    if (subsiteLast == subsite)
+                        sb.Append($"{s_borderRight};");
 
-					if (String.IsNullOrEmpty(subsite))
-						sw.WriteLine($"<td style='{sb.ToString()}'>&nbsp;</td>");
-					else
-						sw.WriteLine($"<td style='{sb.ToString()}'>{subsite}</td>");
-				}
-			}
+                    if (String.IsNullOrEmpty(subsite))
+                        sw.WriteLine($"<td style='{sb.ToString()}'>&nbsp;</td>");
+                    else
+                        sw.WriteLine($"<td style='{sb.ToString()}'>{subsite}</td>");
+                }
+            }
 
-			sw.WriteLine("</tr>");
-		}
-
-
-		private const string s_borderLeft = "border-left: 1pt solid black";
-		private const string s_borderRight = "border-right: 1pt solid black";
-		private const string s_borderTop = "border-top: 1pt solid black";
-		private const string s_borderBottom = "border-bottom: 1pt solid black";
-		private const string s_borderBottomThin = "border-bottom: 0.5pt solid black";
-		private const string s_backGray = "background: rgb(232,232,232)";
+            sw.WriteLine("</tr>");
+        }
 
 
-		/*----------------------------------------------------------------------------
-			%%Function: GenCoverageReport
-			%%Qualified: ArbWeb.Reports.CoverageReport.GenCoverageReport
+        private const string s_borderLeft = "border-left: 1pt solid black";
+        private const string s_borderRight = "border-right: 1pt solid black";
+        private const string s_borderTop = "border-top: 1pt solid black";
+        private const string s_borderBottom = "border-bottom: 1pt solid black";
+        private const string s_borderBottomThin = "border-bottom: 0.5pt solid black";
+        private const string s_backGray = "background: rgb(232,232,232)";
 
-			Build a grid of coverage
-		----------------------------------------------------------------------------*/
-		void GenCoverageReport(ScheduleGames games, string sReportFile, Roster rst, string[] rgsRoster, DateTime dttmStart, DateTime dttmEnd)
-		{
-			// we need to know who is working when...
-			Coverage coverage = new Coverage();
-			SortedList<string, int> plsSiteShort = Utils.PlsUniqueFromRgs(rgsRoster);
 
-			SortedSet<string> plsSites = new SortedSet<string>();
+        /*----------------------------------------------------------------------------
+            %%Function: GenCoverageReport
+            %%Qualified: ArbWeb.Reports.CoverageReport.GenCoverageReport
 
-			foreach (GameSlot gm in games.SortedGameSlotsByGameNumber)
-			{
-				if (!plsSites.Contains(gm.Site))
-					plsSites.Add(gm.Site);
-			}
+            Build a grid of coverage
+        ----------------------------------------------------------------------------*/
+        void GenCoverageReport(ScheduleGames games, string sReportFile, Roster rst, string[] rgsRoster, DateTime dttmStart, DateTime dttmEnd)
+        {
+            // we need to know who is working when...
+            Coverage coverage = new Coverage();
+            SortedList<string, int> plsSiteShort = Utils.PlsUniqueFromRgs(rgsRoster);
 
-			Dictionary<string, string> mpSiteRoot = SiteRosterReport.MapCommonRootsFromList(plsSites);
-			// coverage.AddSiteRootMapping(mpSiteRoot);
+            SortedSet<string> plsSites = new SortedSet<string>();
 
-			// Map date => (time slot =>  list of fields; field => list of sub fields; field+sub-field => slots)
-			foreach (GameSlot slot in games.SortedGameSlots)
-			{
-				if (slot.Dttm < dttmStart || slot.Dttm > dttmEnd)
-					continue;
+            foreach (GameSlot gm in games.SortedGameSlotsByGameNumber)
+            {
+                if (!plsSites.Contains(gm.Site))
+                    plsSites.Add(gm.Site);
+            }
 
-				if (rgsRoster != null)
-					if (!plsSiteShort.ContainsKey(slot.SiteShort))
-						continue;
+            Dictionary<string, string> mpSiteRoot = SiteRosterReport.MapCommonRootsFromList(plsSites);
+            // coverage.AddSiteRootMapping(mpSiteRoot);
 
-				coverage.AddSlot(slot);
-			}
+            // Map date => (time slot =>  list of fields; field => list of sub fields; field+sub-field => slots)
+            foreach (GameSlot slot in games.SortedGameSlots)
+            {
+                if (slot.Dttm < dttmStart || slot.Dttm > dttmEnd)
+                    continue;
 
-			// now, figure out how many fields we have
+                if (rgsRoster != null)
+                    if (!plsSiteShort.ContainsKey(slot.SiteShort))
+                        continue;
 
-			using (StreamWriter sw = new StreamWriter(sReportFile, false, Encoding.Default))
-			{
-				WriteHeader(sw);
-				sw.WriteLine("<table class='coverage'>");
-				WriteCoverageHeaders(sw, coverage);
-				bool shadeGroup = false;
-				foreach (DateTime date in coverage.Dates)
-				{
-					bool firstRow = true;
-					int slotCount = coverage.GetTimeslotCountForDate(date);
-					sw.WriteLine("<tr>");
-					sw.WriteLine($"<td rowspan={slotCount}>{date:dddd}</td>");
-					shadeGroup = !shadeGroup; // group items within 1 hour of previous slot, else flip
+                coverage.AddSlot(slot);
+            }
 
-					TimeSpan timeLast = new TimeSpan();
-					
-					foreach (TimeSpan time in coverage.TimeSlots(date))
-					{
-						if (time.Hours - timeLast.Hours > 1 && !firstRow)
-							shadeGroup = !shadeGroup;
+            // now, figure out how many fields we have
 
-						timeLast = time;
+            using (StreamWriter sw = new StreamWriter(sReportFile, false, Encoding.Default))
+            {
+                WriteHeader(sw);
+                sw.WriteLine("<table class='coverage'>");
+                WriteCoverageHeaders(sw, coverage);
+                bool shadeGroup = false;
+                foreach (DateTime date in coverage.Dates)
+                {
+                    bool firstRow = true;
+                    int slotCount = coverage.GetTimeslotCountForDate(date);
+                    sw.WriteLine("<tr>");
+                    sw.WriteLine($"<td rowspan={slotCount}>{date:dddd}</td>");
+                    shadeGroup = !shadeGroup; // group items within 1 hour of previous slot, else flip
 
-						if (!firstRow)
-							sw.WriteLine("<tr>");
+                    TimeSpan timeLast = new TimeSpan();
 
-						firstRow = false;
-						if (time.Hours < 12)
-						{
-							sw.WriteLine($"<td>{time.Hours}:{time.Minutes:00} AM</td>");
-						}
-						else
-						{
-							int hours = time.Hours > 12 ? time.Hours - 12 : time.Hours;
+                    foreach (TimeSpan time in coverage.TimeSlots(date))
+                    {
+                        if (time.Hours - timeLast.Hours > 1 && !firstRow)
+                            shadeGroup = !shadeGroup;
 
-							sw.WriteLine($"<td>{hours}:{time.Minutes:00} PM</td>");
-						}
+                        timeLast = time;
 
-						TimeSlotCoverage timeSlotCoverage = coverage.TimeSlotCoverage(date, time);
+                        if (!firstRow)
+                            sw.WriteLine("<tr>");
 
-						// now interrogate the coverage using the sites we built the table with
-						foreach (string site in coverage.Sites)
-						{
-							string subsiteLast = coverage.SubSitesForSite(site).Last();
-							StringBuilder sb = new StringBuilder();
+                        firstRow = false;
+                        if (time.Hours < 12)
+                        {
+                            sw.WriteLine($"<td>{time.Hours}:{time.Minutes:00} AM</td>");
+                        }
+                        else
+                        {
+                            int hours = time.Hours > 12 ? time.Hours - 12 : time.Hours;
 
-							bool firstSite = true;
+                            sw.WriteLine($"<td>{hours}:{time.Minutes:00} PM</td>");
+                        }
 
-							foreach (string subsite in coverage.SubSitesForSite(site))
-							{
-								sb.Clear();
+                        TimeSlotCoverage timeSlotCoverage = coverage.TimeSlotCoverage(date, time);
 
-								sb.Append($"{s_borderBottomThin};");
+                        // now interrogate the coverage using the sites we built the table with
+                        foreach (string site in coverage.Sites)
+                        {
+                            string subsiteLast = coverage.SubSitesForSite(site).Last();
+                            StringBuilder sb = new StringBuilder();
 
-								if (firstSite)
-									sb.Append($"{s_borderLeft};");
+                            bool firstSite = true;
 
-								firstSite = false;
+                            foreach (string subsite in coverage.SubSitesForSite(site))
+                            {
+                                sb.Clear();
 
-								if (subsiteLast == subsite)
-									sb.Append($"{s_borderRight};");
+                                sb.Append($"{s_borderBottomThin};");
+
+                                if (firstSite)
+                                    sb.Append($"{s_borderLeft};");
+
+                                firstSite = false;
+
+                                if (subsiteLast == subsite)
+                                    sb.Append($"{s_borderRight};");
 
 #if false
 								// for now, we can't make shading work -- what if games are at 9/10/11/12/1/2/3/4/5 -- they are all within 1 hour!
@@ -388,75 +392,75 @@ namespace ArbWeb.Reports
 									sb.Append($"{s_backGray};");
 #endif
 
-								if (timeSlotCoverage.HasSubSite(site, subsite))
-								{
-									bool firstSlotRow = true;
-									int openSlots = 0;
+                                if (timeSlotCoverage.HasSubSite(site, subsite))
+                                {
+                                    bool firstSlotRow = true;
+                                    int openSlots = 0;
 
-									sw.WriteLine($"<td style='{sb.ToString()}'>");
+                                    sw.WriteLine($"<td style='{sb.ToString()}'>");
 
-									foreach (GameSlot slot in timeSlotCoverage.Slots(site, subsite))
-									{
-										if (slot.Cancelled)
-											continue;
+                                    foreach (GameSlot slot in timeSlotCoverage.Slots(site, subsite))
+                                    {
+                                        if (slot.Cancelled)
+                                            continue;
 
-										if (slot.Open && slot.Site.ToUpper().Contains("CONSULTANT"))
-											continue;
+                                        if (slot.Open && slot.Site.ToUpper().Contains("CONSULTANT"))
+                                            continue;
 
-										if (slot.Open)
-										{
-											openSlots++;
-											continue;
-										}
+                                        if (slot.Open)
+                                        {
+                                            openSlots++;
+                                            continue;
+                                        }
 
-										RosterEntry rste = rst.RsteLookupEmail(slot.Email);
+                                        RosterEntry rste = rst.RsteLookupEmail(slot.Email);
 
-										if (!firstSlotRow)
-											sw.WriteLine("<br/>");
+                                        if (!firstSlotRow)
+                                            sw.WriteLine("<br/>");
 
-										firstSlotRow = false;
-										sw.Write($"{rste.NameShort}");
-										if (slot.Status != "Accepted")
-											sw.WriteLine("*");
-										else
-											sw.WriteLine();
-									}
+                                        firstSlotRow = false;
+                                        sw.Write($"{rste.NameShort}");
+                                        if (slot.Status != "Accepted")
+                                            sw.WriteLine("*");
+                                        else
+                                            sw.WriteLine();
+                                    }
 
-									while (openSlots-- > 0)
-									{
-										if (!firstSlotRow)
-											sw.WriteLine("<br/>");
+                                    while (openSlots-- > 0)
+                                    {
+                                        if (!firstSlotRow)
+                                            sw.WriteLine("<br/>");
 
-										firstSlotRow = false;
-										sw.WriteLine("[]");
-									}
-									sw.WriteLine("</td>");
-								}
-								else
-								{
-									sw.WriteLine($"<td style='{sb.ToString()}'>&nbsp;</td>");
-								}
-							}
-						}
+                                        firstSlotRow = false;
+                                        sw.WriteLine("[]");
+                                    }
 
-						sw.WriteLine("</tr>");
-					}
+                                    sw.WriteLine("</td>");
+                                }
+                                else
+                                {
+                                    sw.WriteLine($"<td style='{sb.ToString()}'>&nbsp;</td>");
+                                }
+                            }
+                        }
 
-				}
-				sw.WriteLine("</table>");
-				sw.WriteLine("</body></div></html>");
-			}
-		}
+                        sw.WriteLine("</tr>");
+                    }
+                }
 
-		public void DoCoverageReport(CountsData gc, Roster rst, string[] rgsRoster, DateTime dttmStart, DateTime dttmEnd)
-		{
-			string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
+                sw.WriteLine("</table>");
+                sw.WriteLine("</body></div></html>");
+            }
+        }
 
-			GenCoverageReport(gc.Games, sTempFile, rst, rgsRoster, dttmStart, dttmEnd);
-			// launch word with the file
-			Process.Start(sTempFile);
-			// System.IO.File.Delete(sTempFile);
+        public void DoCoverageReport(CountsData gc, Roster rst, string[] rgsRoster, DateTime dttmStart, DateTime dttmEnd)
+        {
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.doc";
 
-		}
-	}
+            GenCoverageReport(gc.Games, sTempFile, rst, rgsRoster, dttmStart, dttmEnd);
+            // launch word with the file
+            Process.Start(sTempFile);
+            // System.IO.File.Delete(sTempFile);
+        }
+    }
 }
