@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
+using TCore.UI;
 using TCore.WebControl;
 using static ArbWeb.Roster;
 
@@ -14,6 +15,8 @@ namespace ArbWeb
     public class WebAdminPermissions
     {
         private IAppContext m_appContext;
+
+        private const string s_announceDiv = "D9BulkMaintenance";
 
         public WebAdminPermissions(IAppContext appContext)
         {
@@ -25,44 +28,53 @@ namespace ArbWeb
             return
                 new Dictionary<string, string>()
                 {
-                    { "Edit permissions", null },
                     { "Rank officials", null },
                     { "Add/Delete officials", null },
                     { "Mark Official Active/Inactive", null }
                 };
         }
 
+        public void AddAdminLockout()
+        {
+            if (!InputBox.ShowInputBox("When will you be done?", DateTime.Now.AddHours(3).ToString("g"), out string response))
+                return;
+
+            SetLockoutState(true);
+
+            string announceText = $@"
+                <div id='{s_announceDiv}'>
+                <h1>Bulk Maintenance</h1>
+
+                <p>I&#39;m performing some bulk edits, so I have temporarily turned off roster permissions for ALL Assigners (you can still edit games).</p>
+
+                <p>ETA: {response}</p>
+                </div>";
+
+            WebAnnounce announce = new WebAnnounce(m_appContext);
+
+            announce.UpdateArbiterAnnouncement(s_announceDiv, announceText, true, false, "None");
+        }
         public void RemoveAdminLockout()
+        {
+            SetLockoutState(false);
+
+            WebAnnounce announce = new WebAnnounce(m_appContext);
+
+            announce.UpdateArbiterAnnouncement(s_announceDiv, null, false, false, "None");
+        }
+
+        void SetLockoutState(bool setLockout)
         {
             m_appContext.EnsureLoggedIn();
 
             m_appContext.StatusReport.AddMessage("Removing group admin lockouts...");
 
-            string groupAdminValue = null;
-
-            //            m_appContext.WebControl.RepeatIfNotCondition(
-            //                d =>
-            //                {
-            //                    Utils.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore.s_RightsEdit), "couldn't navigate to rights page");
-            //                    return true;
-            //                },
-            //                d =>
-            //                {
-            //                    sGroupAdminValue = m_appContext.WebControl.GetOptionValueFromFilterOptionTextForControlName(
-            //                        WebCore.s_RightsEdit_PermissionsTarget,
-            //                        "Group Admin");
-            //                    return sGroupAdminValue != null;
-            //                },
-            //                2,
-            //                500);
-
             Utils.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore.s_RightsEdit), "couldn't navigate to rights page");
             m_appContext.WebControl.WaitForPageLoad();
 
-            groupAdminValue =
-                m_appContext.WebControl.GetOptionValueFromFilterOptionTextForControlName(
-                    WebCore.s_RightsEdit_PermissionsTarget,
-                    "Group Admin");
+            string groupAdminValue = m_appContext.WebControl.GetOptionValueFromFilterOptionTextForControlName(
+                WebCore.s_RightsEdit_PermissionsTarget,
+                "Group Admin");
 
             m_appContext.WebControl.WaitForXpath($"//option[contains(text(), 'Group Admin')]", 1000);
 
@@ -95,10 +107,24 @@ namespace ArbWeb
                     $"can't switch to permission '{name}'({permissionsValueMap[name]})");
                 m_appContext.WebControl.WaitForPageLoad();
 
-                // we are enabling all, so find select all
-                Utils.ThrowIfNot(
-                    m_appContext.WebControl.FClickControlByXpath("//a[contains(@onclick, 'SelectAll(false)')]"),
-                    $"could not click select all for {name}");
+                if (setLockout)
+                {
+                    // we are disabline all, so find selectall(true)
+                    Utils.ThrowIfNot(
+                        m_appContext.WebControl.FClickControlByXpath("//a[contains(@onclick, 'SelectAll(true)')]"),
+                        $"could not click select all for {name}");
+                    Utils.ThrowIfNot(
+                        m_appContext.WebControl.FClickControlId(WebCore.sid_RightsEdit_RemovePermission));
+                }
+                else
+                {
+                    // we are enabling all, so find selectall(false)
+                    Utils.ThrowIfNot(
+                        m_appContext.WebControl.FClickControlByXpath("//a[contains(@onclick, 'SelectAll(false)')]"),
+                        $"could not click select all for {name}");
+                    Utils.ThrowIfNot(
+                        m_appContext.WebControl.FClickControlId(WebCore.sid_RightsEdit_AddPermission));
+                }
             }
         }
     }

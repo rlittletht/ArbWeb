@@ -267,8 +267,23 @@ namespace ArbWeb
         public const string _sid_Announcements_Button_Edit_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
         public const string _sid_Announcements_Button_Edit_Suffix = "_btnEdit";
 
+        public const string _sid_Announcements_Button_ToAssigners_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_"; // ok2024
+        public const string _sid_Announcements_Button_ToAssigners_Suffix = "_chkToAssigners_Edit"; // ok2024
+
+        public const string _sid_Announcements_Button_ToOfficials_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_"; // ok2024
+        public const string _sid_Announcements_Button_ToOfficials_Suffix = "_ddlFilters"; // ok2024
+            
+        public const string _s_Announcements_Button_ToOfficials_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // ok2024
+        public const string _s_Announcements_Button_ToOfficials_Suffix = "$ddlFilters"; // ok2024
+
+        public const string _sid_Announcements_Button_ToContacts_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_"; // ok2024
+        public const string _sid_Announcements_Button_ToContacts_Suffix = "_chkToContacts_Edit"; // ok2024
+
         public const string _sid_Announcements_Button_Save_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
         public const string _sid_Announcements_Button_Save_Suffix = "_btnSave";
+
+        public const string _sid_Announcements_Button_Cancel_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
+        public const string _sid_Announcements_Button_Cancel_Suffix = "_btnCancel";
 
         public const string _sid_Login_Span_Type_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
         private const string _sid_Login_Span_Type_Suffix = "_lblType2";
@@ -293,8 +308,8 @@ namespace ArbWeb
         public const string s_RightsEdit_RemovePermission = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$btnDeny"; // ok2024
         public const string sid_RightsEdit_RemovePermission = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_btnDeny"; // ok2024
 
-        public const string s_RightsEdit_AddPermission = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$lstAllowed"; // ok2024
-        public const string sid_RightsEdit_AddPermission = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_lstAllowed"; // ok2024
+        public const string s_RightsEdit_AddPermission = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$btnAllow"; // ok2024
+        public const string sid_RightsEdit_AddPermission = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_btnAllow"; // ok2024
 
 //        public const string s_ = ""; // ok2024
 //        public const string sid_ = ""; // ok2024

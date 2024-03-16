@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
-using OpenQA.Selenium.DevTools.V86.ApplicationCache;
 
 namespace ArbWeb.Games
 {

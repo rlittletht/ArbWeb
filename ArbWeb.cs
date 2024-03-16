@@ -2424,7 +2424,9 @@ namespace ArbWeb
 
         private void DoLockPermissions(object sender, EventArgs e)
         {
+            WebAdminPermissions perms = new WebAdminPermissions(this);
 
+            perms.AddAdminLockout();
         }
 
         private void DoUnlockPermissions(object sender, EventArgs e)
