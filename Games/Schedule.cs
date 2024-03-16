@@ -28,9 +28,10 @@ namespace ArbWeb.Games
             bool f = m_rst.LoadRoster(sRoster, iMiscAffiliation);
 
             if (f)
-                {
+            {
                 m_scheduleGames.SetMiscHeadings(m_rst.PlsMiscHeadings);
-                }
+            }
+
             return f;
         }
 
@@ -40,8 +41,8 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         public bool FLoadGames(string sGames, bool fIncludeCanceled)
         {
-	        GamesLoader_Arbiter loader = new GamesLoader_Arbiter(m_srpt);
-	        
+            GamesLoader_Arbiter loader = new GamesLoader_Arbiter(m_srpt);
+
             return loader.FLoadGames(sGames, m_rst, fIncludeCanceled, m_scheduleGames);
         }
 
@@ -62,7 +63,7 @@ namespace ArbWeb.Games
         {
             return m_scheduleGames.GenOpenSlots(dttmStart, dttmEnd);
         }
-        
+
         /*----------------------------------------------------------------------------
 			%%Function:GamesFromFilter
 			%%Qualified:ArbWeb.Games.Schedule.GamesFromFilter
@@ -111,5 +112,4 @@ namespace ArbWeb.Games
             m_scheduleGames = new ScheduleGames(srpt);
         }
     } // END  GameData
-
 }

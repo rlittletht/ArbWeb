@@ -41,15 +41,16 @@ namespace ArbWeb
         {
             xw.WriteEndElement();
         }
-        
+
         private static void WriteElementFull(XmlTextWriter xw, string sElt, string[] rgsVals)
         {
             StartElement(xw, sElt);
             if (rgsVals != null)
-                {
+            {
                 foreach (string s in rgsVals)
                     WriteAttributeString(xw, "val", s);
-                }
+            }
+
             EndElement(xw);
         }
 
@@ -57,10 +58,11 @@ namespace ArbWeb
         {
             StartElement(xw, sElt);
             if (rgVals != null)
-                {
+            {
                 foreach (AttrPair ap in rgVals)
                     WriteAttributeString(xw, ap.sAttr, ap.sValue);
-                }
+            }
+
             EndElement(xw);
         }
 
@@ -72,25 +74,28 @@ namespace ArbWeb
             XmlTextWriter xw = new XmlTextWriter(stm, System.Text.Encoding.UTF8);
 
             StartElement(xw, "settings");
-            WriteElementFull(xw, "view", new[] {"web"});
+            WriteElementFull(xw, "view", new[] { "web" });
             StartElement(xw, "mailMerge");
-            WriteElementFull(xw, "mainDocumentType", new[] {"email"});
+            WriteElementFull(xw, "mainDocumentType", new[] { "email" });
             WriteElementFull(xw, "linkToQuery", (string[])null);
-            WriteElementFull(xw, "dataType", new[] {"textFile"});
-            WriteElementFull(xw, "connectString", new[] {""});
-            WriteElementFull(xw, "query", new[] {$"SELECT * FROM {sDataSource}"});
-            
-            PackageRelationship rel = prt.CreateRelationship( new System.Uri($"file:///{sDataSource}", UriKind.Absolute), TargetMode.External, s_sUriMailMergeRelType);
+            WriteElementFull(xw, "dataType", new[] { "textFile" });
+            WriteElementFull(xw, "connectString", new[] { "" });
+            WriteElementFull(xw, "query", new[] { $"SELECT * FROM {sDataSource}" });
+
+            PackageRelationship rel = prt.CreateRelationship(
+                new System.Uri($"file:///{sDataSource}", UriKind.Absolute),
+                TargetMode.External,
+                s_sUriMailMergeRelType);
             StartElement(xw, "dataSource");
             xw.WriteAttributeString("id", "http://schemas.openxmlformats.org/officeDocument/2006/relationships", rel.Id);
             EndElement(xw);
             StartElement(xw, "odso");
             StartElement(xw, "fieldMapData");
-            WriteElementFull(xw, "type", new[] {"dbColumn"});
-            WriteElementFull(xw, "name", new[] {"email"});
-            WriteElementFull(xw, "mappedName", new[] {"E-mail Address"});
-            WriteElementFull(xw, "column", new[] {"0"});
-            WriteElementFull(xw, "lid", new[] {"en-US"});
+            WriteElementFull(xw, "type", new[] { "dbColumn" });
+            WriteElementFull(xw, "name", new[] { "email" });
+            WriteElementFull(xw, "mappedName", new[] { "E-mail Address" });
+            WriteElementFull(xw, "column", new[] { "0" });
+            WriteElementFull(xw, "lid", new[] { "en-US" });
             EndElement(xw); // fieldMapData
             EndElement(xw); // odso
             EndElement(xw); // mailMerge
@@ -129,7 +134,6 @@ namespace ArbWeb
                     StartElement(xw, "br");
                     EndElement(xw);
                 }
-
             } while (s.Length > 0);
 
             EndElement(xw); // r
@@ -140,26 +144,25 @@ namespace ArbWeb
         {
             StartElement(xw, "tc");
             StartElement(xw, "tcPr");
-            WriteElementFull(xw, "tcW", new[] {new AttrPair("w", sWidth), new AttrPair("type", sWidthType)});
+            WriteElementFull(xw, "tcW", new[] { new AttrPair("w", sWidth), new AttrPair("type", sWidthType) });
             EndElement(xw); // tcPr
             WritePara(xw, s);
             EndElement(xw); // tc
-
         }
 
         private static Dictionary<string, string> s_mpSportLevelFriendly = new Dictionary<string, string>()
-            {
-            {"All Stars SB 9/10's", "SB 8/9/10s"},
-            {"All Stars SB 11's", "SB 9/10/11s"},
-            {"All Stars SB Majors", "SB Majors"},
-            {"All Stars SB Juniors", "SB Juniors"},
-            {"All Stars 60' BB 11's", "BB 9/10/11s"},
-            {"All Stars 60' BB 9/10's", "BB 8/9/10s"},
-            {"All Stars 60' BB Majors", "BB Majors"},
-            {"All Stars 90' BB Intermediate 70", "BB Intermediates"},
-            {"All Stars 90' BB Juniors 90", "BB Juniors"},
-            {"All Stars 90' BB Seniors", "BB Seniors"},
-            };
+                                                                           {
+                                                                               { "All Stars SB 9/10's", "SB 8/9/10s" },
+                                                                               { "All Stars SB 11's", "SB 9/10/11s" },
+                                                                               { "All Stars SB Majors", "SB Majors" },
+                                                                               { "All Stars SB Juniors", "SB Juniors" },
+                                                                               { "All Stars 60' BB 11's", "BB 9/10/11s" },
+                                                                               { "All Stars 60' BB 9/10's", "BB 8/9/10s" },
+                                                                               { "All Stars 60' BB Majors", "BB Majors" },
+                                                                               { "All Stars 90' BB Intermediate 70", "BB Intermediates" },
+                                                                               { "All Stars 90' BB Juniors 90", "BB Juniors" },
+                                                                               { "All Stars 90' BB Seniors", "BB Seniors" },
+                                                                           };
 
         static string DescribeGame(Game gm, int cGames)
         {
@@ -190,7 +193,7 @@ namespace ArbWeb
             }
             //sDesc = $"{gm.TotalSlots - gm.OpenSlots} UMPIRE";
 
-        return $"{sCount}{sDesc}";
+            return $"{sCount}{sDesc}";
         }
 
         static string FriendlySport(Game gm)
@@ -224,13 +227,20 @@ namespace ArbWeb
         {
             StartElement(xw, "tbl");
             StartElement(xw, "tblPr");
-            WriteElementFull(xw, "tblStyle", new [] { new AttrPair("val", "TableGrid") });
-            WriteElementFull(xw, "tblW", new [] { new AttrPair("w", "0"),new AttrPair("type", "auto") });
-            WriteElementFull(xw, "tblLook", new [] { new AttrPair("val", "04A0"), new AttrPair("firstRow", "1"), new AttrPair("lastRow", "0"), new AttrPair("firstColumn", "1"), new AttrPair("lastColumn", "0"), new AttrPair("noHBand", "0"), new AttrPair("noVBand", "1") });
+            WriteElementFull(xw, "tblStyle", new[] { new AttrPair("val", "TableGrid") });
+            WriteElementFull(xw, "tblW", new[] { new AttrPair("w", "0"), new AttrPair("type", "auto") });
+            WriteElementFull(
+                xw,
+                "tblLook",
+                new[]
+                {
+                    new AttrPair("val", "04A0"), new AttrPair("firstRow", "1"), new AttrPair("lastRow", "0"), new AttrPair("firstColumn", "1"),
+                    new AttrPair("lastColumn", "0"), new AttrPair("noHBand", "0"), new AttrPair("noVBand", "1")
+                });
             EndElement(xw); // tblPr
             StartElement(xw, "tblGrid");
             while (cCols-- > 0)
-                WriteElementFull(xw, "gridCol", new [] { new AttrPair("val", "1440") });
+                WriteElementFull(xw, "gridCol", new[] { new AttrPair("val", "1440") });
             EndElement(xw); // tblGrid
         }
 
@@ -270,7 +280,9 @@ namespace ArbWeb
             StartElement(xw, "document");
             StartElement(xw, "body");
             WritePara(xw, "The following upcoming games URGENTLY need help!");
-            WritePara(xw, "If you can work ANY of these games, either sign up on Arbiter, or just reply to this mail and let me know which games you can do. Thanks!");
+            WritePara(
+                xw,
+                "If you can work ANY of these games, either sign up on Arbiter, or just reply to this mail and let me know which games you can do. Thanks!");
 
             StartTable(xw, 5);
             SortedDictionary<string, List<Game>> mpSlotGames = new SortedDictionary<string, List<Game>>();
@@ -288,19 +300,20 @@ namespace ArbWeb
                     mpSlotGames.Add(s, new List<Game>());
 
                 mpSlotGames[s].Add(gm);
-                }
+            }
 
-            
+
             foreach (List<Game> plgm in mpSlotGames.Values)
-                {
+            {
                 WriteGame(xw, plgm[0], plgm.Count);
                 AppendGameToSb(plgm[0], plgm.Count, sb);
-                }
+            }
+
             EndTable(xw);
             sb.Append("</table></div>");
             EndElement(xw); // body
             EndElement(xw); // document
-            
+
             xw.Flush();
             stm.Flush();
 
@@ -324,9 +337,9 @@ namespace ArbWeb
             List<PackageRelationship> plrel = new List<PackageRelationship>();
 
             foreach (PackageRelationship rel in prt.GetRelationships())
-                {
+            {
                 plrel.Add(rel);
-                }
+            }
 
             prt = null;
 
@@ -334,9 +347,9 @@ namespace ArbWeb
             prt = pkg.CreatePart(uriTeams, sContentType);
 
             foreach (PackageRelationship rel in plrel)
-                {
+            {
                 prt.CreateRelationship(rel.TargetUri, rel.TargetMode, rel.RelationshipType, rel.Id);
-                }
+            }
 
             return prt.GetStream(FileMode.Create, FileAccess.Write);
         }

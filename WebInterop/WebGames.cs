@@ -13,16 +13,16 @@ namespace ArbWeb
     /// </summary>
     public class WebGames
     {
-	    public IAppContext m_appContext;
+        public IAppContext m_appContext;
 
-	    private WebControl m_webControl => m_appContext.WebControl;
-	    private IStatusReporter m_srpt => m_appContext.StatusReport;
-	    
-	    public WebGames(IAppContext appContext)
-	    {
-		    m_appContext = appContext;
-	    }
-	    
+        private WebControl m_webControl => m_appContext.WebControl;
+        private IStatusReporter m_srpt => m_appContext.StatusReport;
+
+        public WebGames(IAppContext appContext)
+        {
+            m_appContext = appContext;
+        }
+
         /*----------------------------------------------------------------------------
 			%%Function:MpFetchGameFilters
 			%%Qualified:ArbWeb.AwMainForm.MpFetchGameFilters
@@ -51,7 +51,7 @@ namespace ArbWeb
         void SetText(TextBox eb, string s)
         {
             if (eb.InvokeRequired)
-                eb.BeginInvoke(new SetTextDel(DoSetText), new object[] {eb, s});
+                eb.BeginInvoke(new SetTextDel(DoSetText), new object[] { eb, s });
             else
                 DoSetText(eb, s);
         }
@@ -84,24 +84,25 @@ namespace ArbWeb
                     WebCore._sid_Assigning_Select_Filters,
                     WebCore._s_Assigning_PrintAddress,
                     WebCore._s_Assigning_Reports_Submit_Print,
-                    new [] {"Schedule.xls", "Schedule{0}.xls", "Schedule({0}).xls", "Schedule ({0}).xls"},
+                    new[] { "Schedule.xls", "Schedule{0}.xls", "Schedule({0}).xls", "Schedule ({0}).xls" },
                     "Schedule",
                     new[]
-                        {
-                        new DownloadGenericExcelReport.ControlSetting<string>(WebCore._s_Assigning_Reports_Select_Format,
-                                                                              WebCore._sid_Assigning_Reports_Select_Format,
-                                                                              "Excel Worksheet Format (.xls)")
-                        },
+                    {
+                        new DownloadGenericExcelReport.ControlSetting<string>(
+                            WebCore._s_Assigning_Reports_Select_Format,
+                            WebCore._sid_Assigning_Reports_Select_Format,
+                            "Excel Worksheet Format (.xls)")
+                    },
                     m_appContext.Profile.GameFile,
                     m_appContext.Profile.GameCopy,
                     m_appContext);
 
             Task tskDownloadGames = new Task(
-	            () =>
-	            {
-		            dg.DownloadGeneric(out var sGameFileNew);
-		            m_appContext.Profile.GameFile = sGameFileNew;
-	            });
+                () =>
+                {
+                    dg.DownloadGeneric(out var sGameFileNew);
+                    m_appContext.Profile.GameFile = sGameFileNew;
+                });
 
             tskDownloadGames.Start();
             if (m_appContext.InAutomation)
@@ -110,6 +111,5 @@ namespace ArbWeb
                 m_appContext.DoPendingQueueUIOp();
             }
         }
-
     }
 }

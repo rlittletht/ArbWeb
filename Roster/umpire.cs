@@ -3,9 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace ArbWeb
 {
-	// ================================================================================
-	//  U M P I R E 
-	// ================================================================================
+    // ================================================================================
+    //  U M P I R E 
+    // ================================================================================
     public class Umpire // UMP
     {
         private string m_sFirst;
@@ -30,12 +30,34 @@ namespace ArbWeb
             m_plsMisc = plsMisc;
         }
 
-        public string FirstName { get { return m_sFirst; } }
-        public string LastName { get { return m_sLast; } }
-        public string Contact { get { return m_sContact; } }
-        public string Misc { get { return m_sMisc; } }
-        public string Name { get { return $"{m_sLast},{m_sFirst}"; } }
-        public List<string> PlsMisc { get { return m_plsMisc; } }
+        public string FirstName
+        {
+            get { return m_sFirst; }
+        }
 
+        public string LastName
+        {
+            get { return m_sLast; }
+        }
+
+        public string Contact
+        {
+            get { return m_sContact; }
+        }
+
+        public string Misc
+        {
+            get { return m_sMisc; }
+        }
+
+        public string Name
+        {
+            get { return $"{m_sLast},{m_sFirst}"; }
+        }
+
+        public List<string> PlsMisc
+        {
+            get { return m_plsMisc; }
+        }
     } // END UMPIRE
 }

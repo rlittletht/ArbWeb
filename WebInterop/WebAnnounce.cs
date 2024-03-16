@@ -11,18 +11,18 @@ using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
 {
-	public class WebAnnounce
-	{
-		private IAppContext m_appContext;
-		
-		/*----------------------------------------------------------------------------
-			%%Function:WebAnnounce
-			%%Qualified:ArbWeb.WebAnnounce.WebAnnounce
-		----------------------------------------------------------------------------*/
-		public WebAnnounce(IAppContext appContext)
-		{
-			m_appContext = appContext;
-		}
+    public class WebAnnounce
+    {
+        private IAppContext m_appContext;
+
+        /*----------------------------------------------------------------------------
+            %%Function:WebAnnounce
+            %%Qualified:ArbWeb.WebAnnounce.WebAnnounce
+        ----------------------------------------------------------------------------*/
+        public WebAnnounce(IAppContext appContext)
+        {
+            m_appContext = appContext;
+        }
 
         void CheckAnnounceControl(string prefix, string suffix, string ctl, bool enabled)
         {
@@ -42,6 +42,7 @@ namespace ArbWeb
             {
                 Utils.ThrowIfNot(false, "announcement doesn't contain containing div");
             }
+
             m_appContext.StatusReport.AddMessage($"Starting Announcement Set for '{containingDiv}'...");
             m_appContext.StatusReport.PushLevel();
 
@@ -86,7 +87,10 @@ namespace ArbWeb
 
             Utils.ThrowIfNot(sCtl != null, $"Can't find {containingDiv} announcement");
 
-            string sidControl = BuildAnnouncementNameOrIdString(WebCore._sid_Announcements_Button_Edit_Prefix, WebCore._sid_Announcements_Button_Edit_Suffix, sCtl);
+            string sidControl = BuildAnnouncementNameOrIdString(
+                WebCore._sid_Announcements_Button_Edit_Prefix,
+                WebCore._sid_Announcements_Button_Edit_Suffix,
+                sCtl);
 
             Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(sidControl), "Couldn't find edit button");
             m_appContext.WebControl.WaitForPageLoad();
@@ -96,7 +100,6 @@ namespace ArbWeb
                 // string sidCkeDiv = WebCore._sid_cke_Prefix + BuildAnnouncementNameOrIdString(WebCore._sid_Announcements_Textarea_Text_Prefix, WebCore._sid_Announcements_Textarea_Text_Suffix, sCtl);
 
                 // we need to find the id to use to click to get the source control
-
             }
 
             // wait for CKEDITOR to load and init...wait for the control
@@ -132,7 +135,7 @@ namespace ArbWeb
 
                 sourceOn = false;
             }
-            else 
+            else
             {
                 Utils.ThrowIfNot(buttonClass.Contains("button_on"), $"could not determine CKE button state: {buttonClass}");
             }
@@ -213,15 +216,15 @@ namespace ArbWeb
         public void SetArbiterAnnounce(string sArbiterHelpNeeded)
         {
             UpdateArbiterAnnouncement("D9UrgentHelpNeeded", sArbiterHelpNeeded, null, null, "All Officials");
-		}
+        }
 
-		/*----------------------------------------------------------------------------
-			%%Function:BuildAnnouncementNameOrIdString
-			%%Qualified:ArbWeb.WebAnnounce.BuildAnnouncementNameOrIdString
-		----------------------------------------------------------------------------*/
-		private static string BuildAnnouncementNameOrIdString(string sPrefix, string sSuffix, string sCtl)
-		{
-			return $"{sPrefix}{sCtl}{sSuffix}";
-		}
-	}
+        /*----------------------------------------------------------------------------
+            %%Function:BuildAnnouncementNameOrIdString
+            %%Qualified:ArbWeb.WebAnnounce.BuildAnnouncementNameOrIdString
+        ----------------------------------------------------------------------------*/
+        private static string BuildAnnouncementNameOrIdString(string sPrefix, string sSuffix, string sCtl)
+        {
+            return $"{sPrefix}{sCtl}{sSuffix}";
+        }
+    }
 }

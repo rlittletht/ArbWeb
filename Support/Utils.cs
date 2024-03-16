@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 
@@ -20,24 +19,24 @@ namespace ArbWeb
 
             SortedList<string, int> pls = new SortedList<string, int>();
             foreach (string s in rgs)
-                {
+            {
                 if (!pls.ContainsKey(s))
                     pls.Add(s, 0);
-                }
+            }
+
             return pls;
         }
 
         public static void ThrowIfNot(bool f, string s)
         {
-	        if (!f)
-		        throw new Exception(s);
+            if (!f)
+                throw new Exception(s);
         }
 
         public static void ThrowIfNot(bool f)
         {
-	        if (!f)
-		        throw new Exception("Unknown failure");
+            if (!f)
+                throw new Exception("Unknown failure");
         }
-
     }
 }

@@ -44,6 +44,7 @@ namespace ArbWeb.Games
                     m_plLevel.Add(sLevel, sLevel);
                     fNewLevel = true;
                 }
+
                 if (!m_plPos.ContainsKey(sPos))
                 {
                     m_plPos.Add(sPos, sPos);
@@ -52,5 +53,4 @@ namespace ArbWeb.Games
             }
         }
     }
-
 }

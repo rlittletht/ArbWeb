@@ -8,29 +8,29 @@ using TCore.MsalWeb;
 
 namespace ArbWeb
 {
-	public class Auth : WebApiInterop.IAccessTokenProvider
-	{
-		public struct AuthInfo
-		{
-			public string Identity;
-			public string Tenant;
-		};
+    public class Auth : WebApiInterop.IAccessTokenProvider
+    {
+        public struct AuthInfo
+        {
+            public string Identity;
+            public string Tenant;
+        };
 
-		private string m_sClientID = "9a58a71e-183d-4a6e-9b12-251e56b70901";
+        private string m_sClientID = "9a58a71e-183d-4a6e-9b12-251e56b70901";
         private string[] m_rgsScopes;
-		private IPublicClientApplication m_app;
-		private AuthInfo m_authInfo;
+        private IPublicClientApplication m_app;
+        private AuthInfo m_authInfo;
 
         public Auth(string sClientID, string[] rgsScopes)
         {
             m_sClientID = sClientID;
             m_rgsScopes = rgsScopes;
             m_authInfo = new AuthInfo() { Identity = null, Tenant = null };
-            
+
             m_app = PublicClientApplicationBuilder.Create(m_sClientID)
-	            .WithRedirectUri("https://login.microsoftonline.com/common/oauth2/nativeclient")
-	            .WithAuthority(AzureCloudInstance.AzurePublic, "common")
-	            .Build();
+               .WithRedirectUri("https://login.microsoftonline.com/common/oauth2/nativeclient")
+               .WithAuthority(AzureCloudInstance.AzurePublic, "common")
+               .Build();
         }
 
         public bool IsLoggedIn => m_authInfo.Identity != null;

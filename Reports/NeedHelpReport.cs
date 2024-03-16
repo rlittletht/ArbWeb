@@ -6,18 +6,18 @@ using TCore.WebControl;
 
 namespace ArbWeb.Reports
 {
-	public class NeedHelpReport
-	{
-		private IAppContext m_appContext;
+    public class NeedHelpReport
+    {
+        private IAppContext m_appContext;
 
-		/*----------------------------------------------------------------------------
-			%%Function:NeedHelpReport
-			%%Qualified:ArbWeb.Reports.NeedHelpReport.NeedHelpReport
-		----------------------------------------------------------------------------*/
-		public NeedHelpReport(IAppContext appContext)
-		{
-			m_appContext = appContext;
-		}
+        /*----------------------------------------------------------------------------
+            %%Function:NeedHelpReport
+            %%Qualified:ArbWeb.Reports.NeedHelpReport.NeedHelpReport
+        ----------------------------------------------------------------------------*/
+        public NeedHelpReport(IAppContext appContext)
+        {
+            m_appContext = appContext;
+        }
 
 
         /*----------------------------------------------------------------------------
@@ -25,16 +25,16 @@ namespace ArbWeb.Reports
 			%%Qualified:ArbWeb.Reports.NeedHelpReport.DoGenMailMergeAndAnnouce
         ----------------------------------------------------------------------------*/
         public void DoGenMailMergeAndAnnouce(
-	        CountsData gc,
-			Roster rst,
+            CountsData gc,
+            Roster rst,
             string[] rgsSports,
-	        string[] rgsSportLevels,
-	        SlotAggr aggregation,
-	        bool fFilterByRanking,
-	        string sMiscFilter,
-	        bool fLaunch,
-	        bool fSetWebAnnounce
-	        )
+            string[] rgsSportLevels,
+            SlotAggr aggregation,
+            bool fFilterByRanking,
+            string sMiscFilter,
+            bool fLaunch,
+            bool fSetWebAnnounce
+        )
         {
             m_appContext.StatusReport.AddMessage("Generating mail merge documents...", MSGT.Header, false);
 
@@ -66,6 +66,7 @@ namespace ArbWeb.Reports
                 if (sMiscFilter == "" || rste.FMatchAnyMisc(sMiscFilter))
                     sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.Last);
             }
+
             sw.Flush();
             sw.Close();
 
@@ -80,7 +81,7 @@ namespace ArbWeb.Reports
             sTempName = Filename.SBuildTempFilename("mailmergedoc", "docx");
             m_appContext.StatusReport.LogData($"Writing mailmergedoc to {sTempName} using template at {sFile}", 3, MSGT.Body);
             OOXML.CreateMailMergeDoc(sFile, sTempName, sCsvTemp, gms, out sArbiterHelpNeeded);
-             
+
             m_appContext.StatusReport.LogData($"ArbiterHelp HTML created: {sArbiterHelpNeeded}", 5, MSGT.Body);
             if (fLaunch)
             {
@@ -91,13 +92,12 @@ namespace ArbWeb.Reports
 
             if (fSetWebAnnounce)
             {
-	            WebAnnounce announce = new WebAnnounce(m_appContext);
+                WebAnnounce announce = new WebAnnounce(m_appContext);
 
                 announce.SetArbiterAnnounce(sArbiterHelpNeeded);
             }
 
             m_appContext.DoPendingQueueUIOp();
         }
-
     }
 }

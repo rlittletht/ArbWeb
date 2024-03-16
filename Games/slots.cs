@@ -94,7 +94,10 @@ namespace ArbWeb
             }
         }
 
-        public DateTime Dttm { get { return m_dttmSlot; } }
+        public DateTime Dttm
+        {
+            get { return m_dttmSlot; }
+        }
 
         /* M E R G E */
         /*----------------------------------------------------------------------------
@@ -113,55 +116,55 @@ namespace ArbWeb
             scNew.m_mpSiteCount = new Dictionary<string, int>();
 
             foreach (string sSport in m_mpSportCount.Keys)
-                {
+            {
                 int c = m_mpSportCount[sSport];
 
                 if (sc.m_mpSportCount.ContainsKey(sSport))
                     c += sc.m_mpSportCount[sSport];
                 scNew.m_mpSportCount.Add(sSport, c);
-                }
+            }
 
             foreach (string sSport in sc.m_mpSportCount.Keys)
-                {
+            {
                 int c = sc.m_mpSportCount[sSport];
 
                 if (!m_mpSportCount.ContainsKey(sSport))
                     scNew.m_mpSportCount.Add(sSport, c);
-                }
+            }
 
             foreach (string sSport in m_mpSportLevelCount.Keys)
-                {
+            {
                 int c = m_mpSportLevelCount[sSport];
 
                 if (sc.m_mpSportLevelCount.ContainsKey(sSport))
                     c += sc.m_mpSportLevelCount[sSport];
                 scNew.m_mpSportLevelCount.Add(sSport, c);
-                }
+            }
 
             foreach (string sSport in sc.m_mpSportLevelCount.Keys)
-                {
+            {
                 int c = sc.m_mpSportLevelCount[sSport];
 
                 if (!m_mpSportLevelCount.ContainsKey(sSport))
                     scNew.m_mpSportLevelCount.Add(sSport, c);
-                }
+            }
 
             foreach (string sSport in m_mpSiteCount.Keys)
-                {
+            {
                 int c = m_mpSiteCount[sSport];
 
                 if (sc.m_mpSiteCount.ContainsKey(sSport))
                     c += sc.m_mpSiteCount[sSport];
                 scNew.m_mpSiteCount.Add(sSport, c);
-                }
+            }
 
             foreach (string sSport in sc.m_mpSiteCount.Keys)
-                {
+            {
                 int c = sc.m_mpSiteCount[sSport];
 
                 if (!m_mpSiteCount.ContainsKey(sSport))
                     scNew.m_mpSiteCount.Add(sSport, c);
-                }
+            }
 
             return scNew;
         }
@@ -170,7 +173,7 @@ namespace ArbWeb
         public bool FMatchFuzzyTime(SlotCount sc)
         {
             if (sc.Dttm.Date == m_dttmSlot.Date)
-                {
+            {
                 if (sc.Dttm.Hour < 12 && m_dttmSlot.Hour < 12)
                     return true;
 
@@ -180,7 +183,8 @@ namespace ArbWeb
 
                 if (sc.Dttm.Hour >= 16 && m_dttmSlot.Hour >= 16)
                     return true;
-                }
+            }
+
             return false;
         }
 
@@ -192,16 +196,15 @@ namespace ArbWeb
 
             if (!m_mpSportCount.ContainsKey(sSport)
                 && !m_mpSportLevelCount.ContainsKey(sSport))
-                {
+            {
                 return 0;
-                }
+            }
 
             if (m_mpSportLevelCount.ContainsKey(sSport))
                 return m_mpSportLevelCount[sSport];
 
             return m_mpSportCount[sSport];
         }
-
     }
 
     // ================================================================================
@@ -219,8 +222,15 @@ namespace ArbWeb
         private DateTime m_dttmEnd;
 
 
-        public DateTime DttmStart { get { return m_dttmStart; } }
-        public DateTime DttmEnd { get { return m_dttmEnd; } }
+        public DateTime DttmStart
+        {
+            get { return m_dttmStart; }
+        }
+
+        public DateTime DttmEnd
+        {
+            get { return m_dttmEnd; }
+        }
 
         /* S L O T  A G G R */
         /*----------------------------------------------------------------------------
@@ -270,7 +280,8 @@ namespace ArbWeb
         	%%Contact: rlittle
 
         ----------------------------------------------------------------------------*/
-        public static SlotAggr Gen(SortedList<string, GameSlot> plgm, DateTime dttmStart, DateTime dttmEnd, string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOnlyOpen)
+        public static SlotAggr Gen(
+            SortedList<string, GameSlot> plgm, DateTime dttmStart, DateTime dttmEnd, string[] rgsSportFilter, string[] rgsSportLevelFilter, bool fOnlyOpen)
         {
             SlotAggr os = new SlotAggr();
 
@@ -283,7 +294,7 @@ namespace ArbWeb
             os.m_plsSites = new List<string>();
 
             foreach (GameSlot gm in plgm.Values)
-                {
+            {
                 if (!gm.Open && fOnlyOpen)
                     continue;
 
@@ -291,7 +302,7 @@ namespace ArbWeb
                     continue;
 
                 if (rgsSportFilter != null)
-                    {
+                {
                     bool fMatch = false;
 
                     foreach (string s in rgsSportFilter)
@@ -300,11 +311,11 @@ namespace ArbWeb
 
                     if (fMatch == false)
                         continue;
-                    }
+                }
 
 
                 if (rgsSportLevelFilter != null)
-                    {
+                {
                     bool fMatch = false;
 
                     foreach (string s in rgsSportLevelFilter)
@@ -313,36 +324,39 @@ namespace ArbWeb
 
                     if (fMatch == false)
                         continue;
-                    }
+                }
 
                 if (os.m_mpSlotSc.ContainsKey(gm.Dttm))
-                    {
+                {
                     os.m_mpSlotSc[gm.Dttm].AddSlot(gm);
-                    }
-                else
-                    {
-                    os.m_mpSlotSc.Add(gm.Dttm, new SlotCount(gm));
-                    }
                 }
+                else
+                {
+                    os.m_mpSlotSc.Add(gm.Dttm, new SlotCount(gm));
+                }
+            }
 
             foreach (SlotCount sc in os.m_mpSlotSc.Values)
-                {
+            {
                 foreach (string sSport in sc.Sports)
-                    {
+                {
                     if (!os.m_plsSports.Contains(sSport))
                         os.m_plsSports.Add(sSport);
-                    }
+                }
+
                 foreach (string sSportLevel in sc.SportLevels)
-                    {
+                {
                     if (!os.m_plsSportLevels.Contains(sSportLevel))
                         os.m_plsSportLevels.Add(sSportLevel);
-                    }
+                }
+
                 foreach (string sSite in sc.Sites)
-                    {
+                {
                     if (!os.m_plsSites.Contains(sSite))
                         os.m_plsSites.Add(sSite);
-                    }
                 }
+            }
+
             return os;
         }
 
@@ -362,26 +376,26 @@ namespace ArbWeb
             SortedList<string, int> mpFilter = null;
 
             if (rgsSportFilter != null)
-                {
+            {
                 if (rgsSportLevelFilter != null)
-                    {
+                {
                     plsUse = m_plsSportLevels;
                     plsCategory = m_plsSports;
 
                     mpFilter = Utils.PlsUniqueFromRgs(rgsSportLevelFilter);
-                    }
+                }
                 else
-                    {
+                {
                     plsUse = m_plsSports;
                     plsCategory = null;
                     mpFilter = Utils.PlsUniqueFromRgs(rgsSportFilter);
-                    }
                 }
+            }
             else
-                {
+            {
                 plsUse = m_plsSportLevels;
                 plsCategory = m_plsSports;
-                }
+            }
 
             string sFormat = "<tr><td>{0}<td>{1}"; //<td>{2}</tr>
 
@@ -389,91 +403,95 @@ namespace ArbWeb
 
             int cCols = 0;
             foreach (string sSport in plsUse)
-                {
+            {
                 if (mpFilter != null && !mpFilter.ContainsKey(sSport))
                     continue;
 
                 if (plsCategory != null)
-                    {
+                {
                     string sCat = null;
 
                     // let's figure out which category we belong in
                     foreach (string sCatT in plsCategory)
-                        {
+                    {
                         if (sSport.StartsWith(sCatT))
-                            {
+                        {
                             sCat = sCatT;
                             break;
-                            }
                         }
+                    }
+
                     if (mpSportCount.ContainsKey(sCat))
                         mpSportCount[sCat]++;
                     else
                         mpSportCount.Add(sCat, 1);
-                    }
-                cCols++;
                 }
+
+                cCols++;
+            }
+
             // write the legend
             sw.WriteLine("<html><body><table>");
 
             if (plsCategory != null)
-                {
+            {
                 sw.Write(String.Format(sFormat, "", ""));
 
                 foreach (string sCatT in plsCategory)
-                    {
+                {
                     if (mpSportCount.ContainsKey(sCatT))
-                        {
+                    {
                         sw.WriteLine("<td colspan={0}>{1}", mpSportCount[sCatT], sCatT);
-                        }
                     }
-                sw.Write("<td></tr>");
                 }
+
+                sw.Write("<td></tr>");
+            }
 
             sw.Write(String.Format(sFormat, "Date", "Slot"));
 
             // at this point, make sure we have a plsCategory with the categories or "" as a single (match all) category
             if (plsCategory == null)
-                {
+            {
                 plsCategory = new List<string>();
                 plsCategory.Add("");
-                }
+            }
 
             foreach (string sCatT in plsCategory)
-                {
+            {
                 // match all the items we have that begin with sCatT
                 foreach (string sSport in plsUse)
-                    {
+                {
                     if (mpFilter != null && !mpFilter.ContainsKey(sSport))
                         continue;
 
                     if (sSport.StartsWith(sCatT))
-                        {
+                    {
                         string s = sSport.Remove(0, sCatT.Length + (sCatT == "" ? 0 : 1));
                         sw.Write("<td>{0}", s);
-                        }
                     }
                 }
+            }
 
             sw.WriteLine("<td>Total</tr>");
 
             // now, put out the actual values...
 
             foreach (SlotCount sc in m_mpSlotSc.Values)
-                {
+            {
                 int cTotal = 0;
                 string sWrite = String.Format(sFormat, sc.Dttm.ToString("MM/dd/yy ddd"), sc.Dttm.ToString("hh:mm tt"));
 
                 foreach (string sCatT in plsCategory)
-                    {
+                {
                     // match all the items we have that begin with sCatT
                     foreach (string sSport in plsUse)
-                        {
+                    {
                         if (mpFilter != null && !mpFilter.ContainsKey(sSport))
                             continue;
 
                         if (sSport.StartsWith(sCatT))
-                            {
+                        {
                             int c = sc.OpenCount(sSport);
 
                             if (c > 0)
@@ -482,16 +500,17 @@ namespace ArbWeb
                                 sWrite += "<td>";
 
                             cTotal += sc.OpenCount(sSport);
-                            }
                         }
                     }
+                }
 
                 if (cTotal > 0)
-                    {
+                {
                     sw.Write(sWrite);
                     sw.WriteLine("<td>{0} umpires</tr>", cTotal);
-                    }
                 }
+            }
+
             sw.Close();
         }
 
@@ -511,8 +530,17 @@ namespace ArbWeb
             {
             }
 
-            public string Axis1Title { get { return m_sAxis1Title; } set { m_sAxis1Title = value; } }
-            public string Axis2Title { get { return m_sAxis2Title; } set { m_sAxis2Title = value; } }
+            public string Axis1Title
+            {
+                get { return m_sAxis1Title; }
+                set { m_sAxis1Title = value; }
+            }
+
+            public string Axis2Title
+            {
+                get { return m_sAxis2Title; }
+                set { m_sAxis2Title = value; }
+            }
 
             /* A D D  V A L U E */
             /*----------------------------------------------------------------------------
@@ -548,7 +576,10 @@ namespace ArbWeb
             {
                 string sFirstRowStyle = "";
 
-                sw.WriteLine("<html><body><table style='mso-yfti-tbllook: 1504;border-collapse: collapse;padding-left: 4pt;padding-right: 4pt' cellspacing=0><thead><tr " + sFirstRowStyle + ">");
+                sw.WriteLine(
+                    "<html><body><table style='mso-yfti-tbllook: 1504;border-collapse: collapse;padding-left: 4pt;padding-right: 4pt' cellspacing=0><thead><tr "
+                    + sFirstRowStyle
+                    + ">");
 
                 SortedList<string, string> rgsCols = fAxis1Pivot ? m_rgsAxis1 : m_rgsAxis2;
                 SortedList<string, string> rgsRows = fAxis1Pivot ? m_rgsAxis2 : m_rgsAxis1;
@@ -559,7 +590,7 @@ namespace ArbWeb
                 bool fNeed2Lines = false;
 
                 for (int i = 0, iMac = rgsCols.Keys.Count; i < iMac; i++)
-                    {
+                {
                     string s = rgsCols[rgsCols.Keys[i]];
                     int cchFirst = s.IndexOf('\r');
 
@@ -570,12 +601,12 @@ namespace ArbWeb
                         rgsFirstLine[i] = "";
 
                     if (cchFirst > 0)
-                        {
+                    {
                         fNeed2Lines = true;
                         int iT = i + 1;
 
                         while (iT < iMac)
-                            {
+                        {
                             string sT = rgsCols[rgsCols.Keys[iT]];
                             if (cchFirst > sT.Length)
                                 break;
@@ -586,14 +617,15 @@ namespace ArbWeb
                             rgsFirstLine[iT] = rgsFirstLine[i];
                             rgcColspan[iT] = 0;
                             iT++;
-                            }
-                        i = iT - 1;
                         }
+
+                        i = iT - 1;
                     }
+                }
 
                 string sStyle = $"style='{sFirstRowStyle}'";
                 if (fNeed2Lines)
-                    {
+                {
                     string sRow1Style = "border-bottom: none;";
                     string sRow2Style = "border-top: none;";
 
@@ -602,40 +634,40 @@ namespace ArbWeb
                     sw.WriteLine(String.Format("<td align=center valign=middle rowspan=2 " + sStyle + ">{0}", !fAxis1Pivot ? m_sAxis1Title : m_sAxis2Title));
 
                     for (int i = 0, iMac = rgsCols.Keys.Count; i < iMac; i++)
-                        {
+                    {
                         if (rgcColspan[i] == 0)
                             continue;
 
                         sw.WriteLine(String.Format("<td align=center valign=middle colspan={0} " + sStyle + ">{1}", rgcColspan[i], rgsFirstLine[i]));
-                        }
+                    }
 
                     sStyle = $"style='{sFirstRowStyle}{sRow2Style}'";
                     sw.WriteLine("<tr " + sStyle + ">");
                     for (int i = 0, iMac = rgsCols.Keys.Count; i < iMac; i++)
-                        {
+                    {
                         string s = rgsCols[rgsCols.Keys[i]].Substring(rgsFirstLine[i].Length + 1);
                         sw.WriteLine(String.Format("<td align=center valign=middle " + sStyle + ">{0}", s));
-                        }
                     }
+                }
                 else
-                    {
+                {
                     sw.WriteLine(String.Format("<td align=center valign=middle " + sStyle + ">{0}", !fAxis1Pivot ? m_sAxis1Title : m_sAxis2Title));
                     foreach (string sT in rgsCols.Keys)
-                        {
+                    {
                         string s = rgsCols[sT];
                         sw.WriteLine(String.Format("<td align=center valign=middle " + sStyle + ">{0}", s));
-                        }
                     }
+                }
 
                 sw.WriteLine("</thead>");
                 // now, each row is from the other axis
                 foreach (string sRowT in rgsRows.Keys)
-                    {
+                {
                     string sRow = rgsRows[sRowT];
                     sw.WriteLine($"<tr><td>{sRow}");
 
                     foreach (string sColT in rgsCols.Keys)
-                        {
+                    {
                         string sCol = rgsCols[sColT];
                         string sKey;
 
@@ -648,12 +680,11 @@ namespace ArbWeb
                             sw.WriteLine($"<td>{m_mpAxisValues[sKey]}");
                         else
                             sw.WriteLine("<td>");
-                        }
                     }
+                }
+
                 sw.WriteLine("</table>");
             }
-
-
         }
 
         /* G E N  R E P O R T  B Y  S I T E */
@@ -680,24 +711,24 @@ namespace ArbWeb
             plsUse = new List<string>();
 
             foreach (string sSite in os.m_plsSites)
-                {
+            {
                 if (mpFilter != null && !mpFilter.ContainsKey(sSite))
                     continue;
 
                 plsUse.Add(sSite);
-                }
+            }
 
             // now, put out the actual values...
 
             for (int isc = 0, iscMac = os.m_mpSlotSc.Keys.Count; isc < iscMac; isc++)
-                {
+            {
                 SlotCount sc = os.m_mpSlotSc[os.m_mpSlotSc.Keys[isc]];
 
                 // merge adject SlotCounts for fuzzytime
                 if (fFuzzyTimes)
-                    {
+                {
                     while (isc + 1 < iscMac)
-                        {
+                    {
                         SlotCount scNext = os.m_mpSlotSc[os.m_mpSlotSc.Keys[isc + 1]];
 
                         if (!scNext.FMatchFuzzyTime(sc))
@@ -705,8 +736,8 @@ namespace ArbWeb
 
                         sc = sc.Merge(scNext);
                         isc++;
-                        }
                     }
+                }
 
                 int cTotal = 0;
 
@@ -716,38 +747,38 @@ namespace ArbWeb
 
 
                 if (fFuzzyTimes)
-                    {
+                {
                     string sTime;
                     string sTimeKey;
 
                     if (sc.Dttm.Hour < 12)
-                        {
+                    {
                         sTime = "Morning";
                         sTimeKey = "0";
-                        }
+                    }
                     else if (sc.Dttm.Hour >= 16)
-                        {
+                    {
                         sTime = "Evening";
                         sTimeKey = "2";
-                        }
+                    }
                     else
-                        {
+                    {
                         sTime = "Afternoon";
                         sTimeKey = "1";
-                        }
+                    }
 
                     sWrite = String.Format(sFormat, sc.Dttm.ToString("ddd M/d"), sTime);
                     sKey = String.Format(sFormat, sc.Dttm.ToString("MN/dd ddd"), sTimeKey);
-                    }
+                }
                 else
-                    {
+                {
                     sWrite = String.Format(sFormat, sc.Dttm.ToString("M/d ddd"), sc.Dttm.ToString("h:mm tt"));
                     sKey = String.Format(sFormat, sc.Dttm.ToString("MM/dd ddd"), sc.Dttm.ToString("HH:mm"));
-                    }
+                }
 
                 // match all the items we have that begin with sCatT
                 foreach (string sSite in plsUse)
-                    {
+                {
                     int c = sc.OpenCount(sSite);
 
                     if (!mpSiteCount.ContainsKey(sSite))
@@ -759,18 +790,20 @@ namespace ArbWeb
                         htr.AddValue(sWrite, sKey, sSite, sSite, $"{c} umps");
 
                     cTotal += sc.OpenCount(sSite);
-                    }
+                }
 
                 if (cTotal > 0)
-                    {
+                {
                     htr.AddValue(sWrite, sKey, "Total", "zzzTotal", $"{cTotal} umps");
                     cTotalTotal += cTotal;
-                    }
                 }
+            }
+
             foreach (string sSite in mpSiteCount.Keys)
-                {
+            {
                 htr.AddValue("\rTotal", "zzz\rzzzTotal", sSite, sSite, $"{mpSiteCount[sSite]} umps");
-                }
+            }
+
             htr.AddValue("\rTotal", "zzz\rzzzTotal", "Total", "zzzTotal", $"{cTotalTotal} umps");
             htr.GenReport(sw, fDatePivot);
             sw.Close();
