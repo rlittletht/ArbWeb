@@ -174,13 +174,8 @@ namespace ArbWeb
                     // once we set the country, we will be able to set the zip code. note that we cleverly 
                     // set the other info after the country, so we will commit the change to the country.
                     Utils.ThrowIfNot(m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_Country, "United States"), "Failed to set country control");
-                    
-                    m_appContext.WebControl.WaitForCondition((d)=>
-                    {
-	                    string xPath = $"//option[contains(text(), '{rste.State}')]";
 
-                        return (d.FindElement(By.XPath(xPath)) != null);
-                    }, 1000);
+                    m_appContext.WebControl.WaitForXpath($"//option[contains(text(), '{rste.State}')]", 1000);
                     
                     // if there's an address control, then this is a brand new official
                     Utils.ThrowIfNot(m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_City, rste.City, false /*fCheck*/), "Failed to find city control");

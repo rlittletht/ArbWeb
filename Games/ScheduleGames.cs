@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -391,12 +392,25 @@ namespace ArbWeb.Games
         ----------------------------------------------------------------------------*/
         public List<string> RequiredRanks()
         {
+            HashSet<string> honorifics = new HashSet<string>();
+
+            honorifics.Add("HELPER");
+
+            honorifics.Add("HP");
+            honorifics.Add("1B");
+            honorifics.Add("2B");
+            honorifics.Add("3B");
+            honorifics.Add("LINE");
+
             List<string> pls = new List<string>();
 
             HashSet<string> hs = new HashSet<string>();
 
             foreach (GameSlot gm in m_plgmsSorted.Values)
             {
+                if (honorifics.Contains(gm.Pos.ToUpper()))
+                    continue;
+
                 string sPosRank = $"{gm.Sport}, {gm.Pos}";
 
                 if (!hs.Contains(sPosRank))

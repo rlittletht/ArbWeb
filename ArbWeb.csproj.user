@@ -12,8 +12,8 @@
     <CopyProjectOption>0</CopyProjectOption>
     <ProjectView>ProjectFiles</ProjectView>
     <ProjectTrust>0</ProjectTrust>
-    <PublishUrlHistory>ftps://waws-prod-bay-001.ftp.azurewebsites.windows.net/site/wwwroot/ArbWeb/|\\cantorix\netsetup\ArbWeb\|publish\</PublishUrlHistory>
-    <InstallUrlHistory>https://thetasoft.azurewebsites.net/ArbWeb/</InstallUrlHistory>
+    <PublishUrlHistory>d:\websites\black.traynrex.com\publish\arbweb\|d:\websites\black.traynrex.com\publish\ArbWeb\|d:\|ftp://waws-prod-bay-001.ftp.azurewebsites.windows.net/site/wwwroot/ArbWeb/|d:\websites\</PublishUrlHistory>
+    <InstallUrlHistory>https://black.traynrex.com/arbweb/|https://black.traynrex.com/ArbWeb/|https://thetasoft.azurewebsites.net/ArbWeb/</InstallUrlHistory>
     <SupportUrlHistory>
     </SupportUrlHistory>
     <UpdateUrlHistory>

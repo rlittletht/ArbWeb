@@ -47,7 +47,6 @@ namespace ArbWeb
 		[Setting("AfiliationIndex", 0, 0)]                                      public int AffiliationIndex { get; set; }
 		[Setting("LastSplitSports", false, 0)]                                  public bool SplitSports { get; set; }
 		[Setting("LastPivotDate", false, 0)]                                    public bool DatePivot { get; set; }
-		[Setting("DownloadOnlyFutureGames", false, 0)]                          public bool FutureOnly { get; set; }
 		[Setting("LaunchMailMergeDoc", false, 0)]                               public bool Launch { get; set; }
 		[Setting("SetArbiterAnnouncement", false, 0)]                           public bool SetArbiterAnnounce { get; set; }
 		[Setting("TestOnly", false, 0)]                                         public bool TestOnly { get; set; }

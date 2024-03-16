@@ -27,6 +27,8 @@ namespace ArbWeb
         public const string _s_Announcements = "https://www1.arbitersports.com/Shared/AnnouncementsEdit.aspx"; // ok2015
         public const string _s_ContactsView = "https://www1.arbitersports.com/Assigner/ContactsView.aspx"; // ok2018
 
+        public const string s_RightsEdit = "https://www1.arbitersports.com/Assigner/RightsEdit.aspx"; // ok2024
+
         public const string _s_TeamsView = "https://www1.arbitersports.com/assigner/TeamsView.aspx"; // ok2023
 
         // ============================================================================
@@ -40,13 +42,20 @@ namespace ArbWeb
         // H O M E
         // ============================================================================
         private const string _s_Home_Anchor_Login = "SignInButton"; // ctl00$ucMiniLogin$SignInButton"; // ok2010
-        public const string _s_Home_Input_Email = "ctl00$ContentHolder$pgeSignIn$conSignIn$txtEmail"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2016
-        public const string _s_Home_Input_Password = "txtPassword"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2016
-        public const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
+        public const string _s_Home_Input_Email = "Email"; // "ctl00$ContentHolder$pgeSignIn$conSignIn$txtEmail"; // ctl00$ucMiniLogin$UsernameTextBox"; // ok2023
+        public const string _s_Home_Input_Password = "Password"; // txtPassword"; // ctl00$ucMiniLogin$PasswordTextBox"; // ok2023
+        public const string _sid_Home_Button_SignIn = "next"; // ctl00$ucMiniLogin$SignInButton"; // ok2023
+        // public const string _s_Home_Button_SignIn = "ctl00$ContentHolder$pgeSignIn$conSignIn$btnSignIn"; // ctl00$ucMiniLogin$SignInButton"; // ok2016
+
+        public const string _sid_Home_MultiFactor_Label = "mfaEnroll_label"; // ok2023
+        public const string _sid_Home_MfaEnroll_False = "mfaEnroll_false"; // ok2023
+        public const string _sid_Home_Mfa_continue = "continue"; // ok2023
 
         public const string _sid_Home_Div_PnlAccounts = "ctl00_ContentHolder_pgeDefault_conDefault_pnlAccounts"; // ok2010
         public const string _sid_Home_MessagingText = "ctl00_MessagingText"; // ok2022
         public const string _sid_Home_Anchor_NeedHelpLink = "ctl00_PageHelpTextLink"; // not ok 2022
+
+        public const string _sid_Home_LoggedInUserId = "LoggedInUserId"; // ok2023
 
         // ============================================================================
         // A S S I G N I N G
@@ -258,8 +267,23 @@ namespace ArbWeb
         public const string _sid_Announcements_Button_Edit_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
         public const string _sid_Announcements_Button_Edit_Suffix = "_btnEdit";
 
+        public const string _sid_Announcements_Button_ToAssigners_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_"; // ok2024
+        public const string _sid_Announcements_Button_ToAssigners_Suffix = "_chkToAssigners_Edit"; // ok2024
+
+        public const string _sid_Announcements_Button_ToOfficials_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_"; // ok2024
+        public const string _sid_Announcements_Button_ToOfficials_Suffix = "_ddlFilters"; // ok2024
+            
+        public const string _s_Announcements_Button_ToOfficials_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // ok2024
+        public const string _s_Announcements_Button_ToOfficials_Suffix = "$ddlFilters"; // ok2024
+
+        public const string _sid_Announcements_Button_ToContacts_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_"; // ok2024
+        public const string _sid_Announcements_Button_ToContacts_Suffix = "_chkToContacts_Edit"; // ok2024
+
         public const string _sid_Announcements_Button_Save_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
         public const string _sid_Announcements_Button_Save_Suffix = "_btnSave";
+
+        public const string _sid_Announcements_Button_Cancel_Prefix = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements_";
+        public const string _sid_Announcements_Button_Cancel_Suffix = "_btnCancel";
 
         public const string _sid_Login_Span_Type_Prefix = "ctl00_ContentHolder_pgeDefault_conDefault_dgAccounts_";
         private const string _sid_Login_Span_Type_Suffix = "_lblType2";
@@ -268,6 +292,27 @@ namespace ArbWeb
         public const string _sid_Login_Anchor_TypeLink_Suffix = "_UserTypeLink";
 
         public const string s_MiscField_EditControlSubstring = "txtMiscFieldValue";
+
+        public const string s_RightsEdit_PermissionsTarget = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$ddlUserTypes"; // ok2024
+        public const string sid_RightsEdit_PermissionsTarget = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_ddlUserTypes"; // ok2024
+
+        public const string s_RightsEdit_AllowUsersTo = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$ddlRights"; // ok2024
+        public const string sid_RightsEdit_AllowUsersTo = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_ddlRights"; // ok2024
+
+        public const string s_RightsEdit_WithoutPermissions = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$lstNotAllowed"; // ok2024
+        public const string sid_RightsEdit_WithoutPermissions = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_lstNotAllowed"; // ok2024
+
+        public const string s_RightsEdit_WithPermissions = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$lstAllowed"; // ok2024
+        public const string sid_RightsEdit_WithPermissions = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_lstAllowed"; // ok2024
+
+        public const string s_RightsEdit_RemovePermission = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$btnDeny"; // ok2024
+        public const string sid_RightsEdit_RemovePermission = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_btnDeny"; // ok2024
+
+        public const string s_RightsEdit_AddPermission = "ctl00$ContentHolder$pgeRightsEdit$conRightsEdit$btnAllow"; // ok2024
+        public const string sid_RightsEdit_AddPermission = "ctl00_ContentHolder_pgeRightsEdit_conRightsEdit_btnAllow"; // ok2024
+
+//        public const string s_ = ""; // ok2024
+//        public const string sid_ = ""; // ok2024
 
         // ============================================================================
         // C O N T A C T S

@@ -276,9 +276,12 @@ namespace ArbWeb
             SortedDictionary<string, List<Game>> mpSlotGames = new SortedDictionary<string, List<Game>>();
 
             foreach (Game gm in gms.Games.Values)
-                {
-                if (gm.TotalSlots - gm.OpenSlots > 1)
+            {
+                if (gm.OpenSlots == 0)
                     continue;
+
+                //if (gm.TotalSlots - gm.OpenSlots > 1)
+                //    continue;
 
                 string s = $"{gm.Slots[0].Dttm.ToString("yyyyMMdd:HHmm")}-{gm.Slots[0].SiteShort}-{gm.TotalSlots - gm.OpenSlots}";
                 if (!mpSlotGames.ContainsKey(s))
