@@ -203,7 +203,7 @@ namespace ArbWeb
             {
                 MicroTimer timer = new MicroTimer();
 
-                HandleGenericRoster gr = new HandleGenericRoster(
+                OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(
                     m_appContext,
                     !fRankOnly, // !m_cbRankOnly.Checked,
                     fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked,
@@ -219,7 +219,7 @@ namespace ArbWeb
             if (fIncludeLastAccess)
             {
                 MicroTimer timer = new MicroTimer();
-                HandleGenericRoster gr = new HandleGenericRoster(
+                OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(
                     m_appContext,
                     !fRankOnly, // !m_cbRankOnly.Checked,
                     fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked,
@@ -390,7 +390,7 @@ namespace ArbWeb
 			%%Function:HandleRosterPostUpdateForDownload
 			%%Qualified:ArbWeb.WebRoster.HandleRosterPostUpdateForDownload
         ----------------------------------------------------------------------------*/
-        private void HandleRosterPostUpdateForDownload(HandleGenericRoster gr, IRoster irstBuilding)
+        private void HandleRosterPostUpdateForDownload(OfficialsRosterWebInterop gr, IRoster irstBuilding)
         {
             // get the last login date from the officials main page
             gr.NavigateOfficialsPageAllOfficials();
@@ -432,10 +432,10 @@ namespace ArbWeb
             m_appContext.StatusReport.PushLevel();
 
             m_appContext.PushCursor(Cursors.WaitCursor);
-            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_appContext.Profile.Roster);
+            string sOutFile = OfficialsRosterWebInterop.SBuildRosterFilename(m_appContext.Profile.Roster);
 
             m_appContext.Profile.Roster = sOutFile;
-            HandleGenericRoster gr = new HandleGenericRoster(
+            OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(
                 m_appContext,
                 !fRankOnly, // fNeedPass1OnUpload
                 fAddOfficialsOnly, // only add officials
@@ -465,7 +465,7 @@ namespace ArbWeb
 
             tsk.Start();
 
-            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_appContext.Profile.Roster);
+            string sOutFile = OfficialsRosterWebInterop.SBuildRosterFilename(m_appContext.Profile.Roster);
             m_appContext.Profile.Roster = sOutFile;
 
             // make sure directories exist

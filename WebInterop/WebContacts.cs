@@ -28,11 +28,11 @@ namespace ArbWeb
             m_appContext.StatusReport.PushLevel();
 
             m_appContext.PushCursor(Cursors.WaitCursor);
-            string sOutFile = HandleGenericRoster.SBuildRosterFilename(m_appContext.Profile.Contacts);
+            string sOutFile = OfficialsRosterWebInterop.SBuildRosterFilename(m_appContext.Profile.Contacts);
 
             m_appContext.Profile.Contacts = sOutFile;
 #if no
-            HandleGenericRoster gr = new HandleGenericRoster(this,);
+            OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(this,);
 
             gr.HandleRoster(null, sOutFile, null, HandleRosterPostUpdateForDownload);
             PopCursor();

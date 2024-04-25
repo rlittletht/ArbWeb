@@ -346,9 +346,9 @@ namespace ArbWeb
 			%%Qualified:ArbWeb.WebRoster.InvokeHandleRoster
         ----------------------------------------------------------------------------*/
         void InvokeHandleRoster(
-            Roster rstUpload, string sInFile, Roster rstServer, bool fRankOnly, bool fAddOfficialsOnly, HandleGenericRoster.HandleRosterPostUpdateDelegate hrpu)
+            Roster rstUpload, string sInFile, Roster rstServer, bool fRankOnly, bool fAddOfficialsOnly, OfficialsRosterWebInterop.HandleRosterPostUpdateDelegate hrpu)
         {
-            HandleGenericRoster gr = new HandleGenericRoster(
+            OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(
                 m_appContext,
                 !fRankOnly, // !m_cbRankOnly.Checked, // fNeedPass1OnUpload
                 fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked, // only add officials

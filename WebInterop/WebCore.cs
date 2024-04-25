@@ -892,7 +892,7 @@ namespace ArbWeb
         }
     }
 
-    public class HandleGenericRoster
+    public class OfficialsRosterWebInterop
     {
         private IAppContext m_iac;
         private bool m_fAddOfficialsOnly;
@@ -906,7 +906,7 @@ namespace ArbWeb
         public delegate void delAddOfficials(List<IRosterEntry> plirste);
         public delegate void delDoPostHandleRoster(IRoster irstUpload, IRoster irstBuilding);
 
-        public HandleGenericRoster(
+        public OfficialsRosterWebInterop(
             IAppContext iac, bool fNeedPass1OnUpload, bool fAddOfficialsOnly, delDoPass1Visit doPass1Visit, delAddOfficials doAddOfficials,
             delDoPostHandleRoster doPostHandleRoster)
         {
@@ -1182,7 +1182,7 @@ namespace ArbWeb
 
         /*----------------------------------------------------------------------------
         	%%Function: ProcessAllOfficialPages
-        	%%Qualified: ArbWeb.HandleGenericRoster.ProcessAllOfficialPages
+        	%%Qualified: ArbWeb.OfficialsRosterWebInterop.ProcessAllOfficialPages
         	%%Contact: rlittle
         	
         ----------------------------------------------------------------------------*/
@@ -1286,11 +1286,11 @@ namespace ArbWeb
         }
 
 
-        public delegate void HandleRosterPostUpdateDelegate(HandleGenericRoster gr, IRoster irst);
+        public delegate void HandleRosterPostUpdateDelegate(OfficialsRosterWebInterop gr, IRoster irst);
 
         /*----------------------------------------------------------------------------
         	%%Function: GenericVisitRoster
-        	%%Qualified: ArbWeb.HandleGenericRoster.GenericVisitRoster
+        	%%Qualified: ArbWeb.OfficialsRosterWebInterop.GenericVisitRoster
         	%%Contact: rlittle
         	
 			If rst == null, then we're downloading the roster.  Otherwise, we are
