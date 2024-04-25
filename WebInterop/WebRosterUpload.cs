@@ -24,7 +24,7 @@ namespace ArbWeb
             RosterEntry rsteNew = (RosterEntry)irstUploading.IrsteLookupEmail(rste.Email);
             RosterEntry rsteServer = (RosterEntry)irstServer?.IrsteLookupEmail(rste.Email);
 
-            if (rsteNew.FEqualsMisc(rsteServer))
+            if (rsteNew.FEqualsMisc(rstServer.SkipMiscFields, rsteServer))
                 return;
 
             List<string> plsMiscServer = rstServer.PlsMisc;

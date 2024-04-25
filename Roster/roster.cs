@@ -57,7 +57,7 @@ namespace ArbWeb
             return false;
         }
 
-        public bool FEqualsMisc(IRosterEntry irste)
+        public bool FEqualsMisc(HashSet<int> skipFields, IRosterEntry irste)
         {
             RosterEntry rste = (RosterEntry)irste; // if they call us, we better be backed by a real RosterEntry
 
@@ -68,6 +68,9 @@ namespace ArbWeb
 
             for (i = 0; i < m_plsMisc.Count; i++)
             {
+                if (skipFields.Contains(i))
+                    continue;
+
                 if (string.IsNullOrWhiteSpace(m_plsMisc[i])
                     && string.IsNullOrWhiteSpace(rste.m_plsMisc[i]))
                 {
@@ -1013,6 +1016,32 @@ namespace ArbWeb
         {
             get => m_plsMisc;
             set => m_plsMisc = value;
+        }
+
+        private HashSet<int> m_skipMiscFields = null;
+
+        public HashSet<int> SkipMiscFields
+        {
+            get
+            {
+                if (m_skipMiscFields == null)
+                {
+                    m_skipMiscFields = new HashSet<int>();
+
+                    if (m_plsMisc != null)
+                    {
+                        for (int i = 0; i < m_plsMisc.Count; i++)
+                        {
+                            string field = m_plsMisc[i];
+
+                            if (string.Compare(field, "BGCExpirationDate", StringComparison.OrdinalIgnoreCase) == 0)
+                                m_skipMiscFields.Add(i);
+                        }
+                    }
+                }
+
+                return m_skipMiscFields;
+            }
         }
 
         /* R E A D  R O S T E R */

@@ -265,7 +265,7 @@ namespace ArbWeb
     {
         void SetEmail(string sEmail);
         string Email { get; set; }
-        bool FEqualsMisc(IRosterEntry irste);
+        bool FEqualsMisc(HashSet<int> skipFields, IRosterEntry irste);
         bool Marked { get; set; }
     }
 
