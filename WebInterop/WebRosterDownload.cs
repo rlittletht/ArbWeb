@@ -15,57 +15,29 @@ namespace ArbWeb
     public partial class WebRoster
     {
         /*----------------------------------------------------------------------------
-			%%Function:GetRosterInfoFromServer
-			%%Qualified:ArbWeb.WebRoster.GetRosterInfoFromServer
+            %%Function: VOPC_UpdateLastAccess
+            %%Qualified:ArbWeb.WebRoster.VOPC_UpdateLastAccess
 
-            Get the roster information from the server.
+            Update the "last login" value.  since we are scraping the screen for
+            this, we have to deal with pagination
         ----------------------------------------------------------------------------*/
-        void GetRosterInfoFromServer(string sEmail, string sOfficialID, RosterEntry rste)
-        {
-            SyncRsteWithServer(sOfficialID, rste, null);
-
-            if (rste.Address1 == null
-                || rste.Address2 == null
-                || rste.City == null
-                || rste.m_sDateJoined == null
-                || rste.m_sDateOfBirth == null
-                || rste.Email == null
-                || rste.First == null
-                || rste.m_sGamesPerDay == null
-                || rste.m_sGamesPerWeek == null
-                || rste.Last == null
-                || rste.m_sOfficialNumber == null
-                || rste.State == null
-                || rste.m_sTotalGames == null
-                || rste.m_sWaitMinutes == null
-                || rste.Zip == null)
-            {
-                throw new Exception("couldn't extract one more more fields from official info");
-            }
-        }
-
-        /*----------------------------------------------------------------------------
-        	%%Function: VOPC_UpdateLastAccess
-			%%Qualified:ArbWeb.WebRoster.VOPC_UpdateLastAccess
-        	
-            Update the "last login" value.  since we are scraping the screen for 
-			this, we have to deal with pagination
-        ----------------------------------------------------------------------------*/
-        private void VOPC_UpdateLastAccess(Object o)
+        private void VOPC_UpdateLastAccess(Object o, string pageNavLink)
         {
             MicroTimer timer = new MicroTimer();
+
             Roster rstBuilding = (Roster)o;
 
             UpdateLastAccessFromCoreOfficialsPage(rstBuilding);
+            FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage(rstBuilding);
 
             timer.Stop();
-            m_appContext.StatusReport.LogData($"UpdateLastAccessFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
+            m_appContext.StatusReport.LogData($"FixupEmailAddressForNotJoinedFromPage and UpdateLastAccessFromPage elapsed: {timer.MsecFloat}", 1, MSGT.Body);
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
-			%%Qualified:ArbWeb.WebRoster.FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
-        	
+            %%Function: FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
+            %%Qualified:ArbWeb.WebRoster.FixupEmailAddressForNotJoinedOfficialsFromCoreOfficialsPage
+
             non-joined officials won't get an email address in the downloaded
             quickroster. we can fix this up as we visit the officials page by matching
             the full name of the official.
@@ -122,10 +94,10 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:VOPC_FixupNonJoinedEmailAddress
-			%%Qualified:ArbWeb.WebRoster.VOPC_FixupNonJoinedEmailAddress
+            %%Function:VOPC_FixupNonJoinedEmailAddress
+            %%Qualified:ArbWeb.WebRoster.VOPC_FixupNonJoinedEmailAddress
         ----------------------------------------------------------------------------*/
-        private void VOPC_FixupNonJoinedEmailAddress(Object o)
+        private void VOPC_FixupNonJoinedEmailAddress(Object o, string pageNavLink)
         {
             MicroTimer timer = new MicroTimer();
 
@@ -138,9 +110,9 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: UpdateLastAccessFromCoreOfficialsPage
-			%%Qualified:ArbWeb.WebRoster.UpdateLastAccessFromCoreOfficialsPage
-        	
+            %%Function: UpdateLastAccessFromCoreOfficialsPage
+            %%Qualified:ArbWeb.WebRoster.UpdateLastAccessFromCoreOfficialsPage
+
             Assuming we are on the core officials page...
         ----------------------------------------------------------------------------*/
         private void UpdateLastAccessFromCoreOfficialsPage(Roster rstBuilding)
@@ -190,8 +162,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:DoProcessQuickRosterOfficials
-			%%Qualified:ArbWeb.WebRoster.DoProcessQuickRosterOfficials
+            %%Function:DoProcessQuickRosterOfficials
+            %%Qualified:ArbWeb.WebRoster.DoProcessQuickRosterOfficials
         ----------------------------------------------------------------------------*/
         Roster DoProcessQuickRosterOfficials(string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess, bool fRankOnly, bool fAddOfficialsOnly)
         {
@@ -199,8 +171,10 @@ namespace ArbWeb
 
             rstBuilding.ReadRoster(sDownloadedRoster);
 
-            // always fixup the email addresses for non-joined officials
+            if (!fIncludeLastAccess)
             {
+                // just update NonJoinedEmailAddress
+
                 MicroTimer timer = new MicroTimer();
 
                 OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(
@@ -209,15 +183,16 @@ namespace ArbWeb
                     fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked,
                     null,
                     null,
-                    null);
+                    null,
+                    false);
                 gr.ProcessAllOfficialPages(VOPC_FixupNonJoinedEmailAddress, rstBuilding);
 
                 timer.Stop();
                 m_appContext.StatusReport.LogData($"ProcessAllOfficialPages For EmailFixup elapsed: {timer.MsecFloat}", 1, MSGT.Body);
             }
-
-            if (fIncludeLastAccess)
+            else
             {
+                // UpdateLastAccess AND NonJoinedEmailAddress
                 MicroTimer timer = new MicroTimer();
                 OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(
                     m_appContext,
@@ -225,7 +200,8 @@ namespace ArbWeb
                     fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked,
                     null,
                     null,
-                    null);
+                    null,
+                    false);
 
                 gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, rstBuilding);
 
@@ -247,8 +223,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:RosterQuickBuildFromDownloadedRoster
-			%%Qualified:ArbWeb.WebRoster.RosterQuickBuildFromDownloadedRoster
+            %%Function:RosterQuickBuildFromDownloadedRoster
+            %%Qualified:ArbWeb.WebRoster.RosterQuickBuildFromDownloadedRoster
         ----------------------------------------------------------------------------*/
         private Roster RosterQuickBuildFromDownloadedRoster(
             string sDownloadedRoster, bool fIncludeRankings, bool fIncludeLastAccess, bool fRankOnly, bool fAddOfficialsOnly)
@@ -258,9 +234,9 @@ namespace ArbWeb
 
 
         /*----------------------------------------------------------------------------
-        	%%Function: DownloadQuickRosterToFile
-			%%Qualified:ArbWeb.WebRoster.DownloadQuickRosterToFile
-			
+            %%Function: DownloadQuickRosterToFile
+            %%Qualified:ArbWeb.WebRoster.DownloadQuickRosterToFile
+
         ----------------------------------------------------------------------------*/
         string DownloadQuickRosterToFile()
         {
@@ -278,8 +254,8 @@ namespace ArbWeb
 
         /* D O  D O W N L O A D  Q U I C K  R O S T E R  W O R K */
         /*----------------------------------------------------------------------------
-        	%%Function: DoDownloadQuickRosterWork
-			%%Qualified:ArbWeb.WebRoster.DoDownloadQuickRosterWork
+            %%Function: DoDownloadQuickRosterWork
+            %%Qualified:ArbWeb.WebRoster.DoDownloadQuickRosterWork
         ----------------------------------------------------------------------------*/
         Roster DoDownloadQuickRosterWork(bool fRankOnly, bool fAddOfficialsOnly)
         {
@@ -299,8 +275,8 @@ namespace ArbWeb
 
 
         /*----------------------------------------------------------------------------
-			%%Function:DoDownloadQuickRosterOfficialsOnlyWork
-			%%Qualified:ArbWeb.WebRoster.DoDownloadQuickRosterOfficialsOnlyWork
+            %%Function:DoDownloadQuickRosterOfficialsOnlyWork
+            %%Qualified:ArbWeb.WebRoster.DoDownloadQuickRosterOfficialsOnlyWork
         ----------------------------------------------------------------------------*/
         Roster DoDownloadQuickRosterOfficialsOnlyWork(bool fRankOnly, bool fAddOfficialsOnly)
         {
@@ -319,8 +295,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:DoRosterDownload
-			%%Qualified:ArbWeb.WebRoster.DoRosterDownload
+            %%Function:DoRosterDownload
+            %%Qualified:ArbWeb.WebRoster.DoRosterDownload
         ----------------------------------------------------------------------------*/
         void DoRosterDownload(string sTempFile)
         {
@@ -369,8 +345,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:SRosterFileDownload
-			%%Qualified:ArbWeb.WebRoster.SRosterFileDownload
+            %%Function:SRosterFileDownload
+            %%Qualified:ArbWeb.WebRoster.SRosterFileDownload
         ----------------------------------------------------------------------------*/
         private string SRosterFileDownload()
         {
@@ -387,25 +363,45 @@ namespace ArbWeb
 
 
         /*----------------------------------------------------------------------------
-			%%Function:HandleRosterPostUpdateForDownload
-			%%Qualified:ArbWeb.WebRoster.HandleRosterPostUpdateForDownload
+            %%Function:HandleRosterPostUpdateForDownload
+            %%Qualified:ArbWeb.WebRoster.HandleRosterPostUpdateForDownload
         ----------------------------------------------------------------------------*/
         private void HandleRosterPostUpdateForDownload(OfficialsRosterWebInterop gr, IRoster irstBuilding)
         {
             // get the last login date from the officials main page
-            gr.NavigateOfficialsPageAllOfficials();
+            NavigateOfficialsPageAllOfficials(m_appContext);
             throw new Exception("NYI");
 
             // gr.ProcessAllOfficialPages(VOPC_UpdateLastAccess, irstBuilding);
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:HandleRosterPass1VisitForUploadDownload
-			%%Qualified:ArbWeb.WebRoster.HandleRosterPass1VisitForUploadDownload
+            %%Function:HandleRosterPass1VisitForUploadDownload
+            %%Qualified:ArbWeb.WebRoster.HandleRosterPass1VisitForUploadDownload
         ----------------------------------------------------------------------------*/
         void HandleRosterPass1VisitForUploadDownload(
-            string sEmail,
-            string sOfficialID,
+            OfficialsRosterWebInterop interop,
+            OfficialLinkInfo linkInfo,
+            IRoster irstUploading,
+            IRoster irstServer,
+            IRosterEntry irste,
+            IRoster irstBuilding,
+            bool fNotJustAdded,
+            bool fMarkOnly)
+        {
+            // if we just added the official, then we already entered all of their information, don't do it again
+            if (fNotJustAdded)
+                UpdateInfo(interop, linkInfo, irstUploading, irstServer, (RosterEntry)irste, fMarkOnly);
+        }
+
+
+        /*----------------------------------------------------------------------------
+            %%Function:HandleRosterPass1VisitForUploadDownload
+            %%Qualified:ArbWeb.WebRoster.HandleRosterPass1VisitForUploadDownload
+        ----------------------------------------------------------------------------*/
+        void HandleRosterPass2VisitForUploadDownload(
+            OfficialsRosterWebInterop interop,
+            OfficialLinkInfo linkInfo,
             IRoster irstUploading,
             IRoster irstServer,
             IRosterEntry irste,
@@ -415,16 +411,15 @@ namespace ArbWeb
         {
             // if we're just marking officials, don't update the misc fields
             if (!fMarkOnly)
-                UpdateMisc(sEmail, sOfficialID, irstUploading, irstServer, (RosterEntry)irste, irstBuilding);
-
-            // if we just added the official, then we already entered all of their information, don't do it again
-            if (fNotJustAdded)
-                UpdateInfo(sEmail, sOfficialID, irstUploading, irstServer, (RosterEntry)irste, fMarkOnly);
+                UpdateMisc(linkInfo.sEmail, linkInfo.sOfficialID, irstUploading, irstServer, (RosterEntry)irste, irstBuilding);
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: DoDownloadRoster
-			%%Qualified:ArbWeb.WebRoster.DoDownloadRoster
+            %%Function: DoDownloadRoster
+            %%Qualified:ArbWeb.WebRoster.DoDownloadRoster
+
+            Do a legacy roster download - visit the officials page and visit every
+            official and scrape their info.
         ----------------------------------------------------------------------------*/
         public void DoDownloadRoster(bool fRankOnly, bool fAddOfficialsOnly)
         {
@@ -437,15 +432,21 @@ namespace ArbWeb
             m_appContext.Profile.Roster = sOutFile;
             OfficialsRosterWebInterop gr = new OfficialsRosterWebInterop(
                 m_appContext,
-                !fRankOnly, // fNeedPass1OnUpload
-                fAddOfficialsOnly, // only add officials
-                HandleRosterPass1VisitForUploadDownload,
-                AddOfficials,
-                HandleRankings
-            );
+                true, // fNeedPass1OnUpload
+                false, // only add officials
+                HandleRosterPass1VisitForUploadDownload, // Pass1Visitor
+                null, // AddOfficialsVisitor
+                HandleRankings, // PostHandleRoster
+                true /*fNeedPaginationTraversal*/,
+                HandleRosterPass2VisitForUploadDownload); // Pass2Visitor
 
             Roster rstBuilding = new Roster();
-            gr.GenericVisitRoster(null, rstBuilding, sOutFile, null, HandleRosterPostUpdateForDownload);
+            gr.GenericVisitRoster(
+                null, // rstUpload
+                rstBuilding,
+                sOutFile,
+                null,
+                HandleRosterPostUpdateForDownload);
 
             m_appContext.PopCursor();
             m_appContext.StatusReport.PopLevel();
@@ -455,8 +456,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: DoDownloadQuickRoster
-			%%Qualified:ArbWeb.WebRoster.DoDownloadQuickRoster
+            %%Function: DoDownloadQuickRoster
+            %%Qualified:ArbWeb.WebRoster.DoDownloadQuickRoster
         ----------------------------------------------------------------------------*/
         public async void DoDownloadQuickRoster(bool fRankOnly, bool fAddOfficialsOnly)
         {

@@ -39,41 +39,6 @@ namespace ArbWeb
             rste.m_plsMisc = plsValue;
         }
 
-        /*----------------------------------------------------------------------------
-			%%Function:SetServerRosterInfo
-			%%Qualified:ArbWeb.WebRoster.SetServerRosterInfo
-        ----------------------------------------------------------------------------*/
-        void SetServerRosterInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, bool fMarkOnly)
-        {
-            RosterEntry rsteNew = null;
-            RosterEntry rsteServer = null;
-
-            if (irst != null)
-                rsteNew = (RosterEntry)irst.IrsteLookupEmail(sEmail);
-
-            if (rsteNew == null)
-                rsteNew = new RosterEntry(); // just to get nulls filled in to the member variables
-            else
-                rsteNew.Marked = true;
-
-            if (fMarkOnly)
-                return;
-
-            if (irstServer != null)
-            {
-                rsteServer = (RosterEntry)irstServer.IrsteLookupEmail(sEmail);
-                if (rsteServer == null)
-                {
-                    m_appContext.StatusReport.AddMessage($"NULL Server entry for {sEmail}, SKIPPING", MSGT.Error);
-                    return;
-                }
-
-                if (rsteNew.FEquals(rsteServer))
-                    return;
-            }
-
-            SyncRsteWithServer(sOfficialID, rste, rsteNew);
-        }
 
         /*----------------------------------------------------------------------------
 			%%Function:FConfirmExistingArbiterUserAdd
@@ -354,7 +319,9 @@ namespace ArbWeb
                 fAddOfficialsOnly, // m_cbAddOfficialsOnly.Checked, // only add officials
                 HandleRosterPass1VisitForUploadDownload,
                 AddOfficials,
-                HandleRankings
+                HandleRankings,
+                true,
+                HandleRosterPass2VisitForUploadDownload
             );
 
             gr.GenericVisitRoster(rstUpload, null, sInFile, rstServer, hrpu);
