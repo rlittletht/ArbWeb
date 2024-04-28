@@ -71,6 +71,7 @@
     <ErrorReport>prompt</ErrorReport>
     <PlatformTarget>x86</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -93,22 +94,29 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>false</Prefer32Bit>
     <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>FAFC85A4FC98B38F00C9990C1DD4587A7EC2DC49</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>RobertLittle-SigningCertificate.pfx</ManifestKeyFile>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>true</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestTimestampUrl>http://timestamp.comodoca.com</ManifestTimestampUrl>
-  </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+      <PropertyGroup>
+        <ManifestCertificateThumbprint>E4982D231A3126600D3FB2DE68EC494AE661B1B5</ManifestCertificateThumbprint>
+      </PropertyGroup>
+      <PropertyGroup>
+        <SignManifests>true</SignManifests>
+      </PropertyGroup>
+      <PropertyGroup>
+        <ManifestTimestampUrl>http://timestamp.comodoca.com</ManifestTimestampUrl>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+      <PropertyGroup>
+        <SignManifests>false</SignManifests>
+      </PropertyGroup>
+    </When>
+  </Choose>
   <ItemGroup>
     <Reference Include="cmdline, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\TCore.CmdLine.1.0.0\lib\net40\cmdline.dll</HintPath>
@@ -127,7 +135,8 @@
       <HintPath>packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="SeleniumExtras.WaitHelpers, Version=3.11.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\DotNetSeleniumExtras.WaitHelpers.3.11.0\lib\net45\SeleniumExtras.WaitHelpers.dll</HintPath>
+      <HintPath>
+        packages\DotNetSeleniumExtras.WaitHelpers.3.11.0\lib\net45\SeleniumExtras.WaitHelpers.dll</HintPath>
     </Reference>
     <Reference Include="StatusResult, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\TCore.StatusResult.2.0.0\lib\netstandard2.0\StatusResult.dll</HintPath>
@@ -250,6 +259,7 @@
     <Compile Include="Reports\OpenSlots.cs" />
     <Compile Include="Reports\SiteRosterReport.cs" />
     <Compile Include="Support\TaskYielder.cs" />
+    <Compile Include="WebInterop\OfficialsRosterWebInterop.cs" />
     <Compile Include="WebInterop\WebAdminPermissions.cs" />
     <Compile Include="WebInterop\WebAnnounce.cs" />
     <Compile Include="Roster\roster.cs" />
@@ -370,7 +380,9 @@
   <Import Project="packages\Selenium.WebDriver.4.18.1\build\Selenium.WebDriver.targets" Condition="Exists('packages\Selenium.WebDriver.4.18.1\build\Selenium.WebDriver.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use
+        NuGet Package Restore to download them. For more information, see
+        http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('packages\Selenium.WebDriver.4.18.1\build\Selenium.WebDriver.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Selenium.WebDriver.4.18.1\build\Selenium.WebDriver.targets'))" />
   </Target>

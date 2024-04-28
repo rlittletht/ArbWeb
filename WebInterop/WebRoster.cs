@@ -290,12 +290,12 @@ namespace ArbWeb
 
             rstServer UNUSED right now
 		----------------------------------------------------------------------------*/
-        private void UpdateInfo(string sEmail, string sOfficialID, IRoster irst, IRoster irstServer, RosterEntry rste, bool fMarkOnly)
+        private void UpdateInfo(OfficialsRosterWebInterop interop, OfficialLinkInfo linkInfo,  IRoster irst, IRoster irstServer, RosterEntry rste, bool fMarkOnly)
         {
             if (irst == null)
-                GetRosterInfoFromServer(sEmail, sOfficialID, rste);
+                interop.GetRosterInfoFromServer(linkInfo, rste);
             else
-                SetServerRosterInfo(sEmail, sOfficialID, irst, irstServer, rste, fMarkOnly);
+                interop.SetServerRosterInfo(linkInfo, irst, irstServer, rste, fMarkOnly);
         }
 
 
@@ -312,6 +312,23 @@ namespace ArbWeb
             sPhoneCarrier = $"{WebCore._s_EditUser_PhoneCarrier_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhoneCarrier_Suffix}";
             sPhonePublicNext = $"{WebCore._s_EditUser_PhonePublic_Prefix}ctl{iPhoneRow:00}{WebCore._s_EditUser_PhonePublic_Suffix}";
         }
+
+        /*----------------------------------------------------------------------------
+            %%Function: NavigateOfficialsPageAllOfficials
+            %%Qualified: ArbWeb.WebRoster.NavigateOfficialsPageAllOfficials
+
+            Navigate to the officials main page and make sure all oficials are
+            showing
+        ----------------------------------------------------------------------------*/
+        public static void NavigateOfficialsPageAllOfficials(IAppContext appContext)
+        {
+            appContext.EnsureLoggedIn();
+
+            Utils.ThrowIfNot(appContext.WebControl.FNavToPage(WebCore._s_Page_OfficialsView), "Couldn't nav to officials view!");
+
+            appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_OfficialsView_Select_Filter, "All Officials");
+        }
+
 
         /*----------------------------------------------------------------------------
 			%%Function:SyncRsteWithServer
