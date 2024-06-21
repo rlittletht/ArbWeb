@@ -23,8 +23,8 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
         public Umpire(string sFirst, string sLast, string sAffiliation, string sContact, List<string> plsMisc)
         {
-            m_sFirst = sFirst;
-            m_sLast = sLast;
+            m_sFirst = sFirst.Trim();
+            m_sLast = sLast.Trim();
             m_sContact = sContact;
             m_sMisc = Regex.Replace(sAffiliation, "[ ]*20[0-9][0-9]$", "");
             m_plsMisc = plsMisc;

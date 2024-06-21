@@ -388,8 +388,8 @@ namespace ArbWeb
                 if (rgs.Length < (int)QuickShortColumns.BuiltInMac)
                     throw new Exception("input line too short -- not enough fields");
 
-                First = rgs[(int)QuickShortColumns.FirstName];
-                Last = rgs[(int)QuickShortColumns.LastName];
+                First = rgs[(int)QuickShortColumns.FirstName].Trim();
+                Last = rgs[(int)QuickShortColumns.LastName].Trim();
                 Email = rgs[(int)QuickShortColumns.Email];
                 Address1 = rgs[(int)QuickShortColumns.Address1];
                 Address2 = rgs[(int)QuickShortColumns.Address2];
@@ -588,20 +588,26 @@ namespace ArbWeb
 			%%Contact: rlittle
 			
 		----------------------------------------------------------------------------*/
-        public bool FRanked(string s)
+        public bool FRanked(string s, int atLeast = 0)
         {
             if (m_mpRanking == null || !m_mpRanking.ContainsKey(s))
                 return false;
 
-            return true;
+            if (atLeast == 0)
+                return true;
+
+            return m_mpRanking[s] <= atLeast && m_mpRanking[s] != 0;
         }
 
-        public bool FRankedReal(string s)
+        public bool FRankedReal(string s, int atLeast = 0)
         {
             if (!FRanked(s))
                 return false;
 
-            return m_mpRanking[s] > 0;
+            if (atLeast == 0)
+                return m_mpRanking[s] > 0;
+
+            return m_mpRanking[s] <= atLeast && m_mpRanking[s] != 0;
         }
 
 
@@ -1228,16 +1234,37 @@ namespace ArbWeb
             return new RosterEntry();
         }
 
-        public Roster FilterByRanks(List<string> plsRequiredRanks)
+        public Roster FilterToAllStarOnly(string sMiscFilter)
+        {
+            // figure out what the all star rank names are
+
+            List<string> allStarSports = new List<string>();
+
+            foreach (string rank in m_plsRankings)
+            {
+                string lower = rank.ToLower();
+
+                if (lower.Contains("all stars") && lower.Contains("umpire"))
+                    allStarSports.Add(rank);
+            }
+
+            return FilterByRanks(allStarSports, sMiscFilter, 952);
+        }
+
+        public Roster FilterByRanks(List<string> plsRequiredRanks, string sMiscFilter = "", int atLeast = 0)
         {
             Roster rst = new Roster();
 
             foreach (RosterEntry rste in m_plrste)
             {
+                // if we are supposed to filter by misc field and we don't match, then skip this entry
+                if (!string.IsNullOrEmpty(sMiscFilter) && !rste.FMatchAnyMisc(sMiscFilter))
+                    continue;
+
                 // each entry must be rated for at least one of the required ranks
                 foreach (string s in plsRequiredRanks)
                 {
-                    if (rste.FRankedReal(s))
+                    if (rste.FRankedReal(s, atLeast))
                     {
                         rst.Add(rste);
                         break;

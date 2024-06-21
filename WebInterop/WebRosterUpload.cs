@@ -292,10 +292,17 @@ namespace ArbWeb
                 webControl.FResetMultiSelectOptionsForControlName(WebCore._s_RanksEdit_Select_NotRanked);
                 foreach (string s in mpRankNames[nRank])
                 {
-                    if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_NotRanked, mpNameOptionValueUnranked[s]))
-                        srpt.AddMessage(
-                            $"Could not select an official for ranking: {s}",
-                            MSGT.Error);
+                    if (!mpNameOptionValueUnranked.ContainsKey(s))
+                    {
+                        srpt.AddMessage($"Couldn't find rank to select for {s}...", MSGT.Error);
+                    }
+                    else
+                    {
+                        if (!webControl.FSelectMultiSelectOptionValueForControlName(WebCore._s_RanksEdit_Select_NotRanked, mpNameOptionValueUnranked[s]))
+                            srpt.AddMessage(
+                                $"Could not select an official for ranking: {s}",
+                                MSGT.Error);
+                    }
                     // throw new Exception("couldn't select an official for ranking!");
                 }
 

@@ -540,7 +540,36 @@ namespace ArbWeb
             }
         }
 
-#endregion
+        #endregion
+
+        /*----------------------------------------------------------------------------
+            %%Function: BuildDownloadFilenameFromTemplate
+            %%Qualified: ArbWeb.DownloadGenericExcelReport.BuildDownloadFilenameFromTemplate
+        ----------------------------------------------------------------------------*/
+        public static string BuildDownloadFilenameFromTemplate(string template, string baseName)
+        {
+            string sOutFile;
+            string sPrefix = "";
+
+            if (template.Length < 1)
+            {
+                sOutFile = $"{Environment.GetEnvironmentVariable("temp")}";
+            }
+            else
+            {
+                sOutFile = System.IO.Path.GetDirectoryName(template);
+                string[] rgs;
+                if (template.Length > 5 && sOutFile.Length > 0)
+                {
+                    rgs = CountsData.RexHelper.RgsMatch(template.Substring(sOutFile.Length + 1), $"([.*]){baseName}");
+                    if (rgs != null && rgs.Length > 0 && rgs[0] != null)
+                        sPrefix = rgs[0];
+                }
+            }
+
+            sOutFile = $"{sOutFile}{sPrefix}\\{baseName}_{DateTime.Now:MM}{DateTime.Now:dd}{DateTime.Now:yy}_{DateTime.Now:HH}{DateTime.Now:mm}.csv";
+            return sOutFile;
+        }
     }
 
 
@@ -757,24 +786,7 @@ namespace ArbWeb
             string sOutFile = "";
             string sPrefix = "";
 
-            if (m_sGameFile.Length < 1)
-            {
-                sOutFile = $"{Environment.GetEnvironmentVariable("temp")}";
-            }
-            else
-            {
-                sOutFile = System.IO.Path.GetDirectoryName(m_sGameFile);
-                string[] rgs;
-                if (m_sGameFile.Length > 5 && sOutFile.Length > 0)
-                {
-                    rgs = CountsData.RexHelper.RgsMatch(m_sGameFile.Substring(sOutFile.Length + 1), "([.*])games");
-                    if (rgs != null && rgs.Length > 0 && rgs[0] != null)
-                        sPrefix = rgs[0];
-                }
-            }
-
-
-            sOutFile = String.Format("{0}\\{2}games_{1:MM}{1:dd}{1:yy}_{1:HH}{1:mm}.csv", sOutFile, DateTime.Now, sPrefix);
+            sOutFile = WebCore.BuildDownloadFilenameFromTemplate(m_sGameFile, "games");
 
             if (wkb != null)
             {

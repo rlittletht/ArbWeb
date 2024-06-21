@@ -27,6 +27,9 @@ namespace ArbWeb
             pr.GameCopy = ep.m_ebGameCopy.Text;
             pr.RosterWorking = ep.m_ebRosterWorking.Text;
             pr.ContactsWorking = ep.m_ebContactsWorking.Text;
+            pr.MergeCsvWorking = ep.m_ebMergeCsvWorking.Text;
+            pr.MergeCsv = ep.m_ebMergeCsv.Text;
+
             pr.LogToFile = ep.m_cbLogToFile.Checked;
             pr.TestOnly = ep.m_cbTestOnly.Checked;
             pr.SkipZ = ep.m_cbIgnoreZSports.Checked;
@@ -66,6 +69,9 @@ namespace ArbWeb
             ep.m_ebGameCopy.Text = pr.GameCopy;
             ep.m_ebRosterWorking.Text = pr.RosterWorking;
             ep.m_ebContactsWorking.Text = pr.ContactsWorking;
+            ep.m_ebMergeCsv.Text = pr.MergeCsv;
+            ep.m_ebMergeCsvWorking.Text = pr.MergeCsvWorking;
+
             ep.m_ebProfileName.Enabled = false;
             ep.m_cbLogToFile.Checked = pr.LogToFile;
             ep.m_cbTestOnly.Checked = pr.TestOnly;

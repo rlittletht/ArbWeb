@@ -592,27 +592,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public static string SBuildRosterFilename(string sRosterName)
         {
-            string sOutFile;
-            string sPrefix = "";
-
-            if (sRosterName.Length < 1)
-            {
-                sOutFile = $"{Environment.GetEnvironmentVariable("temp")}";
-            }
-            else
-            {
-                sOutFile = System.IO.Path.GetDirectoryName(sRosterName);
-                string[] rgs;
-                if (sRosterName.Length > 5 && sOutFile.Length > 0)
-                {
-                    rgs = CountsData.RexHelper.RgsMatch(sRosterName.Substring(sOutFile.Length + 1), "([.*])roster");
-                    if (rgs != null && rgs.Length > 0 && rgs[0] != null)
-                        sPrefix = rgs[0];
-                }
-            }
-
-            sOutFile = String.Format("{0}{2}\\roster_{1:MM}{1:dd}{1:yy}_{1:HH}{1:mm}.csv", sOutFile, DateTime.Now, sPrefix);
-            return sOutFile;
+            return WebCore.BuildDownloadFilenameFromTemplate(sRosterName, "games");
         }
 
         class WebPhoneInfo

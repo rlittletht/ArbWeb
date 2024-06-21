@@ -54,6 +54,8 @@ namespace ArbWeb
         [Setting("ShowBrowser", false, 0)] public bool ShowBrowser { get; set; }
         [Setting("LastSlotStartDate", "", "")] public DateTime Start { get; set; }
         [Setting("LastSlotEndDate", "", "")] public DateTime End { get; set; }
+        [Setting("MergeCsv", "", "")] public string MergeCsv { get; set; }
+        [Setting("MergeCsvCopy", "", "")] public string MergeCsvWorking { get; set; }
 
         [Setting("LastOpenSlotDetail", false, 0)]
         public bool OpenSlotDetail { get; set; }
@@ -63,6 +65,9 @@ namespace ArbWeb
 
         [Setting("LastTestEmail", false, 0)] public bool TestEmail { get; set; }
         [Setting("LastLogToFile", false, 0)] public bool LogToFile { get; set; }
+
+        [Setting("FilterMailMergeToAllStars", false, 0)]
+        public bool FilterAllStarsOnly{ get; set; }
 
         [Setting("FilterMailMergeByRank", false, 0)]
         public bool FilterRank { get; set; }
