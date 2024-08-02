@@ -5,6 +5,7 @@ using System.Xml;
 using System.IO.Packaging;
 using System.IO;
 using ArbWeb.Games;
+using NUnit.Framework;
 
 namespace ArbWeb
 {
@@ -152,45 +153,28 @@ namespace ArbWeb
 
         private static Dictionary<string, string> s_mpSportLevelFriendly = new Dictionary<string, string>()
                                                                            {
-                                                                               { "All Stars SB 9/10's", "SB 8/9/10s" },
-                                                                               { "All Stars SB 11's", "SB 9/10/11s" },
+                                                                               { "All Stars SB 8/9/10's", "SB 8/9/10s" },
+                                                                               { "All Stars SB 9/10/11's", "SB 9/10/11s" },
                                                                                { "All Stars SB Majors", "SB Majors" },
                                                                                { "All Stars SB Juniors", "SB Juniors" },
-                                                                               { "All Stars 60' BB 11's", "BB 9/10/11s" },
-                                                                               { "All Stars 60' BB 9/10's", "BB 8/9/10s" },
+                                                                               { "All Stars 60' BB 9/10/11's", "BB 9/10/11s" },
+                                                                               { "All Stars 60' BB 8/9/10's", "BB 8/9/10s" },
                                                                                { "All Stars 60' BB Majors", "BB Majors" },
                                                                                { "All Stars 90' BB Intermediate 70", "BB Intermediates" },
                                                                                { "All Stars 90' BB Juniors 90", "BB Juniors" },
                                                                                { "All Stars 90' BB Seniors", "BB Seniors" },
                                                                            };
 
-        static string DescribeGame(Game gm, int cGames)
+        static string DescribeGames(IReadOnlyCollection<Game> games, int cTotalOpenSlots, int cGamesNoUmpires)
         {
             string sDesc;
             string sCount = "";
 
-#if no
-            if (cGames > 1)
-                sCount = $"{cGames} games, ";
+            if (cGamesNoUmpires > 0)
+                sDesc = $"{games.Count} games: {cTotalOpenSlots} umpires needed!<br/>{cGamesNoUmpires} GAME{(cGamesNoUmpires == 1 ? "" : "S")} WITH NO UMPIRES";
             else
-                sCount = $"{cGames} game, ";
+                sDesc = $"{games.Count} games: {cTotalOpenSlots} umpires needed";
 
-            if (cGames > 1)
-            {
-                sCount = $"{cGames} games, ";
-                if (gm.TotalSlots - gm.OpenSlots == 0)
-                    sDesc = "NO UMPIRES";
-                else
-                    sDesc = $"{gm.TotalSlots - gm.OpenSlots} umpires!";
-            }
-            else
-#endif
-            {
-                if (gm.TotalSlots - gm.OpenSlots == 0)
-                    sDesc = $"{gm.OpenSlots} umpires needed!<br/>NO UMPIRES SIGNED UP";
-                else
-                    sDesc = $"{gm.OpenSlots} umpires needed!";
-            }
             //sDesc = $"{gm.TotalSlots - gm.OpenSlots} UMPIRE";
 
             return $"{sCount}{sDesc}";
@@ -204,23 +188,127 @@ namespace ArbWeb
             return gm.Slots[0].SportLevel;
         }
 
-        static void WriteGame(XmlTextWriter xw, Game gm, int cGames)
+        enum SlotsKind
         {
+            One,
+            MoreThanOne
+        }
+
+        /*----------------------------------------------------------------------------
+            %%Function: GetGameSummaryFromGames
+            %%Qualified: ArbWeb.OOXML.GetGameSummaryFromGames
+
+            Every game must have at least 2 umpires on it (or the total number of
+            slots if it only has 1 slot).
+
+            We keep a running total of surplus umpires (which can go negative), and
+            the count of games that only need 1 umpire.
+        ----------------------------------------------------------------------------*/
+        static Tuple<int, int, Game> GetGameSummaryFromGames(IReadOnlyCollection<Game> games)
+        {
+            int gamesOverOneSlot = 0;
+            int totalUmpiresNeeded = 0;
+            int totalUmpiresOverOneSlot = 0;
+
+            Game gameFirst = null;
+
+            foreach (Game game in games)
+            {
+                if (gameFirst == null)
+                    gameFirst = game;
+
+                SlotsKind kind = game.TotalSlots < 2 ? SlotsKind.One : SlotsKind.MoreThanOne;
+
+                // we always consider open slots
+                totalUmpiresNeeded += game.OpenSlots;
+
+                if (kind != SlotsKind.One)
+                {
+                    gamesOverOneSlot++;
+                    totalUmpiresOverOneSlot += (game.TotalSlots - game.OpenSlots);
+                }
+            }
+
+            // now apportion the umpires we have
+            int totalNeededForMinCoverage = gamesOverOneSlot * 2;
+            int gamesWithNoUmpires = (totalNeededForMinCoverage - totalUmpiresOverOneSlot) / 2;
+            if (gamesWithNoUmpires < 0)
+                gamesWithNoUmpires = 0;
+
+            return new Tuple<int, int, Game>(gamesWithNoUmpires, totalUmpiresNeeded, gameFirst);
+        }
+
+        //        [Test]
+        //        [TestCase(new string[] { "2|4" })]
+
+        [Test]
+        [TestCase(new[] { "2|4" }, 0, 2)]
+        [TestCase(new[] { "0|4" }, 1, 4)]
+        [TestCase(new[] { "1|4" }, 0, 3)]
+        [TestCase(new[] { "3|4" }, 0, 1)]
+        [TestCase(new[] { "2|4", "2|4" }, 0, 4)]
+        [TestCase(new[] { "3|4", "1|4" }, 0, 4)]
+        [TestCase(new[] { "4|4", "0|4" }, 0, 4)]
+        [TestCase(new[] { "3|4", "0|4" }, 0, 5)]
+        [TestCase(new[] { "2|4", "0|4" }, 1, 6)]
+        [TestCase(new[] { "1|4", "1|4", "1|4", "1|4" }, 2, 12)]
+        [TestCase(new[] { "1|1", "1|4", "1|4", "1|4", "1|4" }, 2, 12)]
+        [TestCase(new[] { "0|1", "1|4", "1|4", "1|4", "1|4" }, 2, 13)]
+        public static void TestGetGameSummaryFromGames(string[] openAndTotals, int expectedGamesWithNoUmpires, int expectedTotalNeeded)
+        {
+            List<Game> games = new List<Game>();
+
+            foreach (string openAndTotal in openAndTotals)
+            {
+                Game game = new Game();
+
+                string[] nums = openAndTotal.Split('|');
+
+                int open = int.Parse(nums[0]);
+                int total = int.Parse(nums[1]);
+
+                while (total-- > 0)
+                {
+                    GameSlot slot = new GameSlot(DateTime.Now, "", (open-- > 0 ? "Somebody" : null), "", "", "", "", "", "", "", "", "", false, null);
+
+                    game.AddGameSlot(slot);
+                }
+
+                games.Add(game);
+            }
+
+            (int cGamesWithNoUmpires, int cTotalNeeded, Game gameFirst) = GetGameSummaryFromGames(games);
+
+            Assert.AreEqual(expectedGamesWithNoUmpires, cGamesWithNoUmpires);
+            Assert.AreEqual(expectedTotalNeeded, cTotalNeeded);
+        }
+
+        static void WriteGames(XmlTextWriter xw, IReadOnlyCollection<Game> games)
+        {
+            int cGames = games.Count;
+
+            // see how to combine the games...
+
+            (int cGamesWithNoUmpires, int cTotalNeeded, Game gameFirst) = GetGameSummaryFromGames(games);
+
             StartElement(xw, "tr");
-            WriteSingleParaCell(xw, "0", "auto", gm.Slots[0].Dttm.ToString("M/dd"));
-            WriteSingleParaCell(xw, "0", "auto", gm.Slots[0].Dttm.ToString("ddd h tt"));
+            WriteSingleParaCell(xw, "0", "auto", gameFirst.Slots[0].Dttm.ToString("M/dd"));
+            WriteSingleParaCell(xw, "0", "auto", gameFirst.Slots[0].Dttm.ToString("ddd h tt"));
 
-            WriteSingleParaCell(xw, "0", "auto", FriendlySport(gm));
-            WriteSingleParaCell(xw, "0", "auto", gm.Slots[0].SiteShort);
+            WriteSingleParaCell(xw, "0", "auto", FriendlySport(gameFirst));
+            WriteSingleParaCell(xw, "0", "auto", gameFirst.Slots[0].SiteShort);
 
-            WriteSingleParaCell(xw, "0", "auto", DescribeGame(gm, cGames));
+            WriteSingleParaCell(xw, "0", "auto", DescribeGames(games, cTotalNeeded, cGamesWithNoUmpires));
             EndElement(xw); // tr
         }
 
-        static void AppendGameToSb(Game gm, int cGames, StringBuilder sb)
+        static void AppendGamesToSb(IReadOnlyCollection<Game> games, StringBuilder sb)
         {
-            sb.Append($"<tr><td>{gm.Slots[0].Dttm.ToString("M/dd")}<td>{gm.Slots[0].Dttm.ToString("ddd h tt")}");
-            sb.Append($"<td>{FriendlySport(gm)}<td>{gm.Slots[0].SiteShort}<td class='bold'>{DescribeGame(gm, cGames)}");
+            (int cGamesWithNoUmpires, int cTotalNeeded, Game gameFirst) = GetGameSummaryFromGames(games);
+
+            sb.Append($"<tr><td>{gameFirst.Slots[0].Dttm.ToString("M/dd")}<td>{gameFirst.Slots[0].Dttm.ToString("ddd h tt")}");
+            sb.Append(
+                $"<td>{FriendlySport(gameFirst)}<td>{gameFirst.Slots[0].SiteShort}<td class='bold'>{DescribeGames(games, cTotalNeeded, cGamesWithNoUmpires)}");
         }
 
         static void StartTable(XmlTextWriter xw, int cCols)
@@ -252,10 +340,10 @@ namespace ArbWeb
 
         /* C R E A T E  M A I N  D O C */
         /*----------------------------------------------------------------------------
-        	%%Function: CreateMainDoc
-        	%%Qualified: ArbWeb.OOXML.CreateMainDoc
-        	%%Contact: rlittle
-        	
+            %%Function: CreateMainDoc
+            %%Qualified: ArbWeb.OOXML.CreateMainDoc
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public static bool CreateMainDoc(Package pkg, string sDataSource, ScheduleGames gms, out string sArbiterHelpNeeded)
         {
@@ -295,7 +383,9 @@ namespace ArbWeb
                 //if (gm.TotalSlots - gm.OpenSlots > 1)
                 //    continue;
 
-                string s = $"{gm.Slots[0].Dttm.ToString("yyyyMMdd:HHmm")}-{gm.Slots[0].SiteShort}-{gm.TotalSlots - gm.OpenSlots}";
+//                string s = $"{gm.Slots[0].Dttm.ToString("yyyyMMdd:HHmm")}-{gm.Slots[0].SiteShort}-{gm.TotalSlots - gm.OpenSlots}";
+                string s = $"{gm.Slots[0].Dttm.ToString("yyyyMMdd:HHmm")}-{gm.Slots[0].SiteShort}";
+
                 if (!mpSlotGames.ContainsKey(s))
                     mpSlotGames.Add(s, new List<Game>());
 
@@ -305,8 +395,12 @@ namespace ArbWeb
 
             foreach (List<Game> plgm in mpSlotGames.Values)
             {
-                WriteGame(xw, plgm[0], plgm.Count);
-                AppendGameToSb(plgm[0], plgm.Count, sb);
+                int totalNeeded = 0;
+
+                (int cGamesWithNoUmpires, int cTotalOpenSlots, Game gameFirst) = GetGameSummaryFromGames(plgm);
+
+                WriteGames(xw, plgm);
+                AppendGamesToSb(plgm, sb);
             }
 
             EndTable(xw);
@@ -323,10 +417,10 @@ namespace ArbWeb
 
         /* S T M  C R E A T E  P A R T */
         /*----------------------------------------------------------------------------
-        	%%Function: StmCreatePart
-        	%%Qualified: ArbWeb.OOXML.StmCreatePart
-        	%%Contact: rlittle
-        	
+            %%Function: StmCreatePart
+            %%Qualified: ArbWeb.OOXML.StmCreatePart
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public static Stream StmCreatePart(Package pkg, string sUri, string sContentType, out PackagePart prt)
         {
@@ -357,10 +451,10 @@ namespace ArbWeb
 
         /* C R E A T E  M A I L  M E R G E  D O C */
         /*----------------------------------------------------------------------------
-        	%%Function: CreateMailMergeDoc
-        	%%Qualified: ArbWeb.OOXML.CreateMailMergeDoc
-        	%%Contact: rlittle
-        	
+            %%Function: CreateMailMergeDoc
+            %%Qualified: ArbWeb.OOXML.CreateMailMergeDoc
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public static void CreateMailMergeDoc(string sTemplate, string sDest, string sDataSource, ScheduleGames gms, out string sArbiterHelpNeeded)
         {

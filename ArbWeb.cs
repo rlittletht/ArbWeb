@@ -164,6 +164,8 @@ namespace ArbWeb
         private Button button10;
         private Button button1;
         private Button button11;
+        private CheckBox m_cbFilterAS;
+        private Button button12;
         private WebGames m_webGames;
 
 #region Top Level Program Flow
@@ -660,12 +662,14 @@ namespace ArbWeb
             this.m_pbDeleteUnusedTeams = new System.Windows.Forms.Button();
             this.m_tabs = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.m_cbFilterAS = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.button11 = new System.Windows.Forms.Button();
             this.button10 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.button11 = new System.Windows.Forms.Button();
+            this.button12 = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.m_tabs.SuspendLayout();
@@ -708,9 +712,9 @@ namespace ArbWeb
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.m_recStatus);
-            this.groupBox2.Location = new System.Drawing.Point(16, 643);
+            this.groupBox2.Location = new System.Drawing.Point(16, 681);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(1148, 229);
+            this.groupBox2.Size = new System.Drawing.Size(1148, 191);
             this.groupBox2.TabIndex = 27;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Status";
@@ -719,9 +723,9 @@ namespace ArbWeb
             // 
             this.m_recStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_recStatus.Location = new System.Drawing.Point(8, 25);
+            this.m_recStatus.Location = new System.Drawing.Point(8, 30);
             this.m_recStatus.Name = "m_recStatus";
-            this.m_recStatus.Size = new System.Drawing.Size(1132, 193);
+            this.m_recStatus.Size = new System.Drawing.Size(1132, 150);
             this.m_recStatus.TabIndex = 0;
             this.m_recStatus.Text = "";
             // 
@@ -876,7 +880,7 @@ namespace ArbWeb
             // 
             this.m_ebFilter.Location = new System.Drawing.Point(205, 335);
             this.m_ebFilter.Name = "m_ebFilter";
-            this.m_ebFilter.Size = new System.Drawing.Size(206, 26);
+            this.m_ebFilter.Size = new System.Drawing.Size(52, 26);
             this.m_ebFilter.TabIndex = 44;
             // 
             // m_cbOpenSlotDetail
@@ -1122,7 +1126,7 @@ namespace ArbWeb
             // 
             this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label18.Location = new System.Drawing.Point(40, 370);
+            this.label18.Location = new System.Drawing.Point(40, 419);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(1102, 28);
             this.label18.TabIndex = 82;
@@ -1133,7 +1137,7 @@ namespace ArbWeb
             // 
             this.m_chlbxRoster.CheckOnClick = true;
             this.m_chlbxRoster.FormattingEnabled = true;
-            this.m_chlbxRoster.Location = new System.Drawing.Point(68, 401);
+            this.m_chlbxRoster.Location = new System.Drawing.Point(68, 450);
             this.m_chlbxRoster.Name = "m_chlbxRoster";
             this.m_chlbxRoster.Size = new System.Drawing.Size(581, 96);
             this.m_chlbxRoster.TabIndex = 83;
@@ -1141,7 +1145,7 @@ namespace ArbWeb
             // m_pbCreateRosterReport
             // 
             this.m_pbCreateRosterReport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbCreateRosterReport.Location = new System.Drawing.Point(958, 412);
+            this.m_pbCreateRosterReport.Location = new System.Drawing.Point(958, 461);
             this.m_pbCreateRosterReport.Name = "m_pbCreateRosterReport";
             this.m_pbCreateRosterReport.Size = new System.Drawing.Size(176, 39);
             this.m_pbCreateRosterReport.TabIndex = 84;
@@ -1151,7 +1155,7 @@ namespace ArbWeb
             // m_cbFilterRank
             // 
             this.m_cbFilterRank.AutoSize = true;
-            this.m_cbFilterRank.Location = new System.Drawing.Point(445, 336);
+            this.m_cbFilterRank.Location = new System.Drawing.Point(278, 366);
             this.m_cbFilterRank.Name = "m_cbFilterRank";
             this.m_cbFilterRank.Size = new System.Drawing.Size(125, 24);
             this.m_cbFilterRank.TabIndex = 85;
@@ -1161,7 +1165,7 @@ namespace ArbWeb
             // m_pbMailMerge
             // 
             this.m_pbMailMerge.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_pbMailMerge.Location = new System.Drawing.Point(958, 327);
+            this.m_pbMailMerge.Location = new System.Drawing.Point(958, 376);
             this.m_pbMailMerge.Name = "m_pbMailMerge";
             this.m_pbMailMerge.Size = new System.Drawing.Size(176, 40);
             this.m_pbMailMerge.TabIndex = 86;
@@ -1182,7 +1186,7 @@ namespace ArbWeb
             // m_cbLaunch
             // 
             this.m_cbLaunch.AutoSize = true;
-            this.m_cbLaunch.Location = new System.Drawing.Point(590, 336);
+            this.m_cbLaunch.Location = new System.Drawing.Point(464, 336);
             this.m_cbLaunch.Name = "m_cbLaunch";
             this.m_cbLaunch.Size = new System.Drawing.Size(147, 24);
             this.m_cbLaunch.TabIndex = 89;
@@ -1192,7 +1196,7 @@ namespace ArbWeb
             // m_cbSetArbiterAnnounce
             // 
             this.m_cbSetArbiterAnnounce.AutoSize = true;
-            this.m_cbSetArbiterAnnounce.Location = new System.Drawing.Point(743, 336);
+            this.m_cbSetArbiterAnnounce.Location = new System.Drawing.Point(464, 366);
             this.m_cbSetArbiterAnnounce.Name = "m_cbSetArbiterAnnounce";
             this.m_cbSetArbiterAnnounce.Size = new System.Drawing.Size(188, 24);
             this.m_cbSetArbiterAnnounce.TabIndex = 90;
@@ -1292,7 +1296,7 @@ namespace ArbWeb
             // button6
             // 
             this.button6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button6.Location = new System.Drawing.Point(655, 457);
+            this.button6.Location = new System.Drawing.Point(655, 506);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(159, 40);
             this.button6.TabIndex = 101;
@@ -1302,7 +1306,7 @@ namespace ArbWeb
             // button7
             // 
             this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button7.Location = new System.Drawing.Point(655, 411);
+            this.button7.Location = new System.Drawing.Point(655, 460);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(159, 40);
             this.button7.TabIndex = 102;
@@ -1312,7 +1316,7 @@ namespace ArbWeb
             // button8
             // 
             this.button8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button8.Location = new System.Drawing.Point(958, 456);
+            this.button8.Location = new System.Drawing.Point(958, 505);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(176, 41);
             this.button8.TabIndex = 103;
@@ -1347,11 +1351,13 @@ namespace ArbWeb
             this.m_tabs.Location = new System.Drawing.Point(12, 90);
             this.m_tabs.Name = "m_tabs";
             this.m_tabs.SelectedIndex = 0;
-            this.m_tabs.Size = new System.Drawing.Size(1148, 547);
+            this.m_tabs.Size = new System.Drawing.Size(1148, 585);
             this.m_tabs.TabIndex = 106;
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button12);
+            this.tabPage2.Controls.Add(this.m_cbFilterAS);
             this.tabPage2.Controls.Add(this.label2);
             this.tabPage2.Controls.Add(this.label7);
             this.tabPage2.Controls.Add(this.m_pbOpenSlots);
@@ -1385,10 +1391,20 @@ namespace ArbWeb
             this.tabPage2.Location = new System.Drawing.Point(4, 29);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1140, 514);
+            this.tabPage2.Size = new System.Drawing.Size(1140, 552);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Coverage Management";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // m_cbFilterAS
+            // 
+            this.m_cbFilterAS.AutoSize = true;
+            this.m_cbFilterAS.Location = new System.Drawing.Point(278, 336);
+            this.m_cbFilterAS.Name = "m_cbFilterAS";
+            this.m_cbFilterAS.Size = new System.Drawing.Size(161, 24);
+            this.m_cbFilterAS.TabIndex = 105;
+            this.m_cbFilterAS.Text = "Filter All-Star Only";
+            this.m_cbFilterAS.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -1451,6 +1467,16 @@ namespace ArbWeb
             this.tabPage3.Text = "Schedule and Tools";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // button11
+            // 
+            this.button11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button11.Location = new System.Drawing.Point(583, 177);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(176, 35);
+            this.button11.TabIndex = 108;
+            this.button11.Text = "Legacy Download";
+            this.button11.Click += new System.EventHandler(this.DoDownloadRoster);
+            // 
             // button10
             // 
             this.button10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -1471,15 +1497,15 @@ namespace ArbWeb
             this.button1.Text = "Lock Permissions";
             this.button1.Click += new System.EventHandler(this.DoLockPermissions);
             // 
-            // button11
+            // button12
             // 
-            this.button11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button11.Location = new System.Drawing.Point(583, 177);
-            this.button11.Name = "button11";
-            this.button11.Size = new System.Drawing.Size(176, 35);
-            this.button11.TabIndex = 108;
-            this.button11.Text = "Legacy Download";
-            this.button11.Click += new System.EventHandler(this.DoDownloadRoster);
+            this.button12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button12.Location = new System.Drawing.Point(958, 330);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(176, 40);
+            this.button12.TabIndex = 106;
+            this.button12.Text = "Gen CSV";
+            this.button12.Click += new System.EventHandler(this.DoGenMergeCsv);
             // 
             // AwMainForm
             // 
@@ -1670,6 +1696,12 @@ namespace ArbWeb
         {
             NeedHelpReport report = new NeedHelpReport(this);
 
+            if (m_openSlots == null)
+            {
+                MessageBox.Show("You must calc open slots first...");
+                return;
+            }
+
             report.DoGenMailMergeAndAnnouce(
                 GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text)),
                 RstEnsure(m_pr.RosterWorking),
@@ -1677,6 +1709,7 @@ namespace ArbWeb
                 WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels),
                 m_openSlots.Aggregation,
                 m_cbFilterRank.Checked,
+                m_cbFilterAS.Checked,
                 m_ebFilter.Text,
                 m_cbLaunch.Checked,
                 m_cbSetArbiterAnnounce.Checked
@@ -1995,6 +2028,8 @@ namespace ArbWeb
             m_cbSplitSports.Checked = pr.SplitSports;
             m_cbDatePivot.Checked = pr.DatePivot;
             m_cbFilterRank.Checked = pr.FilterRank;
+            m_cbFilterAS.Checked = pr.FilterAllStarsOnly;
+
             m_cbLaunch.Checked = pr.Launch;
             m_cbSetArbiterAnnounce.Checked = pr.SetArbiterAnnounce;
             SetGameFiltersFromEnumerable(m_cbxGameFilter, pr.GameFilters, pr.GameFilter);
@@ -2027,6 +2062,8 @@ namespace ArbWeb
             pr.SplitSports = m_cbSplitSports.Checked;
             pr.DatePivot = m_cbDatePivot.Checked;
             pr.FilterRank = m_cbFilterRank.Checked;
+            pr.FilterAllStarsOnly = m_cbFilterAS.Checked;
+
             pr.Launch = m_cbLaunch.Checked;
             pr.SetArbiterAnnounce = m_cbSetArbiterAnnounce.Checked;
             pr.GameFilter = (string)m_cbxGameFilter.SelectedItem;
@@ -2467,6 +2504,38 @@ namespace ArbWeb
             WebAdminPermissions perms = new WebAdminPermissions(this);
 
             perms.RemoveAdminLockout();
+        }
+
+        private void DoGenMergeCsv(object sender, EventArgs e)
+        {
+            if (m_openSlots == null)
+            {
+                MessageBox.Show("You must calc open slots first...");
+                return;
+            }
+
+            string csvFile = WebCore.BuildDownloadFilenameFromTemplate(m_pr.MergeCsv, "mergeroster");
+
+            StatusReport.ReportAction(
+                "Generate MailMerge CSV file",
+                () =>
+                {
+                    NeedHelpReport report = new NeedHelpReport(this);
+
+                    report.DoGenMailMergeCsvOnly(
+                        GcEnsure(m_pr.RosterWorking, m_pr.GameCopy, m_cbIncludeCanceled.Checked, Int32.Parse(m_ebAffiliationIndex.Text)),
+                        RstEnsure(m_pr.RosterWorking),
+                        WebCore.RgsFromChlbx(m_cbFilterSport.Checked, m_chlbxSports),
+                        WebCore.RgsFromChlbx(m_cbFilterLevel.Checked, m_chlbxSportLevels),
+                        m_openSlots.Aggregation,
+                        m_cbFilterRank.Checked,
+                        m_cbFilterAS.Checked,
+                        m_ebFilter.Text,
+                        csvFile);
+
+                    System.IO.File.Delete(Profile.MergeCsvWorking);
+                    System.IO.File.Copy(csvFile, Profile.MergeCsvWorking);
+                });
         }
     }
 }

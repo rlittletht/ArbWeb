@@ -512,7 +512,7 @@ namespace ArbWeb.Games
             Roster rst, bool fIncludeCanceled, string sLine, string[] rgsFields,
             Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, bool fCanceled, string sSite, string sGame,
             string sHome, string sAway, string sLevel, string sSport, ReadState rs,
-            ref string sPosLast, ref string sStatusLast, ref string sNameLast, ref string sDateTime, ref bool fOpenSlot, ref Umpire ump)
+            ref string sPosLast, ref string sNameLast, ref string sStatusLast, ref string sDateTime, ref bool fOpenSlot, ref Umpire ump)
         {
             // Games may have multiple officials, so we have to collect up the officials.
             // we do this in mpNamePos
@@ -529,7 +529,7 @@ namespace ArbWeb.Games
                 // to ReadingOfficials1
                 rs = ReadState.ReadingOfficials2;
                 sPosLast = rgsFields[1];
-                sNameLast = rgsFields[OfficialColumn];
+                sNameLast = rgsFields[OfficialColumn].Trim();
                 sStatusLast = rgsFields[SlotStatusColumn];
 
                 if (Regex.Match(rgsFields[OfficialColumn], "_____").Success)
@@ -541,7 +541,7 @@ namespace ArbWeb.Games
                 }
                 else
                 {
-                    string sName = ReverseName(rst, rgsFields[OfficialColumn]);
+                    string sName = ReverseName(rst, sNameLast);
                     mpNamePos.Add(sName, rgsFields[1]);
                     mpNameStatus.Add(sName, rgsFields[SlotStatusColumn]);
                     return rs;
@@ -583,13 +583,14 @@ namespace ArbWeb.Games
                     }
                     else
                     {
-                        ump = rst.UmpireLookup(sName);
+                        string lookup = sName.Trim();
+                        ump = rst.UmpireLookup(lookup);
 
                         if (ump == null)
                         {
-                            if (sName != "")
+                            if (lookup != "")
                                 m_srpt.AddMessage(
-                                    $"Cannot find info for Umpire: {sName}",
+                                    $"Cannot find info for Umpire: {lookup}",
                                     MSGT.Error);
                             sEmail = "";
                             sTeam = "";
@@ -639,20 +640,26 @@ namespace ArbWeb.Games
                 %%Function: RsHandleReadingOfficials2
                 %%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingOfficials2
                 %%Contact: rlittle
+        looks like NameLast and StatusLast are swapped
+        also, we only keep track of the full name last -- we need to keep the last FirstName and the
+        last LastName.
 
+        also, checking for nonEmpty rgsFields[3] isn't correct. name is rgsFields[4]
+
+        we should probably use the "OfficialColumn" calculated valoue
             ----------------------------------------------------------------------------*/
-        private static ReadState RsHandleReadingOfficials2(
+        private ReadState RsHandleReadingOfficials2(
             Roster rst, string[] rgsFields, Dictionary<string, string> mpNamePos, Dictionary<string, string> mpNameStatus, string sNameLast,
             string sPosLast, string sStatusLast, ReadState rs)
         {
             // we are reading the subsequent game lines.  these are not guaranteed to be there (it depends on field
             // overflows
-            if (FEmptyField(rgsFields[1]) && FEmptyField(rgsFields[0]) && !FEmptyField(rgsFields[3]))
+            if (FEmptyField(rgsFields[1]) && FEmptyField(rgsFields[0]) && !FEmptyField(rgsFields[OfficialColumn]))
             {
                 // nothing in that column means we have a continuation.  now lets concatenate all our stuff
                 mpNamePos.Remove(ReverseName(rst, sNameLast));
                 mpNameStatus.Remove(ReverseName(rst, sNameLast));
-                string sName = $"{sNameLast} {rgsFields[3]}";
+                string sName = $"{sNameLast} {rgsFields[OfficialColumn]}";
                 sName = ReverseName(rst, sName);
                 mpNamePos.Add(sName, sPosLast);
                 mpNameStatus.Add(sName, sStatusLast);
@@ -666,8 +673,8 @@ namespace ArbWeb.Games
 
         /* R S  H A N D L E  R E A D I N G  G A M E  2 */
         /*----------------------------------------------------------------------------
-                %%Function: RsHandleReadingOfficials2
-                %%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingOfficials2
+                %%Function: RsHandleReadingGame2
+                %%Qualified: ArbWeb.CountsData:GameData:Games.RsHandleReadingGame2
                 %%Contact: rlittle
 
             ----------------------------------------------------------------------------*/

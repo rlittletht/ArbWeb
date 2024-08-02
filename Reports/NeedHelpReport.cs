@@ -1,8 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics.Eventing.Reader;
+using System.IO;
 using ArbWeb.Games;
 using TCore.StatusBox;
 using TCore.Util;
 using TCore.WebControl;
+using static ArbWeb.Roster;
 
 namespace ArbWeb.Reports
 {
@@ -20,9 +23,101 @@ namespace ArbWeb.Reports
         }
 
 
+        public Roster GenerateRosterForMerge(
+            ScheduleGames gms,
+            Roster rst,
+            bool fFilterByRanking,
+            bool fFilterASOnly,
+            string sMiscFilter)
+        {
+            if (fFilterASOnly)
+                return rst.FilterToAllStarOnly(sMiscFilter);
+
+            if (fFilterByRanking)
+                return rst.FilterByRanks(gms.RequiredRanks(), sMiscFilter);
+
+            if (string.IsNullOrEmpty(sMiscFilter))
+                return rst;
+
+            Roster rstFiltered = new Roster();
+
+            foreach (RosterEntry entry in rst.Plrste)
+            {
+                if (entry.FMatchAnyMisc(sMiscFilter))
+                    rstFiltered.Add(entry);
+            }
+
+            return rstFiltered;
+        }
+
+        public ScheduleGames GenerateGamesForMerge(
+            CountsData gc,
+            string[] rgsSports,
+            string[] rgsSportLevels,
+            SlotAggr aggregation)
+        {
+            return gc.GamesFromFilter(
+                rgsSports,
+                rgsSportLevels,
+                false,
+                aggregation);
+        }
+
+        public void DoGenMailMergeCsvOnly(
+            CountsData gc,
+            Roster rst,
+            string[] rgsSports,
+            string[] rgsSportLevels,
+            SlotAggr aggregation,
+            bool fFilterByRanking,
+            bool fFilterASOnly,
+            string sMiscFilter,
+            string targetCsv)
+        {
+            ScheduleGames gms = null;
+
+            m_appContext.StatusReport.ReportAction(
+                "GamesFromFilter",
+                () =>
+                {
+                    // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
+                    // rated for the sports we are filtered to
+                    gms = GenerateGamesForMerge(
+                        gc,
+                        rgsSports,
+                        rgsSportLevels,
+                        aggregation);
+
+                });
+
+            m_appContext.StatusReport.ReportAction(
+                "Saving MailMerge roster",
+                () =>
+                {
+                    Roster rstFiltered = GenerateRosterForMerge(gms, rst, fFilterByRanking, fFilterASOnly, sMiscFilter);
+                    WriteRosterToMailMergeCsv(rstFiltered, targetCsv);
+                });
+
+            m_appContext.DoPendingQueueUIOp();
+        }
+
+        void WriteRosterToMailMergeCsv(Roster roster, string csvFile)
+        {
+            using StreamWriter sw = new StreamWriter(csvFile, false, System.Text.Encoding.Default);
+
+            sw.WriteLine("email,firstname,lastname");
+            foreach (RosterEntry rste in roster.Plrste)
+            {
+                sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.Last);
+            }
+
+            sw.Flush();
+            sw.Close();
+        }
+
         /*----------------------------------------------------------------------------
-			%%Function:DoGenMailMergeAndAnnouce
-			%%Qualified:ArbWeb.Reports.NeedHelpReport.DoGenMailMergeAndAnnouce
+            %%Function:DoGenMailMergeAndAnnouce
+            %%Qualified:ArbWeb.Reports.NeedHelpReport.DoGenMailMergeAndAnnouce
         ----------------------------------------------------------------------------*/
         public void DoGenMailMergeAndAnnouce(
             CountsData gc,
@@ -31,10 +126,10 @@ namespace ArbWeb.Reports
             string[] rgsSportLevels,
             SlotAggr aggregation,
             bool fFilterByRanking,
+            bool fFilterASOnly,
             string sMiscFilter,
             bool fLaunch,
-            bool fSetWebAnnounce
-        )
+            bool fSetWebAnnounce)
         {
             m_appContext.StatusReport.AddMessage("Generating mail merge documents...", MSGT.Header, false);
 
@@ -42,33 +137,17 @@ namespace ArbWeb.Reports
 
             // first, generate the mailmerge source csv file.  this is either the entire roster, or just the folks 
             // rated for the sports we are filtered to
-            ScheduleGames gms = gc.GamesFromFilter(
+            ScheduleGames gms = GenerateGamesForMerge(gc, 
                 rgsSports,
                 rgsSportLevels,
-                false,
                 aggregation);
 
             m_appContext.StatusReport.LogData("Beginning to build rosterfiltered...", 3, MSGT.Body);
-            Roster rstFiltered;
-
-            if (fFilterByRanking)
-                rstFiltered = rst.FilterByRanks(gms.RequiredRanks());
-            else
-                rstFiltered = rst;
+            Roster rstFiltered = GenerateRosterForMerge(gms, rst, fFilterByRanking, fFilterASOnly, sMiscFilter);
 
             string sCsvTemp = Filename.SBuildTempFilename("MailMergeRoster", "csv");
             m_appContext.StatusReport.LogData($"Writing filtered roster to {sCsvTemp}", 3, MSGT.Body);
-            StreamWriter sw = new StreamWriter(sCsvTemp, false, System.Text.Encoding.Default);
-
-            sw.WriteLine("email,firstname,lastname");
-            foreach (RosterEntry rste in rstFiltered.Plrste)
-            {
-                if (sMiscFilter == "" || rste.FMatchAnyMisc(sMiscFilter))
-                    sw.WriteLine("{0},{1},{2}", rste.Email, rste.First, rste.Last);
-            }
-
-            sw.Flush();
-            sw.Close();
+            WriteRosterToMailMergeCsv(rstFiltered, sCsvTemp);
 
             // ok, now create the mailmerge .docx
             string sTempName;
