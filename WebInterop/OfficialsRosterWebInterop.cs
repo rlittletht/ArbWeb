@@ -7,7 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
-using OpenQA.Selenium.DevTools.V127.Network;
+using OpenQA.Selenium.DevTools.V132.Network;
 using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
 
@@ -877,21 +877,28 @@ namespace ArbWeb
 
             try
             {
+                string path = WebCore._xpath_modalDialogRoot;
+
                 m_appContext.WebControl.WaitForCondition(
-                    ExpectedConditions.ElementIsVisible(By.XPath(WebCore._xpath_modalDialogRoot)),
+                    //                    ExpectedConditions.ElementIsVisible(By.XPath(WebCore._xpath_modalDialogRoot)),
+                    ExpectedConditions.ElementIsVisible(By.XPath(path)),
                     10000);
 
                 // can't wait for FirstName here because if its read only it will never be true
+                path = WebCore._sid_OfficialsView_EditAccount_NickName;
                 m_appContext.WebControl.WaitForCondition(
-                    ExpectedConditions.ElementIsVisible(By.Id(WebCore._sid_OfficialsView_EditAccount_NickName)),
+//                    ExpectedConditions.ElementIsVisible(By.Id(WebCore._sid_OfficialsView_EditAccount_NickName)),
+                    ExpectedConditions.ElementIsVisible(By.Id(path)),
                     10000);
 
+                path = WebCore._sid_OfficialsView_EditAccount_NickName;
                 m_appContext.WebControl.WaitForCondition(
-                    ExpectedConditions.ElementToBeClickable(By.Id(WebCore._sid_OfficialsView_EditAccount_NickName)),
+//                    ExpectedConditions.ElementToBeClickable(By.Id(WebCore._sid_OfficialsView_EditAccount_NickName)),
+                    ExpectedConditions.ElementToBeClickable(By.Id(path)),
                     10000);
             }
             catch (Exception e)
-            {
+            { 
                 MessageBox.Show($"{e}");
             }
 
