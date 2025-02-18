@@ -166,6 +166,7 @@ namespace ArbWeb
         private Button button11;
         private CheckBox m_cbFilterAS;
         private Button button12;
+        private Button button13;
         private WebGames m_webGames;
 
 #region Top Level Program Flow
@@ -238,7 +239,7 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         public void EnableAdminFunctions()
         {
-            bool fAdmin = (String.Compare(System.Environment.MachineName, "baltix", true) == 0);
+            bool fAdmin = (String.Compare(System.Environment.MachineName, "stix", true) == 0);
             m_pbUploadRoster.Enabled = fAdmin && m_pr.AllowAdvancedArbiterFunctions;
         }
 
@@ -662,6 +663,7 @@ namespace ArbWeb
             this.m_pbDeleteUnusedTeams = new System.Windows.Forms.Button();
             this.m_tabs = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.button12 = new System.Windows.Forms.Button();
             this.m_cbFilterAS = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -669,7 +671,7 @@ namespace ArbWeb
             this.button11 = new System.Windows.Forms.Button();
             this.button10 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.button12 = new System.Windows.Forms.Button();
+            this.button13 = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.m_tabs.SuspendLayout();
@@ -1396,6 +1398,16 @@ namespace ArbWeb
             this.tabPage2.Text = "Coverage Management";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // button12
+            // 
+            this.button12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button12.Location = new System.Drawing.Point(958, 330);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(176, 40);
+            this.button12.TabIndex = 106;
+            this.button12.Text = "Gen CSV";
+            this.button12.Click += new System.EventHandler(this.DoGenMergeCsv);
+            // 
             // m_cbFilterAS
             // 
             this.m_cbFilterAS.AutoSize = true;
@@ -1435,7 +1447,7 @@ namespace ArbWeb
             this.tabPage1.Location = new System.Drawing.Point(4, 29);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1140, 514);
+            this.tabPage1.Size = new System.Drawing.Size(1140, 552);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Game Reporting";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -1448,6 +1460,7 @@ namespace ArbWeb
             this.tabPage3.Controls.Add(this.button4);
             this.tabPage3.Controls.Add(this.m_cbSkipContactDownload);
             this.tabPage3.Controls.Add(this.m_pbDiffTW);
+            this.tabPage3.Controls.Add(this.button13);
             this.tabPage3.Controls.Add(this.m_pbDeleteUnusedTeams);
             this.tabPage3.Controls.Add(this.button5);
             this.tabPage3.Controls.Add(this.button9);
@@ -1462,7 +1475,7 @@ namespace ArbWeb
             this.tabPage3.Location = new System.Drawing.Point(4, 29);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(1140, 514);
+            this.tabPage3.Size = new System.Drawing.Size(1140, 552);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Schedule and Tools";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1497,15 +1510,15 @@ namespace ArbWeb
             this.button1.Text = "Lock Permissions";
             this.button1.Click += new System.EventHandler(this.DoLockPermissions);
             // 
-            // button12
+            // button13
             // 
-            this.button12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button12.Location = new System.Drawing.Point(958, 330);
-            this.button12.Name = "button12";
-            this.button12.Size = new System.Drawing.Size(176, 40);
-            this.button12.TabIndex = 106;
-            this.button12.Text = "Gen CSV";
-            this.button12.Click += new System.EventHandler(this.DoGenMergeCsv);
+            this.button13.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button13.Location = new System.Drawing.Point(583, 230);
+            this.button13.Name = "button13";
+            this.button13.Size = new System.Drawing.Size(240, 35);
+            this.button13.TabIndex = 105;
+            this.button13.Text = "Do Test Function";
+            this.button13.Click += new System.EventHandler(this.DoTestFunction);
             // 
             // AwMainForm
             // 
@@ -2536,6 +2549,12 @@ namespace ArbWeb
                     System.IO.File.Delete(Profile.MergeCsvWorking);
                     System.IO.File.Copy(csvFile, Profile.MergeCsvWorking);
                 });
+        }
+
+        private void DoTestFunction(object sender, EventArgs e)
+        {
+            EnsureWebRoster();
+            m_webRoster.TestRankPositionNavigate();
         }
     }
 }

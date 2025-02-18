@@ -809,6 +809,22 @@ namespace ArbWeb
             return true;
         }
 
+        public void TestRankPositionNavigate()
+        {
+            m_appContext.EnsureLoggedIn();
+            NavigateArbiterRankings();
+
+            Dictionary<string, string> mpPositionOptionsValueText =
+                m_appContext.WebControl.GetOptionsValueTextMappingFromControlId(WebCore._sid_RanksEdit_Select_PosNames);
+
+            string sRankPosition = "All Stars 60' BB, Umpire";
+
+            m_appContext.WebControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Active);
+            m_appContext.WebControl.FSetCheckboxControlIdVal(false, WebCore._sid_RanksEdit_Checkbox_Rank);
+
+            m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_RanksEdit_Select_PosNames, sRankPosition);
+        }
+
         /*----------------------------------------------------------------------------
 			%%Function:BuildRankingMapFromPage
 			%%Qualified:ArbWeb.WebRoster.BuildRankingMapFromPage
