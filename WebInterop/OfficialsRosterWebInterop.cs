@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.DevTools.V132.Network;
+using OpenQA.Selenium.Interactions;
 using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
 
@@ -754,15 +755,46 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DismissOfficialsEditPopup()
         {
-            IWebElement cancelButton = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_EditAccount_ButtonCancel));
-            cancelButton.Click();
+            string xpath = $"//div[@class='{WebCore._xpath_modal_mask}']/following-sibling::*//button[@id='{WebCore._sid_OfficialsView_EditAccount_ButtonCancel}']";
+
+            try
+            {
+                m_appContext.WebControl.WaitForCondition(
+                    ExpectedConditions.ElementToBeClickable(By.XPath(xpath)),
+                    10000);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Couldn't find clickable cancel button: {e.Message}");
+            }
+
+            try
+            {
+                IWebElement cancelButton = m_appContext.WebControl.Driver.FindElement(By.XPath(xpath));
+
+                bool visible = cancelButton.Displayed;
+                bool enabled = cancelButton.Enabled;
+                string opacity = cancelButton.GetCssValue("opacity");
+                var size = cancelButton.Size;
+                var location = cancelButton.Location;
+
+                cancelButton.Click();
+//                Actions actions = new Actions(m_appContext.WebControl.Driver);
+//                actions.MoveToElement(cancelButtons[1]).Pause(TimeSpan.FromSeconds(1.0)).Click().Perform();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Couldn't click on cancel button: {e.Message}");
+            }
+
+            // cancelButton.Click();
 
             m_appContext.WebControl.WaitForCondition(
                 ExpectedConditions.InvisibilityOfElementLocated(By.XPath(WebCore._xpath_modalDialogRoot)),
                 2000);
 
             {
-                string xpath = WebCore._xpath_modalDialogRoot;
+                xpath = WebCore._xpath_modalDialogRoot;
 
                 IWebElement element = m_appContext.WebControl.GetElementBy(By.XPath(xpath));
             }
@@ -871,8 +903,11 @@ namespace ArbWeb
 
                 IWebElement element = m_appContext.WebControl.GetElementBy(By.XPath(xpath));
 
-                bool visible = element.Displayed;
-                visible = element.Enabled;
+                if (element != null)
+                {
+                    bool visible = element.Displayed;
+                    visible = element.Enabled;
+                }
             }
 
             try

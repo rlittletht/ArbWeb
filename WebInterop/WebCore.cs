@@ -170,21 +170,22 @@ namespace ArbWeb
         public const string _s_OfficialsView_PaginationHrefPostbackSubstr = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$dgOfficials$ctl"; // ok2021
 
         public const string _sid_OfficialsView_IsReadyStatusPrefix = "IsReadyStatusText";
-        public const string _sid_OfficialsView_EditAccount_Email0 = "emails_0_email1";
-        public const string _sid_OfficialsView_EditAccount_FirstName = "firstName";
-        public const string _sid_OfficialsView_EditAccount_NickName = "nickName";
-        public const string _sid_OfficialsView_EditAccount_LastName = "lastName";
-        public const string _sid_OfficialsView_EditAccount_MiddleName = "middleName";
-        public const string _sid_OfficialsView_EditAccount_Address1 = "address1";
-        public const string _sid_OfficialsView_EditAccount_Address2 = "address2";
-        public const string _sid_OfficialsView_EditAccount_ZipCode = "postalCode";
-        public const string _sid_OfficialsView_EditAccount_CityName = "cityName";
-        public const string _sid_OfficialsView_EditAccount_State = "stateId";
+        public const string _sid_OfficialsView_EditAccount_Email0 = "admin-edit-emails_0_email1";
+        public const string _sid_OfficialsView_EditAccount_FirstName = "admin-edit-firstName";
+        public const string _sid_OfficialsView_EditAccount_NickName = "admin-edit-nickName";
+        public const string _sid_OfficialsView_EditAccount_LastName = "admin-edit-lastName";
+        public const string _sid_OfficialsView_EditAccount_MiddleName = "admin-edit-middleName";
+        public const string _sid_OfficialsView_EditAccount_Address1 = "admin-edit-address1";
+        public const string _sid_OfficialsView_EditAccount_Address2 = "admin-edit-address2";
+        public const string _sid_OfficialsView_EditAccount_ZipCode = "admin-edit-postalCode";
+        public const string _sid_OfficialsView_EditAccount_CityName = "admin-edit-cityName";
+        public const string _sid_OfficialsView_EditAccount_State = "admin-edit-stateId";
         public const string _sid_OfficialsView_EditAccount_ButtonSave = "save-changes-button";
         public const string _sid_OfficialsView_EditAccount_ButtonCancel = "cancel-changes-button";
-        public const string _sid_OfficialsView_EditAccount_BirthDate = "dateOfBirth";
+        public const string _sid_OfficialsView_EditAccount_BirthDate = "admin-edit-dateOfBirth";
 
-        public const string _xpath_modalDialogRoot = "//div[@class='ant-modal-root']";
+        public const string _xpath_modal_mask = "ant-modal-mask";
+        public const string _xpath_modalDialogRoot = "//div[@class='ant-modal-mask']";
         // ============================================================================
         // O F F I C I A L S  E D I T
         // ============================================================================
