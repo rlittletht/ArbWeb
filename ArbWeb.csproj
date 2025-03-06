@@ -250,6 +250,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Announcements\Announcement.cs" />
+    <Compile Include="Announcements\WebAnnouncements.cs" />
     <Compile Include="Games\ScheduleStats.cs" />
     <Compile Include="Reports\CoverageReport.cs" />
     <Compile Include="Secrets.Designer.cs">
@@ -305,6 +307,7 @@
     <Compile Include="WebInterop\WebCore.cs" />
     <Compile Include="WebInterop\WebGames.cs" />
     <Compile Include="WebInterop\WebNav.cs" />
+    <Compile Include="WebInterop\WebPagination.cs" />
     <Compile Include="WebInterop\WebRoster.cs" />
     <Compile Include="WebInterop\WebRosterDownload.cs" />
     <Compile Include="WebInterop\WebRosterUpload.cs" />

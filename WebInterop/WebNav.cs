@@ -26,6 +26,28 @@ namespace ArbWeb
 
 #region Navigation Support
 
+        public static string ToXPath(string value)
+        {
+            const string apostrophe = "'";
+            const string quote = "\"";
+
+            if (value.Contains(quote))
+            {
+                if (value.Contains(apostrophe))
+                {
+                    throw new Exception("Illegal XPath string literal.");
+                }
+                else
+                {
+                    return apostrophe + value + apostrophe;
+                }
+            }
+            else
+            {
+                return quote + value + quote;
+            }
+        }
+
         /*----------------------------------------------------------------------------
 			%%Function:EnsureAdminLoggedIn
 			%%Qualified:ArbWeb.WebNav.EnsureAdminLoggedIn

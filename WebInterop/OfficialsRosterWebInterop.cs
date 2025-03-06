@@ -374,28 +374,6 @@ namespace ArbWeb
         // object could be RST or PageLinks
         public delegate void VisitOfficialsPageCallback(Object o, string pageNavLink);
 
-        public static string ToXPath(string value)
-        {
-            const string apostrophe = "'";
-            const string quote = "\"";
-
-            if (value.Contains(quote))
-            {
-                if (value.Contains(apostrophe))
-                {
-                    throw new Exception("Illegal XPath string literal.");
-                }
-                else
-                {
-                    return apostrophe + value + apostrophe;
-                }
-            }
-            else
-            {
-                return quote + value + quote;
-            }
-        }
-
         List<string> GetAllPaginationLinksOnPage()
         {
             // figure out how many pages we have
@@ -431,13 +409,17 @@ namespace ArbWeb
 
             string sHref = pageLink;
 
-            string sXpath = $"//a[@href={ToXPath(sHref)}]";
+            string sXpath = $"//a[@href={WebNav.ToXPath(sHref)}]";
 
             IWebElement anchor;
 
             try
             {
                 anchor = m_appContext.WebControl.Driver.FindElement(By.XPath(sXpath));
+                m_appContext.WebControl.WaitForCondition(
+                    ExpectedConditions.ElementToBeClickable(By.XPath(sXpath)),
+                    10000);
+
             }
             catch
             {

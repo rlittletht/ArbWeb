@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using ArbWeb.Announcements;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -46,14 +47,8 @@ namespace ArbWeb
             m_appContext.StatusReport.AddMessage($"Starting Announcement Set for '{containingDiv}'...");
             m_appContext.StatusReport.PushLevel();
 
-            m_appContext.EnsureLoggedIn();
-            Utils.ThrowIfNot(m_appContext.WebControl.FNavToPage(WebCore._s_Announcements), "Couldn't nav to announcements page!");
-            m_appContext.WebControl.WaitForPageLoad();
-
             // now we need to find the URGENT HELP NEEDED row
-            string sHtml = m_appContext.WebControl.Driver.FindElement(By.XPath("//body")).GetAttribute("innerHTML");
-            HtmlDocument html = new HtmlDocument();
-            html.LoadHtml(sHtml);
+            HtmlDocument html = WebAnnouncements.GetHtmlDocumentForAnnouncementsPage(m_appContext);
 
             string sXpath = $"//div[@id='{containingDiv}']";
 
