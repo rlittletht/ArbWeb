@@ -155,6 +155,12 @@ namespace ArbWeb
         public const string _sid_AddUser_Button_Cancel = "ctl00_ContentHolder_pgeUserAdd_navUserAdd_lnkCancel"; // ok2010
 
         // ============================================================================
+        // P A G I N A T I O N
+        // ============================================================================
+        public const string _s_GenericPagination_PaginationHrefPostbackHrefSubstr = "ctl00$ContentHolder$pge"; // ok2025
+        public const string _s_GenericPagination_PaginationHrefPostbackSubstr = "__doPostBack"; // ok2025
+
+        // ============================================================================
         // O F F I C I A L S  V I E W
         // ============================================================================
         public const string _s_Page_OfficialsView = "https://www1.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2021

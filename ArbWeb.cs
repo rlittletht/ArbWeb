@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using ArbWeb.Announcements;
 using ArbWeb.Games;
 using ArbWeb.Reports;
 using ArbWeb.SPO;
@@ -167,15 +168,19 @@ namespace ArbWeb
         private CheckBox m_cbFilterAS;
         private Button button12;
         private Button button13;
+        private TabPage m_announcementsTab;
+        private Button m_fetchAnnouncements;
+        private ListView m_announcementsList;
+        private Button button14;
         private WebGames m_webGames;
 
 #region Top Level Program Flow
 
         /*----------------------------------------------------------------------------
-        	%%Function: FDispatchCmdLineSwitch
-        	%%Qualified: ArbWeb.AwMainForm.FDispatchCmdLineSwitch
-        	%%Contact: rlittle
-        	
+            %%Function: FDispatchCmdLineSwitch
+            %%Qualified: ArbWeb.AwMainForm.FDispatchCmdLineSwitch
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public bool FDispatchCmdLineSwitch(CmdLineSwitch cls, string sParam, object oClient, out string sError)
         {
@@ -216,10 +221,10 @@ namespace ArbWeb
         private StringBuilder m_sbUsage = null;
 
         /*----------------------------------------------------------------------------
-        	%%Function: AppendUsageString
-        	%%Qualified: ArbWeb.AwMainForm.AppendUsageString
-        	%%Contact: rlittle
-        	
+            %%Function: AppendUsageString
+            %%Qualified: ArbWeb.AwMainForm.AppendUsageString
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         void AppendUsageString(string s)
         {
@@ -232,10 +237,10 @@ namespace ArbWeb
 
         /* E N A B L E  A D M I N  F U N C T I O N S */
         /*----------------------------------------------------------------------------
-        	%%Function: EnableAdminFunctions
-        	%%Qualified: ArbWeb.AwMainForm.EnableAdminFunctions
-        	%%Contact: rlittle
-        	
+            %%Function: EnableAdminFunctions
+            %%Qualified: ArbWeb.AwMainForm.EnableAdminFunctions
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public void EnableAdminFunctions()
         {
@@ -254,10 +259,10 @@ namespace ArbWeb
 
         /* A W  M A I N  F O R M */
         /*----------------------------------------------------------------------------
-        	%%Function: AwMainForm
-        	%%Qualified: ArbWeb.AwMainForm.AwMainForm
-        	%%Contact: rlittle
-        	
+            %%Function: AwMainForm
+            %%Qualified: ArbWeb.AwMainForm.AwMainForm
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public AwMainForm(string[] rgsCmdLine)
         {
@@ -382,10 +387,10 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-        	%%Function: DoCheckSportListboxes
-        	%%Qualified: ArbWeb.AwMainForm.DoCheckSportListboxes
-        	%%Contact: rlittle
-        	
+            %%Function: DoCheckSportListboxes
+            %%Qualified: ArbWeb.AwMainForm.DoCheckSportListboxes
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void DoCheckSportListboxes(object sender, EventArgs e)
         {
@@ -490,10 +495,10 @@ namespace ArbWeb
         private delegate void PushCursorDel(Cursor crs);
 
         /*----------------------------------------------------------------------------
-        	%%Function: DoPushCursor
-        	%%Qualified: ArbWeb.AwMainForm.DoPushCursor
-        	%%Contact: rlittle
-        	
+            %%Function: DoPushCursor
+            %%Qualified: ArbWeb.AwMainForm.DoPushCursor
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void DoPushCursor(Cursor crs)
         {
@@ -504,10 +509,10 @@ namespace ArbWeb
 
         /* P U S H  C U R S O R */
         /*----------------------------------------------------------------------------
-        	%%Function: PushCursor
-        	%%Qualified: ArbWeb.AwMainForm.PushCursor
-        	%%Contact: rlittle
-        	
+            %%Function: PushCursor
+            %%Qualified: ArbWeb.AwMainForm.PushCursor
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public void PushCursor(Cursor crs)
         {
@@ -520,10 +525,10 @@ namespace ArbWeb
         private delegate void PopCursorDel();
 
         /*----------------------------------------------------------------------------
-        	%%Function: DoPopCursor
-        	%%Qualified: ArbWeb.AwMainForm.DoPopCursor
-        	%%Contact: rlittle
-        	
+            %%Function: DoPopCursor
+            %%Qualified: ArbWeb.AwMainForm.DoPopCursor
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         void DoPopCursor()
         {
@@ -536,10 +541,10 @@ namespace ArbWeb
 
         /* P O P  C U R S O R */
         /*----------------------------------------------------------------------------
-        	%%Function: PopCursor
-        	%%Qualified: ArbWeb.AwMainForm.PopCursor
-        	%%Contact: rlittle
-        	
+            %%Function: PopCursor
+            %%Qualified: ArbWeb.AwMainForm.PopCursor
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         public void PopCursor()
         {
@@ -672,12 +677,17 @@ namespace ArbWeb
             this.button10 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.button13 = new System.Windows.Forms.Button();
+            this.m_announcementsTab = new System.Windows.Forms.TabPage();
+            this.m_announcementsList = new System.Windows.Forms.ListView();
+            this.m_fetchAnnouncements = new System.Windows.Forms.Button();
+            this.button14 = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.m_tabs.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.m_announcementsTab.SuspendLayout();
             this.SuspendLayout();
             // 
             // label17
@@ -1347,9 +1357,13 @@ namespace ArbWeb
             // 
             // m_tabs
             // 
+            this.m_tabs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.m_tabs.Controls.Add(this.tabPage2);
             this.m_tabs.Controls.Add(this.tabPage1);
             this.m_tabs.Controls.Add(this.tabPage3);
+            this.m_tabs.Controls.Add(this.m_announcementsTab);
             this.m_tabs.Location = new System.Drawing.Point(12, 90);
             this.m_tabs.Name = "m_tabs";
             this.m_tabs.SelectedIndex = 0;
@@ -1520,6 +1534,53 @@ namespace ArbWeb
             this.button13.Text = "Do Test Function";
             this.button13.Click += new System.EventHandler(this.DoTestFunction);
             // 
+            // m_announcementsTab
+            // 
+            this.m_announcementsTab.Controls.Add(this.button14);
+            this.m_announcementsTab.Controls.Add(this.m_announcementsList);
+            this.m_announcementsTab.Controls.Add(this.m_fetchAnnouncements);
+            this.m_announcementsTab.Location = new System.Drawing.Point(4, 29);
+            this.m_announcementsTab.Name = "m_announcementsTab";
+            this.m_announcementsTab.Padding = new System.Windows.Forms.Padding(3);
+            this.m_announcementsTab.Size = new System.Drawing.Size(1140, 552);
+            this.m_announcementsTab.TabIndex = 3;
+            this.m_announcementsTab.Text = "Announcements";
+            this.m_announcementsTab.UseVisualStyleBackColor = true;
+            // 
+            // m_announcementsList
+            // 
+            this.m_announcementsList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_announcementsList.HideSelection = false;
+            this.m_announcementsList.Location = new System.Drawing.Point(10, 32);
+            this.m_announcementsList.MultiSelect = false;
+            this.m_announcementsList.Name = "m_announcementsList";
+            this.m_announcementsList.Size = new System.Drawing.Size(1124, 473);
+            this.m_announcementsList.TabIndex = 76;
+            this.m_announcementsList.UseCompatibleStateImageBehavior = false;
+            this.m_announcementsList.View = System.Windows.Forms.View.Details;
+            // 
+            // m_fetchAnnouncements
+            // 
+            this.m_fetchAnnouncements.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_fetchAnnouncements.Location = new System.Drawing.Point(958, 511);
+            this.m_fetchAnnouncements.Name = "m_fetchAnnouncements";
+            this.m_fetchAnnouncements.Size = new System.Drawing.Size(176, 35);
+            this.m_fetchAnnouncements.TabIndex = 75;
+            this.m_fetchAnnouncements.Text = "Fetch Current";
+            this.m_fetchAnnouncements.Click += new System.EventHandler(this.FetchAnnouncements_Click);
+            // 
+            // button14
+            // 
+            this.button14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button14.Location = new System.Drawing.Point(10, 511);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(176, 35);
+            this.button14.TabIndex = 77;
+            this.button14.Text = "Edit Item...";
+            this.button14.Click += new System.EventHandler(this.EditAnnouncement);
+            // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
@@ -1549,6 +1610,7 @@ namespace ArbWeb
             this.tabPage1.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.m_announcementsTab.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1570,10 +1632,10 @@ namespace ArbWeb
 
         /* D O  D O W N L O A D  G A M E S */
         /*----------------------------------------------------------------------------
-        	%%Function: DoDownloadGames
-        	%%Qualified: ArbWeb.AwMainForm.DoDownloadGames
-        	%%Contact: rlittle
-        	
+            %%Function: DoDownloadGames
+            %%Qualified: ArbWeb.AwMainForm.DoDownloadGames
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void HandleDownloadGamesClick(object sender, EventArgs e)
         {
@@ -1591,11 +1653,11 @@ namespace ArbWeb
 
         /* D O  D O W N L O A D  R O S T E R */
         /*----------------------------------------------------------------------------
-	    	%%Function: DoDownloadRoster
-	    	%%Qualified: ArbWeb.AwMainForm.DoDownloadRoster
-	    	%%Contact: rlittle
-	    	
-	    ----------------------------------------------------------------------------*/
+            %%Function: DoDownloadRoster
+            %%Qualified: ArbWeb.AwMainForm.DoDownloadRoster
+            %%Contact: rlittle
+
+        ----------------------------------------------------------------------------*/
         private void DoDownloadRoster(object sender, EventArgs e)
         {
             EnsureWebRoster();
@@ -1604,10 +1666,10 @@ namespace ArbWeb
 
         /* D O  D O W N L O A D  Q U I C K  R O S T E R */
         /*----------------------------------------------------------------------------
-        	%%Function: DoDownloadQuickRoster
-        	%%Qualified: ArbWeb.AwMainForm.DoDownloadQuickRoster
-        	%%Contact: rlittle
-        	
+            %%Function: DoDownloadQuickRoster
+            %%Qualified: ArbWeb.AwMainForm.DoDownloadQuickRoster
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void HandleDownloadQuickRosterClick(object sender, EventArgs e)
         {
@@ -1616,8 +1678,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:HandleUploadRosterClick
-			%%Qualified:ArbWeb.AwMainForm.HandleUploadRosterClick
+            %%Function:HandleUploadRosterClick
+            %%Qualified:ArbWeb.AwMainForm.HandleUploadRosterClick
         ----------------------------------------------------------------------------*/
         private void HandleUploadRosterClick(object sender, EventArgs e)
         {
@@ -1630,7 +1692,7 @@ namespace ArbWeb
             %%Function: ChangeShowBrowser
             %%Qualified: ArbWeb.AwMainForm.ChangeShowBrowser
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void ChangeShowBrowser(object sender, EventArgs e)
         {
@@ -1643,7 +1705,7 @@ namespace ArbWeb
             %%Function: EnableControls
             %%Qualified: ArbWeb.AwMainForm.EnableControls
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         void EnableControls()
         {
@@ -1656,10 +1718,10 @@ namespace ArbWeb
 
         /* H A N D L E  S P O R T  C H E C K E D */
         /*----------------------------------------------------------------------------
-        	%%Function: HandleSportChecked
-        	%%Qualified: ArbWeb.AwMainForm.HandleSportChecked
-        	%%Contact: rlittle
-        	
+            %%Function: HandleSportChecked
+            %%Qualified: ArbWeb.AwMainForm.HandleSportChecked
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void HandleSportChecked(object sender, EventArgs e)
         {
@@ -1668,10 +1730,10 @@ namespace ArbWeb
 
         /* H A N D L E  S P O R T  L E V E L  C H E C K E D */
         /*----------------------------------------------------------------------------
-        	%%Function: HandleSportLevelChecked
-        	%%Qualified: ArbWeb.AwMainForm.HandleSportLevelChecked
-        	%%Contact: rlittle
-        	
+            %%Function: HandleSportLevelChecked
+            %%Qualified: ArbWeb.AwMainForm.HandleSportLevelChecked
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void HandleSportLevelChecked(object sender, EventArgs e)
         {
@@ -1683,7 +1745,7 @@ namespace ArbWeb
             %%Function: GenSiteRosterReport
             %%Qualified: ArbWeb.AwMainForm.GenSiteRosterReport
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void GenSiteRosterReport(object sender, EventArgs e)
         {
@@ -1703,7 +1765,7 @@ namespace ArbWeb
             %%Function: GenMailMergeMail
             %%Qualified: ArbWeb.AwMainForm.GenMailMergeMail
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void GenMailMergeMail(object sender, EventArgs e)
         {
@@ -1734,7 +1796,7 @@ namespace ArbWeb
             %%Function: DoSportLevelFilter
             %%Qualified: ArbWeb.AwMainForm.DoSportLevelFilter
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void DoSportLevelFilter(object sender, ItemCheckEventArgs e)
         {
@@ -1745,8 +1807,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:DoReloadClick
-			%%Qualified:ArbWeb.AwMainForm.DoReloadClick
+            %%Function:DoReloadClick
+            %%Qualified:ArbWeb.AwMainForm.DoReloadClick
         ----------------------------------------------------------------------------*/
         private void DoReloadClick(object sender, EventArgs e)
         {
@@ -1761,8 +1823,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function: RefreshSchedsToDiff
-			%%Qualified: ArbWeb.AwMainForm.RefreshSchedsToDiff
+            %%Function: RefreshSchedsToDiff
+            %%Qualified: ArbWeb.AwMainForm.RefreshSchedsToDiff
         ----------------------------------------------------------------------------*/
         void RefreshSchedsToDiff()
         {
@@ -1776,8 +1838,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function: DoTrainWreckDiff
-			%%Qualified: ArbWeb.AwMainForm.DoTrainWreckDiff
+            %%Function: DoTrainWreckDiff
+            %%Qualified: ArbWeb.AwMainForm.DoTrainWreckDiff
         ----------------------------------------------------------------------------*/
         void DoTrainWreckDiff(
             string sScheduleLeftFile,
@@ -1874,10 +1936,10 @@ namespace ArbWeb
 
         /* E B  F R O M  F N C */
         /*----------------------------------------------------------------------------
-        	%%Function: EbFromFnc
-        	%%Qualified: ArbWeb.AwMainForm.EbFromFnc
-        	%%Contact: rlittle
-        	
+            %%Function: EbFromFnc
+            %%Qualified: ArbWeb.AwMainForm.EbFromFnc
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         TextBox EbFromFnc(EditProfile.FNC fnc)
         {
@@ -1894,10 +1956,10 @@ namespace ArbWeb
 
         /* D O  B R O W S E  O P E N */
         /*----------------------------------------------------------------------------
-        	%%Function: DoBrowseOpen
-        	%%Qualified: ArbWeb.AwMainForm.DoBrowseOpen
-        	%%Contact: rlittle
-        	
+            %%Function: DoBrowseOpen
+            %%Qualified: ArbWeb.AwMainForm.DoBrowseOpen
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void DoBrowseOpen(object sender, EventArgs e)
         {
@@ -1912,10 +1974,10 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:RefreshGameFilters
-			%%Qualified:ArbWeb.AwMainForm.RefreshGameFilters
+            %%Function:RefreshGameFilters
+            %%Qualified:ArbWeb.AwMainForm.RefreshGameFilters
 
-			Get the latest game filter list from arbiter			
+            Get the latest game filter list from arbiter
         ----------------------------------------------------------------------------*/
         private void RefreshGameFilters(object sender, EventArgs e)
         {
@@ -1929,8 +1991,8 @@ namespace ArbWeb
         }
 
         /*----------------------------------------------------------------------------
-			%%Function:EnsureLoggedIn
-			%%Qualified:ArbWeb.AwMainForm.EnsureLoggedIn
+            %%Function:EnsureLoggedIn
+            %%Qualified:ArbWeb.AwMainForm.EnsureLoggedIn
         ----------------------------------------------------------------------------*/
         public void EnsureLoggedIn() => m_webNav.EnsureLoggedIn();
 
@@ -1986,7 +2048,7 @@ namespace ArbWeb
             %%Function: SetupLogToFile
             %%Qualified: ArbWeb.AwMainForm.SetupLogToFile
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void SetupLogToFile()
         {
@@ -2087,10 +2149,10 @@ namespace ArbWeb
 
         /* C H A N G E  P R O F I L E */
         /*----------------------------------------------------------------------------
-        	%%Function: ChangeProfile
-        	%%Qualified: ArbWeb.AwMainForm.ChangeProfile
-        	%%Contact: rlittle
-        	
+            %%Function: ChangeProfile
+            %%Qualified: ArbWeb.AwMainForm.ChangeProfile
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void ChangeProfile(object sender, EventArgs e)
         {
@@ -2108,7 +2170,7 @@ namespace ArbWeb
             %%Function: DoSaveStateCore
             %%Qualified: ArbWeb.AwMainForm.DoSaveStateCore
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void DoSaveStateCore()
         {
@@ -2125,7 +2187,7 @@ namespace ArbWeb
             %%Function: DoSaveState
             %%Qualified: ArbWeb.AwMainForm.DoSaveState
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void DoSaveState(object sender, FormClosingEventArgs e)
         {
@@ -2144,10 +2206,10 @@ namespace ArbWeb
 
         /* O N  P R O F I L E  L E A V E */
         /*----------------------------------------------------------------------------
-        	%%Function: OnProfileLeave
-        	%%Qualified: ArbWeb.AwMainForm.OnProfileLeave
-        	%%Contact: rlittle
-        	
+            %%Function: OnProfileLeave
+            %%Qualified: ArbWeb.AwMainForm.OnProfileLeave
+            %%Contact: rlittle
+
         ----------------------------------------------------------------------------*/
         private void OnProfileLeave(object sender, EventArgs e)
         {
@@ -2302,7 +2364,7 @@ namespace ArbWeb
             %%Function: GenOpenSlotsMail
             %%Qualified: ArbWeb.AwMainForm.GenOpenSlotsMail
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void GenOpenSlotsMail(object sender, EventArgs e)
         {
@@ -2328,7 +2390,7 @@ namespace ArbWeb
             %%Function: CalcOpenSlots
             %%Qualified: ArbWeb.AwMainForm.CalcOpenSlots
             %%Contact: rlittle
-            
+
         ----------------------------------------------------------------------------*/
         private void CalcOpenSlots(object sender, EventArgs e)
         {
@@ -2556,5 +2618,46 @@ namespace ArbWeb
             EnsureWebRoster();
             m_webRoster.TestRankPositionNavigate();
         }
+
+    #region Announcements Integration
+
+        private WebAnnouncements m_announcements = null;
+
+        private void FetchAnnouncements_Click(object sender, EventArgs e)
+        {
+            EnsureLoggedIn();
+         
+            m_announcements = new WebAnnouncements(this);
+            
+            m_announcements.ReadCurrentAnnouncements();
+            m_announcements.InitializeListView(m_announcementsList);
+            m_announcements.SyncListViewItems();
+        }
+
+        private void EditAnnouncement(object sender, EventArgs e)
+        {
+            if (m_announcementsList.SelectedIndices.Count != 1)
+            {
+                MessageBox.Show("Must select an announcment to edit first.");
+                return;
+            }
+
+            Announcement announcement = m_announcementsList.Items[m_announcementsList.SelectedIndices[0]].Tag as Announcement;
+
+            if (announcement == null)
+            {
+                MessageBox.Show("Selected item doesn't have an announcement");
+                return;
+            }
+
+            Announcement changed = Announcements.EditAnnouncement.DoEditAnnouncement(announcement);
+
+            if (changed == null)
+                return;
+
+
+        }
+
+        #endregion
     }
 }

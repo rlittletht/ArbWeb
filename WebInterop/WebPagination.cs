@@ -59,10 +59,12 @@ public class WebPagination
     ----------------------------------------------------------------------------*/
     public void ReadLinksFromPageIndex(int currentPage, bool updateExistingValues)
     {
+        string xpath = $"//tr[@class='numericPaging']//a[contains(@href, '{WebCore._s_GenericPagination_PaginationHrefPostbackHrefSubstr}') and contains(@href, '{WebCore._s_GenericPagination_PaginationHrefPostbackSubstr}')]";
+
         // figure out how many pages we have
         // find all of the <a> tags with an href that targets a pagination postback
         IList<IWebElement> anchors = m_appContext.WebControl.Driver.FindElements(
-            By.XPath($"//tr[@class='numericPaging']//a[contains(@href, '{WebCore._s_OfficialsView_PaginationHrefPostbackSubstr}')]"));
+            By.XPath(xpath));
 
         int pageNum = 0;
 
@@ -75,7 +77,7 @@ public class WebPagination
 
             string href = anchor.GetAttribute("href");
 
-            if (href != null && href.Contains(WebCore._s_OfficialsView_PaginationHrefPostbackSubstr))
+            if (href != null && href.Contains(WebCore._s_GenericPagination_PaginationHrefPostbackHrefSubstr))
             {
                 string currentValue = PaginationLinks[pageNum];
 
@@ -136,7 +138,7 @@ public class WebPagination
         timer.Stop();
         msecFindElement = timer.MsecFloat;
 
-        appContext.StatusReport.LogData($"Process All Officials(find item by xpath) elapsedTime: {timer.MsecFloat}", 1, MSGT.Body);
+        appContext.StatusReport.LogData($"Process All GivenPage find item by xpath) elapsedTime: {timer.MsecFloat}", 1, MSGT.Body);
 
         timer.Reset();
         timer.Start();
@@ -196,13 +198,17 @@ public class WebPagination
         // read the links from the current page
         ResetLinksFromStartingPage();
 
-        visit(0);
+        if (!visit(0))
+            return;
+
         int currentPage = 1;
 
         while (currentPage < PaginationLinks.Count)
         {
             NavigateToPageByIndex(currentPage);
-            visit(currentPage);
+            if (!visit(currentPage))
+                return;
+
             currentPage++;
         }
     }
