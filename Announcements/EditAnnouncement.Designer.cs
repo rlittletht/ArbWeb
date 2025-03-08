@@ -93,7 +93,7 @@
             this.m_officialsFilter.FormattingEnabled = true;
             this.m_officialsFilter.Items.AddRange(new object[] {
             "None",
-            "All Official",
+            "All Officials",
             "Active Officials",
             "Ready Officials",
             "Not-Ready Officials"});

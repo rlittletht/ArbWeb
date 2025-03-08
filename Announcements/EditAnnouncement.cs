@@ -58,7 +58,7 @@ public partial class EditAnnouncement : Form
     public Announcement GetAnnouncement()
     {
         Announcement announcement = new Announcement();
-        announcement.RebuildAnnounceHtml(m_announcementID.Text, txtContent.Text);
+        announcement.AnnouncementHtml = announcement.BuildAnnounceHtml(m_announcementID.Text, txtContent.Text);
         announcement.ShowAssigners = m_showToAssigners.Checked;
         announcement.ShowContacts = m_showToContacts.Checked;
         announcement.Officials = m_officialsFilter.SelectedItem.ToString();

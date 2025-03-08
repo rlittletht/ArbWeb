@@ -27,7 +27,7 @@ namespace ArbWeb
 
         void CheckAnnounceControl(string prefix, string suffix, string ctl, bool enabled)
         {
-            string sidEnable = BuildAnnouncementNameOrIdString(prefix, suffix, ctl);
+            string sidEnable = WebAnnouncements.BuildAnnouncementNameOrIdString(prefix, suffix, ctl);
 
             m_appContext.WebControl.FSetCheckboxControlIdVal(enabled, sidEnable);
         }
@@ -82,7 +82,7 @@ namespace ArbWeb
 
             Utils.ThrowIfNot(sCtl != null, $"Can't find {containingDiv} announcement");
 
-            string sidControl = BuildAnnouncementNameOrIdString(
+            string sidControl = WebAnnouncements.BuildAnnouncementNameOrIdString(
                 WebCore._sid_Announcements_Button_Edit_Prefix,
                 WebCore._sid_Announcements_Button_Edit_Suffix,
                 sCtl);
@@ -115,7 +115,7 @@ namespace ArbWeb
                 if (MessageBox.Show("CKE Editor didn't start in source mode. This edit may be lossy. Continue", "ArbWeb", MessageBoxButtons.YesNo)
                     != DialogResult.Yes)
                 {
-                    string cancel = BuildAnnouncementNameOrIdString(
+                    string cancel = WebAnnouncements.BuildAnnouncementNameOrIdString(
                         WebCore._sid_Announcements_Button_Cancel_Prefix,
                         WebCore._sid_Announcements_Button_Cancel_Suffix,
                         sCtl);
@@ -171,7 +171,7 @@ namespace ArbWeb
             // and lastly, choose the officials this is visible to
             if (officialsVisibleTo != null)
             {
-                string sidEnable = BuildAnnouncementNameOrIdString(
+                string sidEnable = WebAnnouncements.BuildAnnouncementNameOrIdString(
                     WebCore._s_Announcements_Button_ToOfficials_Prefix,
                     WebCore._s_Announcements_Button_ToOfficials_Suffix,
                     sCtl);
@@ -192,7 +192,7 @@ namespace ArbWeb
                 }
             }
 
-            sidControl = BuildAnnouncementNameOrIdString(
+            sidControl = WebAnnouncements.BuildAnnouncementNameOrIdString(
                 WebCore._sid_Announcements_Button_Save_Prefix,
                 WebCore._sid_Announcements_Button_Save_Suffix,
                 sCtl);
@@ -211,15 +211,6 @@ namespace ArbWeb
         public void SetArbiterAnnounce(string sArbiterHelpNeeded)
         {
             UpdateArbiterAnnouncement("D9UrgentHelpNeeded", sArbiterHelpNeeded, null, null, "All Officials");
-        }
-
-        /*----------------------------------------------------------------------------
-            %%Function:BuildAnnouncementNameOrIdString
-            %%Qualified:ArbWeb.WebAnnounce.BuildAnnouncementNameOrIdString
-        ----------------------------------------------------------------------------*/
-        private static string BuildAnnouncementNameOrIdString(string sPrefix, string sSuffix, string sCtl)
-        {
-            return $"{sPrefix}{sCtl}{sSuffix}";
         }
     }
 }

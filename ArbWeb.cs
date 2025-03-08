@@ -2655,7 +2655,8 @@ namespace ArbWeb
             if (changed == null)
                 return;
 
-
+            m_announcements.UpdateArbiterAnnouncement(announcement, changed);
+            m_announcementsList.Items[m_announcementsList.SelectedIndices[0]].Tag = changed;
         }
 
         #endregion

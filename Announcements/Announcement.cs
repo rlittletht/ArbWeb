@@ -15,7 +15,7 @@ public class Announcement
     public bool Editable { get; set; }
     public bool Deletable { get; set; }
 
-    public int PageIndex { get; set; }
+    public int PageIndex { get; set; } = -1;
 
     public string AnnouncementHtml { get; set; }
 
@@ -36,7 +36,7 @@ public class Announcement
         return afterDiv.Substring(0, lastDiv);
     }
 
-    public string RebuildAnnounceHtml(string id, string editHtml)
+    public string BuildAnnounceHtml(string id, string editHtml)
     {
         MatchString = @$"{WebAnnouncements.s_AnnounceDivIdPrefix}{id}";
 
