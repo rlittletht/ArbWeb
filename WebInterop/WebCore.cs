@@ -264,6 +264,9 @@ namespace ArbWeb
             _s_Announcements_Button_Edit_Prefix =
                 "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
 
+        public const string
+            _sid_AnnouncementsTable = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements"; // ok2025
+                                       
         private const string _s_Announcements_Button_Edit_Suffix = "$btnEdit";
 
         private const string _s_Announcements_Checkbox_Assigners_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
@@ -553,7 +556,7 @@ namespace ArbWeb
             %%Function: BuildDownloadFilenameFromTemplate
             %%Qualified: ArbWeb.DownloadGenericExcelReport.BuildDownloadFilenameFromTemplate
         ----------------------------------------------------------------------------*/
-        public static string BuildDownloadFilenameFromTemplate(string template, string baseName)
+        public static string BuildDownloadFilenameFromTemplate(string template, string baseName, string extension = "csv")
         {
             string sOutFile;
             string sPrefix = "";
@@ -574,7 +577,7 @@ namespace ArbWeb
                 }
             }
 
-            sOutFile = $"{sOutFile}{sPrefix}\\{baseName}_{DateTime.Now:MM}{DateTime.Now:dd}{DateTime.Now:yy}_{DateTime.Now:HH}{DateTime.Now:mm}.csv";
+            sOutFile = $"{sOutFile}{sPrefix}\\{baseName}_{DateTime.Now:MM}{DateTime.Now:dd}{DateTime.Now:yy}_{DateTime.Now:HH}{DateTime.Now:mm}.{extension}";
             return sOutFile;
         }
     }
@@ -791,7 +794,6 @@ namespace ArbWeb
                 missing);
 
             string sOutFile = "";
-            string sPrefix = "";
 
             sOutFile = WebCore.BuildDownloadFilenameFromTemplate(m_sGameFile, "games");
 

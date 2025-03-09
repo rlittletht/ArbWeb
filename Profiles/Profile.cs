@@ -48,6 +48,8 @@ namespace ArbWeb
         [Setting("Roster", "", "")] public string Roster { get; set; }
         [Setting("GameFileCopy", "", "")] public string GameCopy { get; set; }
         [Setting("RosterCopy", "", "")] public string RosterWorking { get; set; }
+        [Setting("Announcements", "", "")] public string Announcements { get; set; }
+        [Setting("AnnouncementsCopy", "", "")] public string AnnouncementsWorking { get; set; }
         [Setting("GameOutput", "", "")] public string GameOutput { get; set; }
         [Setting("OutputFile", "", "")] public string OutputFile { get; set; }
         [Setting("IncludeCanceled", false, 0)] public bool IncludeCanceled { get; set; }

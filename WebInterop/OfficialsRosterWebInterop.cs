@@ -333,8 +333,6 @@ namespace ArbWeb
                         else
                             irste = rosterUploading.IrsteLookupEmail(linkInfo.sEmail);
 
-                        bool fMarkOnly = false;
-
                         m_appContext.StatusReport.AddMessage($"Pass 2 Processing roster info for {pageLinks.officialLinkInfos[pageLinks.iCur].sEmail}...");
 
                         if (rosterEntriesToLimitTo != null)

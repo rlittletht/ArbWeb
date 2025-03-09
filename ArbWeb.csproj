@@ -318,6 +318,18 @@
     <Compile Include="WebInterop\WebRosterDownload.cs" />
     <Compile Include="WebInterop\WebRosterUpload.cs" />
     <Compile Include="WebInterop\WebTeams.cs" />
+    <Content Include="announcements.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="announcementsAssigners.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="announcements.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="announcementsOfficials.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="App.ico" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>

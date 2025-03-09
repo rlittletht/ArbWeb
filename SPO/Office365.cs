@@ -65,7 +65,9 @@ namespace ArbWeb
                 m_api = new WebApiInterop("https://graph.microsoft.com/v1.0", m_auth);
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task GetFormInfo()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             // HttpResponseMessage resp = m_api.CallServiceApiDirect("https://forms.office.com/formapi/api/forms", true);
             HttpResponseMessage resp = m_api.CallServiceApiDirect("https://graph.microsoft.com/v1.0/me/forms", true);

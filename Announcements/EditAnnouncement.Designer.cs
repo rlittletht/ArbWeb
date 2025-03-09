@@ -2,7 +2,6 @@
 {
     partial class EditAnnouncement
     {
-        private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.TextBox txtContent;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;

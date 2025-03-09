@@ -395,8 +395,6 @@ namespace ArbWeb
 
             foreach (List<Game> plgm in mpSlotGames.Values)
             {
-                int totalNeeded = 0;
-
                 (int cGamesWithNoUmpires, int cTotalOpenSlots, Game gameFirst) = GetGameSummaryFromGames(plgm);
 
                 WriteGames(xw, plgm);

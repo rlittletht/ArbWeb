@@ -105,7 +105,7 @@ namespace ArbWeb
         private CheckBox m_cbAddOfficialsOnly;
         private Button m_pbBrowseGamesReport;
         private Button m_pbBrowseAnalysis;
-        private Button button3;
+        private Button m_pbGetRoster;
         private TextBox m_ebAffiliationIndex;
         private CheckBox m_cbFuzzyTimes;
         private CheckBox m_cbDatePivot;
@@ -169,9 +169,17 @@ namespace ArbWeb
         private Button button12;
         private Button button13;
         private TabPage m_announcementsTab;
-        private Button m_fetchAnnouncements;
         private ListView m_announcementsList;
         private Button button14;
+        private Button m_fetchAnnouncements;
+        private TextBox m_ebStyleClock;
+        private Label label4;
+        private Label label3;
+        private TextBox m_ebCommonStylesheet;
+        private Button button15;
+        private Button button3;
+        private Button button16;
+        private Button button17;
         private WebGames m_webGames;
 
 #region Top Level Program Flow
@@ -639,7 +647,7 @@ namespace ArbWeb
             this.m_cbAddOfficialsOnly = new System.Windows.Forms.CheckBox();
             this.m_pbBrowseGamesReport = new System.Windows.Forms.Button();
             this.m_pbBrowseAnalysis = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.m_pbGetRoster = new System.Windows.Forms.Button();
             this.m_ebAffiliationIndex = new System.Windows.Forms.TextBox();
             this.m_cbFuzzyTimes = new System.Windows.Forms.CheckBox();
             this.m_cbDatePivot = new System.Windows.Forms.CheckBox();
@@ -678,9 +686,17 @@ namespace ArbWeb
             this.button1 = new System.Windows.Forms.Button();
             this.button13 = new System.Windows.Forms.Button();
             this.m_announcementsTab = new System.Windows.Forms.TabPage();
+            this.button15 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            this.m_ebStyleClock = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.m_ebCommonStylesheet = new System.Windows.Forms.TextBox();
+            this.button14 = new System.Windows.Forms.Button();
             this.m_announcementsList = new System.Windows.Forms.ListView();
             this.m_fetchAnnouncements = new System.Windows.Forms.Button();
-            this.button14 = new System.Windows.Forms.Button();
+            this.button16 = new System.Windows.Forms.Button();
+            this.button17 = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.m_tabs.SuspendLayout();
@@ -706,7 +722,7 @@ namespace ArbWeb
             this.m_pbDownloadGames.Name = "m_pbDownloadGames";
             this.m_pbDownloadGames.Size = new System.Drawing.Size(176, 35);
             this.m_pbDownloadGames.TabIndex = 14;
-            this.m_pbDownloadGames.Text = "Download Games";
+            this.m_pbDownloadGames.Text = "Get Games";
             this.m_pbDownloadGames.Click += new System.EventHandler(this.HandleDownloadGamesClick);
             // 
             // m_pbGetContacts
@@ -724,7 +740,7 @@ namespace ArbWeb
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.m_recStatus);
-            this.groupBox2.Location = new System.Drawing.Point(16, 681);
+            this.groupBox2.Location = new System.Drawing.Point(16, 729);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(1148, 191);
             this.groupBox2.TabIndex = 27;
@@ -737,6 +753,7 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Right)));
             this.m_recStatus.Location = new System.Drawing.Point(8, 30);
             this.m_recStatus.Name = "m_recStatus";
+            this.m_recStatus.ReadOnly = true;
             this.m_recStatus.Size = new System.Drawing.Size(1132, 150);
             this.m_recStatus.TabIndex = 0;
             this.m_recStatus.Text = "";
@@ -1085,15 +1102,15 @@ namespace ArbWeb
             this.m_pbBrowseAnalysis.Text = "...";
             this.m_pbBrowseAnalysis.Click += new System.EventHandler(this.DoBrowseOpen);
             // 
-            // button3
+            // m_pbGetRoster
             // 
-            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(988, 36);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(176, 35);
-            this.button3.TabIndex = 74;
-            this.button3.Text = "Get Quick Roster";
-            this.button3.Click += new System.EventHandler(this.HandleDownloadQuickRosterClick);
+            this.m_pbGetRoster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pbGetRoster.Location = new System.Drawing.Point(988, 36);
+            this.m_pbGetRoster.Name = "m_pbGetRoster";
+            this.m_pbGetRoster.Size = new System.Drawing.Size(176, 35);
+            this.m_pbGetRoster.TabIndex = 74;
+            this.m_pbGetRoster.Text = "Get Roster";
+            this.m_pbGetRoster.Click += new System.EventHandler(this.HandleDownloadQuickRosterClick);
             // 
             // m_ebAffiliationIndex
             // 
@@ -1364,10 +1381,10 @@ namespace ArbWeb
             this.m_tabs.Controls.Add(this.tabPage1);
             this.m_tabs.Controls.Add(this.tabPage3);
             this.m_tabs.Controls.Add(this.m_announcementsTab);
-            this.m_tabs.Location = new System.Drawing.Point(12, 90);
+            this.m_tabs.Location = new System.Drawing.Point(12, 132);
             this.m_tabs.Name = "m_tabs";
             this.m_tabs.SelectedIndex = 0;
-            this.m_tabs.Size = new System.Drawing.Size(1148, 585);
+            this.m_tabs.Size = new System.Drawing.Size(1148, 591);
             this.m_tabs.TabIndex = 106;
             // 
             // tabPage2
@@ -1407,7 +1424,7 @@ namespace ArbWeb
             this.tabPage2.Location = new System.Drawing.Point(4, 29);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1140, 552);
+            this.tabPage2.Size = new System.Drawing.Size(1140, 558);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Coverage Management";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -1461,7 +1478,7 @@ namespace ArbWeb
             this.tabPage1.Location = new System.Drawing.Point(4, 29);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1140, 552);
+            this.tabPage1.Size = new System.Drawing.Size(1140, 558);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Game Reporting";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -1489,7 +1506,7 @@ namespace ArbWeb
             this.tabPage3.Location = new System.Drawing.Point(4, 29);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(1140, 552);
+            this.tabPage3.Size = new System.Drawing.Size(1140, 558);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Schedule and Tools";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1536,16 +1553,92 @@ namespace ArbWeb
             // 
             // m_announcementsTab
             // 
+            this.m_announcementsTab.Controls.Add(this.button17);
+            this.m_announcementsTab.Controls.Add(this.button16);
+            this.m_announcementsTab.Controls.Add(this.button15);
+            this.m_announcementsTab.Controls.Add(this.button3);
+            this.m_announcementsTab.Controls.Add(this.m_ebStyleClock);
+            this.m_announcementsTab.Controls.Add(this.label4);
+            this.m_announcementsTab.Controls.Add(this.label3);
+            this.m_announcementsTab.Controls.Add(this.m_ebCommonStylesheet);
             this.m_announcementsTab.Controls.Add(this.button14);
             this.m_announcementsTab.Controls.Add(this.m_announcementsList);
-            this.m_announcementsTab.Controls.Add(this.m_fetchAnnouncements);
             this.m_announcementsTab.Location = new System.Drawing.Point(4, 29);
             this.m_announcementsTab.Name = "m_announcementsTab";
             this.m_announcementsTab.Padding = new System.Windows.Forms.Padding(3);
-            this.m_announcementsTab.Size = new System.Drawing.Size(1140, 552);
+            this.m_announcementsTab.Size = new System.Drawing.Size(1140, 558);
             this.m_announcementsTab.TabIndex = 3;
             this.m_announcementsTab.Text = "Announcements";
             this.m_announcementsTab.UseVisualStyleBackColor = true;
+            // 
+            // button15
+            // 
+            this.button15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button15.Location = new System.Drawing.Point(958, 517);
+            this.button15.Name = "button15";
+            this.button15.Size = new System.Drawing.Size(176, 35);
+            this.button15.TabIndex = 112;
+            this.button15.Text = "Set Announcements";
+            this.button15.Click += new System.EventHandler(this.UpdateAllAnnouncements);
+            // 
+            // button3
+            // 
+            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button3.Location = new System.Drawing.Point(777, 517);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(176, 35);
+            this.button3.TabIndex = 111;
+            this.button3.Text = "Load Announcements";
+            this.button3.Click += new System.EventHandler(this.LoadAnnouncements);
+            // 
+            // m_ebStyleClock
+            // 
+            this.m_ebStyleClock.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_ebStyleClock.Location = new System.Drawing.Point(1074, 400);
+            this.m_ebStyleClock.Name = "m_ebStyleClock";
+            this.m_ebStyleClock.ReadOnly = true;
+            this.m_ebStyleClock.Size = new System.Drawing.Size(60, 26);
+            this.m_ebStyleClock.TabIndex = 110;
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(1020, 403);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(48, 20);
+            this.label4.TabIndex = 109;
+            this.label4.Text = "Clock";
+            // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 400);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(152, 20);
+            this.label3.TabIndex = 108;
+            this.label3.Text = "Common Stylesheet";
+            // 
+            // m_ebCommonStylesheet
+            // 
+            this.m_ebCommonStylesheet.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_ebCommonStylesheet.Location = new System.Drawing.Point(10, 432);
+            this.m_ebCommonStylesheet.Multiline = true;
+            this.m_ebCommonStylesheet.Name = "m_ebCommonStylesheet";
+            this.m_ebCommonStylesheet.Size = new System.Drawing.Size(1124, 79);
+            this.m_ebCommonStylesheet.TabIndex = 78;
+            // 
+            // button14
+            // 
+            this.button14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button14.Location = new System.Drawing.Point(10, 517);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(176, 35);
+            this.button14.TabIndex = 77;
+            this.button14.Text = "Edit Item...";
+            this.button14.Click += new System.EventHandler(this.EditAnnouncement);
             // 
             // m_announcementsList
             // 
@@ -1553,45 +1646,64 @@ namespace ArbWeb
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.m_announcementsList.HideSelection = false;
-            this.m_announcementsList.Location = new System.Drawing.Point(10, 32);
+            this.m_announcementsList.Location = new System.Drawing.Point(10, 43);
             this.m_announcementsList.MultiSelect = false;
             this.m_announcementsList.Name = "m_announcementsList";
-            this.m_announcementsList.Size = new System.Drawing.Size(1124, 473);
+            this.m_announcementsList.Size = new System.Drawing.Size(1124, 351);
             this.m_announcementsList.TabIndex = 76;
             this.m_announcementsList.UseCompatibleStateImageBehavior = false;
             this.m_announcementsList.View = System.Windows.Forms.View.Details;
             // 
             // m_fetchAnnouncements
             // 
-            this.m_fetchAnnouncements.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_fetchAnnouncements.Location = new System.Drawing.Point(958, 511);
+            this.m_fetchAnnouncements.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_fetchAnnouncements.Location = new System.Drawing.Point(988, 117);
             this.m_fetchAnnouncements.Name = "m_fetchAnnouncements";
             this.m_fetchAnnouncements.Size = new System.Drawing.Size(176, 35);
-            this.m_fetchAnnouncements.TabIndex = 75;
-            this.m_fetchAnnouncements.Text = "Fetch Current";
+            this.m_fetchAnnouncements.TabIndex = 107;
+            this.m_fetchAnnouncements.Text = "Get Announcements";
             this.m_fetchAnnouncements.Click += new System.EventHandler(this.FetchAnnouncements_Click);
             // 
-            // button14
+            // button16
             // 
-            this.button14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button14.Location = new System.Drawing.Point(10, 511);
-            this.button14.Name = "button14";
-            this.button14.Size = new System.Drawing.Size(176, 35);
-            this.button14.TabIndex = 77;
-            this.button14.Text = "Edit Item...";
-            this.button14.Click += new System.EventHandler(this.EditAnnouncement);
+            this.button16.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button16.Location = new System.Drawing.Point(12, 0);
+            this.button16.Margin = new System.Windows.Forms.Padding(0);
+            this.button16.Name = "button16";
+            this.button16.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.button16.Size = new System.Drawing.Size(47, 40);
+            this.button16.TabIndex = 113;
+            this.button16.Text = "⏶";
+            this.button16.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.button16.UseVisualStyleBackColor = true;
+            this.button16.Click += new System.EventHandler(this.MoveAnnouncementUp);
+            // 
+            // button17
+            // 
+            this.button17.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button17.Location = new System.Drawing.Point(59, 0);
+            this.button17.Margin = new System.Windows.Forms.Padding(0);
+            this.button17.Name = "button17";
+            this.button17.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.button17.Size = new System.Drawing.Size(47, 40);
+            this.button17.TabIndex = 114;
+            this.button17.Text = "⏷";
+            this.button17.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.MoveAnnouncementDown);
             // 
             // AwMainForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
-            this.ClientSize = new System.Drawing.Size(1174, 884);
+            this.ClientSize = new System.Drawing.Size(1174, 932);
+            this.Controls.Add(this.m_fetchAnnouncements);
             this.Controls.Add(this.m_pbDownloadGames);
             this.Controls.Add(this.m_tabs);
             this.Controls.Add(this.m_pbRefreshGameFilters);
             this.Controls.Add(this.m_cbxGameFilter);
             this.Controls.Add(this.m_pbAddProfile);
             this.Controls.Add(this.m_pbEditProfile);
-            this.Controls.Add(this.button3);
+            this.Controls.Add(this.m_pbGetRoster);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.m_cbxProfile);
             this.Controls.Add(this.m_lblSearchCriteria);
@@ -1611,6 +1723,7 @@ namespace ArbWeb
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
             this.m_announcementsTab.ResumeLayout(false);
+            this.m_announcementsTab.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2632,6 +2745,12 @@ namespace ArbWeb
             m_announcements.ReadCurrentAnnouncements();
             m_announcements.InitializeListView(m_announcementsList);
             m_announcements.SyncListViewItems();
+            m_ebCommonStylesheet.Text = m_announcements.CommonStylesheet;
+            m_ebStyleClock.Text = m_announcements.CommonStylesheetVectorClock.ToString();
+
+            // save the announcements
+            string saveFile = WebCore.BuildDownloadFilenameFromTemplate(Profile.Announcements, "announcements", "html");
+            m_announcements.SaveAnnouncementsToHtmlFile(saveFile, Profile.AnnouncementsWorking);
         }
 
         private void EditAnnouncement(object sender, EventArgs e)
@@ -2659,6 +2778,72 @@ namespace ArbWeb
             m_announcementsList.Items[m_announcementsList.SelectedIndices[0]].Tag = changed;
         }
 
+        string SGetFileName(string initialDirectory, string types)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            ofd.InitialDirectory = Path.GetDirectoryName(initialDirectory);
+            ofd.Filter = types;
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                return ofd.FileName;
+            }
+
+            return null;
+        }
+
+        private void LoadAnnouncements(object sender, EventArgs e)
+        {
+            string sFile = SGetFileName(Profile.AnnouncementsWorking, "HTML Files (*.html)|*.html");
+
+            if (sFile != null)
+            {
+                m_announcements = new WebAnnouncements(this);
+                m_announcements.LoadAnnouncementsFromHtmlFile(sFile);
+                m_announcements.InitializeListView(m_announcementsList);
+                m_announcements.SyncListViewItems();
+                m_ebCommonStylesheet.Text = m_announcements.CommonStylesheet;
+                m_ebStyleClock.Text = m_announcements.CommonStylesheetVectorClock.ToString();
+            }
+        }
+
         #endregion
+
+        private void UpdateAllAnnouncements(object sender, EventArgs e)
+        {
+            m_announcements.UpdateRanksFromListView();
+            m_announcements.UpdateAllAnnouncements();
+        }
+
+        private void MoveAnnouncementUp(object sender, EventArgs e)
+        {
+            if (m_announcementsList.SelectedIndices.Count != 1)
+            {
+                MessageBox.Show("Must select an announcment to edit first.");
+                return;
+            }
+
+            int current = m_announcementsList.SelectedIndices[0];
+
+            ListViewItem lvi = m_announcementsList.Items[current];
+            m_announcementsList.Items.RemoveAt(current);
+            m_announcementsList.Items.Insert(current - 1, lvi);
+        }
+
+        private void MoveAnnouncementDown(object sender, EventArgs e)
+        {
+            if (m_announcementsList.SelectedIndices.Count != 1)
+            {
+                MessageBox.Show("Must select an announcment to edit first.");
+                return;
+            }
+
+            int current = m_announcementsList.SelectedIndices[0];
+
+            ListViewItem lvi = m_announcementsList.Items[current];
+            m_announcementsList.Items.RemoveAt(current);
+            m_announcementsList.Items.Insert(current + 1, lvi);
+        }
     }
 }

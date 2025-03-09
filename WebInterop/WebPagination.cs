@@ -12,7 +12,7 @@ public class WebPagination
     public delegate bool VisitPageDelegate(int pageIndex);
 
     private readonly IAppContext m_appContext;
-    public List<string?> PaginationLinks = new();
+    public List<string> PaginationLinks = new();
     private string m_firstPageUrl;
 
     public WebPagination(IAppContext appContext)
