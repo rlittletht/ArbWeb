@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.DevTools.V132.Network;
+using OpenQA.Selenium.Interactions;
 using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
 
@@ -332,8 +333,6 @@ namespace ArbWeb
                         else
                             irste = rosterUploading.IrsteLookupEmail(linkInfo.sEmail);
 
-                        bool fMarkOnly = false;
-
                         m_appContext.StatusReport.AddMessage($"Pass 2 Processing roster info for {pageLinks.officialLinkInfos[pageLinks.iCur].sEmail}...");
 
                         if (rosterEntriesToLimitTo != null)
@@ -373,28 +372,6 @@ namespace ArbWeb
         // object could be RST or PageLinks
         public delegate void VisitOfficialsPageCallback(Object o, string pageNavLink);
 
-        public static string ToXPath(string value)
-        {
-            const string apostrophe = "'";
-            const string quote = "\"";
-
-            if (value.Contains(quote))
-            {
-                if (value.Contains(apostrophe))
-                {
-                    throw new Exception("Illegal XPath string literal.");
-                }
-                else
-                {
-                    return apostrophe + value + apostrophe;
-                }
-            }
-            else
-            {
-                return quote + value + quote;
-            }
-        }
-
         List<string> GetAllPaginationLinksOnPage()
         {
             // figure out how many pages we have
@@ -430,13 +407,17 @@ namespace ArbWeb
 
             string sHref = pageLink;
 
-            string sXpath = $"//a[@href={ToXPath(sHref)}]";
+            string sXpath = $"//a[@href={WebNav.ToXPath(sHref)}]";
 
             IWebElement anchor;
 
             try
             {
                 anchor = m_appContext.WebControl.Driver.FindElement(By.XPath(sXpath));
+                m_appContext.WebControl.WaitForCondition(
+                    ExpectedConditions.ElementToBeClickable(By.XPath(sXpath)),
+                    10000);
+
             }
             catch
             {
@@ -754,15 +735,46 @@ namespace ArbWeb
         ----------------------------------------------------------------------------*/
         private void DismissOfficialsEditPopup()
         {
-            IWebElement cancelButton = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_OfficialsView_EditAccount_ButtonCancel));
-            cancelButton.Click();
+            string xpath = $"//div[@class='{WebCore._xpath_modal_mask}']/following-sibling::*//button[@id='{WebCore._sid_OfficialsView_EditAccount_ButtonCancel}']";
+
+            try
+            {
+                m_appContext.WebControl.WaitForCondition(
+                    ExpectedConditions.ElementToBeClickable(By.XPath(xpath)),
+                    10000);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Couldn't find clickable cancel button: {e.Message}");
+            }
+
+            try
+            {
+                IWebElement cancelButton = m_appContext.WebControl.Driver.FindElement(By.XPath(xpath));
+
+                bool visible = cancelButton.Displayed;
+                bool enabled = cancelButton.Enabled;
+                string opacity = cancelButton.GetCssValue("opacity");
+                var size = cancelButton.Size;
+                var location = cancelButton.Location;
+
+                cancelButton.Click();
+//                Actions actions = new Actions(m_appContext.WebControl.Driver);
+//                actions.MoveToElement(cancelButtons[1]).Pause(TimeSpan.FromSeconds(1.0)).Click().Perform();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Couldn't click on cancel button: {e.Message}");
+            }
+
+            // cancelButton.Click();
 
             m_appContext.WebControl.WaitForCondition(
                 ExpectedConditions.InvisibilityOfElementLocated(By.XPath(WebCore._xpath_modalDialogRoot)),
                 2000);
 
             {
-                string xpath = WebCore._xpath_modalDialogRoot;
+                xpath = WebCore._xpath_modalDialogRoot;
 
                 IWebElement element = m_appContext.WebControl.GetElementBy(By.XPath(xpath));
             }
@@ -871,8 +883,11 @@ namespace ArbWeb
 
                 IWebElement element = m_appContext.WebControl.GetElementBy(By.XPath(xpath));
 
-                bool visible = element.Displayed;
-                visible = element.Enabled;
+                if (element != null)
+                {
+                    bool visible = element.Displayed;
+                    visible = element.Enabled;
+                }
             }
 
             try

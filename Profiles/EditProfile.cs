@@ -29,6 +29,8 @@ namespace ArbWeb
             pr.ContactsWorking = ep.m_ebContactsWorking.Text;
             pr.MergeCsvWorking = ep.m_ebMergeCsvWorking.Text;
             pr.MergeCsv = ep.m_ebMergeCsv.Text;
+            pr.Announcements = ep.m_ebAnnouncements.Text;
+            pr.AnnouncementsWorking = ep.m_ebAnnouncementsWorking.Text;
 
             pr.LogToFile = ep.m_cbLogToFile.Checked;
             pr.TestOnly = ep.m_cbTestOnly.Checked;
@@ -65,6 +67,9 @@ namespace ArbWeb
             ep.m_ebProfileName.Text = pr.ProfileName;
             ep.m_ebGameFile.Text = pr.GameFile;
             ep.m_ebRoster.Text = pr.Roster;
+            ep.m_ebAnnouncements.Text = pr.Announcements;
+            ep.m_ebAnnouncementsWorking.Text = pr.AnnouncementsWorking;
+
             ep.m_ebContacts.Text = pr.Contacts;
             ep.m_ebGameCopy.Text = pr.GameCopy;
             ep.m_ebRosterWorking.Text = pr.RosterWorking;
@@ -119,6 +124,10 @@ namespace ArbWeb
             ep.m_ebContactsWorking.Text = $"c:\\baseball\\{year}\\arb\\contactsLatest.csv";
             ep.m_ebSchedDownloadFolder.Text = $"c:\\baseball\\{year}\\arb\\archive\\schedules";
             ep.m_ebSchedWorkingFolder.Text = $"c:\\baseball\\{year}\\arb";
+            ep.m_ebMergeCsv.Text = $"c:\\baseball\\{year}\\arb\\archive\\merge_010123_0000.csv";
+            ep.m_ebMergeCsvWorking.Text = $"c:\\baseball\\{year}\\arb\\mergeLatest.csv";
+            ep.m_ebAnnouncements.Text = $"c:\\baseball\\{year}\\arb\\archive\\announcements_010123_0000.html";
+            ep.m_ebAnnouncementsWorking.Text = $"c:\\baseball\\{year}\\arb\\announcementsLatest.html";
             ep.m_ebSpoSite.Text = "washdist9.sharepoint.com";
             ep.m_ebSpoSubsite.Text = "sched";
             ep.m_ebLogLevel.Text = "0";

@@ -1,0 +1,8 @@
+.postBox {
+    display: flex;
+    flex-direction: row;
+    gap: 12pt;
+         }
+
+.postItem {
+          }

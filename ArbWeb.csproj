@@ -27,7 +27,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -44,7 +44,7 @@
     <InstallUrl>https://black.traynrex.com/arbweb/</InstallUrl>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>18</ApplicationRevision>
+    <ApplicationRevision>20</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -250,6 +250,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Announcements\Announcement.cs" />
+    <Compile Include="Announcements\EditAnnouncement.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Announcements\EditAnnouncement.Designer.cs">
+      <DependentUpon>EditAnnouncement.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Announcements\WebAnnouncements.cs" />
     <Compile Include="Games\ScheduleStats.cs" />
     <Compile Include="Reports\CoverageReport.cs" />
     <Compile Include="Secrets.Designer.cs">
@@ -305,10 +313,23 @@
     <Compile Include="WebInterop\WebCore.cs" />
     <Compile Include="WebInterop\WebGames.cs" />
     <Compile Include="WebInterop\WebNav.cs" />
+    <Compile Include="WebInterop\WebPagination.cs" />
     <Compile Include="WebInterop\WebRoster.cs" />
     <Compile Include="WebInterop\WebRosterDownload.cs" />
     <Compile Include="WebInterop\WebRosterUpload.cs" />
     <Compile Include="WebInterop\WebTeams.cs" />
+    <Content Include="announcements.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="announcementsAssigners.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="announcements.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="announcementsOfficials.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="App.ico" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -320,6 +341,9 @@
     <Content Include="chromedriver.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Announcements\EditAnnouncement.resx">
+      <DependentUpon>EditAnnouncement.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ArbWeb.resx">
       <DependentUpon>ArbWeb.cs</DependentUpon>
       <SubType>Designer</SubType>

@@ -88,6 +88,12 @@
             this.m_pbBrowseMergeCsvFile2 = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
             this.m_ebMergeCsvWorking = new System.Windows.Forms.TextBox();
+            this.m_pbBrowseAnnouncements2 = new System.Windows.Forms.Button();
+            this.m_pbBrowseAnnouncements = new System.Windows.Forms.Button();
+            this.label22 = new System.Windows.Forms.Label();
+            this.m_ebAnnouncementsWorking = new System.Windows.Forms.TextBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.m_ebAnnouncements = new System.Windows.Forms.TextBox();
             label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
@@ -151,7 +157,7 @@
             // 
             this.m_pbOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.m_pbOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.m_pbOK.Location = new System.Drawing.Point(1005, 763);
+            this.m_pbOK.Location = new System.Drawing.Point(1005, 890);
             this.m_pbOK.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbOK.Name = "m_pbOK";
             this.m_pbOK.Size = new System.Drawing.Size(112, 35);
@@ -163,7 +169,7 @@
             // 
             this.m_cbCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.m_cbCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.m_cbCancel.Location = new System.Drawing.Point(1126, 763);
+            this.m_cbCancel.Location = new System.Drawing.Point(1126, 890);
             this.m_cbCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_cbCancel.Name = "m_cbCancel";
             this.m_cbCancel.Size = new System.Drawing.Size(112, 35);
@@ -186,7 +192,7 @@
             // m_pbBrowseRoster2
             // 
             this.m_pbBrowseRoster2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster2.Location = new System.Drawing.Point(532, 284);
+            this.m_pbBrowseRoster2.Location = new System.Drawing.Point(558, 283);
             this.m_pbBrowseRoster2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseRoster2.Name = "m_pbBrowseRoster2";
             this.m_pbBrowseRoster2.Size = new System.Drawing.Size(34, 23);
@@ -197,7 +203,7 @@
             // m_pbBrowseRoster
             // 
             this.m_pbBrowseRoster.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseRoster.Location = new System.Drawing.Point(532, 248);
+            this.m_pbBrowseRoster.Location = new System.Drawing.Point(558, 247);
             this.m_pbBrowseRoster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseRoster.Name = "m_pbBrowseRoster";
             this.m_pbBrowseRoster.Size = new System.Drawing.Size(34, 23);
@@ -208,7 +214,7 @@
             // m_pbBrowseGameFile2
             // 
             this.m_pbBrowseGameFile2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(532, 209);
+            this.m_pbBrowseGameFile2.Location = new System.Drawing.Point(558, 208);
             this.m_pbBrowseGameFile2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseGameFile2.Name = "m_pbBrowseGameFile2";
             this.m_pbBrowseGameFile2.Size = new System.Drawing.Size(34, 23);
@@ -219,7 +225,7 @@
             // m_pbBrowseGameFile
             // 
             this.m_pbBrowseGameFile.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseGameFile.Location = new System.Drawing.Point(532, 175);
+            this.m_pbBrowseGameFile.Location = new System.Drawing.Point(558, 174);
             this.m_pbBrowseGameFile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseGameFile.Name = "m_pbBrowseGameFile";
             this.m_pbBrowseGameFile.Size = new System.Drawing.Size(34, 23);
@@ -230,7 +236,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(14, 280);
+            this.label14.Location = new System.Drawing.Point(47, 280);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(85, 20);
@@ -240,7 +246,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(18, 206);
+            this.label13.Location = new System.Drawing.Point(47, 206);
             this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(85, 20);
@@ -249,7 +255,7 @@
             // 
             // m_ebRosterWorking
             // 
-            this.m_ebRosterWorking.Location = new System.Drawing.Point(115, 276);
+            this.m_ebRosterWorking.Location = new System.Drawing.Point(141, 275);
             this.m_ebRosterWorking.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebRosterWorking.Name = "m_ebRosterWorking";
             this.m_ebRosterWorking.Size = new System.Drawing.Size(451, 26);
@@ -257,7 +263,7 @@
             // 
             // m_ebGameCopy
             // 
-            this.m_ebGameCopy.Location = new System.Drawing.Point(115, 202);
+            this.m_ebGameCopy.Location = new System.Drawing.Point(141, 201);
             this.m_ebGameCopy.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebGameCopy.Name = "m_ebGameCopy";
             this.m_ebGameCopy.Size = new System.Drawing.Size(451, 26);
@@ -266,7 +272,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(13, 245);
+            this.label5.Location = new System.Drawing.Point(37, 245);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(95, 20);
@@ -275,7 +281,7 @@
             // 
             // m_ebRoster
             // 
-            this.m_ebRoster.Location = new System.Drawing.Point(115, 240);
+            this.m_ebRoster.Location = new System.Drawing.Point(141, 239);
             this.m_ebRoster.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebRoster.Name = "m_ebRoster";
             this.m_ebRoster.Size = new System.Drawing.Size(451, 26);
@@ -284,7 +290,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(18, 172);
+            this.label2.Location = new System.Drawing.Point(50, 172);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(82, 20);
@@ -293,7 +299,7 @@
             // 
             // m_ebGameFile
             // 
-            this.m_ebGameFile.Location = new System.Drawing.Point(115, 166);
+            this.m_ebGameFile.Location = new System.Drawing.Point(141, 165);
             this.m_ebGameFile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebGameFile.Name = "m_ebGameFile";
             this.m_ebGameFile.Size = new System.Drawing.Size(451, 26);
@@ -315,7 +321,7 @@
             // 
             this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.Location = new System.Drawing.Point(1, 635);
+            this.label7.Location = new System.Drawing.Point(1, 762);
             this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(1224, 35);
@@ -327,7 +333,7 @@
             // 
             this.m_cbLogToFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.m_cbLogToFile.AutoSize = true;
-            this.m_cbLogToFile.Location = new System.Drawing.Point(16, 710);
+            this.m_cbLogToFile.Location = new System.Drawing.Point(16, 837);
             this.m_cbLogToFile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_cbLogToFile.Name = "m_cbLogToFile";
             this.m_cbLogToFile.Size = new System.Drawing.Size(104, 24);
@@ -339,7 +345,7 @@
             // 
             this.m_cbTestOnly.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.m_cbTestOnly.AutoSize = true;
-            this.m_cbTestOnly.Location = new System.Drawing.Point(16, 675);
+            this.m_cbTestOnly.Location = new System.Drawing.Point(16, 802);
             this.m_cbTestOnly.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_cbTestOnly.Name = "m_cbTestOnly";
             this.m_cbTestOnly.Size = new System.Drawing.Size(187, 24);
@@ -351,7 +357,7 @@
             // 
             this.m_cbIgnoreZSports.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.m_cbIgnoreZSports.AutoSize = true;
-            this.m_cbIgnoreZSports.Location = new System.Drawing.Point(16, 746);
+            this.m_cbIgnoreZSports.Location = new System.Drawing.Point(16, 873);
             this.m_cbIgnoreZSports.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_cbIgnoreZSports.Name = "m_cbIgnoreZSports";
             this.m_cbIgnoreZSports.Size = new System.Drawing.Size(153, 24);
@@ -363,7 +369,7 @@
             // 
             this.m_cbDownloadRosterOnUpload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.m_cbDownloadRosterOnUpload.AutoSize = true;
-            this.m_cbDownloadRosterOnUpload.Location = new System.Drawing.Point(250, 675);
+            this.m_cbDownloadRosterOnUpload.Location = new System.Drawing.Point(250, 802);
             this.m_cbDownloadRosterOnUpload.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_cbDownloadRosterOnUpload.Name = "m_cbDownloadRosterOnUpload";
             this.m_cbDownloadRosterOnUpload.Size = new System.Drawing.Size(272, 24);
@@ -375,7 +381,7 @@
             // 
             this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(246, 711);
+            this.label8.Location = new System.Drawing.Point(246, 838);
             this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(77, 20);
@@ -385,7 +391,7 @@
             // m_ebLogLevel
             // 
             this.m_ebLogLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.m_ebLogLevel.Location = new System.Drawing.Point(335, 706);
+            this.m_ebLogLevel.Location = new System.Drawing.Point(335, 833);
             this.m_ebLogLevel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebLogLevel.Name = "m_ebLogLevel";
             this.m_ebLogLevel.Size = new System.Drawing.Size(146, 26);
@@ -394,7 +400,7 @@
             // m_pbBrowseContacts2
             // 
             this.m_pbBrowseContacts2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseContacts2.Location = new System.Drawing.Point(532, 356);
+            this.m_pbBrowseContacts2.Location = new System.Drawing.Point(558, 355);
             this.m_pbBrowseContacts2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseContacts2.Name = "m_pbBrowseContacts2";
             this.m_pbBrowseContacts2.Size = new System.Drawing.Size(34, 23);
@@ -405,7 +411,7 @@
             // m_pbBrowseContacts
             // 
             this.m_pbBrowseContacts.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseContacts.Location = new System.Drawing.Point(532, 322);
+            this.m_pbBrowseContacts.Location = new System.Drawing.Point(558, 321);
             this.m_pbBrowseContacts.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseContacts.Name = "m_pbBrowseContacts";
             this.m_pbBrowseContacts.Size = new System.Drawing.Size(34, 23);
@@ -416,7 +422,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(17, 353);
+            this.label9.Location = new System.Drawing.Point(47, 353);
             this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(85, 20);
@@ -425,7 +431,7 @@
             // 
             // m_ebContactsWorking
             // 
-            this.m_ebContactsWorking.Location = new System.Drawing.Point(115, 348);
+            this.m_ebContactsWorking.Location = new System.Drawing.Point(141, 347);
             this.m_ebContactsWorking.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebContactsWorking.Name = "m_ebContactsWorking";
             this.m_ebContactsWorking.Size = new System.Drawing.Size(451, 26);
@@ -434,7 +440,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(17, 319);
+            this.label10.Location = new System.Drawing.Point(59, 319);
             this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(73, 20);
@@ -443,7 +449,7 @@
             // 
             // m_ebContacts
             // 
-            this.m_ebContacts.Location = new System.Drawing.Point(115, 313);
+            this.m_ebContacts.Location = new System.Drawing.Point(141, 312);
             this.m_ebContacts.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebContacts.Name = "m_ebContacts";
             this.m_ebContacts.Size = new System.Drawing.Size(451, 26);
@@ -453,7 +459,7 @@
             // 
             this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(599, 248);
+            this.label11.Location = new System.Drawing.Point(640, 248);
             this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(113, 20);
@@ -464,7 +470,7 @@
             // 
             this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(649, 278);
+            this.label12.Location = new System.Drawing.Point(690, 278);
             this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(63, 20);
@@ -475,7 +481,7 @@
             // 
             this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(19, 519);
+            this.label15.Location = new System.Drawing.Point(31, 646);
             this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(70, 20);
@@ -485,7 +491,7 @@
             // m_ebSpoSite
             // 
             this.m_ebSpoSite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_ebSpoSite.Location = new System.Drawing.Point(717, 245);
+            this.m_ebSpoSite.Location = new System.Drawing.Point(758, 245);
             this.m_ebSpoSite.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebSpoSite.Name = "m_ebSpoSite";
             this.m_ebSpoSite.Size = new System.Drawing.Size(426, 26);
@@ -494,7 +500,7 @@
             // m_ebSpoSubsite
             // 
             this.m_ebSpoSubsite.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_ebSpoSubsite.Location = new System.Drawing.Point(717, 277);
+            this.m_ebSpoSubsite.Location = new System.Drawing.Point(758, 277);
             this.m_ebSpoSubsite.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebSpoSubsite.Name = "m_ebSpoSubsite";
             this.m_ebSpoSubsite.Size = new System.Drawing.Size(426, 26);
@@ -504,7 +510,7 @@
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.button1.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(459, 604);
+            this.button1.Location = new System.Drawing.Point(459, 731);
             this.button1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(54, 34);
@@ -517,7 +523,7 @@
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.button2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(521, 604);
+            this.button2.Location = new System.Drawing.Point(521, 731);
             this.button2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(50, 34);
@@ -533,10 +539,10 @@
             this.m_lvBaseballSchedules.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.m_lvBaseballSchedules.HideSelection = false;
             this.m_lvBaseballSchedules.LabelEdit = true;
-            this.m_lvBaseballSchedules.Location = new System.Drawing.Point(114, 488);
+            this.m_lvBaseballSchedules.Location = new System.Drawing.Point(140, 566);
             this.m_lvBaseballSchedules.MultiSelect = false;
             this.m_lvBaseballSchedules.Name = "m_lvBaseballSchedules";
-            this.m_lvBaseballSchedules.Size = new System.Drawing.Size(457, 115);
+            this.m_lvBaseballSchedules.Size = new System.Drawing.Size(431, 164);
             this.m_lvBaseballSchedules.TabIndex = 106;
             this.m_lvBaseballSchedules.UseCompatibleStateImageBehavior = false;
             this.m_lvBaseballSchedules.View = System.Windows.Forms.View.Details;
@@ -545,7 +551,7 @@
             // 
             this.label16.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label16.Location = new System.Drawing.Point(3, 450);
+            this.label16.Location = new System.Drawing.Point(3, 525);
             this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(1224, 35);
@@ -560,10 +566,10 @@
             this.m_lvSoftballSchedules.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.m_lvSoftballSchedules.HideSelection = false;
             this.m_lvSoftballSchedules.LabelEdit = true;
-            this.m_lvSoftballSchedules.Location = new System.Drawing.Point(700, 488);
+            this.m_lvSoftballSchedules.Location = new System.Drawing.Point(700, 566);
             this.m_lvSoftballSchedules.MultiSelect = false;
             this.m_lvSoftballSchedules.Name = "m_lvSoftballSchedules";
-            this.m_lvSoftballSchedules.Size = new System.Drawing.Size(443, 115);
+            this.m_lvSoftballSchedules.Size = new System.Drawing.Size(443, 164);
             this.m_lvSoftballSchedules.TabIndex = 111;
             this.m_lvSoftballSchedules.UseCompatibleStateImageBehavior = false;
             this.m_lvSoftballSchedules.View = System.Windows.Forms.View.Details;
@@ -572,7 +578,7 @@
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.button3.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button3.Location = new System.Drawing.Point(1093, 604);
+            this.button3.Location = new System.Drawing.Point(1093, 731);
             this.button3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(50, 34);
@@ -585,7 +591,7 @@
             // 
             this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.button4.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button4.Location = new System.Drawing.Point(1031, 604);
+            this.button4.Location = new System.Drawing.Point(1031, 731);
             this.button4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(54, 34);
@@ -598,7 +604,7 @@
             // 
             this.label17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(605, 519);
+            this.label17.Location = new System.Drawing.Point(605, 646);
             this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(63, 20);
@@ -609,7 +615,7 @@
             // 
             this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(574, 172);
+            this.label18.Location = new System.Drawing.Point(615, 172);
             this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(138, 20);
@@ -619,7 +625,7 @@
             // m_ebSchedDownloadFolder
             // 
             this.m_ebSchedDownloadFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_ebSchedDownloadFolder.Location = new System.Drawing.Point(717, 169);
+            this.m_ebSchedDownloadFolder.Location = new System.Drawing.Point(758, 169);
             this.m_ebSchedDownloadFolder.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebSchedDownloadFolder.Name = "m_ebSchedDownloadFolder";
             this.m_ebSchedDownloadFolder.Size = new System.Drawing.Size(426, 26);
@@ -628,7 +634,7 @@
             // m_ebSchedWorkingFolder
             // 
             this.m_ebSchedWorkingFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_ebSchedWorkingFolder.Location = new System.Drawing.Point(717, 202);
+            this.m_ebSchedWorkingFolder.Location = new System.Drawing.Point(758, 202);
             this.m_ebSchedWorkingFolder.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebSchedWorkingFolder.Name = "m_ebSchedWorkingFolder";
             this.m_ebSchedWorkingFolder.Size = new System.Drawing.Size(426, 26);
@@ -638,7 +644,7 @@
             // 
             this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(635, 206);
+            this.label19.Location = new System.Drawing.Point(676, 206);
             this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(77, 20);
@@ -649,7 +655,7 @@
             // 
             this.m_cbNoHonorificRanks.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.m_cbNoHonorificRanks.AutoSize = true;
-            this.m_cbNoHonorificRanks.Location = new System.Drawing.Point(578, 675);
+            this.m_cbNoHonorificRanks.Location = new System.Drawing.Point(578, 802);
             this.m_cbNoHonorificRanks.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_cbNoHonorificRanks.Name = "m_cbNoHonorificRanks";
             this.m_cbNoHonorificRanks.Size = new System.Drawing.Size(237, 24);
@@ -661,7 +667,7 @@
             // 
             this.m_cbAdvancedFeatures.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.m_cbAdvancedFeatures.AutoSize = true;
-            this.m_cbAdvancedFeatures.Location = new System.Drawing.Point(848, 675);
+            this.m_cbAdvancedFeatures.Location = new System.Drawing.Point(848, 802);
             this.m_cbAdvancedFeatures.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_cbAdvancedFeatures.Name = "m_cbAdvancedFeatures";
             this.m_cbAdvancedFeatures.Size = new System.Drawing.Size(341, 24);
@@ -672,7 +678,7 @@
             // m_pbBrowseMergeCsvFile
             // 
             this.m_pbBrowseMergeCsvFile.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseMergeCsvFile.Location = new System.Drawing.Point(532, 393);
+            this.m_pbBrowseMergeCsvFile.Location = new System.Drawing.Point(558, 392);
             this.m_pbBrowseMergeCsvFile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseMergeCsvFile.Name = "m_pbBrowseMergeCsvFile";
             this.m_pbBrowseMergeCsvFile.Size = new System.Drawing.Size(34, 23);
@@ -683,7 +689,7 @@
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(17, 390);
+            this.label20.Location = new System.Drawing.Point(41, 390);
             this.label20.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(91, 20);
@@ -692,7 +698,7 @@
             // 
             // m_ebMergeCsv
             // 
-            this.m_ebMergeCsv.Location = new System.Drawing.Point(115, 384);
+            this.m_ebMergeCsv.Location = new System.Drawing.Point(141, 383);
             this.m_ebMergeCsv.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebMergeCsv.Name = "m_ebMergeCsv";
             this.m_ebMergeCsv.Size = new System.Drawing.Size(451, 26);
@@ -701,7 +707,7 @@
             // m_pbBrowseMergeCsvFile2
             // 
             this.m_pbBrowseMergeCsvFile2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_pbBrowseMergeCsvFile2.Location = new System.Drawing.Point(531, 428);
+            this.m_pbBrowseMergeCsvFile2.Location = new System.Drawing.Point(557, 427);
             this.m_pbBrowseMergeCsvFile2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_pbBrowseMergeCsvFile2.Name = "m_pbBrowseMergeCsvFile2";
             this.m_pbBrowseMergeCsvFile2.Size = new System.Drawing.Size(34, 23);
@@ -712,7 +718,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(16, 425);
+            this.label21.Location = new System.Drawing.Point(47, 425);
             this.label21.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(85, 20);
@@ -721,17 +727,81 @@
             // 
             // m_ebMergeCsvWorking
             // 
-            this.m_ebMergeCsvWorking.Location = new System.Drawing.Point(114, 420);
+            this.m_ebMergeCsvWorking.Location = new System.Drawing.Point(140, 419);
             this.m_ebMergeCsvWorking.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.m_ebMergeCsvWorking.Name = "m_ebMergeCsvWorking";
             this.m_ebMergeCsvWorking.Size = new System.Drawing.Size(451, 26);
             this.m_ebMergeCsvWorking.TabIndex = 121;
             // 
+            // m_pbBrowseAnnouncements2
+            // 
+            this.m_pbBrowseAnnouncements2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.m_pbBrowseAnnouncements2.Location = new System.Drawing.Point(557, 497);
+            this.m_pbBrowseAnnouncements2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.m_pbBrowseAnnouncements2.Name = "m_pbBrowseAnnouncements2";
+            this.m_pbBrowseAnnouncements2.Size = new System.Drawing.Size(34, 23);
+            this.m_pbBrowseAnnouncements2.TabIndex = 129;
+            this.m_pbBrowseAnnouncements2.Tag = ArbWeb.EditProfile.FNC.RosterFile2;
+            this.m_pbBrowseAnnouncements2.Text = "...";
+            // 
+            // m_pbBrowseAnnouncements
+            // 
+            this.m_pbBrowseAnnouncements.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.m_pbBrowseAnnouncements.Location = new System.Drawing.Point(557, 461);
+            this.m_pbBrowseAnnouncements.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.m_pbBrowseAnnouncements.Name = "m_pbBrowseAnnouncements";
+            this.m_pbBrowseAnnouncements.Size = new System.Drawing.Size(34, 23);
+            this.m_pbBrowseAnnouncements.TabIndex = 128;
+            this.m_pbBrowseAnnouncements.Tag = ArbWeb.EditProfile.FNC.RosterFile;
+            this.m_pbBrowseAnnouncements.Text = "...";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(47, 494);
+            this.label22.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(85, 20);
+            this.label22.TabIndex = 127;
+            this.label22.Text = "  (Working)";
+            // 
+            // m_ebAnnouncementsWorking
+            // 
+            this.m_ebAnnouncementsWorking.Location = new System.Drawing.Point(140, 489);
+            this.m_ebAnnouncementsWorking.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.m_ebAnnouncementsWorking.Name = "m_ebAnnouncementsWorking";
+            this.m_ebAnnouncementsWorking.Size = new System.Drawing.Size(451, 26);
+            this.m_ebAnnouncementsWorking.TabIndex = 126;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(6, 461);
+            this.label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(126, 20);
+            this.label23.TabIndex = 125;
+            this.label23.Text = "Announcements";
+            // 
+            // m_ebAnnouncements
+            // 
+            this.m_ebAnnouncements.Location = new System.Drawing.Point(140, 453);
+            this.m_ebAnnouncements.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.m_ebAnnouncements.Name = "m_ebAnnouncements";
+            this.m_ebAnnouncements.Size = new System.Drawing.Size(451, 26);
+            this.m_ebAnnouncements.TabIndex = 124;
+            // 
             // EditProfile
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1257, 817);
+            this.ClientSize = new System.Drawing.Size(1257, 944);
+            this.Controls.Add(this.m_pbBrowseAnnouncements2);
+            this.Controls.Add(this.m_pbBrowseAnnouncements);
+            this.Controls.Add(this.label22);
+            this.Controls.Add(this.m_ebAnnouncementsWorking);
+            this.Controls.Add(this.label23);
+            this.Controls.Add(this.m_ebAnnouncements);
             this.Controls.Add(this.m_pbBrowseMergeCsvFile2);
             this.Controls.Add(this.label21);
             this.Controls.Add(this.m_ebMergeCsvWorking);
@@ -861,5 +931,11 @@
         private System.Windows.Forms.Button m_pbBrowseMergeCsvFile2;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TextBox m_ebMergeCsvWorking;
+        private System.Windows.Forms.Button m_pbBrowseAnnouncements2;
+        private System.Windows.Forms.Button m_pbBrowseAnnouncements;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.TextBox m_ebAnnouncementsWorking;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TextBox m_ebAnnouncements;
     }
 }

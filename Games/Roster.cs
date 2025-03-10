@@ -40,7 +40,7 @@ namespace ArbWeb.Games
             {
                 Umpire ump = new Umpire(rste.First, rste.Last, rste.m_plsMisc[iMiscAffiliation], rste.Email, rste.m_plsMisc);
 
-                m_mpNameUmpire.Add(ump.Name, ump);
+                m_mpNameUmpire.Add(ump.Name.ToLower(), ump);
             }
 
             return true;
@@ -48,8 +48,8 @@ namespace ArbWeb.Games
 
         public Umpire UmpireLookup(string sName)
         {
-            if (m_mpNameUmpire.ContainsKey(sName))
-                return m_mpNameUmpire[sName];
+            if (m_mpNameUmpire.ContainsKey(sName.ToLower()))
+                return m_mpNameUmpire[sName.ToLower()];
 
             return null;
         }

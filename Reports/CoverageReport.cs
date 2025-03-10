@@ -67,8 +67,6 @@ namespace ArbWeb.Reports
             Dictionary<DateTime, Dictionary<TimeSpan, TimeSlotCoverage>> m_coverage =
                 new Dictionary<DateTime, Dictionary<TimeSpan, TimeSlotCoverage>>();
 
-            private Dictionary<string, string> m_siteRootMapping;
-
             public Coverage()
             {
             }

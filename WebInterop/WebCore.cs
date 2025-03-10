@@ -155,6 +155,12 @@ namespace ArbWeb
         public const string _sid_AddUser_Button_Cancel = "ctl00_ContentHolder_pgeUserAdd_navUserAdd_lnkCancel"; // ok2010
 
         // ============================================================================
+        // P A G I N A T I O N
+        // ============================================================================
+        public const string _s_GenericPagination_PaginationHrefPostbackHrefSubstr = "ctl00$ContentHolder$pge"; // ok2025
+        public const string _s_GenericPagination_PaginationHrefPostbackSubstr = "__doPostBack"; // ok2025
+
+        // ============================================================================
         // O F F I C I A L S  V I E W
         // ============================================================================
         public const string _s_Page_OfficialsView = "https://www1.arbitersports.com/Assigner/OfficialsView.aspx"; // ok2021
@@ -170,21 +176,22 @@ namespace ArbWeb
         public const string _s_OfficialsView_PaginationHrefPostbackSubstr = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$dgOfficials$ctl"; // ok2021
 
         public const string _sid_OfficialsView_IsReadyStatusPrefix = "IsReadyStatusText";
-        public const string _sid_OfficialsView_EditAccount_Email0 = "emails_0_email1";
-        public const string _sid_OfficialsView_EditAccount_FirstName = "firstName";
-        public const string _sid_OfficialsView_EditAccount_NickName = "nickName";
-        public const string _sid_OfficialsView_EditAccount_LastName = "lastName";
-        public const string _sid_OfficialsView_EditAccount_MiddleName = "middleName";
-        public const string _sid_OfficialsView_EditAccount_Address1 = "address1";
-        public const string _sid_OfficialsView_EditAccount_Address2 = "address2";
-        public const string _sid_OfficialsView_EditAccount_ZipCode = "postalCode";
-        public const string _sid_OfficialsView_EditAccount_CityName = "cityName";
-        public const string _sid_OfficialsView_EditAccount_State = "stateId";
+        public const string _sid_OfficialsView_EditAccount_Email0 = "admin-edit-emails_0_email1";
+        public const string _sid_OfficialsView_EditAccount_FirstName = "admin-edit-firstName";
+        public const string _sid_OfficialsView_EditAccount_NickName = "admin-edit-nickName";
+        public const string _sid_OfficialsView_EditAccount_LastName = "admin-edit-lastName";
+        public const string _sid_OfficialsView_EditAccount_MiddleName = "admin-edit-middleName";
+        public const string _sid_OfficialsView_EditAccount_Address1 = "admin-edit-address1";
+        public const string _sid_OfficialsView_EditAccount_Address2 = "admin-edit-address2";
+        public const string _sid_OfficialsView_EditAccount_ZipCode = "admin-edit-postalCode";
+        public const string _sid_OfficialsView_EditAccount_CityName = "admin-edit-cityName";
+        public const string _sid_OfficialsView_EditAccount_State = "admin-edit-stateId";
         public const string _sid_OfficialsView_EditAccount_ButtonSave = "save-changes-button";
         public const string _sid_OfficialsView_EditAccount_ButtonCancel = "cancel-changes-button";
-        public const string _sid_OfficialsView_EditAccount_BirthDate = "dateOfBirth";
+        public const string _sid_OfficialsView_EditAccount_BirthDate = "admin-edit-dateOfBirth";
 
-        public const string _xpath_modalDialogRoot = "//div[@class='ant-modal-root']";
+        public const string _xpath_modal_mask = "ant-modal-mask";
+        public const string _xpath_modalDialogRoot = "//div[@class='ant-modal-mask']";
         // ============================================================================
         // O F F I C I A L S  E D I T
         // ============================================================================
@@ -257,6 +264,9 @@ namespace ArbWeb
             _s_Announcements_Button_Edit_Prefix =
                 "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$"; // the control will be "ctl##"
 
+        public const string
+            _sid_AnnouncementsTable = "ctl00_ContentHolder_pgeAnnouncementsEdit_conAnnouncementsEdit_dgAnnouncements"; // ok2025
+                                       
         private const string _s_Announcements_Button_Edit_Suffix = "$btnEdit";
 
         private const string _s_Announcements_Checkbox_Assigners_Prefix = "ctl00$ContentHolder$pgeAnnouncementsEdit$conAnnouncementsEdit$dgAnnouncements$";
@@ -546,7 +556,7 @@ namespace ArbWeb
             %%Function: BuildDownloadFilenameFromTemplate
             %%Qualified: ArbWeb.DownloadGenericExcelReport.BuildDownloadFilenameFromTemplate
         ----------------------------------------------------------------------------*/
-        public static string BuildDownloadFilenameFromTemplate(string template, string baseName)
+        public static string BuildDownloadFilenameFromTemplate(string template, string baseName, string extension = "csv")
         {
             string sOutFile;
             string sPrefix = "";
@@ -567,7 +577,7 @@ namespace ArbWeb
                 }
             }
 
-            sOutFile = $"{sOutFile}{sPrefix}\\{baseName}_{DateTime.Now:MM}{DateTime.Now:dd}{DateTime.Now:yy}_{DateTime.Now:HH}{DateTime.Now:mm}.csv";
+            sOutFile = $"{sOutFile}{sPrefix}\\{baseName}_{DateTime.Now:MM}{DateTime.Now:dd}{DateTime.Now:yy}_{DateTime.Now:HH}{DateTime.Now:mm}.{extension}";
             return sOutFile;
         }
     }
@@ -784,7 +794,6 @@ namespace ArbWeb
                 missing);
 
             string sOutFile = "";
-            string sPrefix = "";
 
             sOutFile = WebCore.BuildDownloadFilenameFromTemplate(m_sGameFile, "games");
 

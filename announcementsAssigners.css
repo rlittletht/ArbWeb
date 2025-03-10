@@ -1,0 +1,41 @@
+    body, p, li:not(.subTab)
+    {
+        margin: auto;
+        margin-top: 0;
+        text-align: left;
+        font: normal 12px Arial, Verdana, Sans-Serif
+    }
+    p
+    {
+    margin: 10px 0;
+    }
+
+    ul, ol{
+        padding: 0;
+        margin: 0 0 10px 25px;
+    }
+
+    div.outerWrapper
+    {
+        margin-left: 1in;
+    }
+    div.wrapper
+    {
+        overflow: auto; min-height: 50px; width: 600px; text-align: justify
+    }
+
+    div.announceHeader
+    {
+        background: #5692B7;
+        color: #fff;
+        padding: 5px 10px;
+        font-weight: bold;
+        font-size: 12px;
+        font-family: Arial;
+    }
+    div.postHeader
+    {
+        background: #eee;
+        font-weight: bold;
+    }
+    
