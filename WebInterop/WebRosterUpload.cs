@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using Microsoft.Office.Interop.Outlook;
 using TCore.StatusBox;
 using OpenQA.Selenium;
 using TCore.WebControl;
+using Exception = System.Exception;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace ArbWeb
@@ -104,130 +106,296 @@ namespace ArbWeb
             return true;
         }
 
+        private void AddOfficialNew(RosterEntry rste)
+        {
+#if BROKEN
+            AntDialogInterop dialogInterop = new AntDialogInterop(m_appContext.WebControl, m_appContext.StatusReport);
+
+            // add the official rste
+            m_appContext.StatusReport.AddMessage($"Adding official '{rste.Name}', {rste.Email}", MSGT.Body);
+            m_appContext.StatusReport.PushLevel();
+
+            // make sure we are on the officialsview page
+            if (!m_appContext.WebControl.FNavToPageIfNecessary(WebCore._s_OfficialsView))
+            {
+                throw (new Exception("could not navigate to the officials view page"));
+            }
+
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlByXpath(WebCore.BuildXpathForId(WebCore._sid_OfficialsView_AddOfficial), true));
+
+            IWebElement dialog = dialogInterop.WaitForDialog(1000);
+
+            // first step, see if the email address is already in use
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FSetTextForInputControlId("invitedEmail", rste.Email, false, dialog),
+                "Failed to find email control");
+
+            Utils.ThrowIfNot(dialogInterop.WaitForAndClickButtonByContent(dialog, "Next"), "could not click on Next button in Add Official dialog");
+
+            string firstNameId = "firstName";
+            string roleId = "rc_select_29";
+
+            // now wait for either the existing email or new email dialog contents to become visible
+            IWebElement element = dialogInterop.WaitForOneOfControlsOnActiveDialog(
+            [
+                _dialog => _dialog.FindElement(By.Id(firstNameId)),
+                _dialog => _dialog.FindElement(By.Id(roleId))
+            ]);
+
+            Utils.ThrowIfNot(element != null, "could not determine existing or new email step");
+
+            if (element.GetAttribute("id") == roleId)
+            {
+                // this is going to be just an invitation to an existing user. set their role to official
+                MessageBox.Show($"email address {rste.Email} already in use. Please select the assigner role and invite them. This cannot be automated.");
+                return;
+            }
+
+            IWebElement 
+            // Set the basic user info + email address
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_FirstName, rste.First, false /*fCheck*/),
+                "Failed to find first name control");
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_LastName, rste.Last, false /*fCheck*/),
+                "Failed to find last name control");
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Email, rste.Email, false /*fCheck*/),
+                "Failed to find email control");
+
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+
+            // we are either adding a new user, or a user that arbiter already knows
+            // about...
+            // 
+            if (!m_appContext.WebControl.FCheckForControlId(WebCore._sid_AddUser_Input_Address1))
+            {
+                if (!FConfirmExistingArbiterUserAdd(rste))
+                    continue; // don't add this user, they cancelled
+            }
+            else
+            {
+                // once we set the country, we will be able to set the zip code. note that we cleverly 
+                // set the other info after the country, so we will commit the change to the country.
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_Country, "United States"),
+                    "Failed to set country control");
+
+                m_appContext.WebControl.WaitForXpath($"//option[contains(text(), '{rste.State}')]", 1000);
+
+                // if there's an address control, then this is a brand new official
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_City, rste.City, false /*fCheck*/),
+                    "Failed to find city control");
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_State, rste.State),
+                    "Failed to find state control");
+
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Zip, rste.Zip, false /*fCheck*/),
+                    "Failed to find zip control");
+
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address1, false /*fCheck*/),
+                    "Failed to find address1 control");
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address2, false /*fCheck*/),
+                    "Failed to find address2 control");
+
+                string[] rgsPhoneNums = new string[]
+                                        {
+                                                WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2,
+                                                WebCore._s_AddUser_Input_PhoneNum3
+                                        };
+                string[] rgsPhoneTypes = new string[]
+                                         {
+                                                 WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2,
+                                                 WebCore._s_AddUser_Input_PhoneType3
+                                         };
+
+                int iPhone = 0;
+                while (iPhone < 3)
+                {
+                    string sPhoneNum, sPhoneType;
+
+                    rste.GetPhoneNumber(iPhone + 1 /*convert to 1 based*/, out sPhoneNum, out sPhoneType);
+                    if (sPhoneNum != null)
+                    {
+                        Utils.ThrowIfNot(
+                            m_appContext.WebControl.FSetTextForInputControlName(rgsPhoneNums[iPhone], sPhoneNum, false /*fCheck*/),
+                            "Failed to find phonenum* control");
+
+                        string sNewTypeOptionValue =
+                            m_appContext.WebControl.GetOptionValueForSelectControlNameOptionText(rgsPhoneTypes[iPhone], sPhoneType);
+                        m_appContext.WebControl.FSetSelectedOptionValueForControlName(rgsPhoneTypes[iPhone], sNewTypeOptionValue);
+                    }
+
+                    iPhone++;
+                }
+
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+
+                // fallthrough to the common handling below
+            }
+
+            // now we are on the last add official page
+            // the only thing that *might* be interesting on this page is the active button which is
+            // not checked by default...
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FCheckForControlId(WebCore._sid_AddUser_Input_IsActive),
+                "bad hierarchy in add user.  expected screen with 'active' checkbox, didn't find it.");
+
+            // don't worry about Active for now...Just click next again
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+
+            // and now we're on the finish page.  oddly enough, the finish button has the "Cancel" ID
+            Utils.ThrowIfNot(
+                String.Compare("Finish", m_appContext.WebControl.GetValueForControlId(WebCore._sid_AddUser_Button_Cancel)) == 0,
+                "Finish screen didn't have a finish button");
+
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
+            m_appContext.StatusReport.PopLevel();
+            // and now we're back somewhere (probably officials edit page)
+            // continue to the next one...
+#endif //BROKEN
+        }
+
+        private void AddOfficialOld(RosterEntry rste)
+        {
+            // add the official rste
+            m_appContext.StatusReport.AddMessage($"Adding official '{rste.Name}', {rste.Email}", MSGT.Body);
+            m_appContext.StatusReport.PushLevel();
+
+            // go to the add user page
+            if (!m_appContext.WebControl.FNavToPage(WebCore._s_AddUser))
+            {
+                throw (new Exception("could not navigate to the add user page"));
+            }
+
+            // Set the basic user info + email address
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_FirstName, rste.First, false /*fCheck*/),
+                "Failed to find first name control");
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_LastName, rste.Last, false /*fCheck*/),
+                "Failed to find last name control");
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Email, rste.Email, false /*fCheck*/),
+                "Failed to find email control");
+
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+
+            // we are either adding a new user, or a user that arbiter already knows
+            // about...
+            // 
+            if (!m_appContext.WebControl.FCheckForControlId(WebCore._sid_AddUser_Input_Address1))
+            {
+                if (!FConfirmExistingArbiterUserAdd(rste))
+                    return; // don't add this user, they cancelled
+            }
+            else
+            {
+                // once we set the country, we will be able to set the zip code. note that we cleverly 
+                // set the other info after the country, so we will commit the change to the country.
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_Country, "United States"),
+                    "Failed to set country control");
+
+                m_appContext.WebControl.WaitForXpath($"//option[contains(text(), '{rste.State}')]", 1000);
+
+                // if there's an address control, then this is a brand new official
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_City, rste.City, false /*fCheck*/),
+                    "Failed to find city control");
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_State, rste.State),
+                    "Failed to find state control");
+
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Zip, rste.Zip, false /*fCheck*/),
+                    "Failed to find zip control");
+
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address1, false /*fCheck*/),
+                    "Failed to find address1 control");
+                Utils.ThrowIfNot(
+                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address2, false /*fCheck*/),
+                    "Failed to find address2 control");
+
+                string[] rgsPhoneNums = new string[]
+                                        {
+                                                WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2,
+                                                WebCore._s_AddUser_Input_PhoneNum3
+                                        };
+                string[] rgsPhoneTypes = new string[]
+                                         {
+                                                 WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2,
+                                                 WebCore._s_AddUser_Input_PhoneType3
+                                         };
+
+                int iPhone = 0;
+                while (iPhone < 3)
+                {
+                    string sPhoneNum, sPhoneType;
+
+                    rste.GetPhoneNumber(iPhone + 1 /*convert to 1 based*/, out sPhoneNum, out sPhoneType);
+                    if (sPhoneNum != null)
+                    {
+                        Utils.ThrowIfNot(
+                            m_appContext.WebControl.FSetTextForInputControlName(rgsPhoneNums[iPhone], sPhoneNum, false /*fCheck*/),
+                            "Failed to find phonenum* control");
+
+                        string sNewTypeOptionValue =
+                            m_appContext.WebControl.GetOptionValueForSelectControlNameOptionText(rgsPhoneTypes[iPhone], sPhoneType);
+                        m_appContext.WebControl.FSetSelectedOptionValueForControlName(rgsPhoneTypes[iPhone], sNewTypeOptionValue);
+                    }
+
+                    iPhone++;
+                }
+
+                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+
+                // fallthrough to the common handling below
+            }
+
+            // now we are on the last add official page
+            // the only thing that *might* be interesting on this page is the active button which is
+            // not checked by default...
+            Utils.ThrowIfNot(
+                m_appContext.WebControl.FCheckForControlId(WebCore._sid_AddUser_Input_IsActive),
+                "bad hierarchy in add user.  expected screen with 'active' checkbox, didn't find it.");
+
+            // don't worry about Active for now...Just click next again
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
+
+            // and now we're on the finish page.  oddly enough, the finish button has the "Cancel" ID
+            Utils.ThrowIfNot(
+                String.Compare("Finish", m_appContext.WebControl.GetValueForControlId(WebCore._sid_AddUser_Button_Cancel)) == 0,
+                "Finish screen didn't have a finish button");
+
+            Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
+            m_appContext.StatusReport.PopLevel();
+            // and now we're back somewhere (probably officials edit page)
+            // continue to the next one...
+        }
+
         /*----------------------------------------------------------------------------
 			%%Function:AddOfficials
 			%%Qualified:ArbWeb.WebRoster.AddOfficials
         ----------------------------------------------------------------------------*/
         private void AddOfficials(List<IRosterEntry> plirsteNew)
         {
+            MessageBox.Show(
+                "Add officials is broken and cannot be fixed with the new arbiter. The ant dialogs implement dropdowns with no keyboard accessibility");
+
+            return;
+
             foreach (IRosterEntry irste in plirsteNew)
             {
                 RosterEntry rste = (RosterEntry)irste;
-                // add the official rste
-                m_appContext.StatusReport.AddMessage($"Adding official '{rste.Name}', {rste.Email}", MSGT.Body);
-                m_appContext.StatusReport.PushLevel();
 
-                // go to the add user page
-                if (!m_appContext.WebControl.FNavToPage(WebCore._s_AddUser))
-                {
-                    throw (new Exception("could not navigate to the add user page"));
-                }
-
-                // Set the basic user info + email address
-                Utils.ThrowIfNot(
-                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_FirstName, rste.First, false /*fCheck*/),
-                    "Failed to find first name control");
-                Utils.ThrowIfNot(
-                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_LastName, rste.Last, false /*fCheck*/),
-                    "Failed to find last name control");
-                Utils.ThrowIfNot(
-                    m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Email, rste.Email, false /*fCheck*/),
-                    "Failed to find email control");
-
-                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-
-                // we are either adding a new user, or a user that arbiter already knows
-                // about...
-                // 
-                if (!m_appContext.WebControl.FCheckForControlId(WebCore._sid_AddUser_Input_Address1))
-                {
-                    if (!FConfirmExistingArbiterUserAdd(rste))
-                        continue; // don't add this user, they cancelled
-                }
-                else
-                {
-                    // once we set the country, we will be able to set the zip code. note that we cleverly 
-                    // set the other info after the country, so we will commit the change to the country.
-                    Utils.ThrowIfNot(
-                        m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_Country, "United States"),
-                        "Failed to set country control");
-
-                    m_appContext.WebControl.WaitForXpath($"//option[contains(text(), '{rste.State}')]", 1000);
-
-                    // if there's an address control, then this is a brand new official
-                    Utils.ThrowIfNot(
-                        m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_City, rste.City, false /*fCheck*/),
-                        "Failed to find city control");
-                    Utils.ThrowIfNot(
-                        m_appContext.WebControl.FSetSelectedOptionTextForControlId(WebCore._sid_AddUser_Input_State, rste.State),
-                        "Failed to find state control");
-
-                    Utils.ThrowIfNot(
-                        m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Zip, rste.Zip, false /*fCheck*/),
-                        "Failed to find zip control");
-
-                    Utils.ThrowIfNot(
-                        m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address1, false /*fCheck*/),
-                        "Failed to find address1 control");
-                    Utils.ThrowIfNot(
-                        m_appContext.WebControl.FSetTextForInputControlName(WebCore._s_AddUser_Input_Address1, rste.Address2, false /*fCheck*/),
-                        "Failed to find address2 control");
-
-                    string[] rgsPhoneNums = new string[]
-                                            {
-                                                WebCore._s_AddUser_Input_PhoneNum1, WebCore._s_AddUser_Input_PhoneNum2,
-                                                WebCore._s_AddUser_Input_PhoneNum3
-                                            };
-                    string[] rgsPhoneTypes = new string[]
-                                             {
-                                                 WebCore._s_AddUser_Input_PhoneType1, WebCore._s_AddUser_Input_PhoneType2,
-                                                 WebCore._s_AddUser_Input_PhoneType3
-                                             };
-
-                    int iPhone = 0;
-                    while (iPhone < 3)
-                    {
-                        string sPhoneNum, sPhoneType;
-
-                        rste.GetPhoneNumber(iPhone + 1 /*convert to 1 based*/, out sPhoneNum, out sPhoneType);
-                        if (sPhoneNum != null)
-                        {
-                            Utils.ThrowIfNot(
-                                m_appContext.WebControl.FSetTextForInputControlName(rgsPhoneNums[iPhone], sPhoneNum, false /*fCheck*/),
-                                "Failed to find phonenum* control");
-
-                            string sNewTypeOptionValue =
-                                m_appContext.WebControl.GetOptionValueForSelectControlNameOptionText(rgsPhoneTypes[iPhone], sPhoneType);
-                            m_appContext.WebControl.FSetSelectedOptionValueForControlName(rgsPhoneTypes[iPhone], sNewTypeOptionValue);
-                        }
-
-                        iPhone++;
-                    }
-
-                    Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-
-                    // fallthrough to the common handling below
-                }
-
-                // now we are on the last add official page
-                // the only thing that *might* be interesting on this page is the active button which is
-                // not checked by default...
-                Utils.ThrowIfNot(
-                    m_appContext.WebControl.FCheckForControlId(WebCore._sid_AddUser_Input_IsActive),
-                    "bad hierarchy in add user.  expected screen with 'active' checkbox, didn't find it.");
-
-                // don't worry about Active for now...Just click next again
-                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Next), "Can't click next button on adduser");
-
-                // and now we're on the finish page.  oddly enough, the finish button has the "Cancel" ID
-                Utils.ThrowIfNot(
-                    String.Compare("Finish", m_appContext.WebControl.GetValueForControlId(WebCore._sid_AddUser_Button_Cancel)) == 0,
-                    "Finish screen didn't have a finish button");
-
-                Utils.ThrowIfNot(m_appContext.WebControl.FClickControlId(WebCore._sid_AddUser_Button_Cancel), "Can't click finish/cancel button on adduser");
-                m_appContext.StatusReport.PopLevel();
-                // and now we're back somewhere (probably officials edit page)
-                // continue to the next one...
+                AddOfficialNew(rste);
+                // AddOfficialOld(rste);
             }
 
             // and that's it...simple n'est pas?
@@ -343,6 +511,7 @@ namespace ArbWeb
             m_appContext.StatusReport.AddMessage("Starting Roster upload...");
             m_appContext.StatusReport.PushLevel();
             Roster rstServer = null;
+            m_appContext.EnsureLoggedIn();
 
             if (m_appContext.Profile.DownloadRosterOnUpload)
             {

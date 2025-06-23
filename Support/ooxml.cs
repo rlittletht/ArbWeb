@@ -171,9 +171,10 @@ namespace ArbWeb
             string sCount = "";
 
             if (cGamesNoUmpires > 0)
-                sDesc = $"{games.Count} games: {cTotalOpenSlots} umpires needed!<br/>{cGamesNoUmpires} GAME{(cGamesNoUmpires == 1 ? "" : "S")} WITH NO UMPIRES";
+                //sDesc = $"{games.Count} games: {cTotalOpenSlots} umpires needed!<br/>{cGamesNoUmpires} GAME{(cGamesNoUmpires == 1 ? "" : "S")} WITH NO UMPIRES";
+                sDesc = $"{cTotalOpenSlots} umpires needed!<br/>{cGamesNoUmpires} GAME{(cGamesNoUmpires == 1 ? "" : "S")} WITH NO UMPIRES";
             else
-                sDesc = $"{games.Count} games: {cTotalOpenSlots} umpires needed";
+                sDesc = $"{cTotalOpenSlots} umpires needed";
 
             //sDesc = $"{gm.TotalSlots - gm.OpenSlots} UMPIRE";
 
@@ -351,7 +352,7 @@ namespace ArbWeb
             StringBuilder sb = new StringBuilder();
 
             sb.Append(
-                "<div id='D9UrgentHelpNeeded'>"
+                "<div id='ArbWebAnnounce_HelpNeeded'>"
                 + "<h1>HELP NEEDED</h1>"
                 + "<h4> The following upcoming games URGENTLY need help! <br>"
                 + "Please <a href=\"https://www1.arbitersports.com/Official/SelfAssign.aspx\">SELF ASSIGN</a> now!</h4>"

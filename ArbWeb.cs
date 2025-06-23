@@ -180,6 +180,7 @@ namespace ArbWeb
         private Button button3;
         private Button button16;
         private Button button17;
+        private Button button18;
         private WebGames m_webGames;
 
 #region Top Level Program Flow
@@ -686,6 +687,8 @@ namespace ArbWeb
             this.button1 = new System.Windows.Forms.Button();
             this.button13 = new System.Windows.Forms.Button();
             this.m_announcementsTab = new System.Windows.Forms.TabPage();
+            this.button17 = new System.Windows.Forms.Button();
+            this.button16 = new System.Windows.Forms.Button();
             this.button15 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.m_ebStyleClock = new System.Windows.Forms.TextBox();
@@ -695,8 +698,7 @@ namespace ArbWeb
             this.button14 = new System.Windows.Forms.Button();
             this.m_announcementsList = new System.Windows.Forms.ListView();
             this.m_fetchAnnouncements = new System.Windows.Forms.Button();
-            this.button16 = new System.Windows.Forms.Button();
-            this.button17 = new System.Windows.Forms.Button();
+            this.button18 = new System.Windows.Forms.Button();
             label17 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.m_tabs.SuspendLayout();
@@ -1389,6 +1391,7 @@ namespace ArbWeb
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button18);
             this.tabPage2.Controls.Add(this.button12);
             this.tabPage2.Controls.Add(this.m_cbFilterAS);
             this.tabPage2.Controls.Add(this.label2);
@@ -1571,6 +1574,34 @@ namespace ArbWeb
             this.m_announcementsTab.Text = "Announcements";
             this.m_announcementsTab.UseVisualStyleBackColor = true;
             // 
+            // button17
+            // 
+            this.button17.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button17.Location = new System.Drawing.Point(59, 0);
+            this.button17.Margin = new System.Windows.Forms.Padding(0);
+            this.button17.Name = "button17";
+            this.button17.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.button17.Size = new System.Drawing.Size(47, 40);
+            this.button17.TabIndex = 114;
+            this.button17.Text = "⏷";
+            this.button17.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.MoveAnnouncementDown);
+            // 
+            // button16
+            // 
+            this.button16.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button16.Location = new System.Drawing.Point(12, 0);
+            this.button16.Margin = new System.Windows.Forms.Padding(0);
+            this.button16.Name = "button16";
+            this.button16.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.button16.Size = new System.Drawing.Size(47, 40);
+            this.button16.TabIndex = 113;
+            this.button16.Text = "⏶";
+            this.button16.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.button16.UseVisualStyleBackColor = true;
+            this.button16.Click += new System.EventHandler(this.MoveAnnouncementUp);
+            // 
             // button15
             // 
             this.button15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -1664,33 +1695,15 @@ namespace ArbWeb
             this.m_fetchAnnouncements.Text = "Get Announcements";
             this.m_fetchAnnouncements.Click += new System.EventHandler(this.FetchAnnouncements_Click);
             // 
-            // button16
+            // button18
             // 
-            this.button16.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button16.Location = new System.Drawing.Point(12, 0);
-            this.button16.Margin = new System.Windows.Forms.Padding(0);
-            this.button16.Name = "button16";
-            this.button16.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.button16.Size = new System.Drawing.Size(47, 40);
-            this.button16.TabIndex = 113;
-            this.button16.Text = "⏶";
-            this.button16.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.button16.UseVisualStyleBackColor = true;
-            this.button16.Click += new System.EventHandler(this.MoveAnnouncementUp);
-            // 
-            // button17
-            // 
-            this.button17.Font = new System.Drawing.Font("Segoe UI Symbol", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button17.Location = new System.Drawing.Point(59, 0);
-            this.button17.Margin = new System.Windows.Forms.Padding(0);
-            this.button17.Name = "button17";
-            this.button17.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.button17.Size = new System.Drawing.Size(47, 40);
-            this.button17.TabIndex = 114;
-            this.button17.Text = "⏷";
-            this.button17.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.button17.UseVisualStyleBackColor = true;
-            this.button17.Click += new System.EventHandler(this.MoveAnnouncementDown);
+            this.button18.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button18.Location = new System.Drawing.Point(776, 376);
+            this.button18.Name = "button18";
+            this.button18.Size = new System.Drawing.Size(176, 40);
+            this.button18.TabIndex = 107;
+            this.button18.Text = "Gen Email Doc";
+            this.button18.Click += new System.EventHandler(this.DoGenEmailDoc);
             // 
             // AwMainForm
             // 
@@ -2844,6 +2857,11 @@ namespace ArbWeb
             ListViewItem lvi = m_announcementsList.Items[current];
             m_announcementsList.Items.RemoveAt(current);
             m_announcementsList.Items.Insert(current + 1, lvi);
+        }
+
+        private void DoGenEmailDoc(object sender, EventArgs e)
+        {
+
         }
     }
 }

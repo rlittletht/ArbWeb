@@ -16,7 +16,7 @@ namespace ArbWeb
     {
         private IAppContext m_appContext;
 
-        private const string s_announceDiv = "D9BulkMaintenance";
+        private const string s_announceDiv = "ArbWebAnnounce_D9BulkMaintentance";
 
         public WebAdminPermissions(IAppContext appContext)
         {

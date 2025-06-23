@@ -117,25 +117,31 @@ namespace ArbWeb
         {
             bool fNeedSave = false;
             string sValue;
-
-            if (!m_appContext.WebControl.FNavToPage(WebCore._s_EditUser_MiscFields + sOfficialID))
-            {
-                throw (new Exception("could not navigate to the officials page"));
-            }
-
-            // misc field info.  every text input field is a misc field we want to save
+            int retryCount = 2;
             List<string> plsValue = new List<string>();
-            string sHtml = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_MiscFields_MainBodyContentTable)).GetAttribute("outerHTML");
-            HtmlDocument html = new HtmlDocument();
 
-            html.LoadHtml(sHtml);
-            sValue = null;
+            HtmlNodeCollection inputs = null;
 
-            HtmlNodeCollection inputs = html.DocumentNode.SelectNodes(
-                $"//input[@type='text' and contains(@name, '{WebCore.s_MiscField_EditControlSubstring}')]");
+            while (inputs == null && retryCount-- < 2)
+            {
+                if (!m_appContext.WebControl.FNavToPage(WebCore._s_EditUser_MiscFields + sOfficialID))
+                {
+                    throw (new Exception("could not navigate to the officials page"));
+                }
+
+                // misc field info.  every text input field is a misc field we want to save
+                
+                string sHtml = m_appContext.WebControl.Driver.FindElement(By.Id(WebCore._sid_MiscFields_MainBodyContentTable)).GetAttribute("outerHTML");
+                HtmlDocument html = new HtmlDocument();
+
+                html.LoadHtml(sHtml);
+                sValue = null;
+
+                inputs = html.DocumentNode.SelectNodes(
+                    $"//input[@type='text' and contains(@name, '{WebCore.s_MiscField_EditControlSubstring}')]");
 //            IList <IWebElement> inputs =
 //	            m_webControl.Driver.FindElements(By.XPath($"//input[@type='text' and contains(@name, '{WebCore.s_MiscField_EditControlSubstring}')]";
-
+            }
 
             foreach (HtmlNode input in inputs)
             {
