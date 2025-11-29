@@ -117,12 +117,12 @@ namespace ArbWeb
         {
             bool fNeedSave = false;
             string sValue;
-            int retryCount = 2;
+            int retryCount = 4;
             List<string> plsValue = new List<string>();
 
             HtmlNodeCollection inputs = null;
 
-            while (inputs == null && retryCount-- < 2)
+            while (inputs == null && retryCount-- > 0)
             {
                 if (!m_appContext.WebControl.FNavToPage(WebCore._s_EditUser_MiscFields + sOfficialID))
                 {
