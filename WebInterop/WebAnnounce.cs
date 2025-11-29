@@ -210,7 +210,7 @@ namespace ArbWeb
 		----------------------------------------------------------------------------*/
         public void SetArbiterAnnounce(string sArbiterHelpNeeded)
         {
-            UpdateArbiterAnnouncement("D9UrgentHelpNeeded", sArbiterHelpNeeded, null, null, "All Officials");
+            UpdateArbiterAnnouncement("ArbWebAnnounce_HelpNeeded", sArbiterHelpNeeded, null, null, "All Officials");
         }
     }
 }

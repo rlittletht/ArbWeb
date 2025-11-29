@@ -358,6 +358,19 @@ namespace ArbWeb.Games
             return $"{rgs[1]},{rgs[0]}";
         }
 
+        public static string ReverseNameSimpleFavorFirst(string s)
+        {
+            string[] rgs;
+
+            rgs = CountsData.RexHelper.RgsMatch(s, "^[ \t]*([^\t]*) ([^ \t]*) *$");
+            if (rgs.Length < 2)
+                return s;
+
+            if (rgs[0] == null || rgs[1] == null)
+                return s;
+            return $"{rgs[1]},{rgs[0]}";
+        }
+
         [Test]
         [TestCase("Rob Little", "Little,Rob")]
         [TestCase("Martin van Doren", "van Doren,Martin")]
@@ -365,6 +378,17 @@ namespace ArbWeb.Games
         public static void TestReverseNameSimple(string sIn, string sExpected)
         {
             string sActual = ReverseNameSimple(sIn);
+
+            Assert.AreEqual(sExpected, sActual);
+        }
+
+        [Test]
+        [TestCase("Rob Little", "Little,Rob")]
+        [TestCase("Martin van Doren", "Doren,Martin van")]
+        [TestCase("Byron (Barney) Kinzer", "Kinzer,Byron (Barney)")]
+        public static void TestReverseNameSimpleFavorFirst(string sIn, string sExpected)
+        {
+            string sActual = ReverseNameSimpleFavorFirst(sIn);
 
             Assert.AreEqual(sExpected, sActual);
         }
@@ -422,6 +446,10 @@ namespace ArbWeb.Games
                 return sReverse;
 
             sReverse = ReverseNameParenthetical(s);
+            if (rst.UmpireLookup(sReverse) != null)
+                return sReverse;
+
+            sReverse = ReverseNameSimpleFavorFirst(s);
             if (rst.UmpireLookup(sReverse) != null)
                 return sReverse;
 

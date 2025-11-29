@@ -47,6 +47,68 @@ namespace ArbWeb.Reports
             return sHtml;
         }
 
+        string GenOpenSlotsHtml(
+            CountsData gc,
+            Roster rst,
+            bool fTestEmail,
+            string sEmailFilter,
+            bool fSplitSports,
+            bool fFilterSport,
+            bool fIncludeOpenSlots,
+            bool fFuzzyTimes,
+            bool fPivotOnDates,
+            bool fFilterByLevel,
+            CheckedListBox sportsListbox,
+            CheckedListBox sportsLevelsListbox)
+        {
+            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.htm";
+
+            string sHtml =
+            "<html><style>\r\n*#myId {\ncolor:Blue;\n}\n</style><body><p>Put your preamble here...</p>";
+
+            if (fSplitSports)
+            {
+                string[] rgs;
+
+                sHtml += "<h1>Baseball open slots</h1>";
+                rgs = WebCore.RgsFromChlbxSport(fFilterSport, sportsListbox, "Softball", false);
+                gc.GenOpenSlotsReport(
+                    sTempFile,
+                    fIncludeOpenSlots,
+                    fFuzzyTimes,
+                    fPivotOnDates,
+                    rgs,
+                    WebCore.RgsFromChlbx(fFilterByLevel, sportsLevelsListbox),
+                    m_saOpenSlots);
+                sHtml += SHtmlReadFile(sTempFile) + "<h1>Softball Open Slots</h1>";
+                rgs = WebCore.RgsFromChlbxSport(fFilterSport, sportsListbox, "Softball", true);
+                gc.GenOpenSlotsReport(
+                    sTempFile,
+                    fIncludeOpenSlots,
+                    fFuzzyTimes,
+                    fPivotOnDates,
+                    rgs,
+                    WebCore.RgsFromChlbx(fFilterByLevel, sportsLevelsListbox),
+                    m_saOpenSlots);
+                sHtml += SHtmlReadFile(sTempFile);
+            }
+            else
+            {
+                gc.GenOpenSlotsReport(
+                    sTempFile,
+                    fIncludeOpenSlots,
+                    fFuzzyTimes,
+                    fPivotOnDates,
+                    WebCore.RgsFromChlbx(fFilterSport, sportsListbox),
+                    WebCore.RgsFromChlbx(fFilterByLevel, sportsLevelsListbox),
+                    m_saOpenSlots);
+                sHtml += SHtmlReadFile(sTempFile);
+            }
+
+            System.IO.File.Delete(sTempFile);
+            return sHtml;
+        }
+
         /* D O  G E N  O P E N  S L O T S  M A I L */
         /*----------------------------------------------------------------------------
         	%%Function: DoGenOpenSlotsMail
@@ -68,10 +130,7 @@ namespace ArbWeb.Reports
             CheckedListBox sportsListbox,
             CheckedListBox sportsLevelsListbox)
         {
-            string sTempFile = $"{Environment.GetEnvironmentVariable("Temp")}\\temp{System.Guid.NewGuid().ToString()}.htm";
-
             string sBcc = fTestEmail ? "" : rst.SBuildAddressLine(sEmailFilter);
-            ;
 
             Outlook.Application appOlk = (Outlook.Application)Marshal.GetActiveObject("Outlook.Application");
 
@@ -88,51 +147,22 @@ namespace ArbWeb.Reports
             oNote.BCC = sBcc;
             oNote.Subject = "This is a test";
             oNote.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
-            oNote.HTMLBody = "<html><style>\r\n*#myId {\ncolor:Blue;\n}\n</style><body><p>Put your preamble here...</p>";
-
-            if (fSplitSports)
-            {
-                string[] rgs;
-
-                oNote.HTMLBody += "<h1>Baseball open slots</h1>";
-                rgs = WebCore.RgsFromChlbxSport(fFilterSport, sportsListbox, "Softball", false);
-                gc.GenOpenSlotsReport(
-                    sTempFile,
+            oNote.HTMLBody = GenOpenSlotsHtml(gc,
+                    rst,
+                    fTestEmail,
+                    sEmailFilter,
+                    fSplitSports,
+                    fFilterSport,
                     fIncludeOpenSlots,
                     fFuzzyTimes,
                     fPivotOnDates,
-                    rgs,
-                    WebCore.RgsFromChlbx(fFilterByLevel, sportsLevelsListbox),
-                    m_saOpenSlots);
-                oNote.HTMLBody += SHtmlReadFile(sTempFile) + "<h1>Softball Open Slots</h1>";
-                rgs = WebCore.RgsFromChlbxSport(fFilterSport, sportsListbox, "Softball", true);
-                gc.GenOpenSlotsReport(
-                    sTempFile,
-                    fIncludeOpenSlots,
-                    fFuzzyTimes,
-                    fPivotOnDates,
-                    rgs,
-                    WebCore.RgsFromChlbx(fFilterByLevel, sportsLevelsListbox),
-                    m_saOpenSlots);
-                oNote.HTMLBody += SHtmlReadFile(sTempFile);
-            }
-            else
-            {
-                gc.GenOpenSlotsReport(
-                    sTempFile,
-                    fIncludeOpenSlots,
-                    fFuzzyTimes,
-                    fPivotOnDates,
-                    WebCore.RgsFromChlbx(fFilterSport, sportsListbox),
-                    WebCore.RgsFromChlbx(fFilterByLevel, sportsLevelsListbox),
-                    m_saOpenSlots);
-                oNote.HTMLBody += SHtmlReadFile(sTempFile);
-            }
+                    fFilterByLevel,
+                    sportsListbox,
+                    sportsLevelsListbox);
 
             oNote.Display(true);
 
             appOlk = null;
-            System.IO.File.Delete(sTempFile);
         }
 
         private SlotAggr m_saOpenSlots;

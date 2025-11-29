@@ -143,7 +143,11 @@ public class WebPagination
         timer.Reset();
         timer.Start();
 
-        anchor?.Click();
+        if (anchor != null)
+        {
+            anchor.Click();
+            appContext.WebControl.WaitForPageLoad();
+        }
         timer.Stop();
         msecNavigate = timer.MsecFloat;
     }

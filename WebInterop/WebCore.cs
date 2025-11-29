@@ -176,7 +176,8 @@ namespace ArbWeb
         public const string _s_OfficialsView_PaginationHrefPostbackSubstr = "ctl00$ContentHolder$pgeOfficialsView$conOfficialsView$dgOfficials$ctl"; // ok2021
 
         public const string _sid_OfficialsView_IsReadyStatusPrefix = "IsReadyStatusText";
-        public const string _sid_OfficialsView_EditAccount_Email0 = "admin-edit-emails_0_email1";
+        //public const string _sid_OfficialsView_EditAccount_Email0 = "admin-edit-emails_0_email1";
+        public const string _sid_OfficialsView_EditAccount_Email0 = "admin-edit-email-0";
         public const string _sid_OfficialsView_EditAccount_FirstName = "admin-edit-firstName";
         public const string _sid_OfficialsView_EditAccount_NickName = "admin-edit-nickName";
         public const string _sid_OfficialsView_EditAccount_LastName = "admin-edit-lastName";
@@ -189,6 +190,8 @@ namespace ArbWeb
         public const string _sid_OfficialsView_EditAccount_ButtonSave = "save-changes-button";
         public const string _sid_OfficialsView_EditAccount_ButtonCancel = "cancel-changes-button";
         public const string _sid_OfficialsView_EditAccount_BirthDate = "admin-edit-dateOfBirth";
+
+        public const string _sid_OfficialsView_AddOfficial = "ctl00_ContentHolder_pgeOfficialsView_conOfficialsView_dgOfficials_ctl02_btnAddNewOfficial"; // ok2025
 
         public const string _xpath_modal_mask = "ant-modal-mask";
         public const string _xpath_modalDialogRoot = "//div[@class='ant-modal-mask']";
@@ -551,6 +554,11 @@ namespace ArbWeb
         }
 
         #endregion
+
+        public static string BuildXpathForId(string id)
+        {
+            return $"//*[id={id}]";
+        }
 
         /*----------------------------------------------------------------------------
             %%Function: BuildDownloadFilenameFromTemplate

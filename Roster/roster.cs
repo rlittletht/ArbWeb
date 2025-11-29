@@ -107,7 +107,15 @@ namespace ArbWeb
             if (String.Compare(City, rste.City) != 0)
                 return false;
             if (String.Compare(State, rste.State) != 0)
-                return false;
+            {
+                // special case for WA and Washington
+                if (State.Length < 2
+                    || rste.State.Length < 2
+                    || State.Substring(0, 2).ToUpper() != rste.State.Substring(0, 2).ToUpper())
+                {
+                    return false;
+                }
+            }
             if (String.Compare(Zip, rste.Zip) != 0)
                 return false;
             if (String.Compare(m_sOfficialNumber, rste.m_sOfficialNumber) != 0)
