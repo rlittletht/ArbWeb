@@ -1046,9 +1046,9 @@ namespace ArbWeb
                     {
                         for (int i = 0; i < m_plsMisc.Count; i++)
                         {
-                            string field = m_plsMisc[i];
+                            string sField = m_plsMisc[i];
 
-                            if (string.Compare(field, "BGCExpirationDate", StringComparison.OrdinalIgnoreCase) == 0)
+                            if (string.Compare(sField, "BGCExpirationDate", StringComparison.OrdinalIgnoreCase) == 0)
                                 m_skipMiscFields.Add(i);
                         }
                     }
