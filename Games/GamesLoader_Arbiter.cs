@@ -89,6 +89,8 @@ namespace ArbWeb.Games
                 // m_mpNameSportLevelCount = new Dictionary<string, Dictionary<string, int>>();
                 Umpire ump = null;
 
+                ReadState rsAfterHeader = ReadState.ScanForGame;
+
                 while ((sLine = tr.ReadLine()) != null)
                 {
                     // first, change "foo, bar" into "foo bar" (get rid of quotes and the comma)
@@ -129,7 +131,15 @@ namespace ArbWeb.Games
 
                     if (rs == ReadState.ScanForHeader)
                     {
-                        rs = RsHandleScanForHeader(sLine, rgsFields, rs);
+                        rs = RsHandleScanForHeader(sLine, rgsFields, rsAfterHeader);
+                        continue;
+                    }
+
+                    // we have to be able to handle a page break in the middle of anything...
+                    if (FMatchGameArbiterFooter(sLine))
+                    {
+                        rsAfterHeader = rs;
+                        rs = ReadState.ScanForHeader;
                         continue;
                     }
 
@@ -192,15 +202,6 @@ namespace ArbWeb.Games
                             ref fOpenSlot,
                             ref ump);
 
-                    if (FMatchGameArbiterFooter(sLine))
-                    {
-                        Debug.Assert(
-                            rs == ReadState.ReadingComments || rs == ReadState.ScanForHeader || rs == ReadState.ScanForGame,
-                            $"Page break at illegal position: state = {rs}");
-                        rs = ReadState.ScanForHeader;
-                        continue;
-                    }
-
                     if (rs == ReadState.ScanForGame)
                         rs = RsHandleScanForGame(
                             ref sGame,
@@ -233,6 +234,11 @@ namespace ArbWeb.Games
             return true;
         }
 
+        bool FMatchHeader(string sLine)
+        {
+            return Regex.Match(sLine, "Game.*Date.*Sport.*Level").Success;
+        }
+
         /* R S  H A N D L E  S C A N  F O R  H E A D E R */
         /*----------------------------------------------------------------------------
                 %%Function: RsHandleScanForHeader
@@ -240,10 +246,13 @@ namespace ArbWeb.Games
                 %%Contact: rlittle
 
             ----------------------------------------------------------------------------*/
-        private ReadState RsHandleScanForHeader(string sLine, string[] rgsFields, ReadState rs)
+        private ReadState RsHandleScanForHeader(string sLine, string[] rgsFields, ReadState rsAfterHeader)
         {
-            if (Regex.Match(sLine, "Game.*Date.*Sport.*Level").Success == false)
-                return rs;
+            if (!FMatchHeader(sLine))
+            {
+                // continue scanning for header
+                return ReadState.ScanForHeader;
+            }
 
             // always start looking here, and adjust
             GameDateTimeColumn = icolGameDateTimeDefault;
@@ -269,8 +278,8 @@ namespace ArbWeb.Games
 
             Debug.Assert(Regex.Match(rgsFields[GameDateTimeColumn], "Date.*Time").Success, "Date & time not where expected!!");
             Debug.Assert(Regex.Match(rgsFields[GameLevelColumn], "Sport.*Level").Success, "Sport & level not where expected!!");
-            rs = ReadState.ScanForGame;
-            return rs;
+            
+            return rsAfterHeader;
         }
 
         /* R S  H A N D L E  G A M E  C O M M E N T */
@@ -506,6 +515,8 @@ namespace ArbWeb.Games
                     || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *Postseason").Success
                     || Regex.Match(sLine, ", *[ a-zA-Z0-9-']* *All Stars").Success
                     || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Fall Ball").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *DrewTracker").Success
+                    || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *SB WS").Success
                     || Regex.Match(sLine, ", *[ a-zA-Z0-9-]* *Administrative").Success
                     || Regex.Match(sLine, ", *50/50").Success
                     || Regex.Match(sLine, ",_Events*").Success
