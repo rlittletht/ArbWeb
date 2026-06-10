@@ -40,6 +40,11 @@ namespace ArbWeb.Games
             {
                 Umpire ump = new Umpire(rste.First, rste.Last, rste.m_plsMisc[iMiscAffiliation], rste.Email, rste.m_plsMisc);
 
+                if (m_mpNameUmpire.ContainsKey(ump.Name.ToLower()))
+                {
+                    m_srpt.AddMessage("Duplicate umpire name: " + ump.Name);
+                    continue;
+                }
                 m_mpNameUmpire.Add(ump.Name.ToLower(), ump);
             }
 
