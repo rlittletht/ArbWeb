@@ -1,13 +1,14 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
-using HtmlAgilityPack;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
 using TCore.WebControl;
 using static System.Net.Mime.MediaTypeNames;
@@ -59,16 +60,36 @@ public class WebAnnouncements
         appContext.WebControl.WaitForPageLoad();
     }
 
+    public static T RetryableFunc<T>(Func<T> func, int maxRetries = 3, int delayBetweenRetriesMs = 500)
+    {
+        while (true)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception ex)
+            {
+                if (maxRetries-- <= 0)
+                    throw;
+                Thread.Sleep(delayBetweenRetriesMs);
+            }
+        }    
+    }
+
     /*----------------------------------------------------------------------------
         %%Function: GetHtmlDocumentForCurrentPage
         %%Qualified: ArbWeb.Announcements.WebAnnouncements.GetHtmlDocumentForCurrentPage
     ----------------------------------------------------------------------------*/
     public static HtmlDocument GetHtmlDocumentForCurrentPage(IAppContext appContext)
     {
-        string sHtml = appContext.WebControl.Driver.FindElement(By.XPath("//body")).GetAttribute("innerHTML");
-        HtmlDocument html = new HtmlDocument();
-        html.LoadHtml(sHtml);
-        return html;
+        return RetryableFunc(() =>
+                             {
+                                 string sHtml = appContext.WebControl.Driver.FindElement(By.XPath("//body")).GetAttribute("innerHTML");
+                                 HtmlDocument html = new HtmlDocument();
+                                 html.LoadHtml(sHtml);
+                                 return html;
+                             });
     }
 
     /*----------------------------------------------------------------------------
