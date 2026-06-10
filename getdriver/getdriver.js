@@ -3,7 +3,7 @@ const JSZip = require('jszip');
 
 console.log("foo");
 
-async function getChromeDriverVersion(channel)
+async function getChromeDriverVersion(channel, version)
 {
     // first, get version we want for the channel
     const channelResponse = await fetch("https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json");
@@ -16,7 +16,7 @@ async function getChromeDriverVersion(channel)
 
     const channelJson = await channelResponse.json();
 
-    const version = channelJson.channels[channel].version;
+    version = version || channelJson.channels[channel].version;
 
     const response = await fetch("https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"); 
 
@@ -81,4 +81,7 @@ async function getChromeDriverVersion(channel)
 // 
 // // .then((response)=>console.log(response.body.getReader().read().then((content)=>console.log(content))))
 
-getChromeDriverVersion("Stable");
+// get the optional version from command line
+const version = process.argv.length > 2 ? process.argv[2] : undefined;
+
+getChromeDriverVersion("Stable", version);

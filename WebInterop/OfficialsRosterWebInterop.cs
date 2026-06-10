@@ -7,8 +7,6 @@ using System.Threading;
 using System.Windows.Forms;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
-using OpenQA.Selenium.DevTools.V137.Network;
-using OpenQA.Selenium.Interactions;
 using SeleniumExtras.WaitHelpers;
 using TCore.StatusBox;
 
