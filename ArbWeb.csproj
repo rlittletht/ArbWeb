@@ -259,6 +259,7 @@
       <DependentUpon>EditAnnouncement.cs</DependentUpon>
     </Compile>
     <Compile Include="Announcements\WebAnnouncements.cs" />
+    <Compile Include="CommonPrefixMap.cs" />
     <Compile Include="Games\ScheduleStats.cs" />
     <Compile Include="Reports\CoverageReport.cs" />
     <Compile Include="Secrets.Designer.cs">
@@ -266,6 +267,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Secrets.resx</DependentUpon>
     </Compile>
+    <Compile Include="SiteShorter.cs" />
     <Compile Include="SPO\Auth.cs" />
     <Compile Include="Games\Differ.cs" />
     <Compile Include="Games\DistributeTeamCount.cs" />

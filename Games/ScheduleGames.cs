@@ -454,6 +454,22 @@ namespace ArbWeb.Games
         }
 
         /*----------------------------------------------------------------------------
+            %%Function: GetAllFullSiteNames
+            %%Qualified: ArbWeb.Games.ScheduleGames.GetAllFullSiteNames
+        ----------------------------------------------------------------------------*/
+        public List<string> GetAllFullSiteNames()
+        {
+            HashSet<string> sites = new HashSet<string>();
+
+            foreach (GameSlot game in m_plgmsSorted.Values)
+            {
+                sites.Add(game.Site);
+            }
+
+            return new List<string>(sites);
+        }
+
+        /*----------------------------------------------------------------------------
 			%%Function:GetSiteRosterSites
 			%%Qualified:ArbWeb.Games.ScheduleGames.GetSiteRosterSites
         ----------------------------------------------------------------------------*/

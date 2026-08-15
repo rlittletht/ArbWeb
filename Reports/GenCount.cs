@@ -50,6 +50,7 @@ namespace ArbWeb
             }
         }
 
+        private SiteShorter? m_siteShorter = null;
         StatusBox m_srpt;
 
         /* G E N  C O U N T S */
@@ -87,6 +88,7 @@ namespace ArbWeb
             m_srpt.PopLevel();
             m_srpt.AddMessage("Loading games...", MSGT.Header, false);
             m_gmd.FLoadGames(sSource, fIncludeCanceled);
+            //m_siteShorter = new SiteShorter(m_gmd.Games);
             m_srpt.PopLevel();
             // read in the roster of umpires...
         }
@@ -96,6 +98,7 @@ namespace ArbWeb
             SiteRosterReport.GenSiteRosterReport(m_gmd.Games, sReportFile, rst, rgsRosterFilter, dttmStart, dttmEnd, noHonorificRanks);
         }
 
+        
         /* G E N  O P E N  S L O T S  R E P O R T */
         /*----------------------------------------------------------------------------
             %%Function: GenOpenSlotsReport
