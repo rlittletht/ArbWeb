@@ -15,7 +15,9 @@ namespace ArbWeb
         // ============================================================================
         // T O P  L E V E L    
         // ============================================================================
-        public const string _s_Home = "https://www1.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
+        // public const string _s_Home = "https://www1.arbitersports.com/Shared/SignIn/Signin.aspx"; // ok2010
+        public const string _s_Home = "https://www1.arbitersports.com"; // ok2010
+        // https://www1.arbitersports.com/
         public const string _s_Assigning = "https://www1.arbitersports.com/Assigner/Games/NewGamesView.aspx"; // ok2010
         public const string _s_RanksEdit = "https://www1.arbitersports.com/Assigner/RanksEdit.aspx"; // ok2010
         public const string _s_AddUser = "https://www1.arbitersports.com/Assigner/UserAdd.aspx?userTypeID=3"; // ok2010u

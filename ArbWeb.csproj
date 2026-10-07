@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
-  <Import Project="packages\Selenium.WebDriver.4.44.0\build\Selenium.WebDriver.props" Condition="Exists('packages\Selenium.WebDriver.4.44.0\build\Selenium.WebDriver.props')" />
+  <Import Project="packages\Selenium.WebDriver.4.49.0\build\Selenium.WebDriver.props" Condition="Exists('packages\Selenium.WebDriver.4.49.0\build\Selenium.WebDriver.props')" />
   <PropertyGroup>
     <ProjectType>Local</ProjectType>
     <ProductVersion>9.0.30729</ProductVersion>
@@ -45,7 +45,7 @@
     <InstallUrl>https://black.traynrex.com/arbweb/</InstallUrl>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>20</ApplicationRevision>
+    <ApplicationRevision>22</ApplicationRevision>
     <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -145,10 +145,10 @@
       <HintPath>packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="Selenium.Support, Version=4.0.0.0, Culture=neutral, PublicKeyToken=1c2bd1631853048f, processorArchitecture=MSIL">
-      <HintPath>packages\Selenium.Support.4.44.0\lib\netstandard2.0\Selenium.Support.dll</HintPath>
+      <HintPath>packages\Selenium.Support.4.49.0\lib\netstandard2.0\Selenium.Support.dll</HintPath>
     </Reference>
     <Reference Include="Selenium.WebDriver, Version=4.0.0.0, Culture=neutral, PublicKeyToken=1c2bd1631853048f, processorArchitecture=MSIL">
-      <HintPath>packages\Selenium.WebDriver.4.44.0\lib\net462\Selenium.WebDriver.dll</HintPath>
+      <HintPath>packages\Selenium.WebDriver.4.49.0\lib\net462\Selenium.WebDriver.dll</HintPath>
     </Reference>
     <Reference Include="StatusResult, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\TCore.StatusResult.2.0.0\lib\netstandard2.0\StatusResult.dll</HintPath>
@@ -158,6 +158,9 @@
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Collections.Immutable.8.0.0\lib\net462\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.Data">
       <Name>System.Data</Name>
@@ -182,8 +185,8 @@
     <Reference Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Text.Encodings.Web.8.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=8.0.0.5, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Json.8.0.5\lib\net462\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=8.0.0.6, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Json.8.0.6\lib\net462\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Channels, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Threading.Channels.8.0.0\lib\net462\System.Threading.Channels.dll</HintPath>
@@ -447,6 +450,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Selenium.WebDriver.4.44.0\build\Selenium.WebDriver.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Selenium.WebDriver.4.44.0\build\Selenium.WebDriver.props'))" />
+    <Error Condition="!Exists('packages\Selenium.WebDriver.4.49.0\build\Selenium.WebDriver.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Selenium.WebDriver.4.49.0\build\Selenium.WebDriver.props'))" />
   </Target>
 </Project>
